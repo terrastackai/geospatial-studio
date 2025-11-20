@@ -1,0 +1,63 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+{{- $release := .Release -}}
+{{- $chart := .Chart -}}
+{{- $values := .Values -}}
+{{- range $hook_name, $config := $values.hooks }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ $values.global.appNames.gateway | default $release.Name }}-{{ $hook_name }}"
+  labels:
+    app.kubernetes.io/managed-by: {{ $release.Service | quote }}
+    app.kubernetes.io/instance: {{ $values.global.appNames.gateway | default $release.Name | quote }}
+    app.kubernetes.io/version: {{ $chart.AppVersion }}
+    helm.sh/chart: "{{ $chart.Name }}-{{ $chart.Version }}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": {{ join "," $config.when | quote }}
+    "helm.sh/hook-weight": {{ $config.weight | quote }}
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ $values.global.appNames.gateway | default $release.Name }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ $release.Service | quote }}
+        app.kubernetes.io/instance: {{ $values.global.appNames.gateway | default $release.Name | quote }}
+        helm.sh/chart: "{{ $chart.Name }}-{{ $chart.Version }}"
+    spec:
+      restartPolicy: Never
+      {{- if $values.global.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ $values.global.imagePullSecret.name }}
+      {{- end }}
+      containers:
+      - name: {{ $hook_name }}-job
+        {{- if hasKey $config "image" }}
+        image: "{{ $config.image }}"
+        {{- else }}
+        image: "{{ $values.image.name }}:{{ $values.image.tag }}"
+        {{- end }}
+        imagePullPolicy: Always
+        command:
+        {{- range $config.command }}
+            - {{ . | quote }}
+        {{- end }}
+        envFrom:
+          - configMapRef:
+              name: {{ $values.global.appNames.gateway }}-cm
+          - secretRef:
+              name: {{ $values.global.appNames.gateway }}-secrets
+        volumeMounts:
+        - name: db-init-config
+          mountPath: /etc/config
+      volumes:
+      - name: db-init-config
+        configMap:
+          name: {{ $values.global.appNames.gateway }}-seed-data
+---
+{{- end }}

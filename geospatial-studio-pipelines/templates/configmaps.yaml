@@ -1,0 +1,39 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name:  pipeline-gateway-cm
+  labels:
+    app:  pipeline-gateway
+data:
+  inference_task_table: {{ .Values.orchestrate_db.inference_task_table }}
+  {{- if .Values.route.enabled }}
+  geoserver_url: {{ printf "https://%s-%s.%s/geoserver" .Values.geoserver.appName .Values.namespace .Values.cluster_url }}
+  gfmaas_api_base_url: {{ printf "https://%s-%s.%s/v2/" .Values.gateway.appName .Values.namespace .Values.cluster_url }}
+  {{- else }}
+  geoserver_url: {{ printf "http://%s.default.svc.cluster.local:3000/geoserver" .Values.geoserver.appName }}
+  {{- if .Values.gateway.oauthProxyEnabled }}
+  gfmaas_api_base_url: {{ printf "https://%s.default.svc.cluster.local:%s/v2/" .Values.gateway.appName .Values.gateway.oauthProxyPort }}
+  {{- else }}
+  gfmaas_api_base_url: {{ printf "http://%s.default.svc.cluster.local:8000/v2/" .Values.gateway.appName }}
+  {{- end }}
+  {{- end }}
+
+---
+{{ if eq $.Values.observability.enabled true }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name:  pipeline-observability-cm
+  namespace: {{ .Values.namespace }}
+data:
+  OTEL_TRACES_EXPORTER: console,otlp
+  OTEL_METRICS_EXPORTER: console,otlp
+  OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.observability.otlp.endpoint }}
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: {{ .Values.observability.otlp.tracesEndpoint }}
+  OTEL_PYTHON_LOG_LEVEL: debug
+{{ end }}

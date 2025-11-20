@@ -1,0 +1,41 @@
+---
+name: ✨ Feature Request
+description: Suggest an idea for this project
+title: "[Feature]"
+labels: ["enhancement"]
+assignees:
+  - octocat
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to submit a feature request!
+  - type: textarea
+    id: problem
+    attributes:
+      label: Describe the problem
+      description: Is your feature request related to a problem? Please describe.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe proposed solution
+      description: Describe the solution you'd like.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Describe alternatives you've considered (optional)
+      description: Provide a clear and concise description of any alternative solutions or features you've considered.
+    validations:
+      required: false
+  - type: textarea
+    id: more-context
+    attributes:
+      label: Additional context (optional)
+      description: Provide more details here.
+    validations:
+      required: false
+---

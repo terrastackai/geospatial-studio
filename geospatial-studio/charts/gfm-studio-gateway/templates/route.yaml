@@ -1,0 +1,46 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+{{- if .Values.route.enabled }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: {{ .Values.global.appNames.gateway }}
+    ingress-router: cash
+  annotations:
+    haproxy.router.openshift.io/timeout: 2700s
+  name: {{ .Values.global.appNames.gateway }}
+spec:
+  port:
+  targetPort: oauth
+  to:
+    kind: Service
+    name: {{ .Values.global.appNames.gateway }}
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: reencrypt
+  wildcardPolicy: None
+---
+{{ if .Values.route.internal }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: {{ .Values.global.appNames.gateway }}
+  annotations:
+    haproxy.router.openshift.io/timeout: 2700s
+  name: {{ .Values.global.appNames.gateway }}-internal
+spec:
+  port:
+  targetPort: oauth
+  to:
+    kind: Service
+    name: {{ .Values.global.appNames.gateway }}
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: reencrypt
+  wildcardPolicy: None
+{{- end }}
+{{ end }}

@@ -1,0 +1,130 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  annotations:
+    ibm.io/region: ${region}
+    ibm.io/endpoint: ${endpoint}
+    ibm.io/auto-create-bucket: 'false'
+    ibm.io/secret-name: populate-buckets-cos-secret
+    ibm.io/bucket: ${BUCKET_INFERENCE_AUXDATA}
+    ibm.io/auto-delete-bucket: 'false'
+  name: populate-buckets-pvc
+  namespace: ${OC_PROJECT}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: ${COS_STORAGE_CLASS}
+
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: populate-buckets-cos-secret
+  namespace: ${OC_PROJECT}
+stringData:
+  access-key: ${access_key_id}
+  secret-key: ${secret_access_key}
+type: ibm/ibmc-s3fs
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: populate-buckets-job
+  namespace: ${OC_PROJECT}
+  labels:
+    app: populate-buckets
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      name: populate-buckets-pod
+    spec:
+      restartPolicy: Never
+      volumes:
+        - name: persistent-storage
+          persistentVolumeClaim:
+            claimName: populate-buckets-pvc
+        - name: populate-buckets-script
+          configMap:
+            name: populate-buckets-script
+            defaultMode: 0755
+      containers:
+        - name: populate-buckets
+          image: 'image-registry.openshift-image-registry.svc:5000/openshift/httpd:latest'
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: persistent-storage
+              mountPath: /data
+            - name: populate-buckets-script
+              mountPath: /populate-buckets-script
+          command: ["/bin/sh"]
+          args: ["-c", "/populate-buckets-script/populate-buckets-script.sh"]
+      tolerations:
+        - operator: Exists
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: populate-buckets-script
+  namespace: ${OC_PROJECT}
+data:
+  populate-buckets-script.sh: |
+    #!/bin/sh
+    set -e
+
+    # Function to handle errors
+    error_handler() {
+        local status=$?
+
+        echo "An error occurred. Sending error notification..."
+        exit $status
+    }
+
+    # Function to send success notification
+    success_handler() {
+        echo "Job completed successfully. Sending success notification..."
+    }
+
+    # Trap errors to call error_handler
+    trap 'error_handler' ERR
+
+    echo "Job Start..."
+
+    cd /data
+
+    if [ "$LULC_TILE_ROOT" ]; then
+      echo "LULC_TILE_ROOT"
+      mkdir -p lulc
+      curl -L -# -o lulc.zip "$LULC_TILE_ROOT"
+      unzip -oj lulc.zip -d lulc
+      rm lulc.zip
+    fi
+
+    if [ "$LULC_TILE_SHAPEFILE" ]; then
+      echo "LULC_TILE_SHAPEFILE"
+    fi
+
+    if [ "$LAND_POLYGON_PATH" ]; then
+      echo "LAND_POLYGON_PATH"
+      mkdir -p general
+      curl -L -# -o general.zip "$LAND_POLYGON_PATH"
+      unzip -oj general.zip -d general
+      rm general.zip
+    fi
+
+    # Call success handler if no errors occurred
+    success_handler
+    echo "Job Completed..."

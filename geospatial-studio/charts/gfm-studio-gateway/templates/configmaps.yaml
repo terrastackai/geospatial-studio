@@ -1,0 +1,227 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    config.openshift.io/inject-trusted-cabundle: "true"
+  name: {{ .Values.global.appNames.gateway }}-trusted-certificates-ca
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.global.appNames.gateway }}-cm
+  labels:
+    app: {{ .Values.global.appNames.gateway }}
+data:
+  TUNE_BASEDIR: {{ .Values.mountLocations.files_mount}}
+  TUNES_FILES_BUCKET: {{ .Values.global.objectStorage.buckets.fineTuning }}
+  DATASET_FILES_BUCKET: {{ .Values.global.objectStorage.buckets.datasetFactory }}
+  TEMP_UPLOADS_BUCKET: {{ .Values.global.objectStorage.buckets.temporaryUploads }}
+  DATA_MOUNT: {{ .Values.mountLocations.data_mount }}
+  FILES_MOUNT: {{ .Values.mountLocations.files_mount }}
+  FILES_PVC: {{ .Values.mountLocations.files_pvc_name }}
+  DATA_PVC: {{ .Values.mountLocations.data_pvc_name }}
+  NAMESPACE: {{ .Values.global.namespace }}
+  PIPELINES_V2_COS_BUCKET: {{ .Values.global.objectStorage.buckets.inference }}
+  OBJECT_STORAGE_ENDPOINT: {{ .Values.global.objectStorage.endpoint }}
+  OBJECT_STORAGE_REGION: {{ .Values.global.objectStorage.region }}
+  SERVER_TYPE: {{ .Values.serverType.type }}
+  DATASET_PIPELINE_IMAGE: {{ .Values.images.dataset_pipeline.name }}:{{ .Values.images.dataset_pipeline.tag }}
+  {{- if .Values.global.imagePullSecret }}
+  FT_IMAGE_PULL_SECRETS: {{ .Values.global.imagePullSecret.name }}
+  {{- end }}
+  {{- if eq .Values.global.environment "local" }}
+  # Fine Tuning configs'
+  MLFLOW_URL: {{ printf "http://%s.default.svc.cluster.local:5000/" .Values.global.appNames.mlflow }}
+  # GEOFT_WEBHOOK_URL: {{ printf "http://%s.default.svc.cluster.local:8000/v2/notifications" .Values.global.appNames.gateway }}
+  {{- if .Values.global.oauth.oauthProxyEnabled }}
+  GEOFT_WEBHOOK_URL: {{ printf "https://%s.default.svc.cluster.local:%s/v2/notifications" .Values.global.appNames.gateway .Values.global.oauth.oauthProxyPort }}
+  {{- else }}
+  GEOFT_WEBHOOK_URL: {{ printf "http://%s.default.svc.cluster.local:8000/v2/notifications" .Values.global.appNames.gateway }}
+  {{- end }}
+  {{- else }}
+  # {{- if .Values.global.oauth.oauthProxyEnabled }}
+  # GEOFT_WEBHOOK_URL: {{ printf "https://%s.default.svc.cluster.local:%s/v2/notifications" .Values.global.appNames.gateway .Values.global.oauth.oauthProxyPort }}
+  # {{- else }}
+  # GEOFT_WEBHOOK_URL: {{ printf "http://%s.default.svc.cluster.local:8000/v2/notifications" .Values.global.appNames.gateway }}
+  # {{- end }}
+
+  GEOFT_WEBHOOK_URL: {{ printf "https://%s-%s.%s/v2/notifications" .Values.global.appNames.gateway .Values.global.namespace .Values.global.cluster_url }}
+  MLFLOW_URL: {{ printf "https://%s-%s.%s/" .Values.global.appNames.mlflow .Values.global.namespace .Values.global.cluster_url }}
+  {{- end }}
+
+  # AMO Configs
+  AMO_FILES_BUCKET: {{ .Values.global.objectStorage.buckets.amo }}
+  AMO_API_PVC_STORAGE_CLASS: {{ .Values.amo.mountLocations.pvc_storage_class }}
+  AMO_API_PVC_STORAGE_CAPACITY: {{ .Values.amo.mountLocations.storage_size }}
+  AMO_API_MODEL_ARTIFACTS_DOCKER_IMAGE_URL: {{ .Values.images.amo_pipeline.name }}:{{ .Values.images.amo_pipeline.tag }}
+  AMO_INFERENCE_SHARED_PVC: {{ .Values.mountLocations.pipelines_pvc_name }}
+  CONFIGURE_INFERENCE_TOLERATION: {{ .Values.amo.configureInferenceToleration }}
+  SERVICE_ACCOUNT_NAME: {{ .Values.global.serviceAccount.name }}
+  INFERENCE_SVC_CONTAINER_IMAGE: {{ .Values.images.tt_caikit.name }}:{{ .Values.images.tt_caikit.tag }}
+  INFERENCE_SVC_TERRATORCH_V2_IMAGE: {{ .Values.images.tt_caikit.name }}:{{ .Values.images.tt_caikit.tag }}
+  FT_HPO_IMAGE: {{ .Values.images.tt_hpoTune.name }}:{{ .Values.images.tt_hpoTune.tag }}
+
+  {{- /* Extra environment variables to be passed fro the Values.extraEnvironment */ -}}
+  {{- range $name, $value := .Values.extraEnvironment.api }}
+  {{ $name }}: {{ quote $value }}
+  {{- end }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cleanup-jobs-configmap
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: {{ .Values.global.label }}-cm # add label
+data:
+  cleanup_jobs.sh: |
+    #!/bin/bash
+
+    # Time limit in minutes
+    TIME_LIMIT=300
+
+    # Webhook URL with default value
+    FT_WEBHOOKS_URL=${FT_WEBHOOKS_URL:-https://defaultUrl}
+
+    # Get the current time in seconds
+    current_time=$(date +%s)
+
+    # Get all k8s jobs with their names and creation timestamps in RFC3339 format (ISO 8601)
+    jobs=$(kubectl get jobs --no-headers -o custom-columns=":metadata.name,:metadata.creationTimestamp")
+
+    # Loop through each job
+    while IFS= read -r job; do
+        job_name=$(echo "$job" | awk '{print $1}')
+        creation_timestamp=$(echo "$job" | awk '{print $2}')
+
+        # Convert the creation timestamp to seconds since the epoch
+        creation_time=$(date -d "$creation_timestamp" +%s)
+
+        # Get the pods associated with the job
+        pods=$(kubectl get pods --selector=job-name=$job_name --no-headers -o custom-columns=":metadata.name,:status.phase")
+
+        # Initialize a flag to check if any pod has started running
+        pod_running=false
+
+        # Loop through each pod and check if any are running or completed
+        while IFS= read -r pod; do
+            pod_status=$(echo "$pod" | awk '{print $2}')
+            if [[ "$pod_status" == "Running" || "$pod_status" == "Succeeded" ]]; then
+                pod_running=true
+                break
+            fi
+        done <<< "$pods"
+
+        # If no pod is running, check if it has been longer than the time limit
+        if [[ "$pod_running" == false ]]; then
+            # Calculate the elapsed time in minutes
+            elapsed_time=$(( (current_time - creation_time) / 60 ))
+
+            if (( elapsed_time >= TIME_LIMIT )); then
+                # grab kjob-TUNE_ID from job_name; this is how the resources are named.
+                K8S_NAME="${job_name%-job}"
+                TUNE_ID=$(echo "$job_name" | sed -e 's/^kjob-//' -e 's/-job$//') 
+                # Replace the prefix kjob with ftuning-script
+                FTUNING_CONFIG_MAP=$(echo "$K8S_NAME" | sed 's/^kjob/ftuning-script/')
+
+                # Check for the job_name has kjob / job and delete pvc, job, configmap
+                if [[ "$job_name" == kjob* && "$job_name" == *job ]]; then
+                  echo "Job $job_name has not started any pods after $elapsed_time minutes. Deleting Tuning resources... "
+                  kubectl delete job "$job_name"
+                  kubectl delete pvc "$K8S_NAME"-config-pvc
+                  kubectl delete configmap "$K8S_NAME"-config
+                  kubectl delete configmap "$FTUNING_CONFIG_MAP"
+                  
+                # Add a check for the dataset jobs and delete them too
+                elif [[ "$job_name" == onboarding-v2-pipeline-* ]]; then
+                  DATASET_ID="${job_name#*pipeline-}"
+                  echo "Job $job_name has not started any pods after $elapsed_time minutes. Deleting Dataset Factory resources... "
+                  kubectl delete job "$job_name"
+                  kubectl delete secret dataset-onboarding-v2-pipeline-params-"$DATASET_ID"
+
+                else
+                  echo "Job $job_name has not started any pods after $elapsed_time minutes. Deleting job ... "
+                  kubectl delete job "$job_name"
+                fi
+
+                curl -k -XPOST $FT_WEBHOOKS_URL \
+                    -H 'accept: application/json' \
+                    -H 'Content-Type: application/json' \
+                    -H "X-API-KEY: ${FT_API_KEY}" \
+                    -d "{
+                    \"event_id\": \"$FT_WEBHOOKS_ID\",
+                    \"detail_type\": \"Ftune:Task:JobNotifications\",
+                    \"source\": \"com.ibm.ftuning\",
+                    \"timestamp\": \"$(date +%Y-%m-%dT%H:%M:%SZ)\",
+                    \"detail\": {\"status\": \"Error\", \"tune_id\": \"$TUNE_ID\"}
+                    }"
+            else
+                echo "Job $job_name has not started any pods but is within the time limit: $elapsed_time minutes."
+            fi
+        else
+            echo "Job $job_name has a pod running or completed."
+        fi
+
+    done <<< "$jobs"
+
+    #########################################
+    # Cleanup for orphaned ConfigMaps/PVCs
+    #########################################
+
+    echo "***** Checking for orphaned ConfigMaps and PVCs *****"
+
+    cleanup_orphans() {
+        local resource_type=$1   # configmap or pvc
+        local prefix_pattern=$2  # regex for grep
+
+        resources=$(kubectl get "$resource_type" -o name | grep -E "^$resource_type/$prefix_pattern" || true)
+
+        echo "Processing resouces: $resources"
+        for res in $resources; do
+            res_name=${res#"$resource_type"/}
+            if [[ "$resource_type" == "configmap" ]]; then
+                # Strip kjob- or ftuning-script- prefix and optional -config suffix
+                TUNE_ID=$(echo "$res_name" | sed -E 's/^(kjob-|ftuning-script-)//' | sed -E 's/-config$//')
+            elif [[ "$resource_type" == "persistentvolumeclaim" ]]; then
+                # Strip kjob- prefix and -config-pvc suffix
+                TUNE_ID=$(echo "$res_name" | sed -E 's/^kjob-//' | sed -E 's/-config-pvc$//')
+            fi
+
+            # Check if either job exists
+            job_exists=false
+            if kubectl get job "kjob-$TUNE_ID-job" &>/dev/null || \
+              kubectl get job "kjob-$TUNE_ID-hpo" &>/dev/null; then
+                job_exists=true
+            fi
+
+            # Delete only if neither job exists
+            if [[ "$job_exists" == false ]]; then
+                echo "Deleting orphaned $resource_type: $res_name (no job found for tune_id $TUNE_ID)"
+                kubectl delete "$resource_type" "$res_name"
+            else
+                echo "Keeping $resource_type: $res_name (job found for tune_id $TUNE_ID)"
+            fi
+        done
+    }
+
+    echo "Cleaning up ConfigMaps"
+    cleanup_orphans "configmap" "(kjob-|ftuning-script-)"
+
+    echo "Cleaning up PVCs"
+    cleanup_orphans "persistentvolumeclaim" "kjob-"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.global.appNames.gateway }}-seed-data
+data:
+  init.sql: |
+    -- SQL command to insert default data.
+    INSERT INTO public."user" (first_name, last_name, email, data_usage_consent, organization_id, extra_data, id, created_at, updated_at, created_by, updated_by, active, deleted) VALUES('Studio', 'Dev', 'Studio.Dev@dev.com', false, NULL, 'null'::json, '57db2b61-2192-40cc-a7b9-86cbf89f9a07'::uuid, '2024-07-07 20:31:07.713', '2024-07-07 17:31:07.725', 'system@ibm.com', 'system@ibm.com', true, false);
+    INSERT INTO public.apikey (value,last_used_at,user_id,expires_on,id,created_at,updated_at,created_by,updated_by,active,deleted) VALUES ('secret_placeholder_key',NULL,'57db2b61-2192-40cc-a7b9-86cbf89f9a07'::uuid,'2025-12-10 17:38:58.213','aa87b231-46b7-417e-a10d-c59d0a9d5c17'::uuid,'2025-08-11 20:38:58.200','2025-08-12 17:38:58.213','system@ibm.com','system@ibm.com',true,false);

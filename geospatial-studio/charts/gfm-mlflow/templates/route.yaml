@@ -1,0 +1,45 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+{{- if .Values.route.enabled }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "gfm-mlflow.fullname" . }}
+  namespace: {{.Values.global.namespace}}
+  labels:
+    {{- include "gfm-mlflow.labels" . | nindent 4 }}
+    {{- include "gfm-mlflow.ingresslabel" . | nindent 4 }}
+  annotations:
+    haproxy.router.openshift.io/timeout: 30s
+spec:
+  port:
+    targetPort: {{ .Values.service.port }}
+  to:
+    kind: Service
+    name: {{ include "gfm-mlflow.fullname" . }}
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: None
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    {{- include "gfm-mlflow.labels" . | nindent 4 }}
+  annotations:
+    haproxy.router.openshift.io/timeout: 30s
+  name: {{ include "gfm-mlflow.fullname" . }}-internal
+  namespace: {{.Values.global.namespace}}
+spec:
+  port:
+    targetPort: http
+  to:
+    kind: Service
+    name: {{ include "gfm-mlflow.fullname" . }}
+  tls:
+    insecureEdgeTerminationPolicy: None
+    termination: edge
+  wildcardPolicy: None
+{{ end }}

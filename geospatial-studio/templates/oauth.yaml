@@ -1,0 +1,52 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+{{- define "oauth.args" }}{{ if eq .Values.global.oauth.type "isv" }}args:
+  - --https-address=:8443
+  - --client-id={{ .Values.global.oauth.clientId }}
+  - --client-secret={{ .Values.global.oauth.clientSecret }}
+  - --pass-access-token=true
+  - --pass-authorization-header=true
+  - --set-xauthrequest=true
+  - --tls-cert-file=/etc/tls/private/tls.crt
+  - --tls-key-file=/etc/tls/private/tls.key
+  - --cookie-secret={{ .Values.global.oauth.cookieSecret }}
+  - --cookie-name=oauth-proxy
+  - --email-domain=*
+  - --provider=oidc
+  - --oidc-issuer-url={{ .Values.global.oauth.issuerUrl }}
+  - --profile-url={{ .Values.global.oauth.issuerUrl }}/userinfo
+  - --redeem-url={{ .Values.global.oauth.issuerUrl }}/token
+  - --pubjwk-url={{ .Values.global.oauth.issuerUrl }}/publickeys
+  - --validate-url={{ .Values.global.oauth.issuerUrl }}/
+  - --extra-jwt-issuers={{ .Values.global.oauth.issuerUrl }}/=https://iam.cloud.ibm.com/identity
+  - --skip-jwt-bearer-tokens=true
+  - --skip-provider-button=true
+  {{- range .Values.global.oauth.extraOauthProxyArgs }}
+  - {{ . }}
+  {{- end }}
+  {{ else if eq .Values.global.oauth.type "keycloak" }}args:          
+  - '--https-address=:{{ .Values.global.oauth.oauthProxyPort }}'
+  - '--client-id={{ .Values.global.oauth.clientId }}'            
+  - '--client-secret={{ .Values.global.oauth.clientSecret }}'            
+  - '--set-xauthrequest=true'            
+  - '--set-authorization-header=true'            
+  - '--skip-provider-button=true'            
+  - '--pass-access-token=true'            
+  - '--pass-authorization-header=true'            
+  - '--provider=keycloak-oidc'            
+  - '--email-domain=*'            
+  - '--code-challenge-method=S256'            
+  - '--scope=email openid profile'            
+  - '--cookie-secret={{ .Values.global.oauth.cookieSecret }}'            
+  - '--tls-cert-file=/etc/tls/private/tls.crt'
+  - '--tls-key-file=/etc/tls/private/tls.key'
+  - '--skip-jwt-bearer-tokens=true'            
+  - '--oidc-issuer-url={{ .Values.global.oauth.issuerUrl }}'            
+  - '--skip-auth-route=get=.*/auth_info'
+  {{- range .Values.global.oauth.extraOauthProxyArgs }}
+  - {{ . }}
+  {{- end }}
+{{ end }}
+{{ end -}}

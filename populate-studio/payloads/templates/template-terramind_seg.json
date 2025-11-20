@@ -1,0 +1,367 @@
+{
+    "name": "terramind Segmentation",
+    "description": "Terramind multimodal task for Segmantation",
+    "purpose": "Segmentation",
+    "model_params": {
+    "$uri": "https://ibm.com/watsonx.ai.geospatial.finetune.segmentation.json",
+    "type": "object",
+    "title": "Finetune",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+        "data": {
+        "type": "object",
+        "default": {
+            "batch_size": 4,
+            "constant_multiply": 1,
+            "workers_per_gpu": 2
+        },
+        "properties": {
+            "batch_size": {
+            "type": "int",
+            "default": 4,
+            "description": "Batch size",
+            "studio_name": "Batch size"
+            },
+            "constant_multiply": {
+            "type": "float",
+            "default": 1,
+            "description": "Constant Scale",
+            "studio_name": "Constant Scale"
+            },
+            "workers_per_gpu": {
+            "studio_name": "Workers per GPU",
+            "description": "Workers per GPU",
+            "type": "int",
+            "default": 2
+            }
+        },
+        "studio_name": "Data loading"
+        },
+        "model": {
+        "type": "object",
+        "default": {
+            "decode_head": {
+            "channels": 256,
+            "num_convs": 4,
+            "decoder": "UNetDecoder",
+            "loss_decode": {
+                "type": "CrossEntropyLoss",
+                "avg_non_ignore": true
+            }
+            },
+            "frozen_backbone": false,
+            "tiled_inference_parameters": {
+            "h_crop": 224,
+            "h_stride": 196,
+            "w_crop": 224,
+            "w_stride": 196,
+            "average_patches": false
+            }
+        },
+        "properties": {
+            "decode_head": {
+            "type": "object",
+            "default": {
+                "channels": 256,
+                "num_convs": 4,
+                "decoder": "UperNetDecoder",
+                "loss_decode": {
+                "type": "CrossEntropyLoss",
+                "avg_non_ignore": true
+                }
+            },
+            "properties": {
+                "channels": {
+                "type": "int",
+                "default": 256,
+                "description": "Channels at each block of the decode head, except the final one",
+                "studio_name": "Channels"
+                },
+                "num_convs": {
+                "type": "int",
+                "default": 4,
+                "description": "Number of convolutional blocks in the head (except the final one)",
+                "studio_name": "Blocks"
+                },
+                "decoder": {
+                "enum": [
+                    "UperNetDecoder",
+                    "UNetDecoder"
+                ],
+                "type": "string",
+                "default": "Fixed",
+                "description": "Decoder type",
+                "studio_name": "Decoder type"
+                },
+                "loss_decode": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                    "enum": [
+                        "CrossEntropyLoss"
+                    ],
+                    "type": "string",
+                    "default": "CrossEntropyLoss",
+                    "description": "Type of loss function",
+                    "studio_name": "Loss function"
+                    },
+                    "avg_non_ignore": {
+                    "type": "bool",
+                    "default": true,
+                    "description": "The loss is only averaged over non-ignored targets (ignored targets are usually where labels are missing in the dataset) if this is True"
+                    }
+                },
+                "description": "Loss function to be used",
+                "studio_name": "Loss"
+                }
+            },
+            "description": "Architecture of the decode head",
+            "studio_name": "Head"
+            },
+            "auxiliary_head": {
+            "type": "object",
+            "default": {},
+            "properties": {
+                "decoder": {
+                "type": "string",
+                "default": "FCNDecoder",
+                "description": "Decoder function to use",
+                "studio_name": "Decoder"
+                },
+                "channels": {
+                "type": "int",
+                "default": 256,
+                "description": "Channels at each block of the decode head, except the final one",
+                "studio_name": "Channels"
+                },
+                "num_convs": {
+                "type": "int",
+                "default": 2,
+                "description": "Number of convolutional blocks in the head (except the final one)",
+                "studio_name": "Blocks"
+                },
+                "in_index": {
+                "type": "int",
+                "default": -1,
+                "description": "Index of the input list to take. Defaults to -1",
+                "studio_name": "In index"
+                },
+                "dropout": {
+                "type": "int",
+                "default": 0,
+                "description": "Dropout value to apply. Defaults to 0",
+                "studio_name": "Dropout"
+                },
+                "loss_decode": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                    "enum": [
+                        "CrossEntropyLoss"
+                    ],
+                    "type": "string",
+                    "default": "CrossEntropyLoss",
+                    "description": "Type of loss function",
+                    "studio_name": "Loss function"
+                    },
+                    "loss_weight": {
+                    "type": "float",
+                    "default": 1,
+                    "description": "Multiplicative weight of the loss of the auxiliary head in the loss. The loss is calculated as aux_head_weight * aux_head_loss + decode_head_loss",
+                    "studio_name": "Loss weight"
+                    },
+                    "avg_non_ignore": {
+                    "type": "bool",
+                    "default": true,
+                    "description": "The loss is only averaged over non-ignored targets (ignored targets are usually where labels are missing in the dataset) if this is True"
+                    }
+                },
+                "description": "Loss function to be used",
+                "studio_name": "Loss"
+                }
+            },
+            "description": "Architecture of the auxiliary head"
+            },
+            "frozen_backbone": {
+            "type": "bool",
+            "default": false,
+            "description": "Freeze the weights of the backbone when set to True",
+            "studio_name": "Freeze backbone"
+            },
+            "tiled_inference_parameters": {
+            "type": "object",
+            "default": {
+                "h_crop": 224,
+                "h_stride": 196,
+                "w_crop": 224,
+                "w_stride": 196,
+                "average_patches": true
+            },
+            "properties": {
+                "h_crop": {
+                "type": "int",
+                "default": 224,
+                "description": "h_crop values for tilling images",
+                "studio_name": "h_crop"
+                },
+                "h_stride": {
+                "type": "int",
+                "default": 196,
+                "description": "h_stride values for tilling images",
+                "studio_name": "h_stride"
+                },
+                "w_crop": {
+                "type": "int",
+                "default": 224,
+                "description": "w_crop values for tilling images",
+                "studio_name": "w_crop"
+                },
+                "w_stride": {
+                "type": "int",
+                "default": 196,
+                "description": "w_stride values for tilling images",
+                "studio_name": "w_stride"
+                },
+                "average_patches": {
+                "type": "bool",
+                "default": false,
+                "description": "Whether to use average_patches",
+                "studio_name": "average_patches"
+                }
+            }
+            }
+        },
+        "description": "Model architecture definition",
+        "studio_name": "Architecture"
+        },
+        "runner": {
+        "type": "object",
+        "default": {
+            "max_epochs": 10,
+            "early_stopping_patience": 20,
+            "early_stopping_monitor": "val/loss"
+        },
+        "properties": {
+            "max_epochs": {
+            "type": "int",
+            "default": 10,
+            "description": "Training epochs",
+            "studio_name": "Training epochs"
+            },
+            "early_stopping_patience": {
+            "type": "int",
+            "default": 20,
+            "description": "Early stopping patience",
+            "studio_name": "Early stopping patience"
+            },
+            "early_stopping_monitor": {
+            "type": "string",
+            "default": "val/loss",
+            "description": "Monitoring value to determine early stopping",
+            "studio_name": "Early stopping monitor"
+            }
+        },
+        "studio_name": "Runner"
+        },
+        "lr_config": {
+        "type": "object",
+        "default": {
+            "policy": "Fixed"
+        },
+        "required": [
+            "policy"
+        ],
+        "properties": {
+            "policy": {
+            "enum": [
+                "Fixed",
+                "CosineAnnealing"
+            ],
+            "type": "string",
+            "default": "Fixed",
+            "description": "Policy type",
+            "studio_name": "Policy type"
+            },
+            "warmup_iters": {
+            "type": "int",
+            "default": 0,
+            "description": "LR warmup iterations. Valid for some policies",
+            "studio_name": "Learning rate warmup iterations"
+            },
+            "warmup_ratio": {
+            "type": "float",
+            "default": 1,
+            "description": "Initial lr at warmup will be learning_rate * warmup_ratio",
+            "studio_name": "LR warmup initialization ratio"
+            }
+        },
+        "description": "Learning rate policy",
+        "studio_name": "Learning rate policy"
+        },
+        "optimizer": {
+        "type": "object",
+        "default": {
+            "lr": 0.00006,
+            "type": "Adam"
+        },
+        "properties": {
+            "lr": {
+            "type": "float",
+            "default": 0.00006,
+            "description": "Learning rate",
+            "studio_name": "Learning rate"
+            },
+            "type": {
+            "enum": [
+                "Adam",
+                "SGD",
+                "AdamW",
+                "RMSProp"
+            ],
+            "default": "Adam",
+            "description": "Optimizer to be used",
+            "studio_name": "Optimizer type"
+            },
+            "weight_decay": {
+            "type": "float",
+            "default": 0,
+            "description": "L2 weight regularization (weight decay)",
+            "studio_name": "L2 regularization weight"
+            }
+        },
+        "description": "Optimizer",
+        "studio_name": "Optimizer"
+        },
+        "dataset_id": {
+        "type": "string",
+        "description": "ID of dataset to use for this finetuning",
+        "studio_name": "Dataset"
+        },
+        "evaluation": {
+        "type": "object",
+        "default": {
+            "interval": 1
+        },
+        "properties": {
+            "interval": {
+            "type": "int",
+            "default": 1,
+            "description": "Frequency of epochs with which to perform validation",
+            "studio_name": "Epoch interval"
+            }
+        },
+        "studio_name": "Validation"
+        },
+        "backbone_model_id": {
+        "type": "string",
+        "description": "ID of the pretrained backbone"
+        }
+    },
+    "description": "A request sent to the finetuning service to start a finetune task for segmentation"
+    },
+    "extra_info": {
+    "runtime_image": "us.icr.io/gfmaas/geostudio-ft-deploy:feat-update_tt_version-142",
+    "model_category": "terramind"
+    },
+    "content": "IyBsaWdodG5pbmcucHl0b3JjaD09Mi4xLjEKc2VlZF9ldmVyeXRoaW5nOiA0Mgp0cmFpbmVyOgogIGFjY2VsZXJhdG9yOiBhdXRvCiAgc3RyYXRlZ3k6IGF1dG8KICBkZXZpY2VzOiBhdXRvCiAgbnVtX25vZGVzOiAxCiAgcHJlY2lzaW9uOiAxNi1taXhlZAogIGxvZ2dlcjoKICAgIGNsYXNzX3BhdGg6IGxpZ2h0bmluZy5weXRvcmNoLmxvZ2dlcnMubWxmbG93Lk1MRmxvd0xvZ2dlcgogICAgaW5pdF9hcmdzOgogICAgICBleHBlcmltZW50X25hbWU6IHt7IHR1bmVfaWQgfX0gCiAgICAgIHJ1bl9uYW1lOiAiVHJhaW4iICAgIAogICAgICB0cmFja2luZ191cmk6IHt7IG1sZmxvd190cmFja2luZ191cmwgfX0KICAgICAgc2F2ZV9kaXI6IHt7IG1vdW50X3Jvb3QgKyAndHVuZS10YXNrcy8nICsgdHVuZV9pZCArICcvbWxmbG93JyB9fQogICAgICB7JSBpZiBtbGZsb3dfdGFncyAtJX0KICAgICAgdGFnczoKICAgICAgICB7JSBmb3Iga2V5LCB2YWx1ZSBpbiBtbGZsb3dfdGFncy5pdGVtcygpIC0lfQogICAgICAgIHt7IGtleSB9fToge3sgdmFsdWUgfX0KICAgICAgICB7JSBlbmRmb3IgJX0KICAgICAgeyUtIGVuZGlmICV9ICAgICAgIAogIGNhbGxiYWNrczoKICAgIC0gY2xhc3NfcGF0aDogUmljaFByb2dyZXNzQmFyCiAgICAtIGNsYXNzX3BhdGg6IExlYXJuaW5nUmF0ZU1vbml0b3IKICAgICAgaW5pdF9hcmdzOgogICAgICAgIGxvZ2dpbmdfaW50ZXJ2YWw6IGVwb2NoCiAgICAjIC0tLS0gRWFybHkgc3RvcCBpZiAtLS0tCiAgICB7JSBpZiBydW5uZXJbImVhcmx5X3N0b3BwaW5nX3BhdGllbmNlIl0gLSV9CiAgICAtIGNsYXNzX3BhdGg6IEVhcmx5U3RvcHBpbmcKICAgICAgaW5pdF9hcmdzOgogICAgICAgIG1vbml0b3I6IHt7IHJ1bm5lclsiZWFybHlfc3RvcHBpbmdfbW9uaXRvciJdIH19CiAgICAgICAgcGF0aWVuY2U6IHt7IHJ1bm5lclsiZWFybHlfc3RvcHBpbmdfcGF0aWVuY2UiXSB9fQogICAgeyUtIGVuZGlmICV9CiAgICAgIyAtLS0tIEVhcmx5IHN0b3AgZW5kaWYgLS0tLQogICAgLSBjbGFzc19wYXRoOiBNb2RlbENoZWNrcG9pbnQKICAgICAgaW5pdF9hcmdzOgogICAgICAgIGRpcnBhdGg6IHt7IG1vdW50X3Jvb3QgKyAndHVuZS10YXNrcy8nICsgdHVuZV9pZCAgKyAnLycgfX0KICAgICAgICBtb2RlOiBtaW4KICAgICAgICBtb25pdG9yOiB2YWwvbG9zcwogICAgICAgIGZpbGVuYW1lOiB7eyAnYmVzdC1zdGF0ZV9kaWN0LXtlcG9jaDowMmR9JyB9fQogICAgICAgIHNhdmVfd2VpZ2h0c19vbmx5OiBUcnVlCiAgbWF4X2Vwb2Noczoge3sgcnVubmVyWyJtYXhfZXBvY2hzIl0gfX0KICBjaGVja192YWxfZXZlcnlfbl9lcG9jaDoge3sgZXZhbHVhdGlvblsiaW50ZXJ2YWwiXSB9fQogIGxvZ19ldmVyeV9uX3N0ZXBzOiA1MAogIGVuYWJsZV9jaGVja3BvaW50aW5nOiB0cnVlCiAgZGVmYXVsdF9yb290X2Rpcjoge3sgbW91bnRfcm9vdCArICd0dW5lLXRhc2tzLycgKyB0dW5lX2lkIH19CmRhdGE6CiAgeyUgaWYgaW1hZ2VfbW9kYWxpdGllc3xsZW5ndGggPT0gMSAlfSAKICBjbGFzc19wYXRoOiBHZW5lcmljTm9uR2VvU2VnbWVudGF0aW9uRGF0YU1vZHVsZQogIGluaXRfYXJnczoKICAgIGJhdGNoX3NpemU6IDIKICAgIG51bV93b3JrZXJzOiAxCiAgICBkYXRhc2V0X2JhbmRzOiAgIyBEYXRhc2V0IGJhbmRzCiAgICAgIHt7IGJhbmRzLnZhbHVlcygpIHwgbGlzdCB8IGZpcnN0IHwgdG9feWFtbCB8IGluZGVudCg2KSB9fQogICAgcmdiX2luZGljZXM6CiAgICAgIHt7IHJnYl9iYW5kX2luZGljZXMgfCB0b195YW1sIHwgaW5kZW50KDYpIH19CiAgICB0cmFpbl9kYXRhX3Jvb3Q6IHt7IGRhdGFfcm9vdCB9fXt7IHRyYWluX2RhdGFfZGlyLnZhbHVlcygpIHwgbGlzdCB8IGZpcnN0IH19CiAgICB2YWxfZGF0YV9yb290OiB7eyBkYXRhX3Jvb3QgfX17eyB2YWxfZGF0YV9kaXIudmFsdWVzKCkgfCBsaXN0IHwgZmlyc3QgfX0KICAgIHRlc3RfZGF0YV9yb290OiB7eyBkYXRhX3Jvb3QgfX17eyB0ZXN0X2RhdGFfZGlyLnZhbHVlcygpIHwgbGlzdCB8IGZpcnN0IH19CiAgICAjIGxhYmVscyByb290cwogICAgdHJhaW5fbGFiZWxfZGF0YV9yb290OiB7eyBkYXRhX3Jvb3QgKyB0cmFpbl9sYWJlbHNfZGlyIH19CiAgICB2YWxfbGFiZWxfZGF0YV9yb290OiB7eyBkYXRhX3Jvb3QgKyB2YWxfbGFiZWxzX2RpciB9fQogICAgdGVzdF9sYWJlbF9kYXRhX3Jvb3Q6IHt7IGRhdGFfcm9vdCArIHRlc3RfbGFiZWxzX2RpciB9fQogICAgeyUgaWYgdHJhaW5fc3BsaXRfcGF0aCAtJX0KICAgIHRyYWluX3NwbGl0OiB7eyBkYXRhX3Jvb3QgKyB0cmFpbl9zcGxpdF9wYXRoIH19CiAgICB7JSBlbmRpZiAtJX0KICAgIHslIGlmIHRlc3Rfc3BsaXRfcGF0aCAtJX0KICAgIHRlc3Rfc3BsaXQ6IHt7IGRhdGFfcm9vdCArIHRlc3Rfc3BsaXRfcGF0aCB9fQogICAgeyUgZW5kaWYgLSV9CiAgICB7JSBpZiB2YWxfc3BsaXRfcGF0aCAtJX0KICAgIHZhbF9zcGxpdDoge3sgZGF0YV9yb290ICsgdmFsX3NwbGl0X3BhdGggfX0KICAgIHslIGVuZGlmIC0lfQoKICAgIHslIGlmIGltZ19zdWZmaXggLSV9CiAgICBpbWdfZ3JlcDogIHt7IGltZ19zdWZmaXgudmFsdWVzKCkgfCBsaXN0IHwgZmlyc3QgfCB0b2pzb24gfX0KICAgIHslIGVuZGlmIC0lfQogICAgeyUgaWYgc2VnX21hcF9zdWZmaXggLSV9CiAgICBsYWJlbF9ncmVwOiAie3sgc2VnX21hcF9zdWZmaXggfX0iCiAgICB7JSBlbmRpZiAtJX0KICAgIG1lYW5zOiAKICAgICAge3sgbm9ybV9tZWFucy52YWx1ZXMoKSB8IGxpc3QgfCBmaXJzdHwgdG9feWFtbCB8IGluZGVudCg2KSB9fQogICAgc3RkczogCiAgICAgIHt7IG5vcm1fc3Rkcy52YWx1ZXMoKSB8IGxpc3QgfCBmaXJzdCB8IHRvX3lhbWwgfCBpbmRlbnQoNikgfX0KICAgIG51bV9jbGFzc2VzOiB7eyBjbGFzc2VzfGxlbmd0aCB9fQogICAgdHJhaW5fdHJhbnNmb3JtOgogICAgICAtIGNsYXNzX3BhdGg6IGFsYnVtZW50YXRpb25zLkQ0CiAgICAgIC0gY2xhc3NfcGF0aDogVG9UZW5zb3JWMgogICAgbm9fZGF0YV9yZXBsYWNlOiAwCiAgICBub19sYWJlbF9yZXBsYWNlOiAtMQoKCiAgeyUgZWxzZSAlfQogIGNsYXNzX3BhdGg6IHRlcnJhdG9yY2guZGF0YW1vZHVsZXMuR2VuZXJpY011bHRpTW9kYWxEYXRhTW9kdWxlCiAgaW5pdF9hcmdzOgogICAgIyBDb25maWcgZm9yIG9ubHkgc2VnbWVudGF0aW9uLiBObyBuZWVkIHRvIGF1dG9tYXRlIHRoaXMuIAogICAgdGFzazogJ3NlZ21lbnRhdGlvbicKICAgICMgT3V0IG9mIGN1ZGEgZXJyb3IgZm9yIGFueXRoaW5nID4gMgogICAgIyBUb0RvOiBGaWd1cmUgb3V0IHdoeSBiYXRjaF9zaXplIHJlcGxhY2VtZW50IGlzIG5vdCB3b3JraW5nLgogICAgYmF0Y2hfc2l6ZTogMgogICAgeyUgaWYgbnVtX3dvcmtlcnMgLSV9CiAgICBudW1fd29ya2Vyczoge3sgbnVtX3dvcmtlcnMgfX0KICAgIHslIGVsc2UgLSV9CiAgICBudW1fd29ya2VyczogMgogICAgeyUgZW5kaWYgLSV9CiAgICBub19sYWJlbF9yZXBsYWNlOiB7eyBsYWJlbF9ub2RhdGEgfX0KICAgIG5vX2RhdGFfcmVwbGFjZToge3sgaW1hZ2Vfbm9kYXRhX3JlcGxhY2UgfX0KICAgIGRhdGFzZXRfYmFuZHM6CiAgICAgIHt7IGJhbmRzIHwgdG9feWFtbCB8IGluZGVudCg2KX19CiAgICBvdXRwdXRfYmFuZHM6CiAgICAgIHt7IG91dHB1dF9iYW5kcyB8IHRvX3lhbWwgIHwgaW5kZW50KDYpfX0KICAgIG1vZGFsaXRpZXM6CiAgICAgIHt7IGltYWdlX21vZGFsaXRpZXMgfCB0b195YW1sIHwgaW5kZW50KDYpIH19CiAgICByZ2JfbW9kYWxpdHk6IHt7IHJnYl9tb2RhbGl0eSB9fQogICAgcmdiX2luZGljZXM6IAogICAgICB7eyByZ2JfYmFuZF9pbmRpY2VzIHwgdG9feWFtbCB8IGluZGVudCg2KSB9fQogICAgdHJhaW5fZGF0YV9yb290OgogICAgICB7JSBmb3Iga2V5LCB2YWwgaW4gdHJhaW5fZGF0YV9kaXIuaXRlbXMoKSAtJX0KICAgICAgIHt7IGtleSB9fToge3sgZGF0YV9yb290IH19e3sgdmFsIH19CiAgICAgIHslIGVuZGZvciAlfQogICAgdHJhaW5fbGFiZWxfZGF0YV9yb290OiAge3sgZGF0YV9yb290ICsgIHRyYWluX2xhYmVsc19kaXIgfX0KICAgIHZhbF9kYXRhX3Jvb3Q6CiAgICAgIHslIGZvciBrZXksIHZhbCBpbiB2YWxfZGF0YV9kaXIuaXRlbXMoKSAtJX0KICAgICAgIHt7IGtleSB9fToge3sgZGF0YV9yb290IH19e3sgdmFsIH19CiAgICAgIHslIGVuZGZvciAlfQogICAgdmFsX2xhYmVsX2RhdGFfcm9vdDoge3sgZGF0YV9yb290ICsgIHRlc3RfbGFiZWxzX2RpciB9fQogICAgdGVzdF9kYXRhX3Jvb3Q6CiAgICAgIHslIGZvciBrZXksIHZhbCBpbiB0ZXN0X2RhdGFfZGlyLml0ZW1zKCkgLSV9CiAgICAgICB7eyBrZXkgfX06IHt7IGRhdGFfcm9vdCB9fXt7IHZhbCB9fQogICAgICB7JSBlbmRmb3IgJX0KICAgIHRlc3RfbGFiZWxfZGF0YV9yb290OiB7eyBkYXRhX3Jvb3QgKyB0ZXN0X2xhYmVsc19kaXIgfX0KICAgIHslIGlmIHRyYWluX3NwbGl0X3BhdGggLSV9CiAgICB0cmFpbl9zcGxpdDoge3sgIGRhdGFfcm9vdCArIHRyYWluX3NwbGl0X3BhdGggfX0KICAgIHslIGVuZGlmIC0lfQogICAgeyUgaWYgdGVzdF9zcGxpdF9wYXRoIC0lfQogICAgdGVzdF9zcGxpdDoge3sgIGRhdGFfcm9vdCArIHRlc3Rfc3BsaXRfcGF0aCB9fQogICAgeyUgZW5kaWYgLSV9CiAgICB7JSBpZiB2YWxfc3BsaXRfcGF0aCAtJX0KICAgIHZhbF9zcGxpdDoge3sgIGRhdGFfcm9vdCArIHZhbF9zcGxpdF9wYXRoIH19CiAgICB7JSBlbmRpZiAtJX0KICAgIHslIGlmIGltZ19zdWZmaXggLSV9CiAgICBpbWFnZV9ncmVwOiAKICAgICAge3sgaW1nX3N1ZmZpeCB8IHRvX3lhbWwgfCBpbmRlbnQoNikgfX0KICAgIHslIGVuZGlmIC0lfQogICAgeyUgaWYgc2VnX21hcF9zdWZmaXggLSV9CiAgICBsYWJlbF9ncmVwOiAie3sgc2VnX21hcF9zdWZmaXggfX0iCiAgICB7JSBlbmRpZiAtJX0KCiAgICBudW1fY2xhc3Nlczoge3sgY2xhc3Nlc3xsZW5ndGggfX0KICAgIHslIGlmIGRhdGFbImV4cGFuZF90ZW1wb3JhbF9kaW1lbnNpb24iXSBpcyBub3Qgbm9uZSAtJX0KICAgIGV4cGFuZF90ZW1wb3JhbF9kaW1lbnNpb246IGRhdGFbImV4cGFuZF90ZW1wb3JhbF9kaW1lbnNpb24iXQogICAgeyUgZW5kaWYgLSV9CiAgICB7JSBpZiBkYXRhWyJkcm9wX2xhc3QiXSBpcyBub3Qgbm9uZSAtJX0KICAgIGRyb3BfbGFzdDogZGF0YVsiZHJvcF9sYXN0Il0KICAgIHslIGVuZGlmIC0lfQoKICAgIG1lYW5zOiAKICAgICAge3sgbm9ybV9tZWFucyB8IHRvX3lhbWwgfCBpbmRlbnQoNikgfX0KICAgIHN0ZHM6IAogICAgICB7eyBub3JtX3N0ZHMgfCB0b195YW1sIHwgaW5kZW50KDYpIH19CiAgICB0cmFpbl90cmFuc2Zvcm06CiAgICAgIC0gY2xhc3NfcGF0aDogYWxidW1lbnRhdGlvbnMuRDQgICMgUmFuZG9tIGZsaXAgYW5kIHJvdGF0aW9ucwogICAgICAtIGNsYXNzX3BhdGg6IFRvVGVuc29yVjIKICB7JSBlbmRpZiAlfQptb2RlbDoKICBjbGFzc19wYXRoOiB0ZXJyYXRvcmNoLnRhc2tzLlNlbWFudGljU2VnbWVudGF0aW9uVGFzawogIGluaXRfYXJnczoKICAgIG1vZGVsX2ZhY3Rvcnk6IEVuY29kZXJEZWNvZGVyRmFjdG9yeQogICAgbW9kZWxfYXJnczoKICAgICAgYmFja2JvbmU6IHt7IHByZXRyYWluZWRfbW9kZWxfbmFtZSB9fQogICAgICAjICB0ZXJyYW1pbmRfdjFfYmFzZSAgIyBsYXJnZSB2ZXJzaW9uOiB0ZXJyYW1pbmRfdjFfbGFyZ2UKICAgICAgYmFja2JvbmVfcHJldHJhaW5lZDogdHJ1ZQogICAgICB7JS0gaWYgaW1hZ2VfbW9kYWxpdGllcyAlfQogICAgICBiYWNrYm9uZV9tb2RhbGl0aWVzOgogICAgICAgIHt7IGltYWdlX21vZGFsaXRpZXMgfCB0b195YW1sICB8IGluZGVudCg4KX19CiAgICAgIHslLSBlbmRpZiAlfQogICAgICB7JSBpZiAgaW1hZ2VfbW9kYWxpdGllc3xsZW5ndGggPiAxICV9CiAgICAgIGJhY2tib25lX21lcmdlX21ldGhvZDogbWVhbgogICAgICB7JSBlbmRpZiAlfQogICAgICBiYWNrYm9uZV9iYW5kczogCiAgICAgICAge3sgb3V0cHV0X2JhbmRzIHwgdG9feWFtbCB8IGluZGVudCg4KSB9fQogICAgICBuZWNrczoKICAgICAgICB7JS0gaWYgcHJldHJhaW5lZF9tb2RlbF9uYW1lID09ICJ0ZXJyYW1pbmRfdjFfYmFzZSIgJX0KICAgICAgICAtIG5hbWU6IFNlbGVjdEluZGljZXMKICAgICAgICAgIGluZGljZXM6IFsyLCA1LCA4LCAxMV0gICMgYmFzZSB2ZXJzaW9uCiAgICAgICAgeyUtIGVsaWYgcHJldHJhaW5lZF9tb2RlbF9uYW1lID09ICJ0ZXJyYW1pbmRfdjFfbGFyZ2UiICV9CiAgICAgICAgLSBuYW1lOiBTZWxlY3RJbmRpY2VzCiAgICAgICAgICBpbmRpY2VzOiBbNSwgMTEsIDE3LCAyM10gICMgbGFyZ2UgdmVyc2lvbgogICAgICAgIHslIGVuZGlmICV9CiAgICAgICAgLSBuYW1lOiBSZXNoYXBlVG9rZW5zVG9JbWFnZQogICAgICAgICAgcmVtb3ZlX2Nsc190b2tlbjogRmFsc2UKICAgICAgICAtIG5hbWU6IExlYXJuZWRJbnRlcnBvbGF0ZVRvUHlyYW1pZGFsCgogICAgICBkZWNvZGVyOiB7eyBtb2RlbFsiZGVjb2RlX2hlYWQiXVsiZGVjb2RlciJdIH19CiAgICAgICMgVU5ldERlY29kZXIKICAgICAgeyUgaWYgIG1vZGVsWyJkZWNvZGVfaGVhZCJdWyJkZWNvZGVyIl0gPT0gIlVwZXJOZXREZWNvZGVyIiAtJX0KICAgICAgZGVjb2Rlcl9jaGFubmVsczogWzUxMiwgMjU2LCAxMjgsIDY0XQogICAgICB7JSBlbGlmICBtb2RlbFsiZGVjb2RlX2hlYWQiXVsiZGVjb2RlciJdID09ICJVTmV0RGVjb2RlciIgLSV9CiAgICAgICNUT0RPIHVzZXIgcHJvdmlkZWQgY2hhbm5lbHMKICAgICAgZGVjb2Rlcl9jaGFubmVsczogWzUxMiwgMjU2LCAxMjgsIDY0XQogICAgICB7JSBlbHNlICV9CiAgICAgIGRlY29kZXJfY2hhbm5lbHM6IHt7IG1vZGVsWyJkZWNvZGVfaGVhZCJdWyJjaGFubmVscyJdIH19CiAgICAgIHslIGVuZGlmIC0lfQogICAgICBoZWFkX2Ryb3BvdXQ6IDAuMQogICAgICBudW1fY2xhc3Nlczoge3sgY2xhc3Nlc3xsZW5ndGggfX0KICAgIGxvc3M6IHt7IG1vZGVsWyJkZWNvZGVfaGVhZCJdWyJsb3NzX2RlY29kZSJdWyJ0eXBlIl0gfX0KICAgIHBsb3Rfb25fdmFsOiB7eyBydW5uZXJbInBsb3Rfb25fdmFsIl0gfX0KICAgICMgIGRpY2UKICAgIGlnbm9yZV9pbmRleDoge3sgaWdub3JlX2luZGV4IH19CiAgICBmcmVlemVfYmFja2JvbmU6ICB7eyBtb2RlbFsiZnJvemVuX2JhY2tib25lIl0gfCBsb3dlciB9fQogICAgZnJlZXplX2RlY29kZXI6IGZhbHNlCiAgICB7JSBpZiAgbW9kZWxbImNsYXNzX25hbWVzIl0gJX0KICAgIGNsYXNzX25hbWVzOiB7eyBtb2RlbFsiY2xhc3NfbmFtZXMiXSB8IHRvX3lhbWwgfCBpbmRlbnQoNil9fQogICAgeyUgZW5kaWYgJX0KICAgICMgLS0tLSBvcHRpbWl6ZXIgc3RhcnQgLS0tLQogICAgeyUgaWYgbW9kZWxbIm9wdGltaXplciJdIC0lfQogICAgb3B0aW1pemVyOiB7eyBtb2RlbFsib3B0aW1pemVyIl1bInR5cGUiXSB9fQogICAgbHI6IHt7IG1vZGVsWyJvcHRpbWl6ZXIiXVsibHIiXSB8IGZsb2F0IH19CiAgICB7JSBlbmRpZiAtJX0KICAgICMgLS0tLSBvcHRpbWl6ZXIgZW5kIC0tLS0KICAgIHslIGlmIG1vZGVsWyJ0aWxlZF9pbmZlcmVuY2VfcGFyYW1ldGVycyJdICV9CiAgICB0aWxlZF9pbmZlcmVuY2VfcGFyYW1ldGVyczogCiAgICAgIGhfY3JvcDoge3sgbW9kZWxbInRpbGVkX2luZmVyZW5jZV9wYXJhbWV0ZXJzIl1bImhfY3JvcCJdIHwgaW50fX0KICAgICAgaF9zdHJpZGU6IHt7IG1vZGVsWyJ0aWxlZF9pbmZlcmVuY2VfcGFyYW1ldGVycyJdWyJoX3N0cmlkZSJdIHwgaW50IH19CiAgICAgIHdfY3JvcDoge3sgbW9kZWxbInRpbGVkX2luZmVyZW5jZV9wYXJhbWV0ZXJzIl1bIndfY3JvcCJdIHwgaW50fX0KICAgICAgd19zdHJpZGU6IHt7IG1vZGVsWyJ0aWxlZF9pbmZlcmVuY2VfcGFyYW1ldGVycyJdWyJ3X3N0cmlkZSJdIHwgaW50IH19CiAgICAgIGF2ZXJhZ2VfcGF0Y2hlczoge3sgbW9kZWxbInRpbGVkX2luZmVyZW5jZV9wYXJhbWV0ZXJzIl1bImF2ZXJhZ2VfcGF0Y2hlcyJdIH19CiAgICB7JSBlbHNlICV9CiAgICAjIFRvRG86IFJlbW92ZSB0aGUgdGlsZWRfaW5mZXJlbmNlIGlmIHVzZXIgbm90IHByb3ZpZGVkLiAKICAgIHRpbGVkX2luZmVyZW5jZV9wYXJhbWV0ZXJzOiAKICAgICAgaF9jcm9wOiA1MTIKICAgICAgIyBzdHJpZGUgbG9naWMgPSB3b3VsZCBiZSBoX2Nyb3AgLSBoX2Nyb3AgKiAwLjEyNQogICAgICBoX3N0cmlkZTogNDQ4CiAgICAgIHdfY3JvcDogNTEyCiAgICAgICMgc3RyaWRlIGxvZ2ljID0gd291bGQgYmUgd19jcm9wIC0gd19jcm9wICogMC4xMjUKICAgICAgd19zdHJpZGU6IDQ0OAogICAgICBhdmVyYWdlX3BhdGNoZXM6IHRydWUKICAgIHslIGVuZGlmICV9CgpvcHRpbWl6ZXI6CiAgY2xhc3NfcGF0aDogdG9yY2gub3B0aW0uQWRhbVcKICBpbml0X2FyZ3M6CiAgICB7JSBpZiBvcHRpbWl6ZXJbImxyIl0gLSV9CiAgICBscjoge3sgb3B0aW1pemVyWyJsciJdIHwgZmxvYXQgfX0KICAgIHslIGVsc2UgJX0KICAgIGxyOiAyLmUtNQogICAgeyUgZW5kaWYgLSV9CiAgICB7JS0gaWYgb3B0aW1pemVyWyJ3ZWlnaHRfZGVjYXkiXSAtJX0KICAgIHdlaWdodF9kZWNheToge3sgb3B0aW1pemVyWyJ3ZWlnaHRfZGVjYXkiXSB9fQogICAgeyUtIGVsc2UgLSV9CiAgICB3ZWlnaHRfZGVjYXk6IDAuMDUKICAgIHslIGVuZGlmICV9CmxyX3NjaGVkdWxlcjoKICBjbGFzc19wYXRoOiBSZWR1Y2VMUk9uUGxhdGVhdQogIGluaXRfYXJnczoKICAgIG1vbml0b3I6IHZhbC9sb3NzCiAgICBmYWN0b3I6IDAuNQogICAgcGF0aWVuY2U6IDUK"
+}

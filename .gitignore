@@ -1,0 +1,18 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+.DS_Store
+*.tgz
+*.lock
+stfc_keycloak.yaml
+tasks
+dryrun.yaml
+*.env
+*filtered_kubernetes_resources.json
+values-*.yaml
+venv
+workspace/
+*tls*
+.studio-api-key
+studio-pf.log

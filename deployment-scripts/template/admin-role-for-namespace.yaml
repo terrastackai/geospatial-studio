@@ -1,0 +1,166 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: OC_PROJECT-admin-role
+  namespace: OC_PROJECT
+rules:
+  - verbs:
+      - get
+      - create
+      - update
+      - list
+    apiGroups:
+      - datasciencepipelinesapplications.opendatahub.io
+    resources:
+      - datasciencepipelinesapplications
+  - verbs:
+      - apply
+      - create
+      - get
+      - delete
+      - watch
+      - update
+      - edit
+      - exec
+      - list
+      - patch
+      - scale
+      - deletecollection
+      - use
+    apiGroups:
+      - ''
+      - batch
+      - extensions
+      - apps
+      - apps.openshift.io
+      - policy
+      - rbac.authorization.k8s.io
+      - autoscaling
+      - route.openshift.io
+      - authorization.openshift.io
+      - security.openshift.io
+      - networking.k8s.io
+      - metrics.k8s.io
+    resources:
+      - pods
+      - pods/log
+      - poddisruptionbudgets
+      - secrets
+      - jobs
+      - configmaps
+      - deployments
+      - deployments/scale
+      - deploymentconfigs
+      - deploymentconfigs/scale
+      - deploymentconfigs/instantiate
+      - deploymentconfigs/rollback
+      - namespaces
+      - statefulsets
+      - statefulsets/scale
+      - replicasets
+      - services
+      - persistentvolumeclaims
+      - cronjobs
+      - pods/exec
+      - pods/portforward
+      - securitycontextconstraints
+      - serviceaccounts
+      - roles
+      - rolebindings
+      - horizontalpodautoscalers
+      - replicationcontrollers
+      - routes
+      - routes/custom-host
+      - ingresses
+      - endpoints
+      - cronjob
+      - networkpolicies
+      - events
+      - jobs/status
+      - pods/status
+      - resourcequotas
+      - resourcequotas/status
+  - verbs:
+      - create
+      - delete
+      - list
+      - watch
+      - get
+      - patch
+      - update
+    apiGroups:
+      - build.openshift.io
+    resources:
+      - buildconfigs
+      - buildconfigs/instantiate
+      - buildconfigs/instantiatebinary
+      - buildconfigs/webhooks
+      - buildlogs
+      - builds
+      - builds/clone
+      - builds/details
+      - builds/log
+  - verbs:
+      - create
+      - delete
+      - list
+      - watch
+      - get
+      - patch
+      - update
+    apiGroups:
+      - image.openshift.io
+    resources:
+      - imagestreams
+      - imagestreams/layers
+      - imagestreams/secrets
+      - imagestreams/status
+      - imagestreamimages
+      - imagestreamimports
+      - imagestreammappings
+      - imagestreamtags
+  - verbs:
+      - create
+      - delete
+      - list
+      - watch
+      - get
+      - patch
+      - update
+    apiGroups:
+      - workspace.devfile.io
+    resources:
+      - devworkspaces
+  - verbs:
+      - get
+      - list
+      - watch
+    apiGroups:
+      - ''
+      - project.openshift.io
+    resources:
+      - projects
+---
+kind: Group
+apiVersion: user.openshift.io/v1
+metadata:
+  name: OC_PROJECT-admin
+users:
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: OC_PROJECT-admin-role
+  namespace: OC_PROJECT
+subjects:
+  - kind: Group
+    apiGroup: rbac.authorization.k8s.io
+    name: OC_PROJECT-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: OC_PROJECT-admin-role

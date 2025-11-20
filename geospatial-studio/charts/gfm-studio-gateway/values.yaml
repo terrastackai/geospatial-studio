@@ -1,0 +1,286 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+images:
+  api:
+    name: quay.io/geospatial-studio/geostudio-gateway
+  metadb:
+    name: postgres
+    tag: latest
+  cleanup_cronjob:
+    name: quay.io/geospatial-studio/geostudio-gateway-cronjob
+    tag: v0.1.0
+  mlflow_notify:
+    name: quay.io/geospatial-studio/geostudio-mlflow-sync
+    tag: v0.1.0
+  tt_caikit:
+    name: quay.io/geospatial-studio/geospatial-model-inference-service
+    tag: v0.1.0
+  tt_hpoTune:
+    name: quay.io/geospatial-studio/gfmstudio-hpo
+    tag: v0.1.0
+  dataset_pipeline:
+    name: quay.io/geospatial-studio/geostudio-curated-upload
+    tag: v0.1.0
+  amo_pipeline:
+    name: quay.io/geospatial-studio/geostudio-amo-artifacts
+    tag: v0.1.0
+
+command:
+  api:
+    - /bin/sh
+    - '-c'
+    - uvicorn gfmstudio.main:app --host 0.0.0.0 --port 8000 --loop asyncio --log-config logging.ini; tail -f /dev/null
+
+tolerations:
+  enabled: false
+  configs:
+
+
+hooks:
+  db-migration:
+    enabled: true
+    # image: # if not defined, this will default
+    # volumes: # this will be tricky
+    when:
+      # Wait until the DB is available
+      - post-install
+      - post-upgrade
+    weight: -30
+    command:
+      - "sh"
+      - "-c"
+      - "alembic upgrade head && alembic -n auth upgrade head"
+  db-seed-data:
+      enabled: true
+      image:  postgres:13
+      # volumes: # this will be tricky
+      when:
+        # Wait until the DB is available
+        - post-install
+        - post-upgrade
+      weight: -20
+      command:
+        - "sh"
+        - "-c"
+        - |
+          cp /etc/config/init.sql /tmp/init.sql
+          sed -i "s|secret_placeholder_key|$FT_API_KEY|" /tmp/init.sql
+          DB_URI=$(echo "$AUTH_DATABASE_URI" | sed 's/+pg8000//')
+          psql "$DB_URI" -f /tmp/init.sql
+
+extraEnvironment:
+  api:
+    DEBUG: "false"
+    # Rate Limiting Configs
+    RATELIMIT_ENABLED: true  # Turn rate limit on/off
+    # Uncomment the following lines to customize rate limits. These are the default values.
+    # RATELIMIT_LIMIT: 200
+    # RATELIMIT_WINDOW: 60
+    # RATELIMIT_SENSITIVE_RESOURCE_LIMIT: 6
+    # RATELIMIT_SENSITIVE_RESOURCE_WINDOW: 300
+
+    # COS Buckets
+    # DATA_PVC: geoft-files-pvc
+    # TUNES_FILES_BUCKET: 
+    # DATASET_FILES_BUCKET: geoft-service-datasets
+
+    ENVIRONMENT: prod
+  
+    # Data Advisor configs
+    DATA_ADVISOR_ENABLED: false
+    DATA_ADVISOR_PRE_DAYS: 1
+    DATA_ADVISOR_POST_DAYS: 1
+
+    # Fine Tuning configs'
+    CELERY_TASKS_ENABLED: true  # Enable fine-tuning to run via celery tasks.
+    JOB_MAX_RETRY_COUNT: 30
+    KJOB_MAX_WAIT_SECONDS: 7200
+    OBJECT_STORAGE_SIGNATURE_VERSION: s3v4
+    # Specifies when a checksum is calculated for request payloads. WHEN_REQUIRED option is required for ibmcos
+    AWS_REQUEST_CHECKSUM_CALCULATION: WHEN_REQUIRED
+    ## Enable or disable GPU node affinity when scheduling fine-tuning jobs.
+    ## If set to False, the job can run on any available GPU in the cluster.
+    ## Turn this off if all GPUs are acceptable for fine-tuning, or if the
+    ## user is not testing end-to-end fine-tuning."
+    ## NOTE: If set to True, values for NODE_SELECTOR_KEY and 
+    ## NODE_GPU_SPEC should be defined
+    CONFIGURE_GPU_AFFINITY: false
+    ## The node label key used for GPU node affinity. By default, this uses
+    ## the standard Kubernetes label `nvidia.com/gpu.product` provided by
+    ## the NVIDIA device plugin.
+    # NODE_SELECTOR_KEY: nvidia.com/gpu.product
+    ## Comma-separated list of GPU types that can be used for fine-tuning.
+    ## For example: 'NVIDIA-A100-SXM4-80GB,NVIDIA-V100-SXM2-32GB'.
+    ## If multiple values are given, the pod can be scheduled on any node
+    ## matching one of them.
+    # NODE_GPU_SPEC: NVIDIA-A100-SXM4-80GB
+replicaCount: 1
+strategy: RollingUpdate
+rollingUpdate:
+  enabled: true
+  maxSurge: "1"
+  maxUnavailable: "50%"
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: 'api-gateway-sa'
+
+# This gives permission to the API to create deployments
+rbac:
+  role:
+    name: gateway-service-account
+    create: true
+    rules:
+    - apiGroups: [""]
+      resources: ["services", "deployments", "configmaps", "secrets", "persistentvolumeclaims", "pods", "pods/exec", "pods/log", "serviceaccounts"]
+      verbs: ["create", "delete", "patch", "get", "list", "watch", "update",
+      ]
+    - apiGroups: ["apps"]
+      resources: ["deployments", "replicasets",]
+      verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+    - apiGroups: ["route.openshift.io"]
+      resources: ["routes"]
+      verbs: ["create","delete","get","list","patch","update", "watch"]
+    - apiGroups: ["batch"]
+      resources: ["jobs","jobs/status"]
+      verbs: ["create","delete","get","list","patch","update", "watch"]
+
+  roleBinding:
+    name: gateway-service-role-binding
+    create: true
+
+amo:
+  mountLocations:
+    input_pv_storage_name: geofm-amo-input-pv-storage
+    input_pvc_name: geofm-amo-input-pvc
+    input_mount: /app/input
+    storage_size: 20Gi
+
+  configureInferenceToleration: "noToleration"
+
+securityContext:
+  api: {}
+
+# Disable for testing in kind
+route:
+  enabled: true
+  internal: true
+
+mountLocations:
+  files_pvc_name: gfm-ft-files-pvc
+  data_pvc_name: gfm-ft-data-pvc
+  models_pvc_name: gfm-ft-models-pvc
+  pipelines_pvc_name: inference-shared-pvc
+  inference_auxdata_pvc_name: inference-auxdata-pvc
+  data_mount: /ft-data/
+  files_mount: /geotunes/
+
+services:
+  # baseName: gfm-studio-gateway
+  api:
+    # appName: gfm-studio-gateway
+    type: ClusterIP
+    port: 8000
+  metadb:
+    appName: metadb
+    type: ClusterIP
+    port: 5432
+
+resources:
+  api:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+  oauth:
+    requests:
+      cpu: "200m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
+  celeryWorker:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+  celeryFlower:
+    requests: {}
+    limits: {}
+
+secret:
+  redisCOSSecret: {}
+
+celery:
+  # Celery Worker Settings
+  name: celery
+  worker:
+    enabled: true
+    componentName: celery-worker
+    command: 'celery -A gfmstudio.celery_worker.celery_app worker -c 4 --queues=inference_gateway,geoft --loglevel=info'
+    replicaCount: 1
+    strategy: RollingUpdate
+  # Periodic tasks
+  beat:
+    enabled: false
+    componentName: celery-beat
+    command: 'celery -A gfmstudio.celery_worker.celery_app beat --queues=inference_gateway --loglevel=info --schedule /tmp/beat-schedule'
+    replicaCount: 1
+    strategy: RollingUpdate
+  # Celery Flower Settings
+  flower:
+    enabled: false
+    componentName: celery-flower
+    command: 'celery -A gfmstudio.celery_worker.celery_app flower --loglevel=info'
+    replicaCount: 1
+    strategy: RollingUpdate
+    service:
+      type: ClusterIP
+      port:
+        number: 5555
+        name: flower
+    route:
+      enabled: true
+
+global:
+  storageClass: &global-storage-class ocs-storagecluster-cephfs
+  postgresql:
+    auth:
+      postgresPassword: devPassword
+      username: gfm-studio-gateway
+      password: devPassword
+      database: gfmstudio
+      authDatabase: gfmstudio_auth
+    service:
+      ports:
+        postgresql: 5432
+  redis:
+    password: devPassword
+
+serverType:
+  type: internal
+
+#--------> is this for autoscaling the API pod?
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+#--------> what is this section for?
+dev:
+  enabled: false
+  keyID: 
+  secretKey:

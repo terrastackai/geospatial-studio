@@ -1,0 +1,271 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+global:
+  cluster_url: CLUSTER_URL
+  namespace: OC_PROJECT
+  label: geofm-studio
+  environment: ENVIRONMENT_VALUE
+
+  # Update this if deploying backed services and the ui in difference namespaces / clusters.
+  backends:
+    cluster_url: CLUSTER_URL
+    namespace: OC_PROJECT
+  frontend:
+    cluster_url: CLUSTER_URL
+    namespace: OC_PROJECT
+
+  setupServiceAccount: true
+  sharePipelinePvc: SHARE_PIPELINE_PVC
+
+  imagePullSecret:
+    name: us-icr-pull-secret
+    b64secret: image_pull_secret_b64
+    create: true
+
+  jira:
+    api_key: ''
+
+  sentinelhub:
+    client_id: ''
+    client_secret: ''
+
+  oauth:
+    image:
+      name: bitnamilegacy/oauth2-proxy
+      tag: latest
+    oauthProxyEnabled: OAUTH_PROXY_ENABLED
+    oauthProxyPort: "OAUTH_PROXY_PORT"
+    type: OAUTH_TYPE # other supported types include keycloak
+    clientId: OAUTH_CLIENT_ID
+    # UI needs
+    oauthUrl: OAUTH_URL # authorization_endpoint consumed by the UI 
+    scope: "openid email profile"
+    loginHint: loginHint
+    prompt: prompt
+    responseType: responseType
+    # oauth2-proxy needs
+    issuerUrl: OAUTH_ISSUER_URL # authorization_endpoint used in oauth2-proxy
+    clientSecret: clientSecret
+    cookieSecret: cookieSecret
+    extraOauthProxyArgs: OAUTH_EXTRA_PROXY_ARGS
+    # for kubernetes we need the tls secret
+    createTLSSecret: CREATE_TLS_SECRET
+    tlsCrtB64: tlsCrtB64
+    tlsKeyB64: tlsKeyB64
+  
+  storage:
+    pvc:
+      enabled: STORAGE_PVC_ENABLED
+    filesystem:
+      enabled: STORAGE_FILESYSTEM_ENABLED
+      dir: /data/
+  
+  objectStorage:
+    endpoint: http://s3.us-south.cloud-object-storage.appdomain.cloud
+    access_key: keyIdHere
+    secret_key: keySecretHere
+    region: us-south
+    create_bucket: false
+    delete_bucket: false
+    createCosSecret: true
+    buckets:
+      inference: BUCKET_INFERENCE
+      inference_auxdata: BUCKET_INFERENCE_AUXDATA
+      fineTuning: BUCKET_FINE_TUNING
+      fineTuningModels: BUCKET_FINE_TUNING_MODELS
+      datasetFactory: BUCKET_DATASET_FACTORY
+      amo: BUCKET_AMO_INPUT_BUCKET
+      mlflow: BUCKET_GFM_MLFLOW
+      geoserver: BUCKET_GEOSERVER
+      temporaryUploads: BUCKET_TEMP_UPLOAD
+    cos_storage_class: COS_STORAGE_CLASS
+
+  non_cos_storage_class: NON_COS_STORAGE_CLASS
+
+  serviceAccount: 
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: "geostudio-sa"
+
+  postgres:
+    in_cluster_db: false
+    backend_uri_base: postgresql://<pg_user>:<pg_pass>@<host>:<port>
+    dbs:
+      mlflow: mlflow
+      gateway: geostudio
+      auth: geostudio_auth
+
+  cesium:
+    token: token
+
+  mapbox:
+    token: token
+
+  appNames:
+    gateway: geofm-gateway
+    mlflow: geofm-mlflow
+    geoserver: geofm-geoserver
+    ui: geofm-ui
+
+  gfmStudioGateway:
+    api_key: ''
+    api_encryption_key: ''
+    
+  redis:
+    enabled: REDIS_ENABLED
+    fullnameOverride: REDIS_FULL_NAME_OVERRIDE
+    password: redis_password
+    architecture: REDIS_ARCHITECTURE
+
+### Sub Charts Specific Values ###
+
+# gfm-studio-gateway:
+gfm-studio-gateway:
+  enabled: true
+  resources:
+    api:
+    oauth:
+    celeryWorker:
+    celeryFlower:
+  image:
+    name: quay.io/geospatial-studio/geostudio-gateway
+    tag: latest
+  images:
+    cleanup_cronjob:
+      name: quay.io/geospatial-studio/geostudio-gateway-cronjob
+      tag: latest
+    mlflow_notify:
+      name: quay.io/geospatial-studio/geostudio-mlflow-sync
+      tag: latest
+    tt_caikit:
+      name: quay.io/geospatial-studio/geospatial-model-inference-service
+      tag: latest
+    tt_hpoTune:
+      name: quay.io/geospatial-studio/gfmstudio-hpo
+      tag: latest
+    dataset_pipeline:
+      name: quay.io/geospatial-studio/geostudio-curated-upload
+      tag: latest
+    amo_pipeline:
+      name: quay.io/geospatial-studio/geostudio-amo-artifacts
+      tag: latest
+  route:
+    enabled: ROUTE_ENABLED
+  celery:
+    flower:
+      route:
+        enabled: False
+  securityContext:
+    api: {}
+  extraEnvironment:
+    api:
+      OBJECT_STORAGE_SIGNATURE_VERSION: s3v4
+      CREATE_TUNING_FOLDERS: CREATE_TUNING_FOLDERS_FLAG
+      PIPELINES_V2_INFERENCE_ROOT_FOLDER: PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE
+      ENVIRONMENT: ENVIRONMENT_VALUE
+      ## Enable or disable GPU node affinity when scheduling fine-tuning jobs.
+      ## If set to False, the job can run on any available GPU in the cluster.
+      ## Turn this off if all GPUs are acceptable for fine-tuning, or if the
+      ## user is not testing end-to-end fine-tuning."
+      ## NOTE: If set to True, values for NODE_SELECTOR_KEY and 
+      ## NODE_GPU_SPEC should be defined
+      CONFIGURE_GPU_AFFINITY: false
+      ## The node label key used for GPU node affinity. By default, this uses
+      ## the standard Kubernetes label `nvidia.com/gpu.product` provided by
+      ## the NVIDIA device plugin.
+      # NODE_SELECTOR_KEY: nvidia.com/gpu.product
+      ## Comma-separated list of GPU types that can be used for fine-tuning.
+      ## For example: 'NVIDIA-A100-SXM4-80GB,NVIDIA-V100-SXM2-32GB'.
+      ## If multiple values are given, the pod can be scheduled on any node
+      ## matching one of them.
+      # NODE_GPU_SPEC: NVIDIA-A100-SXM4-80GB
+
+# geofm-ui
+geofm-ui:
+  enabled: true
+  resources:
+    ui:
+    oauth:
+  image:
+    name: quay.io/geospatial-studio/geostudio-ui
+    tag: latest
+  route:
+    enabled: ROUTE_ENABLED
+  securityContext:
+    api:
+      runAsNonRoot: true
+    pod:
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+
+# gfm-mlflow
+gfm-mlflow:
+  enabled: true
+  resources:
+  image:
+    name: quay.io/geospatial-studio/geostudio-mlflow
+    pullPolicy: Always
+    tag: latest
+  route:
+    enabled: ROUTE_ENABLED
+
+# redis
+redis:
+  enabled: REDIS_ENABLED
+  fullnameOverride: REDIS_FULL_NAME_OVERRIDE
+  architecture: REDIS_ARCHITECTURE
+  image:
+    repository: bitnamilegacy/redis
+  master:
+    podSecurityContext:
+      enabled: false
+      runAsUser: 'auto'
+    containerSecurityContext:
+      enabled: false
+    volumePermissions:
+      enabled: false
+      securityContext:
+        runAsUser: 'auto'
+    resources:
+      limits:
+        cpu: "2"  # 2 full CPU cores
+        memory: "2Gi"  # 4 GiB RAM
+        ephemeral-storage: "4Gi"  # 8 GiB disk for AOF & RDB persistence
+      requests:
+        cpu: "500m"  # 0.25 CPU guaranteed
+        memory: "500Mi"  # 2 GiB RAM guaranteed
+        ephemeral-storage: "1Gi"  # 4 GiB guaranteed
+    metrics:
+      enabled: true
+    persistence:
+      annotations: {}
+  replica:
+    replicaCount: 1
+    podSecurityContext:
+      enabled: false
+      runAsUser: 'auto'
+    containerSecurityContext:
+      enabled: false
+    volumePermissions:
+      enabled: false
+      securityContext:
+        runAsUser: 'auto'
+    resources:
+      limits:
+        cpu: "2"  # 2 full CPU cores
+        memory: "2Gi"  # 4 GiB RAM
+        ephemeral-storage: "4Gi"  # 8 GiB disk for AOF & RDB persistence
+      requests:
+        cpu: "500m"  # 0.25 CPU guaranteed
+        memory: "500Mi"  # 1 GiB RAM guaranteed
+        ephemeral-storage: "1Gi"  # 4 GiB guaranteed
+    metrics:
+      enabled: true
+    persistence:
+      annotations: {}
+      

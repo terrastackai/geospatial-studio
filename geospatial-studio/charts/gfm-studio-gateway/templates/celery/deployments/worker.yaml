@@ -1,0 +1,97 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+{{- if .Values.celery.worker.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.global.appNames.gateway }}-celery-worker
+  namespace: {{ .Release.Namespace | default "default" }}
+  labels:
+    app: {{ .Values.global.appNames.gateway }}-celery
+    app.kubernetes.io/component: {{ .Values.celery.worker.componentName }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.celery.worker.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Values.global.appNames.gateway }}-celery
+  strategy:
+    type: {{ .Values.celery.worker.strategy }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+      labels:
+        app: {{ .Values.global.appNames.gateway }}-celery
+        app.kubernetes.io/component: {{ .Values.celery.worker.componentName }}
+    spec:
+      {{- if .Values.global.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecret.name }}
+      {{- end }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      securityContext:
+        {{- toYaml .Values.securityContext.api | nindent 12 }}
+      containers:
+        - resources:
+            limits:
+              cpu: '2'
+              memory: 2Gi
+            requests:
+              cpu: '1'
+              memory: 1Gi
+          name: {{ .Chart.Name }}-{{ .Values.celery.worker.componentName }}
+          securityContext:
+            {{- toYaml .Values.securityContext.api | nindent 16 }}
+          image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: Always
+          {{-  with .Values.celery.worker.command }}
+          command: ["/bin/sh"]
+          args:
+              - -c
+              - >-
+                  {{ . }}
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.global.appNames.gateway }}-cm
+            - secretRef:
+                name: {{ .Values.global.appNames.gateway }}-secrets
+          resources:
+            {{- toYaml .Values.resources.celeryWorker | nindent 12 }}
+          volumeMounts:
+            - name: mount-files
+              mountPath: {{ .Values.mountLocations.files_mount }}
+            - name: data-pipeline-jobs
+              mountPath: /app/deployment/jobs
+            - name: data-pipeline-logs
+              mountPath: /app/deployment/logs
+            {{- if .Values.global.sharePipelinePvc }}
+            - name: pipelines-inference-pvc
+              mountPath: /data
+            {{- end }}
+      volumes:
+        - name: mount-files
+          {{- if .Values.global.storage.pvc.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.mountLocations.files_pvc_name }}
+          {{- else }}
+          # mount directory from the host node's filesystem into the Pod.
+          hostPath:
+            path: {{ .Values.global.storage.filesystem.dir }}{{ .Values.mountLocations.files_pvc_name }}
+            type: DirectoryOrCreate
+          {{- end }}
+        {{- if .Values.global.sharePipelinePvc }}
+        - name: pipelines-inference-pvc
+          persistentVolumeClaim:
+            claimName: inference-shared-pvc
+        {{- end }}
+        - name: data-pipeline-jobs
+          emptyDir: {}
+        - name: data-pipeline-logs
+          emptyDir: {}
+{{- end -}}

@@ -1,0 +1,93 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+{{- if .Values.global.storage.pvc.enabled }}
+{{- if and (hasKey .Values.global "environment") (ne .Values.global.environment "local") }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.persistence.gfmMlflowCOSPVC.claimName }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    ibm.io/region: {{ .Values.global.objectStorage.region }}
+    ibm.io/auto-create-bucket: {{ .Values.global.objectStorage.create_bucket | quote }}
+    ibm.io/auto-delete-bucket: {{ .Values.global.objectStorage.delete_bucket | quote }}
+    ibm.io/bucket: {{ .Values.global.objectStorage.buckets.mlflow }} # Enter the name (not the ID) of the standard class, regional bucket created in a previous step
+    # ibm.io/object-path: "pvc2" # Uncomment line and enter valid subdirectory if desired
+    ibm.io/secret-name: studio-cos-secret # Enter the name of the OpenShift Secret created in a previous step
+    ibm.io/quota-limit: "false" # Disable or enable a quota limit for your PVC. To use this annotation you must specify the -set quotaLimit=true option during installation.
+    ibm.io/endpoint: {{ .Values.global.objectStorage.endpoint }}
+    ibm.io/tls-cipher-suite: "default"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: {{ .Values.persistence.gfmMlflowCOSPVC.capacity }}
+  storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+{{- else }}
+# kind: PersistentVolumeClaim
+# apiVersion: v1
+# metadata:
+#   name: {{ .Values.persistence.gfmMlflowCOSPVC.claimName }} # Enter the name of the PVC.
+#   namespace: {{ .Values.global.namespace }}
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 20Gi
+#   storageClassName: {{ .Values.global.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+# apiVersion: datashim.io/v1alpha1
+# kind: Dataset
+# metadata:
+#   # name: gfm-mlflow-cos-pvc
+#   name: {{ .Values.persistence.gfmMlflowCOSPVC.claimName }} # Enter the name of the PVC.
+#   namespace: {{ .Values.global.namespace }}
+# spec:
+#   local:
+#     type: "COS"
+#     accessKeyID: {{ .Values.global.objectStorage.access_key }}
+#     secretAccessKey: {{ .Values.global.objectStorage.secret_key }}
+#     endpoint: {{ .Values.global.objectStorage.endpoint }}
+#     bucket: {{ .Values.global.objectStorage.buckets.mlflow }}
+#     readonly: "false"
+#     region: {{ .Values.global.objectStorage.region }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mlflow-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 60Gi
+  accessModes:
+    - ReadWriteMany
+  claimRef:
+    namespace: {{ .Values.global.namespace }}
+    name: {{ .Values.persistence.gfmMlflowCOSPVC.claimName }}
+  hostPath:
+    path: "/data/mlflow"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.persistence.gfmMlflowCOSPVC.claimName }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 60Gi
+---
+
+
+
+{{- end }}
+{{- end }}

@@ -1,0 +1,40 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+{{- if .Values.route.enabled }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: {{ .Values.global.appNames.ui }}
+    {{- range $key, $value := .Values.route.labels }}
+    {{ $key }}: {{ $value | default "" | quote }}
+    {{- end }}
+  annotations:
+    {{- range $key, $value := .Values.route.annotations }}
+    {{ $key }}: {{ $value | default "" | quote }}
+    {{- end }}
+  name: {{ .Values.global.appNames.ui }}
+spec:
+  port:
+    {{- if .Values.global.oauth.oauthProxyEnabled }}
+    targetPort: oauth
+    {{- else }}
+    targetPort: http
+    {{- end }}
+  to:
+    kind: Service
+    name: {{ .Values.global.appNames.ui }}
+  {{- if .Values.global.oauth.oauthProxyEnabled }}
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: reencrypt
+  wildcardPolicy: None
+  {{- else }}
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: None
+  {{- end }}
+{{ end }}

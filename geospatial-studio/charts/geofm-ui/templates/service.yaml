@@ -1,0 +1,35 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.global.appNames.ui }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: {{ .Values.global.appNames.ui }}
+  annotations:
+    {{- if .Values.global.oauth.oauthProxyEnabled }}
+    service.beta.openshift.io/serving-cert-secret-name: {{ .Values.global.appNames.ui }}-authentication-tls
+    {{- else }}
+    {{- range $key, $value := .Values.services.api.annotations }}
+    {{ $key }}: {{ $value | default "" | quote }}
+    {{- end }}
+    {{- end }}
+spec:
+  type: {{ .Values.services.api.type }}
+  ports: 
+    {{- if .Values.global.oauth.oauthProxyEnabled }}
+    - name: oauth
+      port: {{ .Values.global.oauth.oauthProxyPort }}
+      protocol: TCP
+      targetPort: {{ .Values.global.oauth.oauthProxyPort }}
+    {{- else }}
+    - port: {{ .Values.services.api.port }}
+      targetPort: {{ .Values.services.api.port }}
+      protocol: TCP
+      name: http   
+    {{- end }}
+  selector:
+    app: {{ .Values.global.appNames.ui }}

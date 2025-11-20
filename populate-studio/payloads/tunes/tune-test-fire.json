@@ -1,0 +1,6 @@
+{
+  "name": "prithvi-eo-fire-tune",
+  "description": "prithvi-eo-fire-tune",
+  "tune_config_url": "https://s3.us-south.cloud-object-storage.appdomain.cloud/gfm-prod-fine-tuning/tune-tasks/geotune-sdbyice9hi8zx3nakxefty/config_deploy.yaml?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=e67be627eb854d11a7f353fde14c8c86%2F20251113%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251113T124050Z&X-Amz-Expires=518400&X-Amz-SignedHeaders=host&X-Amz-Signature=ea75de637272d6b8ca618bb84917b8c4638f52181072e7527d578ea1f8df3ac6",
+  "tune_checkpoint_url": "https://s3.us-south.cloud-object-storage.appdomain.cloud/gfm-prod-fine-tuning/tune-tasks/geotune-sdbyice9hi8zx3nakxefty/best-state_dict-epoch%3D09.ckpt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=e67be627eb854d11a7f353fde14c8c86%2F20251113%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251113T124114Z&X-Amz-Expires=518400&X-Amz-SignedHeaders=host&X-Amz-Signature=783a900809a715ded6e44588d1922dded82c4b5a341ccfb7ac43085eab3f65c8"
+}

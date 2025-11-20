@@ -1,0 +1,358 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+{{- if .Values.global.storage.pvc.enabled }}
+{{- if and (hasKey .Values.global "environment") (ne .Values.global.environment "local") }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.mountLocations.files_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    ibm.io/region: {{ .Values.global.objectStorage.region }}
+    ibm.io/auto-create-bucket: {{ .Values.global.objectStorage.create_bucket | quote }}
+    ibm.io/auto-delete-bucket: {{ .Values.global.objectStorage.delete_bucket | quote }}
+    ibm.io/bucket: {{ .Values.global.objectStorage.buckets.fineTuning }} # Enter the name (not the ID) of the standard class, regional bucket created in a previous step
+    # ibm.io/object-path: "pvc2" # Uncomment line and enter valid subdirectory if desired
+    ibm.io/secret-name: {{ .Values.global.appNames.gateway }}-cos-secret # Enter the name of the OpenShift Secret created in a previous step
+    ibm.io/quota-limit: "false" # Disable or enable a quota limit for your PVC. To use this annotation you must specify the -set quotaLimit=true option during installation.
+    ibm.io/endpoint: {{ .Values.global.objectStorage.endpoint }}
+    ibm.io/tls-cipher-suite: "default"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Gi
+  # storageClassName: {{ .Values.global.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+  storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.mountLocations.models_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    ibm.io/region: {{ .Values.global.objectStorage.region }}
+    ibm.io/auto-create-bucket: {{ .Values.global.objectStorage.create_bucket | quote }}
+    ibm.io/auto-delete-bucket: {{ .Values.global.objectStorage.delete_bucket | quote }}
+    ibm.io/bucket: {{ .Values.global.objectStorage.buckets.fineTuningModels }} # Enter the name (not the ID) of the standard class, regional bucket created in a previous step
+    # ibm.io/object-path: "pvc2" # Uncomment line and enter valid subdirectory if desired
+    ibm.io/secret-name: {{ .Values.global.appNames.gateway }}-cos-secret # Enter the name of the OpenShift Secret created in a previous step
+    ibm.io/quota-limit: "false" # Disable or enable a quota limit for your PVC. To use this annotation you must specify the -set quotaLimit=true option during installation.
+    ibm.io/endpoint: {{ .Values.global.objectStorage.endpoint }}
+    ibm.io/tls-cipher-suite: "default"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Gi
+  # storageClassName: {{ .Values.global.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+  storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.mountLocations.data_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    ibm.io/region: {{ .Values.global.objectStorage.region }}
+    ibm.io/auto-create-bucket: {{ .Values.global.objectStorage.create_bucket | quote }}
+    ibm.io/auto-delete-bucket: {{ .Values.global.objectStorage.delete_bucket | quote }}
+    ibm.io/bucket: {{ .Values.global.objectStorage.buckets.datasetFactory }} # Enter the name (not the ID) of the standard class, regional bucket created in a previous step
+    # ibm.io/object-path: "pvc2" # Uncomment line and enter valid subdirectory if desired
+    ibm.io/secret-name: {{ .Values.global.appNames.gateway }}-cos-secret # Enter the name of the OpenShift Secret created in a previous step
+    ibm.io/quota-limit: "false" # Disable or enable a quota limit for your PVC. To use this annotation you must specify the -set quotaLimit=true option during installation.
+    ibm.io/endpoint: {{ .Values.global.objectStorage.endpoint }}
+    ibm.io/tls-cipher-suite: "default"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Gi
+  # storageClassName: {{ .Values.global.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+  storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+{{- else }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: studio-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 15Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/studio-inference-pvc"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: inference-shared-pvc
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+# apiVersion: datashim.io/v1alpha1
+# kind: Dataset
+# metadata:
+#   name: inference-shared-pvc
+#   namespace: {{ .Values.global.namespace }}
+# spec:
+#   local:
+#     type: "COS"
+#     accessKeyID: {{ .Values.global.objectStorage.access_key }}
+#     secretAccessKey: {{ .Values.global.objectStorage.secret_key }}
+#     endpoint: {{ .Values.global.objectStorage.endpoint }}
+#     bucket: {{ .Values.global.objectStorage.buckets.inference }}
+#     readonly: "false"
+#     region: {{ .Values.global.objectStorage.region }}
+---
+# kind: PersistentVolumeClaim
+# apiVersion: v1
+# metadata:
+#   name: {{ .Values.mountLocations.files_pvc_name }} # Enter the name of the PVC.
+#   namespace: {{ .Values.global.namespace }}
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 20Gi
+#   storageClassName: {{ .Values.global.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+# apiVersion: datashim.io/v1alpha1
+# kind: Dataset
+# metadata:
+#   # name: gfm-ft-files-pvc
+#   name: {{ .Values.mountLocations.files_pvc_name }} # Enter the name of the PVC.
+#   namespace: {{ .Values.global.namespace }}
+# spec:
+#   local:
+#     type: "COS"
+#     accessKeyID: {{ .Values.global.objectStorage.access_key }}
+#     secretAccessKey: {{ .Values.global.objectStorage.secret_key }}
+#     endpoint: {{ .Values.global.objectStorage.endpoint }}
+#     bucket: {{ .Values.global.objectStorage.buckets.fineTuning }}
+#     readonly: "false"
+#     region: {{ .Values.global.objectStorage.region }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ft-files-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 60Gi
+  accessModes:
+    - ReadWriteMany
+  claimRef:
+    name: {{ .Values.mountLocations.files_pvc_name }} # Enter the name of the PVC.
+    namespace: {{ .Values.global.namespace }}    
+  hostPath:
+    path: "/data/ft-files-pvc"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mountLocations.files_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 60Gi
+---
+
+# kind: PersistentVolumeClaim
+# apiVersion: v1
+# metadata:
+#   name: {{ .Values.mountLocations.models_pvc_name }} # Enter the name of the PVC.
+#   namespace: {{ .Values.global.namespace }}
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 20Gi
+#   storageClassName: {{ .Values.global.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+# apiVersion: datashim.io/v1alpha1
+# kind: Dataset
+# metadata:
+#   # name: gfm-ft-models-pvc
+#   name: {{ .Values.mountLocations.models_pvc_name }} # Enter the name of the PVC.
+#   namespace: {{ .Values.global.namespace }}
+# spec:
+#   local:
+#     type: "COS"
+#     accessKeyID: {{ .Values.global.objectStorage.access_key }}
+#     secretAccessKey: {{ .Values.global.objectStorage.secret_key }}
+#     endpoint: {{ .Values.global.objectStorage.endpoint }}
+#     bucket: {{ .Values.global.objectStorage.buckets.fineTuningModels }}
+#     readonly: "false"
+#     region: {{ .Values.global.objectStorage.region }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ft-models-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 60Gi
+  accessModes:
+    - ReadWriteMany
+  claimRef:
+    name: {{ .Values.mountLocations.models_pvc_name }} # Enter the name of the PVC.
+    namespace: {{ .Values.global.namespace }} 
+  hostPath:
+    path: "/data/ft-models-pvc"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mountLocations.models_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 60Gi
+---
+
+
+
+# kind: PersistentVolumeClaim
+# apiVersion: v1
+# metadata:
+#   name: {{ .Values.mountLocations.data_pvc_name }} # Enter the name of the PVC.
+#   namespace: {{ .Values.global.namespace }}
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 20Gi
+#   storageClassName: {{ .Values.global.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+# apiVersion: datashim.io/v1alpha1
+# kind: Dataset
+# metadata:
+#   # name: gfm-ft-data-pvc
+#   name: {{ .Values.mountLocations.data_pvc_name }} # Enter the name of the PVC.
+#   namespace: {{ .Values.global.namespace }}  
+# spec:
+#   local:
+#     type: "COS"
+#     accessKeyID: {{ .Values.global.objectStorage.access_key }}
+#     secretAccessKey: {{ .Values.global.objectStorage.secret_key }}
+#     endpoint: {{ .Values.global.objectStorage.endpoint }}
+#     bucket: {{ .Values.global.objectStorage.buckets.datasetFactory }}
+#     readonly: "false"
+#     region: {{ .Values.global.objectStorage.region }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ft-data-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 60Gi
+  accessModes:
+    - ReadWriteMany
+  claimRef:
+    name: {{ .Values.mountLocations.data_pvc_name }} # Enter the name of the PVC.
+    namespace: {{ .Values.global.namespace }} 
+  hostPath:
+    path: "/data/ft-data-pvc"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mountLocations.data_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }} 
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 60Gi
+---
+
+
+
+---
+# apiVersion: datashim.io/v1alpha1
+# kind: Dataset
+# metadata:
+#   name: {{ .Values.mountLocations.inference_auxdata_pvc_name }}
+#   namespace: {{ .Values.global.namespace }}
+# spec:
+#   local:
+#     type: "COS"
+#     accessKeyID: {{ .Values.global.objectStorage.access_key }}
+#     secretAccessKey: {{ .Values.global.objectStorage.secret_key }}
+#     endpoint: {{ .Values.global.objectStorage.endpoint }}
+#     bucket: {{ .Values.global.objectStorage.buckets.inference_auxdata }}
+#     readonly: "false"
+#     region: {{ .Values.global.objectStorage.region }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: inference-auxdata-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 60Gi
+  accessModes:
+    - ReadWriteMany
+  claimRef:
+    name: {{ .Values.mountLocations.inference_auxdata_pvc_name }}
+    namespace: {{ .Values.global.namespace }} 
+  hostPath:
+    path: "/data/inference-auxdata-pvc"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mountLocations.inference_auxdata_pvc_name }}
+  namespace: {{ .Values.global.namespace }} 
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 60Gi
+---
+
+
+{{- end }}
+{{- end }}

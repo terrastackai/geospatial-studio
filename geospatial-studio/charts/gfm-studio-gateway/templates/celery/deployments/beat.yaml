@@ -1,0 +1,56 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+{{- if .Values.celery.beat.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.global.appNames.gateway }}-celery-beat
+  namespace: {{ .Release.Namespace | default "default" }}
+  labels:
+    app: {{ .Values.global.appNames.gateway }}-celery
+    app.kubernetes.io/component: {{ .Values.celery.worker.componentName }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.celery.worker.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Values.global.appNames.gateway }}-celery
+  strategy:
+    type: {{ .Values.celery.worker.strategy }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.global.appNames.gateway }}-celery
+        app.kubernetes.io/component: {{ .Values.celery.worker.componentName }}
+    spec:
+      {{- if .Values.global.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecret.name }}
+      {{- end }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      securityContext:
+        {{- toYaml .Values.securityContext.api | nindent 12 }}
+      containers:
+        - name: {{ .Chart.Name }}-{{ .Values.celery.beat.componentName }}
+          securityContext:
+            {{- toYaml .Values.securityContext.api | nindent 16 }}
+          image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: Always
+          {{-  with .Values.celery.beat.command }}
+          command: ["/bin/sh"]
+          args:
+              - -c
+              - >-
+                  {{ . }}
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.global.appNames.gateway }}-cm 
+            - secretRef:
+                name: {{ .Values.global.appNames.gateway }}-secrets
+          resources:
+            {{- toYaml .Values.resources.celeryFlower | nindent 12 }}
+{{- end -}}

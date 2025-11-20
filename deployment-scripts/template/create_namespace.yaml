@@ -1,0 +1,13 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: OC_PROJECT
+  labels:
+    name: OC_PROJECT
+  annotations:
+    openshift.io/description: Namespace for Geospatial Studio deployment
+    openshift.io/display-name: OC_PROJECT

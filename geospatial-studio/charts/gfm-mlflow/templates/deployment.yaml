@@ -1,0 +1,88 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gfm-mlflow.fullname" . }}
+  namespace: {{.Values.global.namespace}}
+  labels:
+    {{- include "gfm-mlflow.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "gfm-mlflow.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "gfm-mlflow.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecret.name }}
+      serviceAccountName: {{ include "gfm-mlflow.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh"]
+          args:
+            - "-c"
+            - |
+              # mkdir -p /tls
+              mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri $BACKEND_URI --artifacts-destination file:///mlruns
+          envFrom:
+          - secretRef:
+              name: {{ .Values.global.appNames.mlflow }}-secrets
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.global.storage.pvc.enabled }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- else }}
+          volumeMounts:
+            - name: mount-mlflow
+              mountPath: /mlruns
+          {{- end }}
+      {{- if .Values.global.storage.pvc.enabled }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- else }}
+      hostPath:
+        path: /mlruns
+        type: DirectoryOrCreate
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{ if .Values.tolerations.enabled }}
+      tolerations:
+        {{- toYaml .Values.tolerations.configs | nindent 8 }}
+      {{ end }}

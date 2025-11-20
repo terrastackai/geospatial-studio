@@ -1,0 +1,135 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+# Default values for gfm-mlflow.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+images:
+  api:
+    repository: quay.io/geospatial-studio/geostudio-mlflow
+    pullPolicy: Always
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: latest
+
+services:
+  api:
+    appName: gfm-mlflow
+    type: ClusterIP
+    port: 5000
+
+postgress:
+  name: mlflow-database-uri
+  key: BACKEND_URI
+
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 5000
+
+# ingress:
+#   enabled: false
+#   className: ""
+#   annotations: {}
+#     # kubernetes.io/ingress.class: nginx
+#     # kubernetes.io/tls-acme: "true"
+#   hosts:
+#     - host: chart-example.local
+#       paths:
+#         - path: /
+#           pathType: ImplementationSpecific
+#   tls: []
+#   #  - secretName: chart-example-tls
+#   #    hosts:
+#   #      - chart-example.local
+
+
+
+# inject postgres db value from secret manager
+#TODO: Make this nested env.BACKEND_URI and accessible in local_tasks.py
+BACKEND_URI:
+# ${BACKEND_URI}
+  # COS_SECRET_KEY:
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 2
+    memory: 8G
+  requests:
+    cpu: 1
+    memory: 4G
+
+# livenessProbe:
+#   httpGet:
+#     path: /
+#     port: http
+# readinessProbe:
+#   httpGet:
+#     path: /
+#     port: http
+
+autoscaling: {}
+  # enabled: false
+  # minReplicas: 1
+  # maxReplicas: 100
+  # targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# This section contains configuration of the volumes
+persistence:
+  # PVC for storing artifacts
+  gfmMlflowCOSPVC:
+    create: false
+    claimName: gfm-mlflow-cos-pvc
+    capacity: 200Gi
+    # customStorageClass: ibmc-s3fs-cos-perf
+# objectStorage:
+#   endpoint: http://s3.us-south.cloud-object-storage.appdomain.cloud
+#   keyID: keyIdHere
+#   secretKey: keySecretHere
+#   region: us-south
+#   bucketName: gfm-mlflow
+#   autoCreateBucket: "false"
+
+# Additional volumes on the output Deployment definition.
+volumes:
+ - name: mount-mlflow
+   persistentVolumeClaim:
+      claimName: gfm-mlflow-cos-pvc
+
+# Additional volumeMounts on the output Deployment definition.
+volumeMounts:
+  - name: mount-mlflow
+    mountPath: /mlruns
+
+
+nodeSelector: {}
+
+tolerations:
+  enabled: true
+  configs:
+
+affinity: {}

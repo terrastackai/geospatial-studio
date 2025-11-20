@@ -1,0 +1,112 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+{{- range $v := .Values.processors }}
+{{- if $v.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Values.namePrefix }}-{{ $v.name }}
+  namespace: {{ $.Values.namespace }}
+spec:  {{ if hasKey $v "replicas" }}
+  replicas: {{ $v.replicas }} {{ else }}
+  replicas: {{ $.Values.default_replicas }} {{ end }}
+  selector:
+    matchLabels:
+      app: {{ $.Values.namePrefix }}-{{ $v.name }}
+      geostudio: pipelines
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") $ | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") $ | sha256sum }}
+      labels:
+        app: {{ $.Values.namePrefix }}-{{ $v.name }}
+        geostudio: pipelines
+    spec:
+      # securityContext:
+      #   fsGroup: 1000880000
+      imagePullSecrets:
+       - name: {{ $.Values.imagePullSecret.name }}
+      {{- if and (hasKey $v "affinity") ($.Values.gpuConfig.enabled) }}
+      affinity: {{ $v.affinity | toYaml | nindent 8 }} {{- end }}
+      containers:
+      - name: {{ $.Values.namePrefix }}-{{ $v.name }}
+        image: {{ $v.image.name }}:{{ $v.image.tag }}
+        imagePullPolicy: Always
+        # securityContext:
+        #     capabilities:
+        #       drop:
+        #         - ALL
+        #     runAsUser: 1000880000
+        #     runAsNonRoot: true
+        #     allowPrivilegeEscalation: false
+        envFrom:
+          - configMapRef:
+              name: pipeline-gateway-cm
+        {{- if eq $.Values.observability.enabled true }}
+          - configMapRef:
+              name: pipeline-observability-cm
+        {{- end }}
+          - secretRef:
+              name: pipeline-gateway-creds
+        env:
+          - name: orchestrate_db_uri
+            valueFrom:
+              secretKeyRef:
+                name: {{ $.Values.orchestrate_db.secret_name }}
+                key: orchestrate_db_uri
+          - name: log_level
+            value: {{ $.Values.log_level }}
+        {{- if eq $.Values.observability.enabled true }}
+          - name: process_exec
+            value: {{ printf "opentelemetry-instrument %s" $v.process_exec }}
+          - name: OTEL_SERVICE_NAME
+            value: {{ printf "%s-component" $v.process_id }}
+        {{- else }}
+          - name: process_exec
+            value: {{ $v.process_exec }}
+        {{- end }}
+          - name: process_id
+            value: {{ $v.process_id }}
+          - name: gfmaas_api_key
+            valueFrom:
+              secretKeyRef:
+                name: pipeline-gateway-creds
+                key: gfmaas_api_key
+          {{- if hasKey $v "extra_envs" }}
+          {{- $v.extra_envs | toYaml | nindent 10 }} {{- end }}
+        volumeMounts:
+          - name: test-inference-pvc
+            mountPath: /data
+          {{- if hasKey $v "extra_volumes" }} {{- range $p := $v.extra_volumes }}
+          - name: {{ $p.name }}
+            mountPath: {{ $p.mountPath }} {{- end }} {{ end }}
+          {{- if hasKey $v "resources" }} {{ if hasKey $v.resources "requests" }} {{ if hasKey $v.resources.requests "nvidia.com/gpu" }}
+          - name: dshm
+            mountPath: /dev/shm {{ end }} {{ end }} {{ end }}
+          {{- if hasKey $v "resources" }} {{ if hasKey $v.resources "shm" }}
+          - name: dshm
+            mountPath: /dev/shm {{ end }} {{ end }}
+        {{- if hasKey $v "resources" }}
+        resources: {{ $v.resources | toYaml | nindent 10 }} {{- end }}  
+      volumes:
+        - name: test-inference-pvc
+          persistentVolumeClaim:
+            claimName: {{ $.Values.inference_volume.pvc_name }}
+        {{- range $p := $v.extra_volumes }}
+        - name: {{ $p.name }}
+          persistentVolumeClaim:
+            claimName: {{ $p.claimName }} {{- end }}
+        {{- if hasKey $v "resources" }} {{- if hasKey $v.resources "requests" }} {{- if hasKey $v.resources.requests "nvidia.com/gpu" }}
+        - name: dshm
+          emptyDir:
+            medium: Memory  {{- end }}{{- end }}{{- end }} 
+        {{- if hasKey $v "resources" }} {{- if hasKey $v.resources "shm" }}
+        - name: dshm
+          emptyDir:
+            medium: Memory  {{- end }}{{- end }} 
+---
+{{- end }}
+{{- end }}

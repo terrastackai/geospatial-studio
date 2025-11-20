@@ -1,0 +1,115 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+      - name: keycloak
+        image: quay.io/keycloak/keycloak:26.4.5
+        args:
+        - "start"
+        env:
+        - name: KEYCLOAK_ADMIN
+          value: "admin"
+        - name: KEYCLOAK_ADMIN_PASSWORD
+          value: "admin"
+        - name: KC_HOSTNAME_STRICT
+          value: "false"
+        - name: KC_HOSTNAME_STRICT_HTTPS
+          value: "false"
+        - name: KC_HTTP_ENABLED
+          value: "true"
+        - name: KC_HOSTNAME_STRICT_BACKCHANNEL
+          value: "false"
+        - name: KC_HEALTH_ENABLED
+          value: "true"
+        - name: KC_METRICS_ENABLED
+          value: "true"
+        - name: KC_DB_USERNAME
+          value: "postgres"
+        - name: KC_DB_PASSWORD
+          value: ""
+        - name: KC_DB
+          value: "postgres"
+        - name: KC_DB_URL_HOST
+          value: ""
+        - name: KC_DB_URL_DATABASE
+          value: "keycloak"
+        - name: KC_PROXY_HEADERS
+          value: "xforwarded"
+        ports:
+        - name: http
+          containerPort: 8080
+        startupProbe:
+          httpGet:
+            path: /health/started
+            port: 9000
+          periodSeconds: 1
+          failureThreshold: 600
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 9000
+          periodSeconds: 10
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health/live
+            port: 9000
+          periodSeconds: 10
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  labels:
+    app: keycloak
+spec:
+  selector:
+    app: keycloak
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: keycloak
+  annotations:
+    haproxy.router.openshift.io/timeout: 900s
+spec:
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: keycloak
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: None
+ 

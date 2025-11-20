@@ -1,0 +1,67 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+# Default values for geodn.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+# images:
+#   api:
+#     name: quay.io/geospatial-studio/geostudio-ui
+#     tag: latest
+
+
+replicaCount: 1
+
+services:
+  api:
+    appName: geofm-ui
+    type: ClusterIP
+    port: 8090
+    annotations:
+    serviceMonitor:
+      enabled: false
+
+route:
+  annotations:
+    haproxy.router.openshift.io/timeout: 900s
+  # labels:
+  #   ingress-router: cash
+
+extraEnvironment:
+  DISABLE_DF: false
+  DISABLE_FT: false
+  DISABLE_LI: false
+  DISABLE_FEEDBACK: false
+  VISIBLE_LAYERS_BY_DEFAULT: ""
+  LAYER_ORDER: ""
+  USE_AUTH_SIDECAR: true
+
+securityContext:
+  api:
+    runAsNonRoot: false
+    seccompProfile:
+      type: RuntimeDefault
+  pod:
+    runAsNonRoot: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
+
+resources:
+  ui:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+  oauth:
+    requests:
+      cpu: "200m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"

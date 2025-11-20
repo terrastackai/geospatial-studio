@@ -1,0 +1,8 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+ibm-cos-sdk
+python-dotenv
+pg8000>=1.31.5
+pyyaml

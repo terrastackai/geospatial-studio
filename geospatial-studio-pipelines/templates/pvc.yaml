@@ -1,0 +1,49 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+{{- if ne .Values.environment "local" }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.inference_volume.pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.namespace }}
+  annotations:
+    ibm.io/region: {{ .Values.objectStorage.region }}
+    ibm.io/auto-create-bucket: {{ .Values.objectStorage.create_bucket | quote }}
+    ibm.io/auto-delete-bucket: {{ .Values.objectStorage.delete_bucket | quote }}
+    ibm.io/bucket: {{ .Values.objectStorage.buckets.inference }} # Enter the name (not the ID) of the standard class, regional bucket created in a previous step
+    ibm.io/secret-name: studio-cos-secret # Enter the name of the OpenShift Secret created in a previous step
+    ibm.io/endpoint: {{ .Values.objectStorage.endpoint }}
+    ibm.io/tls-cipher-suite: "default"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: {{ .Values.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+---
+{{- range $v := .Values.processors }}{{ if hasKey $v "extra_volumes"}}{{- range $e := $v.extra_volumes }}{{ if hasKey $e "bucket_name" }}{{ if $e.create }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ $e.claimName }} # Enter the name of the PVC.
+  namespace: {{ $.Values.namespace }}
+  annotations:
+    ibm.io/region: {{ $.Values.objectStorage.region }}
+    ibm.io/auto-create-bucket: {{ $.Values.objectStorage.create_bucket | quote }}
+    ibm.io/auto-delete-bucket: {{ $.Values.objectStorage.delete_bucket | quote }}
+    ibm.io/bucket: {{ $e.bucket_name }} # Enter the name (not the ID) of the standard class, regional bucket created in a previous step
+    ibm.io/secret-name: studio-cos-secret # Enter the name of the OpenShift Secret created in a previous step
+    ibm.io/endpoint: {{ $.Values.objectStorage.endpoint }}
+    ibm.io/tls-cipher-suite: "default"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: {{ $.Values.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+--- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
+{{- end }}

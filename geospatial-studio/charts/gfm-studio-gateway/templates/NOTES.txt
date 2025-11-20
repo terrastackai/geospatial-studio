@@ -1,0 +1,9 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+{{ .Release.Name}} {{- if .Release.IsInstall }} installed {{- else }} upgraded to version {{.Release.Revision}} {{- end }}
+
+The route is {{ .Values.services.api.appName }}, to open it in a web browser, run the following command:
+
+bash -xc "open https://$(oc get routes -o yaml | yq '.items[] | select(.metadata.name == "geo-model-gateway-api").spec.host')/docs"

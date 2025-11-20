@@ -1,0 +1,15 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+vmType: "qemu"
+mountType: "reverse-sshfs"
+cpus: 8
+memory: "24GiB"
+mounts:
+- location: "~"
+- location: "~/studio-data"
+  mountPoint: "/data"
+  writable: true
+base:
+- template://k3s

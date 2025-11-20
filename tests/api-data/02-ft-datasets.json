@@ -1,0 +1,74 @@
+{
+    "purpose": "Segmentation",
+    "dataset_url": "https://s3.us-east.cloud-object-storage.appdomain.cloud/geospatial-studio-example-data/burn-scar-training-data.zip",
+    "label_suffix": ".mask.tif",
+    "dataset_name": "Burn Scars SDK demo",
+    "description": "Burn Scars SDK demo",
+    "data_sources": [
+        {
+            "bands": [
+                {
+                    "index": "0",
+                    "band_name": "Blue",
+                    "scaling_factor": 1,
+                    "RGB_band": "B"
+                },
+                {
+                    "index": "1",
+                    "band_name": "Green",
+                    "scaling_factor": 1,
+                    "RGB_band": "G"
+                },
+                {
+                    "index": "2",
+                    "band_name": "Red",
+                    "scaling_factor": 1,
+                    "RGB_band": "R"
+                },
+                {
+                    "index": "3",
+                    "band_name": "NIR_Narrow",
+                    "scaling_factor": 1
+                },
+                {
+                    "index": "4",
+                    "band_name": "SWIR1",
+                    "scaling_factor": 1
+                },
+                {
+                    "index": "5",
+                    "band_name": "SWIR2",
+                    "scaling_factor": 1
+                }
+            ],
+            "connector": "sentinelhub",
+            "collection": "hls_l30",
+            "file_suffix": "_merged.tif",
+            "modality_tag": "HLS_L30"
+        }
+    ],
+    "label_categories": [
+        {
+            "id": "-1",
+            "name": "Igone",
+            "color": "#000000",
+            "opacity": "0",
+            "weight": null
+        },
+        {
+            "id": "0",
+            "name": "NoData",
+            "color": "#000000",
+            "opacity": "0",
+            "weight": null
+        },
+        {
+            "id": "1",
+            "name": "BurnScar",
+            "color": "#ea7171",
+            "opacity": 1,
+            "weight": null
+        }
+    ],
+    "version": "v2"
+}

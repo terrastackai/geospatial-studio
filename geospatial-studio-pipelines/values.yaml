@@ -1,0 +1,227 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+namePrefix: pipelines
+
+namespace: OC_PROJECT
+
+cluster_url: CLUSTER_URL
+
+environment: ENVIRONMENT_VALUE
+
+log_level: DEBUG
+
+inference_volume:
+  pvc_name: inference-shared-pvc
+
+default_replicas: 1
+
+imagePullSecret:
+  create: false
+  name: us-icr-pull-secret
+  b64secret: image_pull_secret_b64
+
+orchestrate_db:
+  pg_username: pg_username
+  pg_password: pg_password
+  pg_uri: pg_uri
+  pg_port: pg_port
+  pg_studio_db_name: geostudio
+  inference_task_table: inf_task
+  secret_name: pipelines-orchestration-db
+
+gateway:
+  oauthProxyEnabled: OAUTH_PROXY_ENABLED
+  oauthProxyPort: "OAUTH_PROXY_PORT"
+  api_key: studio_api_key
+  appName: geofm-gateway
+
+geoserver:
+  username: geoserver_username
+  password: geoserver_password
+  appName: geofm-geoserver
+
+sentinelhub:
+  client_id: sh_client_id
+  client_secret: sh_client_secret
+
+nasaEarthBearerToken: nasa_earth_data_bearer_token
+
+storage:
+  filesystem:
+    enabled: STORAGE_FILESYSTEM_ENABLED
+    dir: /data/
+
+route:
+  enabled: ROUTE_ENABLED
+
+observability:
+  enabled: OBSERVABILITY_ENABLED
+  otlp:
+    endpoint: OBSERVABILITY_OTLP_ENDPOINT
+    tracesEndpoint: OBSERVABILITY_OTLP_TRACES_ENDPOINT
+
+gpuConfig:
+  enabled: CONFIGURE_GPU_AFFINITY
+
+objectStorage:
+  endpoint: endpoint
+  access_key: access_key_id
+  secret_key: secret_access_key
+  region: region
+  create_bucket: false
+  delete_bucket: false
+  createCosSecret: false
+  buckets:
+    temporaryUploads: BUCKET_TEMP_UPLOAD
+    inference: BUCKET_INFERENCE
+    fineTuning: BUCKET_FINE_TUNING
+    fineTuningModels: BUCKET_FINE_TUNING_MODELS
+    datasetFactory: BUCKET_DATASET_FACTORY
+    amo: BUCKET_AMO_INPUT_BUCKET
+    mlflow: BUCKET_GFM_MLFLOW
+    geoserver: BUCKET_GEOSERVER
+    inference_auxdata: BUCKET_INFERENCE_AUXDATA
+  cos_storage_class: COS_STORAGE_CLASS
+
+processors:
+  - name: inference-planner
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/gsp-inference-planner
+      tag: latest
+    process_id: inference-planner
+    process_exec: 'python claimed_inference_planner.py'
+    extra_envs:
+      - name: bbox_to_tile_threshold_area
+        value: '1000000000000000000000000'
+      - name: SH_CLIENT_ID
+        valueFrom:
+          secretKeyRef:
+            name: sentinelhub-creds
+            key: SH_CLIENT_ID
+      - name: SH_CLIENT_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: sentinelhub-creds
+            key: SH_CLIENT_SECRET
+      - name: NASA_EARTH_BEARER_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: nasa-earth-data-secret
+            key: NASA_EARTH_BEARER_TOKEN
+  - name: terrakit-data-fetch
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/gsp-terrakit-data
+      tag: latest
+    process_id: terrakit-data-fetch
+    process_exec: 'python claimed_terrakit_data_fetch.py'
+    extra_envs:
+      - name: SH_CLIENT_ID
+        valueFrom:
+          secretKeyRef:
+            name: sentinelhub-creds
+            key: SH_CLIENT_ID
+      - name: SH_CLIENT_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: sentinelhub-creds
+            key: SH_CLIENT_SECRET
+      - name: NASA_EARTH_BEARER_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: nasa-earth-data-secret
+            key: NASA_EARTH_BEARER_TOKEN
+  - name: push-to-geoserver
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/gsp-push-to-geoserver
+      tag: latest
+    process_id: push-to-geoserver
+    process_exec: 'python claimed_push_to_geoserver.py'
+    extra_envs:
+      - name: geoserver_username
+        valueFrom:
+          secretKeyRef:
+            name: pipeline-gateway-creds
+            key: geoserver_username
+      - name: geoserver_password
+        valueFrom:
+          secretKeyRef:
+            name: pipeline-gateway-creds
+            key: geoserver_password
+  - name: url-connector
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/gsp-url-connector
+      tag: latest
+    process_id: url-connector
+    process_exec: 'python claimed_url_connector_single.py'
+    extra_envs:
+      - name: CHECK_DISK_FREE_SPACE
+        value: 'FALSE'
+  - name: run-inference
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/gsp-run-inference
+      tag: latest
+    process_id: run-inference
+    process_exec: 'python claimed_run-inference.py'
+    extra_envs:
+      - name: push_model_input
+        value: 'True'
+      - name: mounted_pvc
+        value: 'True'
+  - name: postprocess-generic
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/gsp-postprocess-generic
+      tag: latest
+    replicas: 1
+    process_id: postprocess-generic
+    process_exec: 'python claimed_postprocess-generic-single.py'
+    extra_envs:
+      - name: LULC_TILE_ROOT
+        value: /auxdata/lulc/lc2021/
+      - name: LULC_TILE_SHAPEFILE
+        value: /auxdata/lulc/tiles.shp
+      - name: LAND_POLYGON_PATH
+        value: /auxdata/general/land_polygons.shp
+    extra_volumes:
+      - name: test-inference-auxdata-pvc
+        claimName: inference-auxdata-pvc
+        bucket_name: BUCKET_INFERENCE_AUXDATA
+        mountPath: /auxdata
+        create: true
+  - name: terratorch-inference
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/gsp-terratorch-inference
+      tag: latest
+    process_id: terratorch-inference
+    process_exec: 'python claimed_terratorch_inference.py'
+    extra_envs:
+      - name: PYTORCH_CUDA_ALLOC_CONF
+        value: 'expandable_segments:True'
+    extra_volumes:
+      - name: tunes-pvc
+        claimName: gfm-ft-files-pvc
+        bucket_name: BUCKET_FINE_TUNING
+        mountPath: /tunes
+        create: PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC
+    resources:
+      limits:
+        nvidia.com/gpu: '1'
+      requests:
+        nvidia.com/gpu: '1'
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: NODE_SELECTOR_KEY
+              operator: In
+              values:
+              - NODE_GPU_SPEC

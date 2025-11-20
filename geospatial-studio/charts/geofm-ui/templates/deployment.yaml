@@ -1,0 +1,89 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Values.global.appNames.ui }}
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: {{ .Values.global.appNames.ui }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.global.appNames.ui }}
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      name: {{ .Values.global.appNames.ui }}
+      namespace: {{ .Values.global.namespace }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+      labels:
+        app: {{ .Values.global.appNames.ui }}
+        run: {{ .Values.global.appNames.ui }}
+    spec:
+      serviceAccountName: {{ .Values.global.serviceAccount.name }}
+      securityContext:
+        {{- toYaml .Values.securityContext.api | nindent 10 }}
+      containers:
+        - name: {{ .Values.global.appNames.ui }}
+          image: {{ .Values.image.name }}:{{ .Values.image.tag }}
+          imagePullPolicy: Always
+          securityContext:
+            {{- toYaml .Values.securityContext.pod | nindent 14 }}
+          ports:
+            - containerPort: {{ .Values.services.api.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources.ui | nindent 12 }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.global.appNames.ui }}-secrets
+            - configMapRef:
+                name: {{ .Values.global.appNames.ui }}-configmap
+        {{ if .Values.global.oauth.oauthProxyEnabled }}
+        - name: oauth-proxy
+          resources:
+            {{- toYaml .Values.resources.oauth | nindent 12 }}
+          terminationMessagePath: /dev/termination-log
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          image: {{ .Values.global.oauth.image.name }}:{{ .Values.global.oauth.image.tag }}
+          imagePullPolicy: Always
+          ports:
+            - name: oauth-proxy
+              containerPort: {{ .Values.global.oauth.oauthProxyPort }}
+              protocol: TCP
+          terminationMessagePolicy: File
+          {{- include "oauth.args" . | trim | nindent 10 }}
+            - --upstream=http://localhost:8090
+            - '--skip-auth-route=^(/studio-gateway/v[1|2]+/.*)|(/openapi\.json)$'
+          volumeMounts:
+            - name: secret-tls
+              mountPath: /etc/tls/private
+            - name: trusted-certificates-ca
+              mountPath: /etc/tls/openshift-certificate/
+        {{- end }}
+      {{- if .Values.global.oauth.oauthProxyEnabled }}
+      volumes:
+        - name: secret-tls
+          secret:
+            secretName: {{ .Values.global.appNames.ui }}-authentication-tls
+            defaultMode: 420
+        - name: trusted-certificates-ca
+          configMap:
+            name: {{ .Values.global.appNames.ui }}-trusted-certificates-ca
+            defaultMode: 420
+      {{- end }}
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecret.name }}
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      tolerations:
+        {{- toYaml .Values.tolerations | nindent 10 }}

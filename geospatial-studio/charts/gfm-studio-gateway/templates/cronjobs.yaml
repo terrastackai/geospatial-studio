@@ -1,0 +1,53 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  labels:
+    app: {{ .Values.label }}-cronjob # add label
+  name: k8s-jobs-cleanup-cronjob
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: {{ .Values.global.appNames.gateway }}
+spec:
+  schedule: "*/30 * * * *"  # Runs every 30 minutes
+  successfulJobsHistoryLimit: 1  # Keeps 1 recently successfully finished job(s).
+  failedJobsHistoryLimit: 1  # Keeps 1 recently failed jobs.
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+            - name: {{ .Values.global.imagePullSecret.name }}
+          serviceAccountName: {{ .Values.serviceAccount.name }}
+          containers:
+          - name: cleanup
+            image: {{ .Values.images.cleanup_cronjob.name }}:{{ .Values.images.cleanup_cronjob.tag }}
+            imagePullPolicy: Always
+            command: ["/bin/bash", "/scripts/cleanup_jobs.sh"]  # Path to the script inside the container
+            env:
+            - name: FT_API_KEY
+              valueFrom: 
+                secretKeyRef:
+                  name: geoft-cronjob-secrets
+                  key: FT_API_KEY
+            - name: FT_WEBHOOKS_ID
+              valueFrom: 
+                secretKeyRef:
+                  name: geoft-cronjob-secrets
+                  key: FT_WEBHOOKS_ID      
+            - name: FT_WEBHOOKS_URL
+              valueFrom: 
+                secretKeyRef:
+                  name: geoft-cronjob-secrets
+                  key: GEOFT_WEBHOOK_URL             
+            volumeMounts:
+              - name: cleanup-jobs
+                mountPath: /scripts  # Mounting the ConfigMap to /scripts
+          volumes:
+            - name: cleanup-jobs
+              configMap:
+                name: cleanup-jobs-configmap  # Reference to the ConfigMap
+          restartPolicy: OnFailure
