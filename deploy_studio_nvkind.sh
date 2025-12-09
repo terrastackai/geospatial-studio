@@ -229,7 +229,7 @@ cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${
 cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
 
 # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
-# python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
+python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
 
 echo "**********************************************************************"
 echo "**********************************************************************"
