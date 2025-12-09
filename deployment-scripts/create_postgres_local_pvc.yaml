@@ -9,7 +9,7 @@ metadata:
   labels:
     type: local
 spec:
-  storageClassName: manual
+  storageClassName: local-path
   capacity:
     storage: 30Gi
   accessModes:
@@ -22,7 +22,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: postgresql-pvc
 spec:
-  storageClassName: manual
+  storageClassName: local-path
   accessModes:
     - ReadWriteOnce
   resources:

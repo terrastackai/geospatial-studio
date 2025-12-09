@@ -12,8 +12,6 @@ export STUDIO_IMAGE_PULL_SECRET="eyJhdXRocyI6eyJleGFtcGxlLmlvIjp7InVzZXJuYW1lIjo
 export GEOSERVER_USERNAME="admin"
 export GEOSERVER_PASSWORD="geoserver"
 
-export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
-
 echo "----------------------------------------------------------------------"
 echo "------  Creating baseline deployment/values files  -------------------"
 echo "----------------------------------------------------------------------"
@@ -34,7 +32,7 @@ echo "----------------------------------------------------------------------"
 echo "--------------------  Add labels to node  ------------------"
 echo "----------------------------------------------------------------------"
 
-kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
+kubectl label nodes studio-worker topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
 
 # echo "----------------------------------------------------------------------"
 # echo "--------------------  Create local Storage Classes  ------------------"
@@ -46,14 +44,14 @@ echo "----------------------------------------------------------------------"
 echo "----------------------  Deploying Minio  -----------------------------"
 echo "----------------------------------------------------------------------"
 
-# Install MinIO
+# # Install MinIO
 # Create TLS for minio
 openssl genrsa -out minio-private.key 2048
 openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config deployment-scripts/minio-openssl.conf
 
 kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT}
 kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system
-kubectl apply -f deployment-scripts/minio-deployment.yaml -n ${OC_PROJECT}
+python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/minio-deployment.yaml --storageclass standard | kubectl apply -f - -n ${OC_PROJECT}
 kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
 sleep 5
@@ -74,7 +72,7 @@ sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
 ## Setup storage class for minio and default in cluster storage class
 sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=local-path/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=standard/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 kubectl port-forward -n default svc/minio 9000:9000 >> studio-pf.log 2>&1 &
 sleep 5
@@ -96,7 +94,7 @@ helm repo update
 
 export POSTGRES_PASSWORD=devPostgresql123
 
-./deployment-scripts/install-postgres.sh
+./deployment-scripts/install-postgres.sh UPDATE_STORAGE ENABLE_PV
 
 kubectl wait --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
 
@@ -170,7 +168,7 @@ echo "----------------------------------------------------------------------"
 echo "--------------------  Deploying Geoserver  ----------------------------"
 echo "----------------------------------------------------------------------"
 
-python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --disable-route | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --storageclass standard --disable-route | kubectl apply -f - -n ${OC_PROJECT}
 
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n default --timeout=900s
 
@@ -231,7 +229,7 @@ cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${
 cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
 
 # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
-python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
+# python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
 
 echo "**********************************************************************"
 echo "**********************************************************************"

@@ -16,3 +16,5 @@ workspace/
 *tls*
 .studio-api-key
 studio-pf.log
+minio-private.key
+minio-public.crt

@@ -369,7 +369,7 @@ export OAUTH_URL=http://keycloak.default.svc.cluster.local:8080/realms/geostudio
 
 To deploy Geoserver.  This will deploy geoserver, wait for the deployment to be completed and then start the required port-forwarding:
 ```bash
-python ./deployment-scripts/update-postgres-geoserver-deployment.py --filename deployment-scripts/geoserver-deployment.yaml | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml | kubectl apply -f - -n ${OC_PROJECT}
 
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
 

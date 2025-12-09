@@ -1,7 +1,6 @@
 # © Copyright IBM Corporation 2025
 # SPDX-License-Identifier: Apache-2.0
 
-
 # PVC commented out for local deployment without shared storage
 # apiVersion: v1
 # kind: PersistentVolumeClaim
@@ -14,7 +13,6 @@
 #   resources:
 #     requests:
 #       storage: 10Gi
----
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -22,25 +20,35 @@ metadata:
   labels:
     type: local
 spec:
-  storageClassName: manual
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-path
   capacity:
-    storage: 30Gi
+    storage: 90Gi
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: "/data"
+    path: "/data/minio_home"
+    type: DirectoryOrCreate
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - lima-studio
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: minio-pvc
 spec:
-  storageClassName: manual
+  storageClassName: local-path
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 80Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -78,16 +86,27 @@ spec:
         - containerPort: 9001
           name: console
         volumeMounts:
+        - name: minio-tls-certs
+          mountPath: /root/.minio/certs
+          readOnly: true
         - name: data
           mountPath: /data
         resources:
           requests:
-            cpu: 250m
-            memory: 512Mi
+            cpu: 2000m
+            memory: 2Gi
           limits:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 4000m
+            memory: 4Gi
       volumes:
+      - name: minio-tls-certs
+        secret:
+          secretName: minio-tls-secret
+          items:
+          - key: tls.crt
+            path: public.crt
+          - key: tls.key
+            path: private.key
       - name: data
         # Using emptyDir for local deployment without shared storage
         # emptyDir: {}
@@ -97,10 +116,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: minio-api
+  name: minio
   namespace: default
   labels:
     app: minio
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: minio-tls-secret
 spec:
   type: ClusterIP
   ports:
@@ -108,23 +129,9 @@ spec:
     targetPort: 9000
     protocol: TCP
     name: api
-  selector:
-    app: minio
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: minio-console
-  namespace: default
-  labels:
-    app: minio
-spec:
-  type: NodePort
-  ports:
   - port: 9001
     targetPort: 9001
     protocol: TCP
     name: console
-    nodePort: 30001
   selector:
-    app: minio 
+    app: minio

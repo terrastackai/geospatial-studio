@@ -1,0 +1,14 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: CSIDriver
+metadata:
+  name: cos.s3.csi.ibm.io
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: cos-s3-csi-driver
+spec:
+  attachRequired: false
+  podInfoOnMount: true
+  fsGroupPolicy: File
+  volumeLifecycleModes:
+    - Persistent

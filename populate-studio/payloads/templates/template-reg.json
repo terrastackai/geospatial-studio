@@ -350,7 +350,7 @@
         "description": "A request sent to the finetuning service to start a finetune task for regression"
     },
     "extra_info": {
-        "runtime_image": "us.icr.io/gfmaas/geostudio-ft-deploy:feat-update_tt_version-138",
+        "runtime_image": "quay.io/geospatial-studio/geostudio-tt-ubi:latest",
         "model_category": "prithvi",
         "model_framework": "terratorch-v2"
     },
