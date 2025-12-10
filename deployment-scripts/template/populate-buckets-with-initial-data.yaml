@@ -30,7 +30,7 @@ spec:
             defaultMode: 0755
       containers:
         - name: populate-buckets
-          image: nginx
+          image: registry.access.redhat.com/ubi9/ubi-minimal:latest
           imagePullPolicy: Always
           volumeMounts:
             - name: persistent-storage
@@ -52,6 +52,12 @@ data:
   populate-buckets-script.sh: |
     #!/bin/bash
     set -e
+
+    # install unzip
+    microdnf update -y && \
+    microdnf install -y unzip && \
+    microdnf clean all && \
+    rm -rf /var/cache/microdnf /tmp/*
 
     # Function to handle errors
     error_handler() {
@@ -84,7 +90,7 @@ data:
     fi
 
     if [ "$LULC_TILE_SHAPEFILE" ]; then
-      echo "LULC_TILE_SHAPEFILE"
+      echo "Lulc tile shapefile: $LULC_TILE_SHAPEFILE"
     fi
 
     if [ "$LAND_POLYGON_PATH" ]; then
