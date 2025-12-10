@@ -235,10 +235,11 @@ k9s
 |---|---|
 | Access the Studio UI | [https://localhost:4180](https://localhost:4180) |
 | Access the Studio API | [https://localhost:4181](https://localhost:4181) |
-| Authenticate | username: `testuser` password: `testpass123` |
+| Authenticate Studio | username: `testuser` password: `testpass123` |
 | Access Geoserver | [https://localhost:3000](https://localhost:3000) |
 | Access Keycloak | [https://localhost:8080](https://localhost:8080) |
 | Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
+| Authenticate Minio | username: `minioadmin` password: `minioadmin` |
 
 If you need to restart any of the port-forwards you can use the following commands:
 ```shell
