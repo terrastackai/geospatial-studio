@@ -23,7 +23,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-path
   capacity:
-    storage: 90Gi
+    storage: 100Gi
   accessModes:
     - ReadWriteOnce
   hostPath:
@@ -48,7 +48,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 80Gi
+      storage: 95Gi
 ---
 apiVersion: apps/v1
 kind: Deployment

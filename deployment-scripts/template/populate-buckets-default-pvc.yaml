@@ -1,0 +1,34 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  annotations:
+    ibm.io/region: ${region}
+    ibm.io/endpoint: ${endpoint}
+    ibm.io/auto-create-bucket: 'false'
+    ibm.io/secret-name: populate-buckets-cos-secret
+    ibm.io/bucket: ${BUCKET_INFERENCE_AUXDATA}
+    ibm.io/auto-delete-bucket: 'false'
+  name: populate-buckets-pvc
+  namespace: ${OC_PROJECT}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: ${COS_STORAGE_CLASS}
+
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: populate-buckets-cos-secret
+  namespace: ${OC_PROJECT}
+stringData:
+  access-key: ${access_key_id}
+  secret-key: ${secret_access_key}
+type: ibm/ibmc-s3fs
