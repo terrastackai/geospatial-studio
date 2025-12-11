@@ -108,9 +108,9 @@ spec:
           volumeMounts:
             - mountPath: /csi
               name: socket-dir
-            - name: trusted-ca-certs
-              mountPath: /etc/ssl/certs/minio-ca-certificates.crt
-              subPath: minio-public.crt
+            # - name: trusted-ca-certs
+            #   mountPath: /etc/ssl/certs/minio-ca-certificates.crt
+            #   subPath: minio-public.crt
         - name: liveness-probe
           image: liveness-probe-image
           args:
@@ -126,6 +126,6 @@ spec:
             path: /var/lib/kubelet/csi-plugins/cos.s3.csi.ibm.io
             type: DirectoryOrCreate
           name: socket-dir
-        - name: trusted-ca-certs
-          configMap:
-            name: minio-public-config
+        # - name: trusted-ca-certs
+        #   configMap:
+        #     name: minio-public-config

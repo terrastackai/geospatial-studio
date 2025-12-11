@@ -86,9 +86,9 @@ spec:
         - containerPort: 9001
           name: console
         volumeMounts:
-        - name: minio-tls-certs
-          mountPath: /root/.minio/certs
-          readOnly: true
+        # - name: minio-tls-certs
+        #   mountPath: /root/.minio/certs
+        #   readOnly: true
         - name: data
           mountPath: /data
         resources:
@@ -99,14 +99,14 @@ spec:
             cpu: 4000m
             memory: 4Gi
       volumes:
-      - name: minio-tls-certs
-        secret:
-          secretName: minio-tls-secret
-          items:
-          - key: tls.crt
-            path: public.crt
-          - key: tls.key
-            path: private.key
+      # - name: minio-tls-certs
+      #   secret:
+      #     secretName: minio-tls-secret
+      #     items:
+      #     - key: tls.crt
+      #       path: public.crt
+      #     - key: tls.key
+      #       path: private.key
       - name: data
         # Using emptyDir for local deployment without shared storage
         # emptyDir: {}
@@ -120,8 +120,8 @@ metadata:
   namespace: default
   labels:
     app: minio
-  annotations:
-    service.beta.openshift.io/serving-cert-secret-name: minio-tls-secret
+  # annotations:
+  #   service.beta.openshift.io/serving-cert-secret-name: minio-tls-secret
 spec:
   type: ClusterIP
   ports:

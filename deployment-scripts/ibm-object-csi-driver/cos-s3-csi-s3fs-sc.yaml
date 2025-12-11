@@ -15,7 +15,7 @@ mountOptions:
 parameters:
   mounter: "s3fs"
   client: "awss3"
-  cosEndpoint: "https://minio.default.svc.cluster.local:9000"
+  cosEndpoint: "http://minio.default.svc.cluster.local:9000"
   locationConstraint: "us-east-1"
   csi.storage.k8s.io/provisioner-secret-name: ${pvc.annotations['cos.csi.driver/secret']}
   csi.storage.k8s.io/provisioner-secret-namespace: ${pvc.namespace}

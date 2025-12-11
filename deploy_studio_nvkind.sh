@@ -46,11 +46,11 @@ echo "----------------------------------------------------------------------"
 
 # # Install MinIO
 # Create TLS for minio
-openssl genrsa -out minio-private.key 2048
-openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config deployment-scripts/minio-openssl.conf
+# openssl genrsa -out minio-private.key 2048
+# openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config deployment-scripts/minio-openssl.conf
 
-kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT}
-kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system
+# kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT}
+# kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system
 python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/minio-deployment.yaml --storageclass standard | kubectl apply -f - -n ${OC_PROJECT}
 kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
@@ -67,7 +67,7 @@ kubectl wait --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system -
 # # # Update .env with the MinIO details for local connection
 sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
 sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s|endpoint=.*|endpoint=https://localhost:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+sed -i -e "s|endpoint=.*|endpoint=http://localhost:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
 sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
 ## Setup storage class for minio and default in cluster storage class
@@ -79,7 +79,7 @@ sleep 5
 
 python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
-sed -i -e "s|endpoint=.*|endpoint=https://minio.default.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+sed -i -e "s|endpoint=.*|endpoint=http://minio.default.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
 
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 

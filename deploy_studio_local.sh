@@ -48,11 +48,11 @@ echo "----------------------------------------------------------------------"
 
 # Install MinIO
 # Create TLS for minio
-openssl genrsa -out minio-private.key 2048
-openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config deployment-scripts/minio-openssl.conf
+# openssl genrsa -out minio-private.key 2048
+# openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config deployment-scripts/minio-openssl.conf
 
-kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT}
-kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system
+# kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT}
+# kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system
 kubectl apply -f deployment-scripts/minio-deployment.yaml -n ${OC_PROJECT}
 kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
