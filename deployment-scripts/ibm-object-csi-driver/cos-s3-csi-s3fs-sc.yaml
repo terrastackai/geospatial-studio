@@ -1,0 +1,24 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: cos-s3-csi-s3fs-sc
+provisioner: cos.s3.csi.ibm.io
+mountOptions:
+    - "multipart_size=62"
+    - "max_dirty_data=51200"
+    - "parallel_count=8"
+    - "max_stat_cache_size=100000"
+    - "retries=5"
+    - "kernel_cache"
+    - "allow_other"
+parameters:
+  mounter: "s3fs"
+  client: "awss3"
+  cosEndpoint: "https://minio.default.svc.cluster.local:9000"
+  locationConstraint: "us-east-1"
+  csi.storage.k8s.io/provisioner-secret-name: ${pvc.annotations['cos.csi.driver/secret']}
+  csi.storage.k8s.io/provisioner-secret-namespace: ${pvc.namespace}
+  csi.storage.k8s.io/node-publish-secret-name: ${pvc.annotations['cos.csi.driver/secret']}
+  csi.storage.k8s.io/node-publish-secret-namespace: ${pvc.namespace}
+reclaimPolicy: Retain

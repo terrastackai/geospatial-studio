@@ -139,7 +139,7 @@ k9s
 | Authenticate | username: `testuser` password: `testpass123` |
 | Access Geoserver | [https://localhost:3000](https://localhost:3000) |
 | Access Keycloak | [https://localhost:8080](https://localhost:8080) |
-<!-- | Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) | -->
+| Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
 
 If you need to restart any of the port-forwards you can use the following commands:
 ```shell
@@ -240,8 +240,8 @@ Login with username: `minioadmin`, password: `minioadmin`
   ```
   access_key_id=minioadmin
   secret_access_key=minioadmin
-  #endpoint=http://minio.default.svc.cluster.local:9000
-  endpoint=http://localhost:9000
+  #endpoint=https://minio.default.svc.cluster.local:9000
+  endpoint=https://localhost:9000
   region=us-east
   ```
 
@@ -257,8 +257,8 @@ Login with username: `minioadmin`, password: `minioadmin`
 Run the following script to create the buckets:
 
 ```bash
-# Port forward to access Minio api at http://localhost:9000
-kubectl port-forward -n default svc/minio-api 9000:9000 &
+# Port forward to access Minio api at https://localhost:9000
+kubectl port-forward -n default svc/minio 9000:9000 &
 ```
 
 ```bash
@@ -476,7 +476,7 @@ echo -e "\n#lima\n127.0.0.1 keycloak.default.svc.cluster.local postgresql.defaul
 ## 5. Geoserver setup
 To deploy Geoserver.  This will deploy geoserver, wait for the deployment to be completed and then start the required port-forwarding:
 ```bash
-python ./deployment-scripts/update-postgres-geoserver-deployment.py --filename deployment-scripts/geoserver-deployment.yaml --disable-route | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --disable-route | kubectl apply -f - -n ${OC_PROJECT}
 
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n default --timeout=900s
 
@@ -696,7 +696,7 @@ kubectl port-forward -n default deployment/geofm-mlflow 5000:5000 >> studio-pf.l
 | Authenticate | username: `testuser` password: `testpass123` |
 | Access Geoserver | [https://localhost:3000](https://localhost:3000) |
 | Access Keycloak | [https://localhost:8080](https://localhost:8080) |
-<!-- | Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) | -->
+| Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
 
 
 <!-- ## Enable Permissions in Lima vm local directory

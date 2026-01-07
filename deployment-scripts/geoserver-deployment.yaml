@@ -242,7 +242,7 @@ metadata:
   labels:
     type: local
 spec:
-  storageClassName: manual
+  storageClassName: local-path
   capacity:
     storage: 60Gi
   accessModes:
@@ -260,7 +260,7 @@ metadata:
   annotations:
     helm.sh/resource-policy: keep
 spec:
-  storageClassName: manual
+  storageClassName: local-path
   accessModes:
     - ReadWriteOnce
   resources:
@@ -294,7 +294,7 @@ spec:
         - name: gfm-geoserver
           securityContext:
             {}
-          image: docker.osgeo.org/geoserver:2.28.x
+          image: docker.osgeo.org/geoserver:2.28.1
           imagePullPolicy: IfNotPresent
           envFrom:
             - configMapRef:

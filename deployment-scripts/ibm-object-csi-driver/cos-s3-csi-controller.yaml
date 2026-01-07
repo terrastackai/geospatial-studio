@@ -1,0 +1,131 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cos-s3-csi-controller
+  namespace: kube-system
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cos-s3-csi-controller-role
+  namespace: kube-system
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete", "patch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["csinodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cos-s3-csi-controller-rolebind
+  namespace: kube-system
+subjects:
+  - kind: ServiceAccount
+    name: cos-s3-csi-controller
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: cos-s3-csi-controller-role
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: cos-s3-csi-controller
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cos-s3-csi-controller
+  template:
+    metadata:
+      labels:
+        app: cos-s3-csi-controller
+    spec:
+      serviceAccountName: cos-s3-csi-controller
+      containers:
+        - name: csi-provisioner
+          image: csi-provisioner-image
+          args:
+            - "--csi-address=$(ADDRESS)"
+            - "--timeout=180s"
+            - "--v=5"
+            - "--extra-create-metadata=true"
+          env:
+            - name: ADDRESS
+              value: /csi/csi.sock
+          imagePullPolicy: "Always"
+          volumeMounts:
+            - mountPath: /csi
+              name: socket-dir
+        - name: cos-csi-provisioner
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            privileged: true
+            runAsNonRoot: false
+            runAsUser: 0
+            runAsGroup: 0
+          image: cos-driver-image
+          args:
+            - "--servermode=controller"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--nodeid=$(NODE_ID)"
+            - "--logtostderr=true"
+            - "--v=5"
+          env:
+            - name: CSI_ENDPOINT
+              value: unix:///csi/csi.sock
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          imagePullPolicy: "Always"
+          volumeMounts:
+            - mountPath: /csi
+              name: socket-dir
+            - name: trusted-ca-certs
+              mountPath: /etc/ssl/certs/minio-ca-certificates.crt
+              subPath: minio-public.crt
+        - name: liveness-probe
+          image: liveness-probe-image
+          args:
+            - "--csi-address=/csi/csi.sock"
+          env:
+            - name: ADDRESS
+              value: /csi/csi.sock
+          volumeMounts:
+            - name: socket-dir
+              mountPath: /csi
+      volumes:
+        - hostPath:
+            path: /var/lib/kubelet/csi-plugins/cos.s3.csi.ibm.io
+            type: DirectoryOrCreate
+          name: socket-dir
+        - name: trusted-ca-certs
+          configMap:
+            name: minio-public-config

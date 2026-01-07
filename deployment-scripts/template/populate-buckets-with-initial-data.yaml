@@ -3,38 +3,6 @@
 
 
 ---
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  annotations:
-    ibm.io/region: ${region}
-    ibm.io/endpoint: ${endpoint}
-    ibm.io/auto-create-bucket: 'false'
-    ibm.io/secret-name: populate-buckets-cos-secret
-    ibm.io/bucket: ${BUCKET_INFERENCE_AUXDATA}
-    ibm.io/auto-delete-bucket: 'false'
-  name: populate-buckets-pvc
-  namespace: ${OC_PROJECT}
-spec:
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 200Gi
-  storageClassName: ${COS_STORAGE_CLASS}
-
----
-kind: Secret
-apiVersion: v1
-metadata:
-  name: populate-buckets-cos-secret
-  namespace: ${OC_PROJECT}
-stringData:
-  access-key: ${access_key_id}
-  secret-key: ${secret_access_key}
-type: ibm/ibmc-s3fs
-
----
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -62,7 +30,7 @@ spec:
             defaultMode: 0755
       containers:
         - name: populate-buckets
-          image: 'image-registry.openshift-image-registry.svc:5000/openshift/httpd:latest'
+          image: registry.access.redhat.com/ubi9/ubi-minimal:latest
           imagePullPolicy: Always
           volumeMounts:
             - name: persistent-storage
@@ -82,8 +50,14 @@ metadata:
   namespace: ${OC_PROJECT}
 data:
   populate-buckets-script.sh: |
-    #!/bin/sh
+    #!/bin/bash
     set -e
+
+    # install unzip
+    microdnf update -y && \
+    microdnf install -y unzip && \
+    microdnf clean all && \
+    rm -rf /var/cache/microdnf /tmp/*
 
     # Function to handle errors
     error_handler() {
@@ -106,21 +80,25 @@ data:
     cd /data
 
     if [ "$LULC_TILE_ROOT" ]; then
-      echo "LULC_TILE_ROOT"
+      echo "Tile root set as: $LULC_TILE_ROOT"
       mkdir -p lulc
+      echo "Starting download phase"
       curl -L -# -o lulc.zip "$LULC_TILE_ROOT"
+      echo "Exiting download phase"
       unzip -oj lulc.zip -d lulc
       rm lulc.zip
     fi
 
     if [ "$LULC_TILE_SHAPEFILE" ]; then
-      echo "LULC_TILE_SHAPEFILE"
+      echo "Lulc tile shapefile: $LULC_TILE_SHAPEFILE"
     fi
 
     if [ "$LAND_POLYGON_PATH" ]; then
-      echo "LAND_POLYGON_PATH"
+      echo "Land polygon path set to: $LAND_POLYGON_PATH"
       mkdir -p general
+      echo "Starting download phase"
       curl -L -# -o general.zip "$LAND_POLYGON_PATH"
+      echo "Exiting download phase"
       unzip -oj general.zip -d general
       rm general.zip
     fi

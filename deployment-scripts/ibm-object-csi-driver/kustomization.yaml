@@ -1,0 +1,25 @@
+resources:
+- cos-s3-csi-controller.yaml
+- cos-s3-csi-driver.yaml
+- cos-s3-csi-sc.yaml
+- cos-s3-csi-s3fs-sc.yaml
+- cos-s3-csidriver.yaml
+images:
+# - name: csi-attacher-image
+#   newName: k8s.gcr.io/sig-storage/csi-attacher
+#   newTag: v4.6.1
+- name: csi-provisioner-image
+  newName: k8s.gcr.io/sig-storage/csi-provisioner
+  newTag: v5.2.0
+- name: cos-driver-image
+  newName: quay.io/containerstorage/ibm-object-csi-driver
+  newTag: v0.1.19
+- name: driver-registrar-image
+  newName: k8s.gcr.io/sig-storage/csi-node-driver-registrar
+  newTag: v2.13.0
+- newName: registry.k8s.io/sig-storage/livenessprobe
+  newTag: v2.16.0
+  name: liveness-probe-image
+commonLabels:
+  app.kubernetes.io/part-of: ibm-object-csi-driver
+  app.kubernetes.io/managed-by: kustomize

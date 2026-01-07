@@ -235,10 +235,11 @@ k9s
 |---|---|
 | Access the Studio UI | [https://localhost:4180](https://localhost:4180) |
 | Access the Studio API | [https://localhost:4181](https://localhost:4181) |
-| Authenticate | username: `testuser` password: `testpass123` |
+| Authenticate Studio | username: `testuser` password: `testpass123` |
 | Access Geoserver | [https://localhost:3000](https://localhost:3000) |
 | Access Keycloak | [https://localhost:8080](https://localhost:8080) |
-<!-- | Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) | -->
+| Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
+| Authenticate Minio | username: `minioadmin` password: `minioadmin` |
 
 If you need to restart any of the port-forwards you can use the following commands:
 ```shell
@@ -248,6 +249,8 @@ kubectl port-forward -n default svc/geofm-geoserver 3000:3000 >> studio-pf.log 2
 kubectl port-forward -n default deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
 kubectl port-forward -n default deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
 kubectl port-forward -n default deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n default svc/minio 9001:9001 >> studio-pf.log 2>&1 &
+kubectl port-forward -n default svc/minio 9000:9000 >> studio-pf.log 2>&1 &
 ```
 
 ## First steps
@@ -264,7 +267,7 @@ export STUDIO_API_KEY="<your api key from the UI>"
 
 3. Copy the UI url to an env in your terminal:
 ```shell
-export UI_ROUTE_URL="http://localhost:4180"
+export UI_ROUTE_URL="https://localhost:4180"
 ```
 
 4. Onboard the `sandbox-model`s, these are placeholder models (pipelines) for onboarding existing inferences or testing tuned models.

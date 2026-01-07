@@ -30,6 +30,7 @@ def get_s3_client():
             "endpoint", "https://s3.us-east.cloud-object-storage.appdomain.cloud"
         ),
         config=Config(signature_version="s3v4"),
+        verify=False
     )
     return cos
 
