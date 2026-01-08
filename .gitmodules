@@ -1,0 +1,3 @@
+[submodule "docs/geospatial-studio-docs/docs/geospatial-studio-toolkit"]
+	path = docs/geospatial-studio-docs/docs/geospatial-studio-toolkit
+	url = git@github.com:terrastackai/geospatial-studio-toolkit.git

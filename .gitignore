@@ -18,3 +18,6 @@ workspace/
 studio-pf.log
 minio-private.key
 minio-public.crt
+
+# mkdocs documentation
+**/site/
