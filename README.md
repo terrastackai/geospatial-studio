@@ -253,22 +253,29 @@ To deploy:
 #### Deployment steps
 1. Create a kind cluster using the command
     ```shell
-    kind create cluster studio
+    cat << EOF | kind create cluster --name=studio --config=-
+    kind: Cluster
+    apiVersion: kind.x-k8s.io/v1alpha4
+    nodes:
+    - role: control-plane
+    - role: worker
+    EOF
     ```
 
-2. Install Python dependencies:
+2. Set up the kubectl context:
+    ```shell
+    kubectl cluster-info --context kind-studio
+    ```
+
+3. Install Python dependencies:
    ```shell
    pip install -r requirements.txt
    ```
 
-3. Deploy the geospatial studio:
+4. Deploy the geospatial studio:
    ```shell
    ./deploy_studio_nvkind.sh
    ```
-4. Set up the kubectl context:
-    ```shell
-    kubectl cluster-info --context kind-studio
-    ```
 
 *Deployment can take ~10 minutes (or longer) depending available download speed for container images.*
 
