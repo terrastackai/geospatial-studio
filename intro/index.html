@@ -1485,12 +1485,14 @@
 <div><h1 id="intro-to-the-studio">Intro to the studio</h1>
 <h2 id="dataset-facrory">Dataset Facrory</h2>
 <p>The Geospatial Exploration and Orchestration Studio allows users to onboard their curated data for fine-tuning. The Studio Uses <a href="https://terrastackai.github.io/terrakit/">Terrakit</a>, a Python package for finding, retrieving and processing geospatial information, to find and fetch data  from a range of data connectors. Data connectors in Terrakit are different platforms(data sources) that provide access to geospacial data.</p>
-<p>Currently, Terrakit supports the following data connectors:
-- Sentinel Hub
-- NASA Earthdata
-- Sentinel AWS
-- IBM Research STAC
-- The Weather Company</p>
+<p>Terrakit currently supports the following data connectors:</p>
+<ul>
+<li>Sentinel Hub</li>
+<li>NASA Earthdata</li>
+<li>Sentinel AWS</li>
+<li>IBM Research STAC</li>
+<li>The Weather Company</li>
+</ul>
 <p>Each data connector has a different access requirements. Please check out the <a href="https://terrastackai.github.io/terrakit/download_data/#available-data-connectors:~:text=weathercompany%2Ddaily%2Dforecast-,Data%20connector%20access,-Each%20data%20connector">Terrakit documentation</a> for the specific access requirements of each data connector.</p>
 <p>When onboarding your curated dataset to the Studio, you need to define:</p>
 <ul>
@@ -1498,8 +1500,9 @@
 <li>Information about your dataset like name, description, data and label file suffixes, etc.</li>
 <li>Specific configurations that aid in the data onboarding and data fetching processes in the Studio.</li>
 </ul>
-<p>Check out the <a href="">Dataset factory user guide</a> for a full list and description of what you need to define when onboarding a dataset to the GEOStudio.</p>
-<p>The Geospatial Studio allows users to onboard either multi-modal data or uni-modal data. For the multi-modal data, users shall provide, as a list, a different data source for each input modality of the dataset. The Studio allows users to define a modality tag parameter for each collection that are used in the Terramind model to identify the specific collection to use. The table below shows the modality tags associated with each collection across the different data connectors:</p>
+<p>Check out the <a href="../dataset-factory-service/">Dataset factory API reference page</a> for a full list and description of what you need to define when onboarding a dataset to the GEOStudio..</p>
+<p>The Geospatial Studio allows users to onboard either multi-modal data or uni-modal data. For the multi-modal data, users shall provide, as a list, a different data source for each input modality of the dataset. The Studio allows users to define a modality tag parameter for each collection that are used in the Terramind model to identify the specific collection to use.</p>
+<p>The table below shows the modality tags associated with each collection across the different data connectors:</p>
 <table>
 <thead>
 <tr>
@@ -1562,8 +1565,138 @@
 </tr>
 </tbody>
 </table>
-<p>Check out these JSONs for example payloads that defines most of the values you will need to onboard differenct sample datasets to the Studio.</p>
+<p>Check out these <a href="">example payloads</a> that defines most of the values you will need to onboard different sample datasets we have in the Studio.</p>
 <h2 id="fine-tuning">Fine-tuning</h2>
+<p>In order to run a fine-tuning task in the studio, you need to select the following items:</p>
+<ul>
+<li><strong>tuning task type</strong> - The type of learning task you are attempting. Based on the task selected, the studio provides a configuration template(tuning template) that will be used when fine-tuning. The GEOstudio currently defines the following options to select for fine-tuning task/template:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Tuning task type</th>
+<th style="text-align: center;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Segmentation</td>
+<td style="text-align: center;">Generic template v1 and v2 models: Segmentation</td>
+</tr>
+<tr>
+<td style="text-align: left;">Regression</td>
+<td style="text-align: center;">Generic template for v1 &amp; v2 models: Regression</td>
+</tr>
+<tr>
+<td style="text-align: left;">terramind: Segmentation</td>
+<td style="text-align: center;">Terramind multimodal task for Segmantation</td>
+</tr>
+<tr>
+<td style="text-align: left;">clay_v1 : Segmentation</td>
+<td style="text-align: center;">Segmentation of the clay backbone models</td>
+</tr>
+<tr>
+<td style="text-align: left;">timm_resnet : Segmentation</td>
+<td style="text-align: center;">Segmentation of the resnet backbone models</td>
+</tr>
+<tr>
+<td style="text-align: left;">timm_convnext : Segmentation</td>
+<td style="text-align: center;">Segmentation of the convnext backbone models</td>
+</tr>
+</tbody>
+</table>
+<p>You can also create and manage your own tuning template. Check out the <a href="../geospatial-studio-toolkit/examples/fine-tuning/004-Create-User-Defined-Tuning-Templates/">SDK guide</a> on the parameters you will need to define to create your own template as well as example payloads.</p>
+<ul>
+<li><strong>fine-tuning dataset</strong> - The dataset you will use to train the model for your particular application.</li>
+<li><strong>base foundation model(Backbone model)</strong> - The geospatial foundation model you will use as the starting point for your tuning task.</li>
+</ul>
+<p>In the Studio, specific tuning templates are compatible with specific backbone models. Below is a current list of the available templates and compatible backbone models.  Fine-tuning in the GEOStudio leverages <a href="https://terrastackai.github.io/terratorch/stable/">TerraTorch</a>, a flexible fine-tuning framework for Geospatial Foundation Models (GFMs) based on TorchGeo and Lightning. So in theory any model available in TerraTorch can be supported with an appropriate config/template, more will be made available in future.</p>
+<table>
+<tbody><tr>
+  <th>Model family</th>
+  <th>Backbone model</th>
+  <th>Tuning template</th>
+</tr>
+<tr>
+  <td>Prithvi</td>
+  <td>
+    <ul>
+        <li> Prithvi_EO_V1_100M
+        </li><li> Prithvi_EO_V2_300M
+        </li><li> Prithvi_EO_V2_600M
+        </li><li> Prithvi_EO_V2_600M_TL
+        </li><li> <it>Prithvi tiny (coming soon)</it>
+    </li></ul>     
+  </td>
+  <td>
+    <ul>
+     <li> Segmentation
+     </li><li> Regression
+    </li></ul>  
+  </td>
+</tr>
+<tr>
+  <td>Terramind</td>
+  <td>
+    <ul>
+        <li> terramind_v1_large
+        </li><li> terramind_v1_base
+    </li></ul>     
+  </td>
+  <td>
+    <ul>
+     <li> terramind: Segmentation
+    </li></ul>  
+  </td>
+</tr>
+<tr>
+  <td>Clay</td>
+  <td>
+    <ul>
+        <li> clay_v1_base
+    </li></ul>     
+  </td>
+  <td>
+    <ul>
+     <li> clay_v1: Segmentation
+    </li></ul>  
+  </td>
+</tr>
+<tr>
+  <td>ResNet</td>
+  <td>
+    <ul>
+        <li> timm_resnet152
+        </li><li> timm_resnet : Segmentation
+        </li><li> timm_resnet101
+        </li><li> timm_resnet50
+        </li><li> timm_resnet18
+        </li><li> timm_resnet34
+    </li></ul>
+  </td>
+  <td>
+    <ul>
+     <li> clay_v1: Segmentation
+    </li></ul>  
+  </td>
+</tr>
+<tr>
+  <td>Convnext</td>
+  <td>
+    <ul>
+        <li> timm_convnext_xlarge.fb_in22k
+        </li><li> timm_convnext_large.fb_in22k
+    </li></ul>
+  </td>
+  <td>
+    <ul>
+     <li> timm_convnext : Segmentation
+    </li></ul>  
+  </td>
+</tr>
+
+</tbody></table>
+
 <h2 id="inference">Inference</h2></div>
 
 
@@ -1585,7 +1718,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 8, 2026 10:18:52 UTC">January 8, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 8, 2026 12:55:40 UTC">January 8, 2026</span>
   </span>
 
     
