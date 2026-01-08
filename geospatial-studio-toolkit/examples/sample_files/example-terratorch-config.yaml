@@ -1,0 +1,168 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+# lightning.pytorch==2.1.1
+seed_everything: 0
+trainer:
+  accelerator: auto
+  strategy: auto
+  devices: auto
+  num_nodes: 1
+  precision: 16-mixed
+  logger:
+    class_path: lightning.pytorch.loggers.mlflow.MLFlowLogger
+    init_args:
+      experiment_name: geotune-5vmhksvpy4tg6bm957fw8k # Future version, chnage this to user / email
+      run_name: "Test tune 1"    # Future version, chnage this to tune_id
+      save_dir: /geotunes/tune-tasks/geotune-5vmhksvpy4tg6bm957fw8k/mlflow
+      tags:
+        email: Catherine.Wanjiru@ibm.com
+        name: Catherine.Wanjiru
+
+  callbacks:
+    - class_path: RichProgressBar
+    - class_path: LearningRateMonitor
+      init_args:
+        logging_interval: epoch
+    - class_path: StateDictAwareModelCheckpoint
+      init_args:
+        filename: /geotunes/tune-tasks/eotune-5vmhksvpy4tg6bm957fw8k/{epoch}
+        monitor: val/loss
+        every_n_epochs: 2
+        verbose: true
+    - class_path: StateDictAwareModelCheckpoint
+      init_args:
+        filename: /geotunes/tune-tasks/eotune-5vmhksvpy4tg6bm957fw8k/{epoch}_state_dict
+        save_weights_only: true
+        monitor: val/loss
+        every_n_epochs: 2
+        verbose: true
+    # ---- Early stop if ----
+    # ---- Early stop endif ----
+  max_epochs: 5
+  check_val_every_n_epoch: 1
+  log_every_n_steps: 50
+  enable_checkpointing: true
+  default_root_dir: /geotunes/tune-tasks/geotune-5vmhksvpy4tg6bm957fw8k
+
+data:
+  class_path: terratorch.datamodules.GenericNonGeoSegmentationDataModule
+  init_args:
+    batch_size: 4
+    num_workers: 2
+    no_label_replace: -1
+    no_data_replace: 0
+    constant_scale: 1.0
+    dataset_bands:
+      - '0'
+      - '1'
+      - '2'
+      - '3'
+      - '4'
+      - '5'
+
+    output_bands:
+      - '0'
+      - '1'
+      - '2'
+      - '3'
+      - '4'
+      - '5'
+
+    rgb_indices:
+      - 0
+      - 1
+      - 2
+
+    train_data_root: /data//geodata-060bbc44822a11efb3260a580a830dad/training_data/
+    train_label_data_root: /data//geodata-060bbc44822a11efb3260a580a830dad/labels/
+    val_data_root: /data//geodata-060bbc44822a11efb3260a580a830dad/training_data/
+    val_label_data_root: /data//geodata-060bbc44822a11efb3260a580a830dad/labels/
+    test_data_root: /data//geodata-060bbc44822a11efb3260a580a830dad/training_data/
+    test_label_data_root: /data//geodata-060bbc44822a11efb3260a580a830dad/labels/
+    train_split: /data//geodata-060bbc44822a11efb3260a580a830dad/split_files/train_data.txt
+    test_split: /data//geodata-060bbc44822a11efb3260a580a830dad/split_files/test_data.txt
+    val_split: /data//geodata-060bbc44822a11efb3260a580a830dad/split_files/val_data.txt
+    img_grep: "*_merged.tif"
+    label_grep: "*.mask.tif"
+    means:
+      - 0.052829564761523104
+      - 0.07822514779700994
+      - 0.09545302348640401
+      - 0.2128596444116123
+      - 0.2363016737011897
+      - 0.17234100022878698
+
+    stds:
+      - 0.028757146620143812
+      - 0.03540772770593507
+      - 0.05291947163682527
+      - 0.06949186937256507
+      - 0.08958868240264736
+      - 0.08198354165348874
+
+    num_classes: 2
+    # ---- train_transform if ----
+    # ---- train_transform endif ----
+
+    # if backbone is prithvi-EO-v2
+    test_transform:
+      - class_path: ToTensorV2
+model:
+  class_path: terratorch.tasks.SemanticSegmentationTask
+  init_args:
+    model_args:
+      # backbone specific https://github.com/IBM/terratorch/blob/main/terratorch/models/backbones/prithvi_vit.py#L31.
+      # Most of the args are defined in the constructor. So, if some are not provided in the config, thr default ones are used.
+      # For some of the values, <backbone> is appended to the previous names.
+      backbone_pretrained: true
+      backbone: prithvi_eo_v2_300
+      backbone_drop_path: 0.1
+      backbone_bands:
+        - '0'
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+
+      necks:
+        - name: SelectIndices
+          indices: [5, 11, 17, 23]  # 300M models
+        - name: ReshapeTokensToImage # required
+        - name: LearnedInterpolateToPyramidal
+        # Remove this logic for necks now. UpperNet & UNet Decoders need the three necks in that order
+        #
+      decoder: UNetDecoder
+      decoder_channels: [512, 256, 128, 64]
+      num_classes: 2
+      head_dropout: 0.1
+    loss: ce
+    plot_on_val: 2
+    ignore_index: -1
+    freeze_backbone: false
+    freeze_decoder: false
+    model_factory: EncoderDecoderFactory
+    # ---- optimizer start ----
+    # ---- optimizer end ----
+
+    tiled_inference_parameters:
+      h_crop: 512
+      h_stride: 448
+      w_crop: 512
+      w_stride: 448
+      average_patches: True
+
+optimizer:
+  class_path: torch.optim.Adam
+  init_args:
+    # ---- Optimizer start if ----
+    lr: 6e-05
+
+    weight_decay: 0.05
+    # ---- Optimizer stop if ----
+lr_scheduler:
+  class_path: ReduceLROnPlateau
+  init_args:
+    monitor: val/loss

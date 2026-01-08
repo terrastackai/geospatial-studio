@@ -1,0 +1,1 @@
+{"columns":["Task","Metric","Best Score","Hyperparameters"],"data":[["geotune-qokd9fqyuhxbgyyiuurpxu","val\/loss",0.5826574564,{"lr":0.000047586,"optimizer_hparams":{"weight_decay":0.2995483411}}]]}

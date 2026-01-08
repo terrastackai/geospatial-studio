@@ -1,0 +1,18 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+artifact_uri: /geotunes/tune-tasks/geotune-qokd9fqyuhxbgyyiuurpxu/201622622176987258/2e5f1ac663f14fad8a615538a9ec6db2/artifacts
+end_time: 1758704523303
+entry_point_name: ''
+experiment_id: '201622622176987258'
+lifecycle_stage: active
+run_id: 2e5f1ac663f14fad8a615538a9ec6db2
+run_name: geotune-qokd9fqyuhxbgyyiuurpxu_1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1758703900780
+status: 3
+tags: []
+user_id: '1001810000'

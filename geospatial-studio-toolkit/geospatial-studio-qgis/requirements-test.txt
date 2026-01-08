@@ -1,0 +1,12 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+pytest>=7.0.0
+pytest-mock>=3.10.0
+responses>=0.23.0
+pytest-cov>=4.0.0
+
+PyQt5>=5.15.0
+
+unittest2>=1.1.0

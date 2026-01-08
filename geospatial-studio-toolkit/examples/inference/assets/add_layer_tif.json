@@ -1,0 +1,75 @@
+{
+  "fine_tuning_id": "sandbox",
+  "spatial_domain": {
+    "urls": [
+      "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/test-add-layer/d5c33eb4-635d-4070-b72c-d57351ab2586_hls-agb_rgb.zip",
+      "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/test-add-layer/d5c33eb4-635d-4070-b72c-d57351ab2586_hls-agb_pred_postprocessed.zip"
+    ]
+  },
+  "temporal_domain": [],
+  "geoserver_push": [
+    {
+      "workspace": "geofm",
+      "layer_name": "karen_agb_rgb",
+      "display_name": "2024 Karen AGB RGB",
+      "filepath_key": "original_input_image",
+      "file_suffix": "",
+      "z_index": 0,
+      "visible_by_default": "True",
+      "geoserver_style": {
+        "rgb": [
+          {
+            "minValue": 0,
+            "maxValue": 255,
+            "channel": 1,
+            "label": "RedChannel"
+          },
+          {
+            "minValue": 0,
+            "maxValue": 255,
+            "channel": 2,
+            "label": "GreenChannel"
+          },
+          {
+            "minValue": 0,
+            "maxValue": 255,
+            "channel": 3,
+            "label": "BlueChannel"
+          }
+        ]
+      }
+    },
+    {
+      "workspace": "geofm",
+      "layer_name": "karen_agb_pred",
+      "display_name": "2024 Karen AGB Pred",
+      "filepath_key": "original_input_image",
+      "file_suffix": "",
+      "z_index": 1,
+      "visible_by_default": "True",
+      "geoserver_style": {
+        "regression": [
+          {
+            "color": "#d0ffc9",
+            "quantity": "0",
+            "opacity": 1,
+            "label": "0 MgC/ha"
+          },
+          {
+            "color": "#2dba18",
+            "quantity": "300",
+            "opacity": 1,
+            "label": "300 MgC/ha"
+          }
+        ]
+      }
+    }
+  ],
+  "model_display_name": "add-layer-sandbox-model",
+  "description": "AGB Data",
+  "location": "Karen, Nairobi,kenya",
+  "demo": {
+    "demo": true,
+    "section_name": "My Examples"
+  }
+}

@@ -1,0 +1,109 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+[project]
+name = "geostudio"
+version = "0.1.3"
+description = "A Geospatial Exploration and Orchestration Studio (GEOStudio) SDK for Python."
+authors = [
+    {"name"="Geostudio Team", email="geostudio@ibm.com"},
+    {"name"="Blair Edwards"},
+    {"name"="Charles Wachira"},
+    {"name"="Beldine Moturi"},
+    {"name"="Catherine Wanjiru"},
+    {"name"="Fred Otieno"},
+    {"name"="Brian Ogolla"},
+    {"name"="Reginald Eugene Bryant"},
+]
+readme = "README.md"
+packages = [
+    {include = "geostudio"},
+]
+
+[project.urls]
+Documentation = "https://terrastackai.github.io/geospatial-studio-toolkit/"
+Issues = "https://github.com/terrastackai/geospatial-studio-toolkit/issues"
+Source = "https://github.com/terrastackai/geospatial-studio-toolkit"
+
+[tool.poetry.dependencies]
+python = ">=3.10, <4.0"
+pydantic = "^2.0"
+requests = "^2.32.4"
+pandas = "^2.0.3"
+python-dotenv = "^1.0.0"
+ipyleaflet = ">=0.17.1"
+ipywidgets = ">=8.1.1"
+shapely = ">=1.8.5"
+geopandas = ">=0.9.0"
+rasterio = ">=1.3.8"
+matplotlib = ">=3.8"
+numpy = ">=1.25"
+pyproj = "3.7.1"
+remotezip = ">=0.12.2"
+wget = ">=3.2"
+requests-toolbelt = "^1.0.0"
+jinja2 = "3.1.6"
+urllib3 = "2.5.0"
+plotly = "6.3.0"
+folium = "0.20.0"
+rich = "^14.1.0"
+joblib = "^1.5.2"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.3.0"
+ipython = "^8.14.0"
+ipykernel = "^6.24.0"
+jupyter = "^1.0.0"
+flake8 = "^6.0.0"
+isort = "^5.12.0"
+pre-commit = "^3.3.3"
+jupyterlab = "^4.4.5"
+tornado = ">=6.5"
+jupyter-core = ">=5.8.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | build
+  | dist
+  | venv
+)/
+'''
+
+[tool.black.prerun]
+exclude = '''
+    '\.venv'
+'''
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.6.1"
+mkdocs-autorefs = "^1.4.3"
+mkdocs-get-deps = "^0.2.0"
+mkdocs-material = "^9.6.20"
+mkdocs-material-extensions = "^1.3.1"
+mkdocstrings = "^0.30.1"
+mkdocstrings-python = "^1.18.2"
+mkdocs-jupyter = "^0.25.1"
+mkdocs-git-revision-date-localized-plugin = "^1.4.7"
+mkdocs-swagger-ui-tag = "^0.7.2"
+requests = "^2.32.4"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.scripts]
+docs-build = "scripts.docs:build_docs"
+docs-serve = "scripts.docs:serve_docs"
+docs-deploy = "scripts.docs:deploy_docs"

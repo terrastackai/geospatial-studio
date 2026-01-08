@@ -1,0 +1,9 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+-r requirements.txt
+
+black==25.1.0
+flake8==7.2.0
+pre-commit==4.2.0
