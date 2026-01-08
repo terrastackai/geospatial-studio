@@ -6,3 +6,4 @@ ibm-cos-sdk
 python-dotenv
 pg8000>=1.31.5
 pyyaml
+pre-commit
