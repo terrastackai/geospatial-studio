@@ -406,18 +406,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-notebooks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example notebooks
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Example notebooks">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#fine-tuning-templates" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -425,11 +413,6 @@
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -1523,18 +1506,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-notebooks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example notebooks
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Example notebooks">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
   <a href="#fine-tuning-templates" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1542,11 +1513,6 @@
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
         
@@ -1634,62 +1600,7 @@ pip<span class="w"> </span>install<span class="w"> </span>geostudio-&lt;x.y.z&gt
 <span class="n">tunes</span> <span class="o">=</span> <span class="n">gfm_client</span><span class="o">.</span><span class="n">list_tunes</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">tunes</span><span class="p">)</span>
 </code></pre></div>
-<p>For more detailed examples on how to use the Geospatial studio SDK, check out <a href="/sdk/">here</a> or see the examples linked below.</p>
-<h3 id="example-notebooks">Example notebooks</h3>
-<p>For detailed examples on how to use different components of the Studio, please checkout these sample notebooks:</p>
-<table>
-<thead>
-<tr>
-<th>Notebook</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="https://github.com/terrastackai/geospatial-studio-toolkit/examples/dataset-onboarding/001-Introduction-to-Onboarding-Tuning-Data.ipynb">Onboarding a Dataset</a></td>
-<td>Onboard your curated data to the IBM Geospatial Exploration and Orchestration Studio for fine-tuning</td>
-</tr>
-<tr>
-<td><a href="https://github.com/terrastackai/geospatial-studio-toolkit/examples/fine-tuning/001-Introduction-to-Finetuning.ipynb">Fine-tuning a model</a></td>
-<td>Customize a base model by running a regression or segmentation task on the base model using labelled data as input</td>
-</tr>
-<tr>
-<td><a href="https://github.com/terrastackai/geospatial-studio-toolkit/examples/fine-tuning/002-Upload-Complete-Tune-Artifacts.ipynb">Uploading completed tune artifacts</a></td>
-<td>Deploying a completed fine-tuned TerraTorch model with both checkpoint (.ckpt) and configuration (.yaml) files to the GeoStudio platform</td>
-</tr>
-<tr>
-<td><a href="https://github.com/terrastackai/geospatial-studio-toolkit/examples/fine-tuning/003-Terratorch-Iterate.ipynb">Hyperparameter Optimization</a></td>
-<td>Submit an HPO (Hyperparameter Optimization) job to the FineTuning service.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/terrastackai/geospatial-studio-toolkit/examples/inference/001-Introduction-to-Inferencing.ipynb">Running an inference</a></td>
-<td>Running different fine-tuned models to generate inferences on the provided datasets.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/terrastackai/geospatial-studio-toolkit/examples/inference/002-Add-Precomputed-Examples.ipynb">Uploading pre-computed examples</a></td>
-<td>For inferences run outside the studio, you can onboard your layers to the studio for visulaisation</td>
-</tr>
-</tbody>
-</table>
-<p>Alternatively, you can jump right into the End-to-end walkthrough notebooks:</p>
-<table>
-<thead>
-<tr>
-<th>Notebook</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="https://github.com/terrastackai/geospatial-studio-toolkit/examples/e2e-walkthroughs/GeospatialStudio-Walkthrough-BurnScars.ipynb">Burn scars walkthrough</a></td>
-<td>Map the extent of areas burned by wildfires</td>
-</tr>
-<tr>
-<td><a href="https://github.com/terrastackai/geospatial-studio-toolkit/examples/e2e-walkthroughs/GeospatialStudio-Walkthrough-Flooding.ipynb">Flooding walkthrough</a></td>
-<td>Map the extent of flooded areas</td>
-</tr>
-</tbody>
-</table>
+<p>For detailed examples on how to use different components of the Studio, checkout the <a href="https://terrastackai.github.io/geospatial-studio/">SDK User guide</a> page for example notebooks</p>
 <h4 id="fine-tuning-templates">Fine-tuning templates</h4>
 <p>Below is a current list of the available task templates and compatible backbone models.  Fine-tuning leverages TerraTorch, so in theory any model available in TerraTorch can be supported with an appropriate config/template, more will be made available in future.</p>
 <table>
