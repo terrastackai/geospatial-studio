@@ -230,6 +230,7 @@ You can monitor the progress and debug using [`k9s`](https://k9scli.io) or simil
 export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 k9s
 ```
+After successful deployment you can jump to [First steps](#first-steps).
 
 ---
 
@@ -283,6 +284,7 @@ You can monitor the progress and debug using [`k9s`](https://k9scli.io) or simil
 ```shell
 k9s
 ```
+After successful deployment you can jump to [First steps](#first-steps).
 
 ---
 
@@ -372,6 +374,7 @@ You can monitor the progress and debug using [`k9s`](https://k9scli.io) or simil
 ```shell
 k9s
 ```
+After successful deployment you can jump to [First steps](#first-steps).
 
 | After deployment: | |
 |---|---|
