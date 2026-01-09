@@ -231,6 +231,148 @@ export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 k9s
 ```
 
+---
+
+## 💻⚙️ Getting Started (kind cluster deployment)
+
+Whilst not providing full performance and functionality, the studio can be deployed for testing and development purposes.  The instructions below will deploy the main components of the Geospatial Studio in a Kubernetes cluster on a local or remote machine.  This is provisioned through a [Kind Cluster](https://kind.sigs.k8s.io/).
+
+The automated shell script will deploy dependencies (Minio, Keycloak and Postgresql), before generating the deployment configuration for the studio and then deploying the main studio services + pipelines.
+
+To deploy:
+
+#### Prerequisites:
+* [kind](https://kind.sigs.k8s.io/) - tool for running local Kubernetes clusters using Docker container nodes.
+* [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
+* [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html)
+* Kubectl (bundled with above)
+* [jq](https://github.com/jqlang/jq) - json command-line processor
+* [yq](https://github.com/mikefarah/yq) - yaml command-line processor
+
+
+#### Deployment steps
+1. Create a kind cluster using the command
+    ```shell
+    cat << EOF | kind create cluster --name=studio --config=-
+    kind: Cluster
+    apiVersion: kind.x-k8s.io/v1alpha4
+    nodes:
+    - role: control-plane
+    - role: worker
+    EOF
+    ```
+
+2. Set up the kubectl context:
+    ```shell
+    kubectl cluster-info --context kind-studio
+    ```
+
+3. Install Python dependencies:
+   ```shell
+   pip install -r requirements.txt
+   ```
+
+4. Deploy the geospatial studio:
+   ```shell
+   ./deploy_studio_nvkind.sh
+   ```
+
+*Deployment can take ~10 minutes (or longer) depending available download speed for container images.*
+
+You can monitor the progress and debug using [`k9s`](https://k9scli.io) or similar tools.
+```shell
+k9s
+```
+
+---
+
+## 💻⚙️ Getting Started (nvkind cluster deployment)
+
+This section targets cases where you have a host machine (local or remote) that has access to NVIDIA GPUs and leverage [`nvkind`](https://github.com/NVIDIA/nvkind/blob/f1a690fa3f4b0dcb41eb8d6acdda05accf045187/README.md) to create and manage `kind` kubernetes clusters with access to GPUs.
+
+The automated shell script will deploy dependencies (Minio, Keycloak and Postgresql), before generating the deployment configuration for the studio and then deploying the main studio services + pipelines.
+
+To deploy:
+
+#### Prerequisites:
+* [nvkind](https://github.com/NVIDIA/nvkind/blob/f1a690fa3f4b0dcb41eb8d6acdda05accf045187/README.md) - tool to create and manage kind clusters with access to GPUs
+* [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
+* [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html)
+* Kubectl (bundled with above)
+* [jq](https://github.com/jqlang/jq) - json command-line processor
+* [yq](https://github.com/mikefarah/yq) - yaml command-line processor
+
+
+#### Deployment steps
+1. Navigate to [`nvkind`](https://github.com/NVIDIA/nvkind/blob/f1a690fa3f4b0dcb41eb8d6acdda05accf045187/README.md) GitHub repository documentation
+    - Install all the [listed prerequisites](https://github.com/NVIDIA/nvkind/blob/f1a690fa3f4b0dcb41eb8d6acdda05accf045187/README.md#prerequisites) based on your host machine operating system, and ensure the test commands below produce similar documented output.
+        ```shell
+        $ nvidia-smi -L
+        GPU 0: NVIDIA L4 (UUID: GPU-3e71c48d-90c0-f46f-195b-4150320f9910)
+        ```
+
+        ```shell
+        $ docker run --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all ubuntu:20.04 nvidia-smi -L
+        GPU 0: NVIDIA L4 (UUID: GPU-3e71c48d-90c0-f46f-195b-4150320f9910)
+        ```
+
+    - Run the [setup](https://github.com/NVIDIA/nvkind/blob/f1a690fa3f4b0dcb41eb8d6acdda05accf045187/README.md#setup) commands documented, and ensure the test commands below produce similar documented output.
+       ```shell
+       $ docker run -v /dev/null:/var/run/nvidia-container-devices/all ubuntu:20.04 nvidia-smi -L
+       GPU 0: NVIDIA L4 (UUID: GPU-3e71c48d-90c0-f46f-195b-4150320f9910)
+       ```
+
+    - [Install nvkind](https://github.com/NVIDIA/nvkind/blob/f1a690fa3f4b0dcb41eb8d6acdda05accf045187/README.md#install-nvkind) using the commands below.
+       ```shell
+       go install github.com/NVIDIA/nvkind/cmd/nvkind@latest
+       ```
+
+    - [Build](https://github.com/NVIDIA/nvkind/blob/f1a690fa3f4b0dcb41eb8d6acdda05accf045187/README.md#quickstart) nvkind with the command below
+        ```shell
+        make
+        ```
+
+    - Create a `nvkind` cluster using the command below
+        ```shell
+        cat << EOF | nvkind cluster create --name=studio --config-template= -
+        kind: Cluster
+        apiVersion: kind.x-k8s.io/v1alpha4
+        nodes:
+        - role: control-plane
+        - role: worker
+          extraMounts:
+            - hostPath: /dev/null
+              containerPath: /var/run/nvidia-container-devices/all
+        EOF
+        ```
+
+    - Set up the kubectl context:
+        ```shell
+        kubectl cluster-info --context kind-studio
+        ```
+
+    - Install NVIDIA gpu--operator in the cluster:
+        ```shell
+        helm repo add nvidia https://helm.ngc.nvidia.com/nvidia && helm repo update && helm install --wait --generate-name -n gpu-operator --create-namespace nvidia/gpu-operator --version=v25.10.0
+        ```
+
+2. Install Python dependencies:
+  ```shell
+  pip install -r requirements.txt
+  ```
+
+3. Deploy the geospatial studio:
+```shell
+./deploy_studio_nvkind.sh
+```
+
+*Deployment can take ~10 minutes (or longer) depending available download speed for container images.*
+
+You can monitor the progress and debug using [`k9s`](https://k9scli.io) or similar tools.
+```shell
+k9s
+```
+
 | After deployment: | |
 |---|---|
 | Access the Studio UI | [https://localhost:4180](https://localhost:4180) |
