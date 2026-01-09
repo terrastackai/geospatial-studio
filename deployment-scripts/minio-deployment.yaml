@@ -26,17 +26,12 @@ spec:
     storage: 100Gi
   accessModes:
     - ReadWriteOnce
+  claimRef:
+    namespace: default
+    name: minio-pvc
   hostPath:
     path: "/data/minio_home"
     type: DirectoryOrCreate
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-        - matchExpressions:
-            - key: kubernetes.io/hostname
-              operator: In
-              values:
-                - lima-studio
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

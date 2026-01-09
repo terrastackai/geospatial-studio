@@ -280,8 +280,8 @@ echo "-----------------------  Deployment summary  -------------------------"
 echo "----------------------------------------------------------------------"
 
 printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed to Lima VM! \n"
-printf "\U1F5FA   Access the Geospatial Studio UI at: http://localhost:4180\n"
-printf "\U1F4BB   Access the Geospatial Studio API at: http://localhost:4181\n"
+printf "\U1F5FA   Access the Geospatial Studio UI at: https://localhost:4180\n"
+printf "\U1F4BB   Access the Geospatial Studio API at: https://localhost:4181\n"
 printf "K8S \U2388   To access the k8s cluster dashboard, run: minikube dashboard\n\n"
 
 CONFIGURE_HOSTS_CMD="echo -e \"127.0.0.1 keycloak.default.svc.cluster.local postgresql.default.svc.cluster.local minio.default.svc.cluster.local geofm-ui.default.svc.cluster.local geofm-gateway.default.svc.cluster.local geofm-geoserver.default.svc.cluster.local\" >> /etc/hosts"
