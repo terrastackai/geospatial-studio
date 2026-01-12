@@ -21,6 +21,7 @@ nav:
         - geospatial-studio-toolkit/examples/fine-tuning/*.ipynb
       - SDK walkthroughs:
         - geospatial-studio-toolkit/examples/e2e-walkthroughs/*.ipynb
+    - Sample payloads: sample-payloads.md
   - API Reference:
     - API specification: api-reference.md
     - Inference Service: inference-service.md

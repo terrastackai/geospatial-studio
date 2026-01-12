@@ -278,7 +278,7 @@ export UI_ROUTE_URL="https://localhost:4180"
 **Onboard an existing inference output (useful for loading examples)**
 1. Onboard one of the `inferences`.  This will start a pipeline to pull the data and set it up in the platform.  You should now be able to browser to the inferences page in the UI and view the example/s you have added.
 ```shell
-python populate-studio/populate-studio.py inferences
+python docs/geospatial-studio-docs/docs/populate-studio/populate-studio.py inferences
 # select "AGB Data - Karen, Nairobi,kenya"
 ```
 
@@ -289,12 +289,12 @@ First we ensure we have a tuning task `templates`.
 Onboard the tuning task `templates`.  These are the outline configurations to make basic tuning tasks easier for users.
 
 ```shell
-python populate-studio/populate-studio.py templates
+python docs/geospatial-studio-docs/docs/populate-studio/populate-studio.py templates
 # select  1. Segmentation - Generic template v1 and v2 models: Segmentation
 ```
 
 ```shell
-python populate-studio/populate-studio.py tunes
+python docs/geospatial-studio-docs/docs/populate-studio/populate-studio.py tunes
 # select "prithvi-eo-flood - prithvi-eo-flood"
 ```
 
@@ -336,18 +336,18 @@ echo $payload | curl -X POST "${UI_ROUTE_URL}/studio-gateway/v2/tunes/${tune_id}
 
 1. First onboard a tuning dataset. This can be done through the UI or the API, for now select and onboard a dataset using the below command.  This will trigger a backend task to download, validate and sort the dataset ready for use.  The dataset will appear in the UI datasets page, initally as pending, but will complete and change status after a few minutes.
 ```shell
-python populate-studio/populate-studio.py datasets
+python docs/geospatial-studio-docs/docs/populate-studio/populate-studio.py datasets
 # select "Wildfire burn scars"
 ```
 
 2. Onboard the backbone model/s from which we will fine-tune.
 ```shell
-python populate-studio/populate-studio.py backbones
+python docs/geospatial-studio-docs/docs/populate-studio/populate-studio.py backbones
 ```
 
 3. Onboard the tuning task `templates`.  These are the outline configurations to make basic tuning tasks easier for users.
 ```shell
-python populate-studio/populate-studio.py templates
+python docs/geospatial-studio-docs/docs/populate-studio/populate-studio.py templates
 ```
 
 4. Now we can prepare the tuning task.  In a cluster deployed studio instance a user will prepare and submit their tuning task in one step, however, for local deployments, due to GPU accessibility within VMs (especially on Mac), we will use the studio to create the tuning config file and then run it outside the studio with TerraTorch.

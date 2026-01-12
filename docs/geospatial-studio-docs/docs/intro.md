@@ -34,7 +34,7 @@ The table below shows the modality tags associated with each collection across t
 | HLS_S30 | hls_s30 | HLSS30_2.0 | | | |
 | S2L2A | s2_l2a | | sentinel-2-l2a | | |
 
-Check out these [example payloads]() that defines most of the values you will need to onboard different sample datasets we have in the Studio.
+Check out these [example payloads](sample-payloads.md#dataset-onboarding) that defines most of the values you will need to onboard different sample datasets we have in the Studio.
 
 
 ## Fine-tuning
@@ -145,5 +145,10 @@ In the Studio, specific tuning templates are compatible with specific backbone m
 
 </table>
 
+Check out these [example template configs](sample-payloads.md#tuning-templates) for sample json configs for each of these tune templates, as well as these [fine-tuning configs](sample-payloads.md#tunes) for the datasets we have in the studio.
+
 ## Inference
+The GEOStudio platform provides a no-code portal for running inference with different fine-tuned models, and visualize the results. A user can select a model, a spatial domain and temporal range, and the studio backend will do the rest. Check out the deatiled [UI](inference-lab.md) and [SDK](geospatial-studio-toolkit/examples/inference/001-Introduction-to-Inferencing.ipynb) user guide on how to run inference on the studio.
+
+You can use these [inference payload examples](sample-payloads.md#inference) for testing inference in the studio.
 
