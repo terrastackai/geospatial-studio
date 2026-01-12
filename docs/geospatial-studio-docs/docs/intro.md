@@ -66,13 +66,13 @@ In the Studio, specific tuning templates are compatible with specific backbone m
   <th>Tuning template</th>
 </tr>
 <tr>
-  <td>Prithvi</td>
+  <td><a href="https://huggingface.co/ibm-nasa-geospatial">Prithvi</a></td>
   <td>
     <ul>
-        <li> Prithvi_EO_V1_100M
-        <li> Prithvi_EO_V2_300M
-        <li> Prithvi_EO_V2_600M
-        <li> Prithvi_EO_V2_600M_TL
+        <li> <a href="https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-1.0-100M">Prithvi_EO_V1_100M</a>
+        <li> <a href="https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-300M">Prithvi_EO_V2_300M</a>
+        <li> <a href="https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-600M">Prithvi_EO_V2_600M</a>
+        <li> <a href="https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-600M-TL">Prithvi_EO_V2_600M_TL</a>
         <li> <it>Prithvi tiny (coming soon)</it>
     </ul>     
   </td>
@@ -84,11 +84,11 @@ In the Studio, specific tuning templates are compatible with specific backbone m
   </td>
 </tr>
 <tr>
-  <td>Terramind</td>
+  <td><a href="https://huggingface.co/ibm-esa-geospatial">Terramind</a></td>
   <td>
     <ul>
-        <li> terramind_v1_large
-        <li> terramind_v1_base
+        <li> <a href="https://huggingface.co/ibm-esa-geospatial/TerraMind-1.0-large">terramind_v1_large</a>
+        <li> <a href="https://huggingface.co/ibm-esa-geospatial/TerraMind-1.0-base">terramind_v1_base</a>
     </ul>     
   </td>
   <td>
@@ -132,8 +132,8 @@ In the Studio, specific tuning templates are compatible with specific backbone m
   <td>Convnext</td>
   <td>
     <ul>
-        <li> timm_convnext_xlarge.fb_in22k
-        <li> timm_convnext_large.fb_in22k
+        <li> <a href="https://huggingface.co/timm/convnext_xlarge.fb_in22k">timm_convnext_xlarge.fb_in22k</a>
+        <li> <a href="https://huggingface.co/timm/convnext_large.fb_in22k">timm_convnext_large.fb_in22k</a>
     </ul>
   </td>
   <td>
