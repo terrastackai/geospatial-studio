@@ -229,7 +229,14 @@ cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${
 cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
 
 # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
-python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
+NVIDIA_GPUS_AVAILABLE=$(kubectl describe node studio-worker | grep -c "nvidia.com")
+if [ "$NVIDIA_GPUS_AVAILABLE" -gt 0 ]; then
+    echo "Cluster Type: nvkind"
+    python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
+else
+    echo "Cluster Type: standard kind"
+    python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
+fi
 
 echo "**********************************************************************"
 echo "**********************************************************************"
