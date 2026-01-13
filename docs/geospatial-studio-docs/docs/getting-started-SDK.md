@@ -58,4 +58,6 @@ tunes = gfm_client.list_tunes()
 print(tunes)
 ```
 
-For detailed examples on how to use different components of the Studio, checkout the [SDK User guide](geospatial-studio-toolkit/examples/inference/001-Introduction-to-Inferencing.ipynb) page for example notebooks
+## SDK User guide
+
+For detailed examples on how to use different components of the Studio through the SDK, checkout the [SDK Documentation](https://terrastackai.github.io/geospatial-studio-toolkit/examples/dataset-onboarding/001-Introduction-to-Onboarding-Tuning-Data/) for example notebooks.
