@@ -63,7 +63,10 @@ Click below for example payloads for submitting an inference request through the
     </div>
     
     <div id="curlTab" class="tab-content">
-      <button onclick="copyToClipboard(event, 'curlContent')" class="copy-btn">Copy cURL</button>
+      <p>Ensure you export your Studio API key and base API endpoint to your environment variables:</p>
+      <button id="envCopy" onclick="copyToClipboard(event, 'envContent')" class="copy-btn">Copy commands</button>
+      <pre><code id="envContent" class="language-bash"></code></pre>
+      <button id="curlCopy" onclick="copyToClipboard(event, 'curlContent')" class="copy-btn">Copy cURL</button>
       <pre><code id="curlContent" class="language-bash"></code></pre>
     </div>
     
@@ -212,6 +215,17 @@ Click below for example payloads for submitting an inference request through the
   z-index: 10;
 }
 
+#envCopy {
+    position: absolute;
+    right: 10px;
+    top: 50px;
+}
+#curlCopy {
+    position: absolute;
+    right: 10px;
+    top: 130px;
+}
+
 .copy-btn:hover {
   background-color: #0b7dda;
 }
@@ -236,79 +250,79 @@ const exampleConfigs = {
   burnScarsDataset: {
     title: "Burn scars Dataset",
     jsonFile: "../payloads/datasets/dataset-burn_scars.json",
-    endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/datasets/onboard",
+    endpoint: "/v2/datasets/onboard",
     method: "POST"
   },
   floodDatasetMultimodal: {
     title: "Multi-modal flood dataset",
     jsonFile: "../payloads/datasets/dataset-flooding_multimodal.json",
-    endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/datasets/onboard",
+    endpoint: "/v2/datasets/onboard",
     method: "POST"
   },
   regression: {
     title: "Regression template",
     jsonFile: "../payloads/templates/template-reg.json",
-    endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
+    endpoint: "/v2/tune-templates",
     method: "POST"
   },
   segmentation: {
     title: "Generic segmentation template",
     jsonFile: "../payloads/templates/template-seg.json",
-    endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
+    endpoint: "/v2/tune-templates",
     method: "POST"
   },
   terramingSegmentation: {
     title: "Terramind segmentation template",
     jsonFile: "../payloads/templates/template-terramind_seg.json",
-    endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
+    endpoint: "/v2/tune-templates",
     method: "POST"
   },
   claySegmentation: {
     title: "Clay backbone models segmentation template",
     jsonFile: "../payloads/templates/template-clay_v1_seg.json",
-    endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
+    endpoint: "/v2/tune-templates",
     method: "POST"
   },
   resnetSegmentation: {
     title: "Resnet backbone models segmentation template",
     jsonFile: "../payloads/templates/template-timm_resnet_seg.json",
-    endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
+    endpoint: "/v2/tune-templates",
     method: "POST"
   },
   convnextSegmentation: {
     title: "Convnext backbone models segmentation template",
     jsonFile: "../payloads/templates/template-timm_convnext_seg.json",
-    endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
+    endpoint: "/v2/tune-templates",
     method: "POST"
   },
   floodTuning: {
     title: "Example configs for fine-tuning a flood model",
     jsonFile: "../payloads/tunes/tune-prithvi-eo-flood.json",
-    endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
+    endpoint: "/v2/tune-templates",
     method: "POST"
   },
   burnScarsTuning: {
     title: "Example configs for fine-tuning a burn-scars model",
     jsonFile: "../payloads/tunes/tune-test-fire.json",
-    endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
+    endpoint: "/v2/tune-templates",
     method: "POST"
   },
   karenInference: {
     title: "Example config for inference run",
     jsonFile: "../payloads/inferences/inference-agb-karen.json",
-    endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/inference",
+    endpoint: "/v2/inference",
     method: "POST"
   },
   tryInInference: {
     title: "Example config for trying out a tune",
     jsonFile: "../payloads/sandbox-models/model-try-in-lab.json",
-    endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tunes/{tune-id}/try-out",
+    endpoint: "/v2/tunes/{tune-id}/try-out",
     method: "POST"
   },
   addLayer: {
     title: "Example config for adding pre-computed examples to the studio",
     jsonFile: "../payloads/sandbox-models/model-add-layer.json",
-    endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/inference",
+    endpoint: "/v2/inference",
     method: "POST"
   }
 };
@@ -332,6 +346,7 @@ async function showExample(exampleKey) {
   const popupTitle = document.getElementById('popupTitle');
   const jsonContent = document.getElementById('jsonContent');
   const curlContent = document.getElementById('curlContent');
+  const envContent = document.getElementById('envContent');
   const loadingMessage = document.getElementById('loadingMessage');
   const errorMessage = document.getElementById('errorMessage');
   const tabContents = document.querySelectorAll('.tab-content');
@@ -349,12 +364,19 @@ async function showExample(exampleKey) {
     
     jsonContent.textContent = JSON.stringify(jsonData, null, 2);
     
-    const curlCommand = `curl -X ${config.method} '${config.endpoint}' \\
-  -H 'Content-Type: application/json' \\
-  -H 'Authorization: Bearer YOUR_API_KEY' \\
+    const curlCommand = `curl -X ${config.method} "\${STUDIO_API_URL}${config.endpoint}" \
+  -H 'Content-Type: application/json' \
+  -H "X-API-Key: \$API_KEY" \
+  --insecure \
   -d '${JSON.stringify(jsonData, null, 2)}'`;
     
     curlContent.textContent = curlCommand;
+
+    const exportVariable = `export STUDIO_API_URL=https://gfm.res.ibm.com/studio-gateway \\
+export API_KEY=YOUR_API_KEY`;
+
+    envContent.textContent = exportVariable;
+
     
     showTab('json');
     
