@@ -477,23 +477,29 @@ echo $payload | curl -X POST "${UI_ROUTE_URL}/studio-gateway/v2/tunes/${tune_id}
 
 **Tuning a model from a dataset**
 
-*Note: Currently, for local deployments with access to non-NVIDIA GPUs (i.e. Mac), you will need to run the fine-tuning outside of the local cluster, and the resulting model can be onboarded back to the local cluster for inference.  This will be addressed in future, and is not an issue for cluster deployments with accessible GPUs.*
-
 1. First onboard a tuning dataset. This can be done through the UI or the API, for now select and onboard a dataset using the below command.  This will trigger a backend task to download, validate and sort the dataset ready for use.  The dataset will appear in the UI datasets page, initally as pending, but will complete and change status after a few minutes.
 ```shell
 python populate-studio/populate-studio.py datasets
-# select "Wildfire burn scars"
+# select "sen1floods11"
 ```
 
 2. Onboard the backbone model/s from which we will fine-tune.
 ```shell
 python populate-studio/populate-studio.py backbones
+# select "Prithvi_EO_V2_300M"
 ```
 
-3. Onboard the tuning task `templates`.  These are the outline configurations to make basic tuning tasks easier for users.
+3. Onboard the tuning task `templates` if you have not done it.  These are the outline configurations to make basic tuning tasks easier for users.
 ```shell
 python populate-studio/populate-studio.py templates
+# select  1. Segmentation - Generic template v1 and v2 models: Segmentation
 ```
+
+*Note: Currently, for local deployments with access to non-NVIDIA GPUs (i.e. Mac), you will need to run the fine-tuning outside of the local cluster, and the resulting model can be onboarded back to the local cluster for inference.  This will be addressed in future, and is not an issue for cluster deployments with accessible GPUs. For this case jusp to [**Tuning a model from a dataset using Mac GPUs**](#tuning-a-model-from-a-dataset-using-mac-gpus)*
+
+#### Tuning a model from a dataset in a cluster deployments with accessible GPUs
+
+#### Tuning a model from a dataset using Mac GPUs
 
 4. Now we can prepare the tuning task.  In a cluster deployed studio instance a user will prepare and submit their tuning task in one step, however, for local deployments, due to GPU accessibility within VMs (especially on Mac), we will use the studio to create the tuning config file and then run it outside the studio with TerraTorch.
 ```shell
