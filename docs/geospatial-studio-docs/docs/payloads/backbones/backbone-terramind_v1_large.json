@@ -1,0 +1,6 @@
+{
+    "name" : "terramind_v1_large",
+    "description" : "Terramind Multimodal backbone v1 large",
+    "checkpoint_filename" : "terramind_v1_large\/TerraMind_v1_large.pt",
+    "model_params" : {"backbone": "terramind_v1_large", "model_category": "terramind"}
+}

@@ -235,79 +235,79 @@ Click below for example payloads for submitting an inference request through the
 const exampleConfigs = {
   burnScarsDataset: {
     title: "Burn scars Dataset",
-    jsonFile: "../populate-studio/payloads/datasets/dataset-burn_scars.json",
+    jsonFile: "../payloads/datasets/dataset-burn_scars.json",
     endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/datasets/onboard",
     method: "POST"
   },
   floodDatasetMultimodal: {
     title: "Multi-modal flood dataset",
-    jsonFile: "../populate-studio/payloads/datasets/dataset-flooding_multimodal.json",
+    jsonFile: "../payloads/datasets/dataset-flooding_multimodal.json",
     endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/datasets/onboard",
     method: "POST"
   },
   regression: {
     title: "Regression template",
-    jsonFile: "../populate-studio/payloads/templates/template-reg.json",
+    jsonFile: "../payloads/templates/template-reg.json",
     endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
     method: "POST"
   },
   segmentation: {
     title: "Generic segmentation template",
-    jsonFile: "../populate-studio/payloads/templates/template-seg.json",
+    jsonFile: "../payloads/templates/template-seg.json",
     endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
     method: "POST"
   },
   terramingSegmentation: {
     title: "Terramind segmentation template",
-    jsonFile: "../populate-studio/payloads/templates/template-terramind_seg.json",
+    jsonFile: "../payloads/templates/template-terramind_seg.json",
     endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
     method: "POST"
   },
   claySegmentation: {
     title: "Clay backbone models segmentation template",
-    jsonFile: "../populate-studio/payloads/templates/template-clay_v1_seg.json",
+    jsonFile: "../payloads/templates/template-clay_v1_seg.json",
     endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
     method: "POST"
   },
   resnetSegmentation: {
     title: "Resnet backbone models segmentation template",
-    jsonFile: "../populate-studio/payloads/templates/template-timm_resnet_seg.json",
+    jsonFile: "../payloads/templates/template-timm_resnet_seg.json",
     endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
     method: "POST"
   },
   convnextSegmentation: {
     title: "Convnext backbone models segmentation template",
-    jsonFile: "../populate-studio/payloads/templates/template-timm_convnext_seg.json",
+    jsonFile: "../payloads/templates/template-timm_convnext_seg.json",
     endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
     method: "POST"
   },
   floodTuning: {
     title: "Example configs for fine-tuning a flood model",
-    jsonFile: "../populate-studio/payloads/tunes/tune-prithvi-eo-flood.json",
+    jsonFile: "../payloads/tunes/tune-prithvi-eo-flood.json",
     endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
     method: "POST"
   },
   burnScarsTuning: {
     title: "Example configs for fine-tuning a burn-scars model",
-    jsonFile: "../populate-studio/payloads/tunes/tune-test-fire.json",
+    jsonFile: "../payloads/tunes/tune-test-fire.json",
     endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tune-templates",
     method: "POST"
   },
   karenInference: {
     title: "Example config for inference run",
-    jsonFile: "../populate-studio/payloads/inferences/inference-agb-karen.json",
+    jsonFile: "../payloads/inferences/inference-agb-karen.json",
     endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/inference",
     method: "POST"
   },
   tryInInference: {
     title: "Example config for trying out a tune",
-    jsonFile: "../populate-studio/payloads/sandbox-models/model-try-in-lab.json",
+    jsonFile: "../payloads/sandbox-models/model-try-in-lab.json",
     endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/tunes/{tune-id}/try-out",
     method: "POST"
   },
   addLayer: {
     title: "Example config for adding pre-computed examples to the studio",
-    jsonFile: "../populate-studio/payloads/sandbox-models/model-add-layer.json",
+    jsonFile: "../payloads/sandbox-models/model-add-layer.json",
     endpoint: "https://gfm.res.ibm.com/studio-gateway/v2/inference",
     method: "POST"
   }

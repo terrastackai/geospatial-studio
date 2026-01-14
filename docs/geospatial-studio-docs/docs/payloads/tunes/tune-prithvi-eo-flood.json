@@ -1,0 +1,135 @@
+{
+  "name": "prithvi-eo-flood",
+  "description": "prithvi-eo-flood",
+  "tune_config_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-flood/prithvi-eo-flood-config.yaml",
+  "tune_checkpoint_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-flood/prithvi-eo-flood-bestEpoch_Fixed_updated.ckpt",
+  "model_input_data_spec": [
+    {
+      "bands": [
+        {
+          "index": 0,
+          "RGB_band": "R",
+          "band_name": "B02",
+          "scaling_factor": 1
+        },
+        {
+          "index": 1,
+          "RGB_band": "G",
+          "band_name": "B03",
+          "scaling_factor": 1
+        },
+        {
+          "index": 2,
+          "RGB_band": "B",
+          "band_name": "B04",
+          "scaling_factor": 1
+        },
+        {
+          "index": 3,
+          "band_name": "B8A",
+          "scaling_factor": 1
+        },
+        {
+          "index": 4,
+          "band_name": "B11",
+          "scaling_factor": 1
+        },
+        {
+          "index": 5,
+          "band_name": "B12",
+          "scaling_factor": 1
+        },
+        {
+          "index": 6,
+          "band_name": "SCL",
+          "scaling_factor": 1
+        }
+      ],
+      "connector": "sentinel_aws",
+      "collection": "sentinel-2-l2a",
+      "file_suffix": "S2Hand"
+    }
+  ],
+  "geoserver_push": [
+    {
+      "z_index": 0,
+      "workspace": "geofm",
+      "layer_name": "input_rgb",
+      "file_suffix": "",
+      "display_name": "Input image (RGB)",
+      "filepath_key": "model_input_original_image_rgb",
+      "geoserver_style": {
+        "rgb": [
+          {
+            "label": "RedChannel",
+            "channel": 1,
+            "maxValue": 2000,
+            "minValue": 0
+          },
+          {
+            "label": "GreenChannel",
+            "channel": 2,
+            "maxValue": 2000,
+            "minValue": 0
+          },
+          {
+            "label": "BlueChannel",
+            "channel": 3,
+            "maxValue": 2000,
+            "minValue": 0
+          }
+        ]
+      },
+      "visible_by_default": "True"
+    },
+    {
+      "z_index": 1,
+      "workspace": "geofm",
+      "layer_name": "pred",
+      "file_suffix": "",
+      "display_name": "Model prediction",
+      "filepath_key": "model_output_image",
+      "geoserver_style": {
+        "segmentation": [
+          {
+            "color": "#808080",
+            "label": "No flood",
+            "opacity": 0,
+            "quantity": "0"
+          },
+          {
+            "color": "#FA4D56",
+            "label": "Flood",
+            "opacity": 1,
+            "quantity": "1"
+          },
+          {
+            "color": "#4589FF",
+            "label": "Permanent water",
+            "opacity": 1,
+            "quantity": 997
+          },
+          {
+            "color": "#FFFAFA",
+            "label": "Snow/ice",
+            "opacity": 1,
+            "quantity": 998
+          },
+          {
+            "color": "#CCCCCC",
+            "label": "Clouds",
+            "opacity": 1,
+            "quantity": 999
+          }
+        ]
+      },
+      "visible_by_default": "True"
+    }
+  ],
+  "post_processing": {
+    "cloud_masking": "False",
+    "ocean_masking": "False",
+    "snow_ice_masking": null,
+    "permanent_water_masking": "False"
+  }
+}
