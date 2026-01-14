@@ -20,10 +20,8 @@ You can view the SDK documentation [here](https://terrastackai.github.io/geospat
    ```
 
 2. Install the SDK:
-    * Download and install the SDK from wheel and replace `<x.y.z>` with the downloaded version of the sdk:
       ```bash
-      wget --content-disposition https://ibm.biz/geostudio-sdk
-      pip install geostudio-<x.y.z>-py3-none-any.whl
+      pip install geostudio
       ```
 
 ## Authentication
