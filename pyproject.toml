@@ -50,5 +50,5 @@ build = "cd docs/geospatial-studio-docs && mkdocs build {args}"
 python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["geospatial-studio-docs/site"]
+packages = ["docs/geospatial-studio-docs/site"]
 
