@@ -34,11 +34,11 @@ jobs:
         run: pip install hatch
 
       - name: Create hatch environment
-        working-directory: ./docs
+        working-directory: .
         run: hatch env create
 
       - name: Build documentation
-        working-directory: ./docs
+        working-directory: .
         run: hatch run build
 
       - name: Deploy to GitHub Pages

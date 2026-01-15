@@ -1,0 +1,368 @@
+{
+    "name": "Segmentation",
+    "description": "Generic template v1 and v2 models: Segmentation",
+    "purpose": "Segmentation",
+    "model_params": {
+        "$uri": "https://ibm.com/watsonx.ai.geospatial.finetune.segmentation.json",
+        "type": "object",
+        "title": "Finetune",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+            "data": {
+            "type": "object",
+            "default": {
+                "batch_size": 4,
+                "constant_multiply": 1,
+                "workers_per_gpu": 2
+            },
+            "properties": {
+                "batch_size": {
+                "type": "int",
+                "default": 4,
+                "description": "Batch size",
+                "studio_name": "Batch size"
+                },
+                "constant_multiply": {
+                "type": "float",
+                "default": 1,
+                "description": "Constant Scale",
+                "studio_name": "Constant Scale"
+                },
+                "workers_per_gpu": {
+                "studio_name": "Workers per GPU",
+                "description": "Workers per GPU",
+                "type": "int",
+                "default": 2
+                }
+            },
+            "studio_name": "Data loading"
+            },
+            "model": {
+            "type": "object",
+            "default": {
+                "decode_head": {
+                "channels": 256,
+                "num_convs": 4,
+                "decoder": "UNetDecoder",
+                "loss_decode": {
+                    "type": "CrossEntropyLoss",
+                    "avg_non_ignore": true
+                }
+                },
+                "frozen_backbone": false,
+                "tiled_inference_parameters": {
+                "h_crop": 224,
+                "h_stride": 196,
+                "w_crop": 224,
+                "w_stride": 196,
+                "average_patches": false
+                }
+            },
+            "properties": {
+                "decode_head": {
+                "type": "object",
+                "default": {
+                    "channels": 256,
+                    "num_convs": 4,
+                    "decoder": "UperNetDecoder",
+                    "loss_decode": {
+                    "type": "CrossEntropyLoss",
+                    "avg_non_ignore": true
+                    }
+                },
+                "properties": {
+                    "channels": {
+                    "type": "int",
+                    "default": 256,
+                    "description": "Channels at each block of the decode head, except the final one",
+                    "studio_name": "Channels"
+                    },
+                    "num_convs": {
+                    "type": "int",
+                    "default": 4,
+                    "description": "Number of convolutional blocks in the head (except the final one)",
+                    "studio_name": "Blocks"
+                    },
+                    "decoder": {
+                    "enum": [
+                        "UperNetDecoder",
+                        "UNetDecoder"
+                    ],
+                    "type": "string",
+                    "default": "Fixed",
+                    "description": "Decoder type",
+                    "studio_name": "Decoder type"
+                    },
+                    "loss_decode": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                        "enum": [
+                            "CrossEntropyLoss"
+                        ],
+                        "type": "string",
+                        "default": "CrossEntropyLoss",
+                        "description": "Type of loss function",
+                        "studio_name": "Loss function"
+                        },
+                        "avg_non_ignore": {
+                        "type": "bool",
+                        "default": true,
+                        "description": "The loss is only averaged over non-ignored targets (ignored targets are usually where labels are missing in the dataset) if this is True"
+                        }
+                    },
+                    "description": "Loss function to be used",
+                    "studio_name": "Loss"
+                    }
+                },
+                "description": "Architecture of the decode head",
+                "studio_name": "Head"
+                },
+                "auxiliary_head": {
+                "type": "object",
+                "default": {},
+                "properties": {
+                    "decoder": {
+                    "type": "string",
+                    "default": "FCNDecoder",
+                    "description": "Decoder function to use",
+                    "studio_name": "Decoder"
+                    },
+                    "channels": {
+                    "type": "int",
+                    "default": 256,
+                    "description": "Channels at each block of the decode head, except the final one",
+                    "studio_name": "Channels"
+                    },
+                    "num_convs": {
+                    "type": "int",
+                    "default": 2,
+                    "description": "Number of convolutional blocks in the head (except the final one)",
+                    "studio_name": "Blocks"
+                    },
+                    "in_index": {
+                    "type": "int",
+                    "default": -1,
+                    "description": "Index of the input list to take. Defaults to -1",
+                    "studio_name": "In index"
+                    },
+                    "dropout": {
+                    "type": "int",
+                    "default": 0,
+                    "description": "Dropout value to apply. Defaults to 0",
+                    "studio_name": "Dropout"
+                    },
+                    "loss_decode": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                        "enum": [
+                            "CrossEntropyLoss"
+                        ],
+                        "type": "string",
+                        "default": "CrossEntropyLoss",
+                        "description": "Type of loss function",
+                        "studio_name": "Loss function"
+                        },
+                        "loss_weight": {
+                        "type": "float",
+                        "default": 1,
+                        "description": "Multiplicative weight of the loss of the auxiliary head in the loss. The loss is calculated as aux_head_weight * aux_head_loss + decode_head_loss",
+                        "studio_name": "Loss weight"
+                        },
+                        "avg_non_ignore": {
+                        "type": "bool",
+                        "default": true,
+                        "description": "The loss is only averaged over non-ignored targets (ignored targets are usually where labels are missing in the dataset) if this is True"
+                        }
+                    },
+                    "description": "Loss function to be used",
+                    "studio_name": "Loss"
+                    }
+                },
+                "description": "Architecture of the auxiliary head"
+                },
+                "frozen_backbone": {
+                "type": "bool",
+                "default": false,
+                "description": "Freeze the weights of the backbone when set to True",
+                "studio_name": "Freeze backbone"
+                },
+                "tiled_inference_parameters": {
+                "type": "object",
+                "default": {
+                    "h_crop": 224,
+                    "h_stride": 196,
+                    "w_crop": 224,
+                    "w_stride": 196,
+                    "average_patches": false
+                },
+                "properties": {
+                    "h_crop": {
+                    "type": "int",
+                    "default": 224,
+                    "description": "h_crop values for tilling images",
+                    "studio_name": "h_crop"
+                    },
+                    "h_stride": {
+                    "type": "int",
+                    "default": 196,
+                    "description": "h_stride values for tilling images",
+                    "studio_name": "h_stride"
+                    },
+                    "w_crop": {
+                    "type": "int",
+                    "default": 224,
+                    "description": "w_crop values for tilling images",
+                    "studio_name": "w_crop"
+                    },
+                    "w_stride": {
+                    "type": "int",
+                    "default": 196,
+                    "description": "w_stride values for tilling images",
+                    "studio_name": "w_stride"
+                    },
+                    "average_patches": {
+                    "type": "bool",
+                    "default": false,
+                    "description": "Whether to use average_patches",
+                    "studio_name": "average_patches"
+                    }
+                }
+                }
+            },
+            "description": "Model architecture definition",
+            "studio_name": "Architecture"
+            },
+            "runner": {
+            "type": "object",
+            "default": {
+                "max_epochs": 10,
+                "early_stopping_patience": 20,
+                "early_stopping_monitor": "val/loss"
+            },
+            "properties": {
+                "max_epochs": {
+                "type": "int",
+                "default": 10,
+                "description": "Training epochs",
+                "studio_name": "Training epochs"
+                },
+                "early_stopping_patience": {
+                "type": "int",
+                "default": 20,
+                "description": "Early stopping patience",
+                "studio_name": "Early stopping patience"
+                },
+                "early_stopping_monitor": {
+                "type": "string",
+                "default": "val/loss",
+                "description": "Monitoring value to determine early stopping",
+                "studio_name": "Early stopping monitor"
+                }
+            },
+            "studio_name": "Runner"
+            },
+            "lr_config": {
+            "type": "object",
+            "default": {
+                "policy": "Fixed"
+            },
+            "required": [
+                "policy"
+            ],
+            "properties": {
+                "policy": {
+                "enum": [
+                    "Fixed",
+                    "CosineAnnealing"
+                ],
+                "type": "string",
+                "default": "Fixed",
+                "description": "Policy type",
+                "studio_name": "Policy type"
+                },
+                "warmup_iters": {
+                "type": "int",
+                "default": 0,
+                "description": "LR warmup iterations. Valid for some policies",
+                "studio_name": "Learning rate warmup iterations"
+                },
+                "warmup_ratio": {
+                "type": "float",
+                "default": 1,
+                "description": "Initial lr at warmup will be learning_rate * warmup_ratio",
+                "studio_name": "LR warmup initialization ratio"
+                }
+            },
+            "description": "Learning rate policy",
+            "studio_name": "Learning rate policy"
+            },
+            "optimizer": {
+            "type": "object",
+            "default": {
+                "lr": 0.00006,
+                "type": "Adam"
+            },
+            "properties": {
+                "lr": {
+                "type": "float",
+                "default": 0.00006,
+                "description": "Learning rate",
+                "studio_name": "Learning rate"
+                },
+                "type": {
+                "enum": [
+                    "Adam",
+                    "SGD",
+                    "AdamW",
+                    "RMSProp"
+                ],
+                "default": "Adam",
+                "description": "Optimizer to be used",
+                "studio_name": "Optimizer type"
+                },
+                "weight_decay": {
+                "type": "float",
+                "default": 0,
+                "description": "L2 weight regularization (weight decay)",
+                "studio_name": "L2 regularization weight"
+                }
+            },
+            "description": "Optimizer",
+            "studio_name": "Optimizer"
+            },
+            "dataset_id": {
+            "type": "string",
+            "description": "ID of dataset to use for this finetuning",
+            "studio_name": "Dataset"
+            },
+            "evaluation": {
+            "type": "object",
+            "default": {
+                "interval": 1
+            },
+            "properties": {
+                "interval": {
+                "type": "int",
+                "default": 1,
+                "description": "Frequency of epochs with which to perform validation",
+                "studio_name": "Epoch interval"
+                }
+            },
+            "studio_name": "Validation"
+            },
+            "backbone_model_id": {
+            "type": "string",
+            "description": "ID of the pretrained backbone"
+            }
+        },
+        "description": "A request sent to the finetuning service to start a finetune task for segmentation"
+    },
+    "extra_info": {
+        "runtime_image": "quay.io/geospatial-studio/geostudio-tt-ubi:latest",
+        "model_category": "prithvi",
+        "model_framework": "terratorch-v2"
+    },
+    "content": "IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwojIExpY2Vuc2VkIE1hdGVyaWFscyAtIFByb3BlcnR5IG9mIElCTQojICJSZXN0cmljdGVkIE1hdGVyaWFscyBvZiBJQk0iCiMgQ29weXJpZ2h0IElCTSBDb3JwLiAyMDI1IEFMTCBSSUdIVFMgUkVTRVJWRUQKIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwoKCiMgbGlnaHRuaW5nLnB5dG9yY2g9PTIuMS4xCnNlZWRfZXZlcnl0aGluZzogMAp0cmFpbmVyOgogIGFjY2VsZXJhdG9yOiBhdXRvCiAgc3RyYXRlZ3k6IGF1dG8KICBkZXZpY2VzOiBhdXRvCiAgbnVtX25vZGVzOiAxCiAgcHJlY2lzaW9uOiAxNi1taXhlZAogIGxvZ2dlcjoKICAgIGNsYXNzX3BhdGg6IGxpZ2h0bmluZy5weXRvcmNoLmxvZ2dlcnMubWxmbG93Lk1MRmxvd0xvZ2dlcgogICAgaW5pdF9hcmdzOgogICAgICBleHBlcmltZW50X25hbWU6IHt7IHR1bmVfaWQgfX0gIyBGdXR1cmUgdmVyc2lvbiwgY2huYWdlIHRoaXMgdG8gdXNlciAvIGVtYWlsCiAgICAgIHJ1bl9uYW1lOiAiVHJhaW4iICAgICMgRnV0dXJlIHZlcnNpb24sIGNobmFnZSB0aGlzIHRvIHR1bmVfaWQKICAgICAgdHJhY2tpbmdfdXJpOiB7eyBtbGZsb3dfdHJhY2tpbmdfdXJsIH19CiAgICAgIHNhdmVfZGlyOiB7eyBtb3VudF9yb290ICsgJ3R1bmUtdGFza3MvJyArIHR1bmVfaWQgKyAnL21sZmxvdycgfX0KICAgICAgeyUgaWYgbWxmbG93X3RhZ3MgLSV9CiAgICAgIHRhZ3M6CiAgICAgICAgeyUgZm9yIGtleSwgdmFsdWUgaW4gbWxmbG93X3RhZ3MuaXRlbXMoKSAtJX0KICAgICAgICB7eyBrZXkgfX06IHt7IHZhbHVlIH19CiAgICAgICAgeyUgZW5kZm9yICV9CiAgICAgIHslLSBlbmRpZiAlfSAgICAgICAKICBjYWxsYmFja3M6CiAgICAtIGNsYXNzX3BhdGg6IFJpY2hQcm9ncmVzc0JhcgogICAgLSBjbGFzc19wYXRoOiBMZWFybmluZ1JhdGVNb25pdG9yCiAgICAgIGluaXRfYXJnczoKICAgICAgICBsb2dnaW5nX2ludGVydmFsOiBlcG9jaAogICAgIyAtLS0tIEVhcmx5IHN0b3AgaWYgLS0tLQogICAgeyUgaWYgcnVubmVyWyJlYXJseV9zdG9wcGluZ19wYXRpZW5jZSJdIC0lfQogICAgLSBjbGFzc19wYXRoOiBFYXJseVN0b3BwaW5nCiAgICAgIGluaXRfYXJnczoKICAgICAgICBtb25pdG9yOiB7eyBydW5uZXJbImVhcmx5X3N0b3BwaW5nX21vbml0b3IiXSB9fQogICAgICAgIHBhdGllbmNlOiB7eyBydW5uZXJbImVhcmx5X3N0b3BwaW5nX3BhdGllbmNlIl0gfX0KICAgIHslLSBlbmRpZiAlfQogICAgICMgLS0tLSBFYXJseSBzdG9wIGVuZGlmIC0tLS0KICAgIC0gY2xhc3NfcGF0aDogTW9kZWxDaGVja3BvaW50CiAgICAgIGluaXRfYXJnczoKICAgICAgICBkaXJwYXRoOiB7eyBtb3VudF9yb290ICsgJ3R1bmUtdGFza3MvJyArIHR1bmVfaWQgICsgJy8nIH19CiAgICAgICAgbW9kZTogbWluCiAgICAgICAgbW9uaXRvcjogdmFsL2xvc3MKICAgICAgICBmaWxlbmFtZToge3sgJ2Jlc3Qtc3RhdGVfZGljdC17ZXBvY2g6MDJkfScgfX0KICAgICAgICBzYXZlX3dlaWdodHNfb25seTogVHJ1ZQogICAgICAKICBtYXhfZXBvY2hzOiB7eyBydW5uZXJbIm1heF9lcG9jaHMiXSB9fQogIGNoZWNrX3ZhbF9ldmVyeV9uX2Vwb2NoOiB7eyBldmFsdWF0aW9uWyJpbnRlcnZhbCJdIH19CiAgbG9nX2V2ZXJ5X25fc3RlcHM6IDUwCiAgZW5hYmxlX2NoZWNrcG9pbnRpbmc6IHRydWUKICBkZWZhdWx0X3Jvb3RfZGlyOiB7eyBtb3VudF9yb290ICsgJ3R1bmUtdGFza3MvJyArIHR1bmVfaWQgfX0KCmRhdGE6CiAgY2xhc3NfcGF0aDogdGVycmF0b3JjaC5kYXRhbW9kdWxlcy5HZW5lcmljTm9uR2VvU2VnbWVudGF0aW9uRGF0YU1vZHVsZQogIGluaXRfYXJnczoKICAgIGJhdGNoX3NpemU6IHt7IGRhdGFbImJhdGNoX3NpemUiXSB9fQogICAgbnVtX3dvcmtlcnM6IHt7IGRhdGFbIndvcmtlcnNfcGVyX2dwdSJdIH19CiAgICBub19sYWJlbF9yZXBsYWNlOiB7eyBsYWJlbF9ub2RhdGEgfX0KICAgIG5vX2RhdGFfcmVwbGFjZToge3sgaW1hZ2Vfbm9kYXRhX3JlcGxhY2UgfX0KICAgIGNvbnN0YW50X3NjYWxlOiB7eyBjb25zdGFudF9tdWx0aXBseSB9fQogICAgZGF0YXNldF9iYW5kczoKICAgICAge3sgYmFuZHMudmFsdWVzKCkgfCBsaXN0IHwgZmlyc3QgfCB0b195YW1sIHwgaW5kZW50KDYpIH19CiAgICBvdXRwdXRfYmFuZHM6CiAgICAgIHt7IG91dHB1dF9iYW5kcy52YWx1ZXMoKSB8IGxpc3QgfCBmaXJzdCB8IHRvX3lhbWwgfCBpbmRlbnQoNikgfX0KICAgIHJnYl9pbmRpY2VzOgogICAgICB7eyByZ2JfYmFuZF9pbmRpY2VzIHwgdG9feWFtbCB8IGluZGVudCg2KSB9fQogICAgdHJhaW5fZGF0YV9yb290OiB7eyBkYXRhX3Jvb3QgfX17eyB0cmFpbl9kYXRhX2Rpci52YWx1ZXMoKSB8IGxpc3QgfCBmaXJzdCB9fQogICAgdHJhaW5fbGFiZWxfZGF0YV9yb290OiB7eyBkYXRhX3Jvb3QgKyB0cmFpbl9sYWJlbHNfZGlyIH19CiAgICB2YWxfZGF0YV9yb290OiB7eyBkYXRhX3Jvb3QgfX17eyB2YWxfZGF0YV9kaXIudmFsdWVzKCkgfCBsaXN0IHwgZmlyc3QgfX0KICAgIHZhbF9sYWJlbF9kYXRhX3Jvb3Q6IHt7IGRhdGFfcm9vdCArIHZhbF9sYWJlbHNfZGlyIH19CiAgICB0ZXN0X2RhdGFfcm9vdDoge3sgZGF0YV9yb290IH19e3sgdGVzdF9kYXRhX2Rpci52YWx1ZXMoKSB8IGxpc3QgfCBmaXJzdCB9fQogICAgdGVzdF9sYWJlbF9kYXRhX3Jvb3Q6IHt7IGRhdGFfcm9vdCArIHRlc3RfbGFiZWxzX2RpciB9fQogICAgeyUgaWYgdHJhaW5fc3BsaXRfcGF0aCAtJX0KICAgIHRyYWluX3NwbGl0OiB7eyBkYXRhX3Jvb3QgKyB0cmFpbl9zcGxpdF9wYXRoIH19CiAgICB7JSBlbmRpZiAtJX0KICAgIHslIGlmIHRlc3Rfc3BsaXRfcGF0aCAtJX0KICAgIHRlc3Rfc3BsaXQ6IHt7IGRhdGFfcm9vdCArIHRlc3Rfc3BsaXRfcGF0aCB9fQogICAgeyUgZW5kaWYgLSV9CiAgICB7JSBpZiB2YWxfc3BsaXRfcGF0aCAtJX0KICAgIHZhbF9zcGxpdDoge3sgZGF0YV9yb290ICsgdmFsX3NwbGl0X3BhdGggfX0KICAgIHslIGVuZGlmIC0lfQogICAgeyUgaWYgaW1nX3N1ZmZpeCAtJX0KICAgIGltZ19ncmVwOiAge3sgaW1nX3N1ZmZpeC52YWx1ZXMoKSB8IGxpc3QgfCBmaXJzdCB8IHRvanNvbiB9fQogICAgeyUgZW5kaWYgLSV9CiAgICB7JSBpZiBzZWdfbWFwX3N1ZmZpeCAtJX0KICAgIGxhYmVsX2dyZXA6ICJ7eyBzZWdfbWFwX3N1ZmZpeCB9fSIKICAgIHslIGVuZGlmIC0lfQogICAgbWVhbnM6IAogICAgICB7eyBub3JtX21lYW5zLnZhbHVlcygpIHwgbGlzdCB8IGZpcnN0fCB0b195YW1sIHwgaW5kZW50KDYpIH19CiAgICBzdGRzOiAKICAgICAge3sgbm9ybV9zdGRzLnZhbHVlcygpIHwgbGlzdCB8IGZpcnN0IHwgdG9feWFtbCB8IGluZGVudCg2KSB9fQogICAgbnVtX2NsYXNzZXM6IHt7IGNsYXNzZXN8bGVuZ3RoIH19CiAgICB7JSBpZiBkYXRhWyJleHBhbmRfdGVtcG9yYWxfZGltZW5zaW9uIl0gaXMgbm90IG5vbmUgLSV9CiAgICBleHBhbmRfdGVtcG9yYWxfZGltZW5zaW9uOiBkYXRhWyJleHBhbmRfdGVtcG9yYWxfZGltZW5zaW9uIl0KICAgIHslIGVuZGlmIC0lfQogICAgeyUgaWYgZGF0YVsiZHJvcF9sYXN0Il0gaXMgbm90IG5vbmUgLSV9CiAgICBkcm9wX2xhc3Q6IGRhdGFbImRyb3BfbGFzdCJdCiAgICB7JSBlbmRpZiAtJX0KICAgICMgLS0tLSB0cmFpbl90cmFuc2Zvcm0gaWYgLS0tLQogICAgeyUgaWYgZGF0YVsidHJhaW5fdHJhbnNmb3JtIl0gLSV9CiAgICB0cmFpbl90cmFuc2Zvcm06CiAgICB7JSBmb3IgdHJhbnNmb3JtIGluIGRhdGFbInRyYWluX3RyYW5zZm9ybSJdICV9CiAgICAtIGNsYXNzX3BhdGg6IHRyYXNuc2Zvcm1bImNsYXNzX3BhdGgiXQogICAgICBpbml0X2FyZ3M6CiAgICAgICAgeyUgaWYgdHJhc25zZm9ybVsiaGVpZ2h0Il0gaXMgbm90IG5vbmUgLSV9CiAgICAgICAgaGVpZ2h0OiB0cmFzbnNmb3JtWyJoZWlnaHQiXQogICAgICAgIHslIGVuZGlmIC0lfQogICAgICAgIHslIGlmIHRyYXNuc2Zvcm1bIndpZHRoIl0gaXMgbm90IG5vbmUgLSV9CiAgICAgICAgd2lkdGg6IHRyYXNuc2Zvcm1bIndpZHRoIl0KICAgICAgICB7JSBlbmRpZiAtJX0KICAgICAgICB7JSBpZiB0cmFzbnNmb3JtWyJhbHdheXNfYXBwbHkiXSBpcyBub3Qgbm9uZSAtJX0KICAgICAgICBhbHdheXNfYXBwbHk6IHRyYXNuc2Zvcm1bImFsd2F5c19hcHBseSJdCiAgICAgICAgeyUgZW5kaWYgLSV9CiAgICAgICAgeyUgaWYgdHJhc25zZm9ybVsidHJhbnNwb3NlX21hc2siXSBpcyBub3Qgbm9uZSAtJX0KICAgICAgICB0cmFuc3Bvc2VfbWFzazogdHJhc25zZm9ybVsidHJhbnNwb3NlX21hc2siXQogICAgICAgIHslIGVuZGlmIC0lfQogICAgICAgIHslIGlmIHRyYXNuc2Zvcm1bInAiXSBpcyBub3Qgbm9uZSAtJX0KICAgICAgICBwOiB0cmFzbnNmb3JtWyJwIl0KICAgICAgICB7JSBlbmRpZiAtJX0KICAgIHslIGVuZGZvciAlfQogICAgeyUgZW5kaWYgLSV9CiAgICAjIC0tLS0gdHJhaW5fdHJhbnNmb3JtIGVuZGlmIC0tLS0KCiAgICAjIGlmIGJhY2tib25lIGlzIHByaXRodmktRU8tdjIKICAgIHRlc3RfdHJhbnNmb3JtOgogICAgICAtIGNsYXNzX3BhdGg6IFRvVGVuc29yVjIKbW9kZWw6CiAgY2xhc3NfcGF0aDogdGVycmF0b3JjaC50YXNrcy5TZW1hbnRpY1NlZ21lbnRhdGlvblRhc2sKICBpbml0X2FyZ3M6CiAgICBtb2RlbF9hcmdzOiAKICAgICAgeyUtIGlmIHByZXRyYWluZWRfbW9kZWxfbmFtZSA9PSAicHJpdGh2aV9lb192MV8xMDAiIG9yIHByZXRyYWluZWRfbW9kZWxfbmFtZSA9PSAicHJpdGh2aV9lb192Ml8zMDAiIG9yIHByZXRyYWluZWRfbW9kZWxfbmFtZSA9PSAicHJpdGh2aV9lb192Ml8zMDBfdGwiIG9yIHByZXRyYWluZWRfbW9kZWxfbmFtZSA9PSAicHJpdGh2aV9lb192Ml82MDAiIG9yIHByZXRyYWluZWRfbW9kZWxfbmFtZSA9PSAicHJpdGh2aV9lb192Ml82MDBfdGwiICV9CiAgICAgIGJhY2tib25lX3ByZXRyYWluZWQ6IHRydWUgCiAgICAgIGJhY2tib25lOiB7eyBwcmV0cmFpbmVkX21vZGVsX25hbWUgfX0KICAgICAgYmFja2JvbmVfZHJvcF9wYXRoOiAwLjEgCiAgICAgIGJhY2tib25lX2JhbmRzOgogICAgICAgIHt7IG91dHB1dF9iYW5kcy52YWx1ZXMoKSB8IGxpc3QgfCBmaXJzdCB8IHRvX3lhbWwgfCBpbmRlbnQoOCkgfX0KICAgICAgbmVja3M6IAogICAgICAgIC0gbmFtZTogU2VsZWN0SW5kaWNlcwogICAgICAgICAgeyUtIGlmIHByZXRyYWluZWRfbW9kZWxfbmFtZSA9PSAicHJpdGh2aV9lb192MV8xMDAiICV9CiAgICAgICAgICBpbmRpY2VzOiBbMiwgNSwgOCwgMTFdICMgMTAwTSBtb2RlbHMKICAgICAgICAgIHslLSBlbGlmIHByZXRyYWluZWRfbW9kZWxfbmFtZSA9PSAicHJpdGh2aV9lb192Ml8zMDAiIG9yIHByZXRyYWluZWRfbW9kZWxfbmFtZSA9PSAicHJpdGh2aV9lb192Ml8zMDBfdGwiICV9CiAgICAgICAgICBpbmRpY2VzOiBbNSwgMTEsIDE3LCAyM10gICMgMzAwTSBtb2RlbHMKICAgICAgICAgIHslLSBlbGlmIHByZXRyYWluZWRfbW9kZWxfbmFtZSA9PSAicHJpdGh2aV9lb192Ml82MDAiIG9yIHByZXRyYWluZWRfbW9kZWxfbmFtZSA9PSAicHJpdGh2aV9lb192Ml82MDBfdGwiICV9CiAgICAgICAgICBpbmRpY2VzOiBbNywgMTUsIDIzLCAzMV0gIyA2MDBNIG1vZGVscyAgICAKICAgICAgICAgIHslIGVuZGlmICV9CiAgICAgICAgLSBuYW1lOiBSZXNoYXBlVG9rZW5zVG9JbWFnZSAjIHJlcXVpcmVkCiAgICAgICAgLSBuYW1lOiBMZWFybmVkSW50ZXJwb2xhdGVUb1B5cmFtaWRhbAogICAgICB7JS0gZWxzZSAlfQogICAgICAjIE9sZCBtb2RlbCB2ZXJzaW9uIGNvbmZpZ3VyYXRpb25zCiAgICAgIHByZXRyYWluZWQ6IHRydWUKICAgICAgYmFja2JvbmU6IHt7IHByZXRyYWluZWRfbW9kZWxfbmFtZSB9fQogICAgICAjIGJhY2tib25lX3RlbXBvcmFsX2VuY29kaW5nOiB0cnVlCiAgICAgIGJhY2tib25lX2Ryb3BfcGF0aF9yYXRlOiAwLjMKICAgICAgYmFja2JvbmVfd2luZG93X3NpemU6IDcKICAgICAgbnVtX2ZyYW1lczoge3sgbnVtX2ZyYW1lcyB9fQogICAgICBoZWFkX2NoYW5uZWxfbGlzdDoKICAgICAgICB7eyBoZWFkX2NoYW5uZWxfbGlzdCB8IHRvX3lhbWwgfCBpbmRlbnQoMTApIH19CiAgICAgIGJhbmRzOgogICAgICAgIHt7IG91dHB1dF9iYW5kcy52YWx1ZXMoKSB8IGxpc3QgfCBmaXJzdCB8IHRvX3lhbWwgfCBpbmRlbnQoOCkgfX0KICAgICAgeyUgZW5kaWYgJX0gCiAgICAgIGRlY29kZXI6IHt7IG1vZGVsWyJkZWNvZGVfaGVhZCJdWyJkZWNvZGVyIl0gfX0KICAgICAgeyUgaWYgIG1vZGVsWyJkZWNvZGVfaGVhZCJdWyJkZWNvZGVyIl0gPT0gIlVwZXJOZXREZWNvZGVyIiAtJX0KICAgICAgZGVjb2Rlcl9jaGFubmVsczogMjU2CiAgICAgIHslIGVsaWYgIG1vZGVsWyJkZWNvZGVfaGVhZCJdWyJkZWNvZGVyIl0gPT0gIlVOZXREZWNvZGVyIiAtJX0KICAgICAgI1RPRE8gdXNlciBwcm92aWRlZCBjaGFubmVscwogICAgICBkZWNvZGVyX2NoYW5uZWxzOiBbNTEyLCAyNTYsIDEyOCwgNjRdCiAgICAgIHslIGVsc2UgJX0KICAgICAgZGVjb2Rlcl9jaGFubmVsczoge3sgbW9kZWxbImRlY29kZV9oZWFkIl1bImNoYW5uZWxzIl0gfX0KICAgICAgeyUgZW5kaWYgLSV9CiAgICAgIG51bV9jbGFzc2VzOiB7eyBjbGFzc2VzfGxlbmd0aCB9fQogICAgICBoZWFkX2Ryb3BvdXQ6IDAuMQogICAgeyUgaWYgcHJldHJhaW5lZF9tb2RlbF9uYW1lID09ICJwcml0aHZpX2VvX3YxXzEwMCIgb3IgcHJldHJhaW5lZF9tb2RlbF9uYW1lID09ICJwcml0aHZpX2VvX3YyXzMwMCIgb3IgcHJldHJhaW5lZF9tb2RlbF9uYW1lID09ICJwcml0aHZpX2VvX3YyXzMwMF90bCIgb3IgcHJldHJhaW5lZF9tb2RlbF9uYW1lID09ICJwcml0aHZpX2VvX3YyXzYwMCIgb3IgcHJldHJhaW5lZF9tb2RlbF9uYW1lID09ICJwcml0aHZpX2VvX3YyXzYwMF90bCIgLSV9CiAgICBtb2RlbF9mYWN0b3J5OiBFbmNvZGVyRGVjb2RlckZhY3RvcnkKICAgIHslLSBlbHNlICV9CiAgICBtb2RlbF9mYWN0b3J5OiBQcml0aHZpTW9kZWxGYWN0b3J5CiAgICB7JSBlbmRpZiAlfSAKICAgIGxvc3M6IHt7IG1vZGVsWyJkZWNvZGVfaGVhZCJdWyJsb3NzX2RlY29kZSJdWyJ0eXBlIl0gfX0KICAgIHBsb3Rfb25fdmFsOiB7eyBydW5uZXJbInBsb3Rfb25fdmFsIl0gfX0KICAgIHslIGlmIG1vZGVsWyJhdXhpbGlhcnlfaGVhZCJdIC0lfQogICAgYXV4X2hlYWRzOgogICAgICAtIG5hbWU6IGF1eF9oZWFkCiAgICAgICAgZGVjb2Rlcjoge3sgbW9kZWxbImF1eGlsaWFyeV9oZWFkIl1bImRlY29kZXIiXSB9fQogICAgICAgIGRlY29kZXJfYXJnczoKICAgICAgICAgIGRlY29kZXJfY2hhbm5lbHM6IHt7IG1vZGVsWyJhdXhpbGlhcnlfaGVhZCJdWyJjaGFubmVscyJdIH19CiAgICAgICAgICBkZWNvZGVyX2luX2luZGV4OiB7eyBtb2RlbFsiYXV4aWxpYXJ5X2hlYWQiXVsiaW5faW5kZXgiXSB9fQogICAgICAgICAgZGVjb2Rlcl9udW1fY29udnM6IHt7IG1vZGVsWyJhdXhpbGlhcnlfaGVhZCJdWyJudW1fY29udnMiXSB9fQogICAgICAgICAgaGVhZF9kcm9wb3V0OiAge3sgbW9kZWxbImF1eGlsaWFyeV9oZWFkIl1bImRyb3BvdXQiXSB9fQogICAgICAgICAgIyBoZWFkX2NoYW5uZWxfbGlzdDoKICAgICAgICAgICMgICAtIDY0CiAgICBhdXhfbG9zczoKICAgICAgYXV4X2hlYWQ6IHt7IG1vZGVsWyJhdXhpbGlhcnlfaGVhZCJdWyJsb3NzX2RlY29kZSJdWyJsb3NzX3dlaWdodCJdIH19CiAgICB7JSBlbmRpZiAtJX0KICAgIGlnbm9yZV9pbmRleDoge3sgaWdub3JlX2luZGV4IH19CiAgICBmcmVlemVfYmFja2JvbmU6IHt7IG1vZGVsWyJmcm96ZW5fYmFja2JvbmUiXSB8IGxvd2VyIH19CiAgICBmcmVlemVfZGVjb2RlcjogZmFsc2UKCiAgICAjIC0tLS0gb3B0aW1pemVyIHN0YXJ0IC0tLS0KICAgIHslIGlmIG1vZGVsWyJvcHRpbWl6ZXIiXSAtJX0KICAgIG9wdGltaXplcjoge3sgbW9kZWxbIm9wdGltaXplciJdWyJ0eXBlIl0gfX0KICAgIGxyOiB7eyBtb2RlbFsib3B0aW1pemVyIl1bImxyIl0gfCBmbG9hdCB9fQogICAgeyUgZW5kaWYgLSV9CiAgICAjIC0tLS0gb3B0aW1pemVyIGVuZCAtLS0tCiAgICB7JSBpZiBtb2RlbFsidGlsZWRfaW5mZXJlbmNlX3BhcmFtZXRlcnMiXSAlfQogICAgdGlsZWRfaW5mZXJlbmNlX3BhcmFtZXRlcnM6IAogICAgICBoX2Nyb3A6IHt7IG1vZGVsWyJ0aWxlZF9pbmZlcmVuY2VfcGFyYW1ldGVycyJdWyJoX2Nyb3AiXSB8IGludH19CiAgICAgIGhfc3RyaWRlOiB7eyBtb2RlbFsidGlsZWRfaW5mZXJlbmNlX3BhcmFtZXRlcnMiXVsiaF9zdHJpZGUiXSB8IGludCB9fQogICAgICB3X2Nyb3A6IHt7IG1vZGVsWyJ0aWxlZF9pbmZlcmVuY2VfcGFyYW1ldGVycyJdWyJ3X2Nyb3AiXSB8IGludH19CiAgICAgIHdfc3RyaWRlOiB7eyBtb2RlbFsidGlsZWRfaW5mZXJlbmNlX3BhcmFtZXRlcnMiXVsid19zdHJpZGUiXSB8IGludCB9fQogICAgICBhdmVyYWdlX3BhdGNoZXM6IHt7IG1vZGVsWyJ0aWxlZF9pbmZlcmVuY2VfcGFyYW1ldGVycyJdWyJhdmVyYWdlX3BhdGNoZXMiXSB9fQogICAgeyUgZWxzZSAlfQogICAgIyBUb0RvOiBSZW1vdmUgdGhlIHRpbGVkX2luZmVyZW5jZSBpZiB1c2VyIG5vdCBwcm92aWRlZC4gCiAgICB0aWxlZF9pbmZlcmVuY2VfcGFyYW1ldGVyczogCiAgICAgIGhfY3JvcDogNTEyCiAgICAgICMgc3RyaWRlIGxvZ2ljID0gd291bGQgYmUgaF9jcm9wIC0gaF9jcm9wICogMC4xMjUKICAgICAgaF9zdHJpZGU6IDQ0OAogICAgICB3X2Nyb3A6IDUxMgogICAgICAjIHN0cmlkZSBsb2dpYyA9IHdvdWxkIGJlIHdfY3JvcCAtIHdfY3JvcCAqIDAuMTI1CiAgICAgIHdfc3RyaWRlOiA0NDgKICAgICAgYXZlcmFnZV9wYXRjaGVzOiB0cnVlCiAgICB7JSBlbmRpZiAlfQpvcHRpbWl6ZXI6CiAgY2xhc3NfcGF0aDoge3sgJ3RvcmNoLm9wdGltLicgKyBvcHRpbWl6ZXJbInR5cGUiXSB9fQogIGluaXRfYXJnczoKICAgICMgLS0tLSBPcHRpbWl6ZXIgc3RhcnQgaWYgLS0tLQogICAgeyUgaWYgb3B0aW1pemVyWyJsciJdIC0lfQogICAgbHI6IHt7IG9wdGltaXplclsibHIiXSB8IGZsb2F0IH19CiAgICB7JSBlbHNlICV9CiAgICBscjogMS5lLTQKICAgIHslIGVuZGlmIC0lfQogICAgeyUgaWYgb3B0aW1pemVyWyJ3ZWlnaHRfZGVjYXkiXSAtJX0KICAgIHdlaWdodF9kZWNheToge3sgb3B0aW1pemVyWyJ3ZWlnaHRfZGVjYXkiXSB9fQogICAgeyUgZWxzZSAlfQogICAgd2VpZ2h0X2RlY2F5OiAwLjA1CiAgICB7JSBlbmRpZiAtJX0KICAgICMgLS0tLSBPcHRpbWl6ZXIgc3RvcCBpZiAtLS0tCmxyX3NjaGVkdWxlcjoKICBjbGFzc19wYXRoOiBSZWR1Y2VMUk9uUGxhdGVhdQogIGluaXRfYXJnczoKICAgIG1vbml0b3I6IHZhbC9sb3NzCg=="
+}

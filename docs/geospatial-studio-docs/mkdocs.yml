@@ -1,0 +1,73 @@
+site_name: IBM Geospatial Exploration and Orchestration Studio
+docs_dir: docs
+hooks:
+  - my_hooks.py
+nav:
+  - Home: index.md
+  - Getting started:
+    - Getting started with the UI: getting-started-UI.md
+    - Getting started with the SDK: getting-started-SDK.md
+  
+  - User guides:
+    - Intro: intro.md
+    - Sample payloads: sample-payloads.md
+    - Studio UI user guide:
+      - Inferencing:  inference-lab.md
+      - Fine-tuning dataset factory: dataset-factory.md
+      - Fine-tuning studio: tuning-studio.md
+      - UI walkthroughs: walkthroughs.md
+  - API Reference:
+    - API specification: api-reference.md
+    - Inference Service: inference-service.md
+    - Fine-tuning Dataset Factory: dataset-factory-service.md
+    - Fine-tuning Service: fine-tuning-service.md
+  - Deployment and architecture :
+    - Architechture and Dependencies: architecture_and_requirements.md
+    - Cluster Deployment: detailed_deployment_cluster.md
+    - Local Deployment: detailed_deployment_local.md
+# theme: material
+theme:
+  name: material
+  logo: assets/geospatial-studio-logo-white.svg
+  palette:
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: black
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-schema: dark)"
+      primary: black
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: IBM Plex Sans
+plugins:
+  - mkdocs-video
+  - glightbox
+  - mkdocs-jupyter:
+      include_source: True
+  - literate-nav
+  - git-revision-date-localized:
+      enable_creation_date: false
+      fallback_to_build_date: true
+      type: date
+  - swagger-ui-tag:
+      docExpansion: list
+markdown_extensions:
+  - tables
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg

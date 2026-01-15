@@ -1,0 +1,6 @@
+{
+    "name" : "timm_convnext_xlarge.fb_in22k",
+    "description" : "A ConvNeXt image classification model. Pretrained on ImageNet-22k",
+    "checkpoint_filename" : "timm_convnext_xlarge.fb_in22k\/timm_convnext_xlarge.fb_in22k",
+    "model_params" : {"backbone": "timm_convnext_xlarge.fb_in22k", "embed_dim": 768, "num_heads": 12, "tile_size": 1, "num_layers": 12, "patch_size": 16, "tubelet_size": 1, "model_category": "convnext"}
+}

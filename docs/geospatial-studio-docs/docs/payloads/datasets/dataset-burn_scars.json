@@ -1,0 +1,44 @@
+{
+    "dataset_name": "Wildfire burn scars",
+    "dataset_url": "https://s3.us-east.cloud-object-storage.appdomain.cloud/geospatial-studio-example-data/burn-scar-training-data.zip",
+    "label_suffix": ".mask.tif",
+    "description": "A set of wildfire burn scar extent using HLS data.  This dataset contains Harmonized Landsat and Sentinel-2 imagery of burn scars and the associated masks for the years 2018-2021 over the contiguous United States. There are 804 512x512 scenes. Its primary purpose is for training geospatial machine learning models.  Each tiff file contains a 512x512 pixel tiff file. Scenes contain six bands, and masks have one band. For satellite scenes, each band has already been converted to reflectance.",
+    "purpose": "Segmentation",
+    "data_sources": [
+        {
+            "bands": [
+                {"index": "0", "band_name": "Blue", "scaling_factor": "0.0001", "RGB_band": "B"},
+                {"index": "1", "band_name": "Green", "scaling_factor": "0.0001", "RGB_band": "G"},
+                {"index": "2", "band_name": "Red", "scaling_factor": "0.0001", "RGB_band": "R"},
+                {"index": "3", "band_name": "NIR_Narrow", "scaling_factor": "0.0001"},
+                {"index": "4", "band_name": "SWIR1", "scaling_factor": "0.0001"},
+                {"index": "5", "band_name": "SWIR2", "scaling_factor": "0.0001"}
+            ],
+            "connector": "sentinelhub",
+            "collection": "hls_l30",
+            "file_suffix": "_merged.tif",
+            "modality_tag": "HLS_L30"
+        }
+    ],
+    "label_categories": [
+        {
+            "id": "1",
+            "name": "Fire Scar",
+            "color": "#ab4f4f",
+            "opacity": 1
+        },
+        {
+            "id": "0",
+            "name": "No data",
+            "color": "#000000",
+            "opacity": "0"
+        },
+        {
+            "id": "-1",
+            "name": "Ignore",
+            "color": "#000000",
+            "opacity": "0"
+        }
+    ],
+    "version": "v2"
+}

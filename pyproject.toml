@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "geospatial-studio"
+description = ''
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = []
+version = "1.0"
+authors = [
+  { name = "IBM Geospatial Exploration and Orchestration Studio Team", email = "watsonxgeo@ibm.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "mkdocs",
+  "mkdocs-material",
+  "mkdocs-video",
+  "mkdocs-glightbox",
+  "mkdocs-markdownextradata-plugin",
+  "mkdocs-jupyter",
+  "mkdocs-literate-nav",
+  "mkdocs-git-revision-date-localized-plugin",
+  "mkdocs-swagger-ui-tag"
+]
+
+
+[tool.hatch.envs.default]
+dependencies = [
+  "coverage[toml]>=6.5",
+  "pytest",
+]
+[tool.hatch.envs.default.scripts]
+serve = "cd docs/geospatial-studio-docs && mkdocs serve {args}"
+gh-deploy = "cd docs/geospatial-studio-docs && mkdocs gh-deploy {args}"
+build = "cd docs/geospatial-studio-docs && mkdocs build {args}"
+
+[[tool.hatch.envs.all.matrix]]
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["docs/geospatial-studio-docs/site"]
+

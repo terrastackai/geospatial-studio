@@ -1,0 +1,114 @@
+{
+    "dataset_name": "Sentinel Flood Multimodal Test",
+    "data_sources": [
+        {
+            "bands": [
+                {
+                    "index": "0",
+                    "band_name": "Coastal_aerosol",
+                    "description": "",
+                    "scaling_factor": "1"
+                },
+                {
+                    "index": "1",
+                    "band_name": "Blue",
+                    "RGB_band": "B",
+                    "description": "",
+                    "scaling_factor": "1"
+                },
+                {
+                    "index": "2",
+                    "band_name": "Green",
+                    "RGB_band": "G",
+                    "description": "",
+                    "scaling_factor": "1"
+                },
+                {
+                    "index": "3",
+                    "band_name": "Red",
+                    "RGB_band": "R",
+                    "description": "",
+                    "scaling_factor": "1"
+                },
+                {
+                    "index": "4",
+                    "band_name": "05_-_Vegetation_Red_Edge",
+                    "description": "",
+                    "scaling_factor": "1"
+                },
+                {
+                    "index": "5",
+                    "band_name": "06_-_Vegetation_Red_Edge",
+                    "description": "",
+                    "scaling_factor": "1"
+                },
+                {
+                    "index": "6",
+                    "band_name": "07_-_Vegetation_Red_Edge",
+                    "description": "",
+                    "scaling_factor": "1"
+                },
+                {
+                    "index": "7",
+                    "band_name": "08_-_NIR",
+                    "description": "",
+                    "scaling_factor": "1"
+                },
+                {
+                    "index": "8",
+                    "band_name": "08A_-_Vegetation_Red_Edge",
+                    "description": "",
+                    "scaling_factor": "1"
+                },
+                {
+                    "index": "9",
+                    "band_name": "09_-_Water_vapour",
+                    "description": "",
+                    "scaling_factor": "1"
+                },
+                {
+                    "index": "10",
+                    "band_name": "11_-_SWIR",
+                    "description": "",
+                    "scaling_factor": "1"
+                },
+                {
+                    "index": "11",
+                    "band_name": "12_-_SWIR",
+                    "description": "",
+                    "scaling_factor": "1"
+                },
+                {
+                    "index": "12",
+                    "band_name": "Cloud_Probability",
+                    "description": "",
+                    "scaling_factor": "1"
+                }
+            ],
+            "connector": "sentinelhub",
+            "collection": "s2_l2a",
+            "modality_tag": "S2L1C",
+            "file_suffix": "_S2Hand.tif"
+        },
+        {
+            "bands": [
+                {"index": "0", "band_name": "VV (Gray)", "description": ""},
+                {"index": "1", "band_name": "VH", "description": ""}
+            ],
+            "connector": "sentinelhub",
+            "collection": "s1_grd",
+            "modality_tag": "S1GRD",
+            "align_dates": "true",
+            "file_suffix": "_S1Hand.tif",
+            "scaling_factor": [1, 1]
+        }
+    ],
+    "label_categories": [
+        {"id": "0", "name": "No Floods", "description": "Flooding assets"},
+        {"id": "1", "name": "Floods", "description": "Flooding assets"}
+    ],
+    "dataset_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/sen1floods11-studio.zip",
+    "description": "Flood data from places",
+    "label_suffix": "_LabelHand.tif",
+    "purpose": "Segmentation"
+}
