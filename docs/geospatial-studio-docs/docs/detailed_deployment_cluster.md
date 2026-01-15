@@ -1,6 +1,6 @@
 # Geospatial Studio - Deployment instructions
 
-> Note: Strictly run all the scripts in this guide from the root directory of this repository.
+> Note: Strictly run all the scripts in this guide from the root directory of the [geospatial-studio repository](https://github.com/terrastackai/geospatial-studio).
 
 **Deployment steps:**
 

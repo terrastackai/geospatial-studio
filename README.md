@@ -137,7 +137,7 @@ When deployed the studio will consist of the gateway api (which can trigger onbo
 
 ## 💻🏢 Getting Started (cluster deployment)
 
-*If you want detailed description 📚 of the deployment process on an external cluster [see here 📚](./deployment-docs/detailed_deployment_cluster.md).*
+*If you want detailed description 📚 of the deployment process on an external cluster [see here 📚](./docs/geospatial-studio-docs/docs/detailed_deployment_cluster.md).*
 
 The Geospatial Studio is primarily developed to be deployed on a Red Hat OpenShift or Kubernetes cluster, with access to NVIDIA GPU resources (for tuning and inference).  This repository containers the Helm chart and scripts for full scale deployment.
 
@@ -178,7 +178,7 @@ After deployment the UI will pop up on the screen and you can jump to [First ste
 
 ## 💻⚙️ Getting Started (local deployment)
 
-*If you want detailed description 📚 of the local deployment process [see here 📚](./deployment-docs/detailed_deployment_local.md).*
+*If you want detailed description 📚 of the local deployment process [see here 📚](./docs/geospatial-studio-docs/docs/detailed_deployment_local.md).*
 
 Whilst not providing full performance and functionality, the studio can be deployed locally for testing and development purposes.  The instructions below will deploy the main components of the Geospatial Studio in a Kubernetes cluster on the local machine (i.e. your laptop).  This is provisioned through a Lima VM.  
 

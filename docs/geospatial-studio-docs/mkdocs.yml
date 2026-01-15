@@ -21,7 +21,10 @@ nav:
     - Inference Service: inference-service.md
     - Fine-tuning Dataset Factory: dataset-factory-service.md
     - Fine-tuning Service: fine-tuning-service.md
-  - Deployment and architecture : architecture_and_requirements.md
+  - Deployment and architecture :
+    - Architechture and Dependencies: architecture_and_requirements.md
+    - Cluster Deployment: detailed_deployment_cluster.md
+    - Local Deployment: detailed_deployment_local.md
 # theme: material
 theme:
   name: material
