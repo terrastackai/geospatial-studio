@@ -1,0 +1,6 @@
+{
+    "name" : "timm_resnet34",
+    "description" : "timm_resnet34",
+    "checkpoint_filename" : "timm_resnet34\/timm_resnet34",
+    "model_params" : {"backbone": "timm_resnet34", "embed_dim": 768, "num_heads": 12, "tile_size": 1, "num_layers": 12, "patch_size": 16, "tubelet_size": 1, "model_category": "resnet"}
+}

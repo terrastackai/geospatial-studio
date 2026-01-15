@@ -1,0 +1,6 @@
+{
+    "name" : "terramind_v1_base",
+    "description" : "Terramind Multimodal backbone base",
+    "checkpoint_filename" : "terramind_v1_base\/TerraMind_v1_base.pt",
+    "model_params" : {"backbone": "terramind_v1_base", "model_category": "terramind"}
+}

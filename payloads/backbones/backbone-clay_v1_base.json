@@ -1,0 +1,6 @@
+{
+    "name" : "clay_v1_base",
+    "description" : "Clay is a foundational model of Earth. It uses an expanded visual transformer upgraded to understand geospatial and temporal relations on Earth data. The model is trained as a self-supervised Masked Autoencoder (MAE).",
+    "checkpoint_filename" : "clay_v1_base\/clay_v1_base",
+    "model_params" : {"backbone": "clay_v1_base", "embed_dim": 768, "num_heads": 12, "tile_size": 1, "num_layers": 12, "patch_size": 16, "tubelet_size": 1, "model_category": "clay"}
+}

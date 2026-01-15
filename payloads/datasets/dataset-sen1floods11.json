@@ -1,0 +1,54 @@
+{
+    "dataset_name": "sen1floods11",
+    "dataset_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/sen1floods11_v1.1.zip",
+    "label_suffix": "_LabelHand.tif",
+    "description": "The Sen1Floods11 dataset is a large-scale benchmark dataset for flood mapping with Sentinel2 and Sentinel-1 SAR data. It contains 11,083 pairs of pre-event and post-event Sentinel-1 and Sentinel-2 images, along with corresponding flood inundation maps, covering various flood events worldwide.",
+    "purpose": "Segmentation",
+    "data_sources": [
+        {
+            "bands": [
+                {
+                    "index": "0",
+                    "band_name": "VV",
+                    "scaling_factor": 1
+                },
+                {
+                    "index": "1",
+                    "band_name": "VH",
+                    "scaling_factor": 1
+                }
+            ],
+            "connector": "sentinelhub",
+            "collection": "sentinel1_vv-vh",
+            "file_suffix": "_S1Hand.tif",
+            "modality_tag": "S1GRD"
+        },
+        {
+            "bands": [
+                {
+                    "index": "0",
+                    "band_name": "B02",
+                    "scaling_factor": 1,
+                    "RGB_band": "B"
+                },
+                {
+                    "index": "1",
+                    "band_name": "B03",
+                    "scaling_factor": 1,
+                    "RGB_band": "G"
+                },
+                {
+                    "index": "2",
+                    "band_name": "B04",
+                    "scaling_factor": 1,
+                    "RGB_band": "R"
+                }
+            ],
+            "connector": "sentinelhub",
+            "collection": "s2_l2a",
+            "file_suffix": "_S2Hand.tif",
+            "modality_tag": "S2L2A"
+        }
+    ],
+    "version": "v2"
+}

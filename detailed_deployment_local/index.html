@@ -1,0 +1,1965 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../detailed_deployment_cluster/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Local Deployment - IBM Geospatial Exploration and Orchestration Studio</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"IBM Plex Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#local-vm-cluster-setup" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="IBM Geospatial Exploration and Orchestration Studio" class="md-header__button md-logo" aria-label="IBM Geospatial Exploration and Orchestration Studio" data-md-component="logo">
+      
+  <img src="../assets/geospatial-studio-logo-white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IBM Geospatial Exploration and Orchestration Studio
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Local Deployment
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-schema: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="IBM Geospatial Exploration and Orchestration Studio" class="md-nav__button md-logo" aria-label="IBM Geospatial Exploration and Orchestration Studio" data-md-component="logo">
+      
+  <img src="../assets/geospatial-studio-logo-white.svg" alt="logo">
+
+    </a>
+    IBM Geospatial Exploration and Orchestration Studio
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started-UI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started with the UI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started-SDK/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started with the SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intro
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sample-payloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sample payloads
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3">
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Studio UI user guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Studio UI user guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inference-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inferencing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dataset-factory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning dataset factory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tuning-studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning studio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../walkthroughs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI walkthroughs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API specification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inference-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inference Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dataset-factory-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning Dataset Factory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fine-tuning-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment and architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment and architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture_and_requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architechture and Dependencies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../detailed_deployment_cluster/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cluster Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Deployment
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#vm-cluster-initialisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VM cluster initialisation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="VM cluster initialisation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lima-vm-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lima VM setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minikube-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minikube setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#geospatial-studio-deployment-instructions-automated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geospatial Studio - Deployment instructions (automated)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-api-testing-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. API Testing Guide
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. API Testing Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#authenticate-with-the-api-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authenticate with the API Key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-payload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Payload
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#vm-cluster-initialisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VM cluster initialisation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="VM cluster initialisation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lima-vm-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lima VM setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minikube-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minikube setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#geospatial-studio-deployment-instructions-automated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geospatial Studio - Deployment instructions (automated)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-api-testing-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. API Testing Guide
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. API Testing Guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#authenticate-with-the-api-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authenticate with the API Key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-payload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Payload
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<div><h1 id="local-vm-cluster-setup">Local VM Cluster Setup</h1>
+<p>This guide provides detailed deployment instructions for a local cluster deployment in a VM.  This is only recommended for testing and development purposes.</p>
+<p>Below we provide two different deployment options, which are similar during deployment, and mainly differ in initial setup.</p>
+<ul>
+<li>Lima VM</li>
+<li>Minikube</li>
+</ul>
+<h2 id="vm-cluster-initialisation">VM cluster initialisation</h2>
+<p>Here you need to follow either the Lima VM <em>or</em> the Minikube instructions.</p>
+<h3 id="lima-vm-setup">Lima VM setup</h3>
+<p><strong>Prerequisites</strong></p>
+<ul>
+<li><a href="https://lima-vm.io/docs/installation/">Lima VM</a> - v1.2.1 (<em>currently incompatible with v2</em>)</li>
+<li><a href="https://helm.sh/docs/v3/">Helm</a> - v3.19 (<em>currently incompatible with v4</em>)</li>
+<li><a href="https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html">OpenShift CLI</a></li>
+<li>Kubectl (bundled with above) </li>
+<li><a href="https://github.com/jqlang/jq">jq</a> - json command-line processor</li>
+<li><a href="https://github.com/mikefarah/yq">yq</a> - yaml command-line processor</li>
+<li>Minimum 8GB RAM and 4 CPUs available for the VM (more recommended)</li>
+</ul>
+<p><strong>VM cluster initialization</strong></p>
+<ol>
+<li>
+<p>Install <a href="https://github.com/lima-vm/lima">Lima VM</a>. Needs to be <em>v1.2.1</em> (not yet compatible with v2)</p>
+</li>
+<li>
+<p>Install Python dependencies:
+</p><div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-f<span class="w"> </span>requirements.txt
+</code></pre></div>
+</li>
+<li>
+<p>Start the Lima VM cluster:
+</p><div class="highlight"><pre><span></span><code>limactl<span class="w"> </span>start<span class="w"> </span>--name<span class="o">=</span>studio<span class="w"> </span>deployment-scripts/lima/studio.yaml
+</code></pre></div>
+</li>
+<li>
+<p>Set up the kubectl context (<em>NB: you will need to do this in each terminal prompt where you with to interact with the cluster, i.e. deploy, k9s</em>):
+</p><div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">KUBECONFIG</span><span class="o">=</span><span class="s2">"</span><span class="nv">$HOME</span><span class="s2">/.lima/studio/copied-from-guest/kubeconfig.yaml"</span>
+</code></pre></div>
+</li>
+<li>
+<p>To monitor subsequent deployment on the cluster you can use a tool such as <a href="https://k9scli.io">k9s</a>.</p>
+</li>
+</ol>
+<p>Other lima commands that you might find useful are:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># List vms</span>
+limactl<span class="w"> </span>ls
+
+<span class="c1"># Open a shell for the vm</span>
+limactl<span class="w"> </span>shell<span class="w"> </span>studio
+
+<span class="c1"># Stop the vm</span>
+limactl<span class="w"> </span>stop<span class="w"> </span>studio
+
+<span class="c1"># Delete the vm (useful if you wish to do a clean deployment, also delete persisted data separately)</span>
+limactl<span class="w"> </span>delete<span class="w"> </span>studio<span class="w"> </span>--force
+</code></pre></div>
+<h3 id="minikube-setup">Minikube setup</h3>
+<p><strong>Prerequisites</strong></p>
+<ul>
+<li>Docker / Podman installed and running</li>
+<li><a href="https://helm.sh/docs/v3/">Helm</a> - v3.19 (<em>currently incompatible with v4</em>)</li>
+<li><a href="https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html">OpenShift CLI</a></li>
+<li>Kubectl (bundled with above) </li>
+<li><a href="https://github.com/jqlang/jq">jq</a> - json command-line processor</li>
+<li><a href="https://github.com/mikefarah/yq">yq</a> - yaml command-line processor</li>
+<li>Minimum 8GB RAM and 4 CPUs available for the VM (more recommended)</li>
+</ul>
+<p><strong>VM cluster initialization</strong></p>
+<ol>
+<li>
+<p>Follow the <a href="https://minikube.sigs.k8s.io/docs/start">Getting started</a> guide to setup and install your local minikube instance.</p>
+</li>
+<li>
+<p>Start the Minikube cluster.  <em>Ensure your container machine configuration has resource allocation for memory &gt; 8g and cpu &gt; 4</em></p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="c1"># Start with recommended resources for geospatial workloads</span>
+minikube<span class="w"> </span>start<span class="w"> </span>--driver<span class="o">=</span>podman<span class="w"> </span>--container-runtime<span class="o">=</span>containerd<span class="w">  </span>--memory<span class="o">=</span>8g<span class="w"> </span>--cpus<span class="o">=</span><span class="m">4</span>
+
+<span class="c1"># Verify cluster is running</span>
+minikube<span class="w"> </span>status
+</code></pre></div>
+<ol>
+<li>
+<p>Install the following minikube addons:
+</p><div class="highlight"><pre><span></span><code>minikube<span class="w"> </span>addons<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>metrics-server
+minikube<span class="w"> </span>addons<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>storage-provisioner
+minikube<span class="w"> </span>addons<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>dashboard
+</code></pre></div>
+</li>
+<li>
+<p>Setup the kubectl context:
+</p><div class="highlight"><pre><span></span><code><span class="c1"># Set kubectl context to minikube</span>
+kubectl<span class="w"> </span>config<span class="w"> </span>use-context<span class="w"> </span>minikube
+
+<span class="c1"># Verify you're connected to the right cluster</span>
+kubectl<span class="w"> </span>config<span class="w"> </span>current-context
+</code></pre></div>
+</li>
+<li>
+<p>To monitor deployment on the cluster you can use:
+</p><div class="highlight"><pre><span></span><code>minikube<span class="w"> </span>dashboard
+</code></pre></div>
+</li>
+</ol>
+<h2 id="geospatial-studio-deployment-instructions-automated">Geospatial Studio - Deployment instructions (automated)</h2>
+<!-- Alternatively, you can install using an automated script.  This will deploy the dependencies (Minio, Keycloak, Postgres) and set them up, before deploying the studio and pipelines.
+
+NB: you need to be in a python environment with the requirements installed (from `requirements.txt`). -->
+<!-- 
+<div class="highlight"><pre><span></span><code>./run_deploy_steps_lima.sh
+<span class="sb">```</span><span class="w"> </span>--&gt;
+
+&lt;!--<span class="w"> </span>Once<span class="w"> </span>the<span class="w"> </span>deployment<span class="w"> </span>is<span class="w"> </span>complete,<span class="w"> </span>it<span class="w"> </span>should<span class="w"> </span>report<span class="w"> </span>the<span class="w"> </span>URL<span class="w"> </span><span class="k">for</span><span class="w"> </span>accessing<span class="w"> </span>the<span class="w"> </span>UI<span class="w"> </span>and<span class="w"> </span>the<span class="w"> </span>gateway<span class="w"> </span>API.<span class="w">  </span>It<span class="w"> </span>will<span class="w"> </span>also<span class="w"> </span>provide<span class="w"> </span>the<span class="w"> </span>inital<span class="w"> </span>dev<span class="w"> </span>apikey<span class="w"> </span>and<span class="w"> </span>database<span class="w"> </span>password.<span class="w">  </span><span class="o">(</span>For<span class="w"> </span>production<span class="w"> </span>deployment,<span class="w"> </span>these<span class="w"> </span>should<span class="w"> </span>be<span class="w"> </span>changed<span class="o">)</span>.<span class="w"> </span>--&gt;
+If<span class="w"> </span>you<span class="w"> </span>want<span class="w"> </span>to<span class="w"> </span>use<span class="w"> </span>the<span class="w"> </span>automated<span class="w"> </span>deployment<span class="w"> </span>script,<span class="w"> </span>run<span class="w"> </span>the<span class="w"> </span>following<span class="w"> </span>command:
+
+<span class="sb">```</span>shell
+./deploy_studio_local.sh
+</code></pre></div>
+
+*Deployment can take ~10 minutes (or longer) depending available download speed for container images.*
+
+You can monitor the progress and debug using [`k9s`](https://k9scli.io) or similar tools.
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">KUBECONFIG</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$HOME</span><span class="s2">/.lima/studio/copied-from-guest/kubeconfig.yaml&quot;</span>
+k9s
+</code></pre></div>
+
+| After deployment: | |
+|---|---|
+| Access the Studio UI | [https://localhost:4180](https://localhost:4180) |
+| Access the Studio API | [https://localhost:4181](https://localhost:4181) |
+| Authenticate | username: `testuser` password: `testpass123` |
+| Access Geoserver | [https://localhost:3000](https://localhost:3000) |
+| Access Keycloak | [https://localhost:8080](https://localhost:8080) |
+| Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
+
+If you need to restart any of the port-forwards you can use the following commands:
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/postgresql<span class="w"> </span><span class="m">54320</span>:5432<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/geofm-geoserver<span class="w"> </span><span class="m">3000</span>:3000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-ui<span class="w"> </span><span class="m">4180</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-gateway<span class="w"> </span><span class="m">4181</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-mlflow<span class="w"> </span><span class="m">5000</span>:5000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+</code></pre></div>
+
+## Geospatial Studio - Deployment instructions (manual)
+
+> Note: Strictly run all the scripts in this guide from the root directory of this repository.
+
+**Deployment steps:**
+
+1. [Cluster configuration](#1-cluster-configuration)
+2. [Initialize environment variables](#2-initialize-environment-variables)
+3. [Create and configure COS instance and buckets](#3-storage-setup)
+4. [Create and configure DBs + tables](#4-database-preparation)
+5. [Setup authenticator](#5-authenticator-setup)
+6. [Geoserver setup](#6-geoserver-setup)
+7. [External services (Optional)](#7-external-services-configuration)
+8. [Deploy studio services](#8-deploy-geospatial-studio-services)
+9. [End-to-end tests](#9-end-to-end-tests)
+
+
+## 1. Cluster configuration
+
+### Initialization
+
+Provide a name for the deployment environment. This will be the name used for a local folder created under workspace directory.
+
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">DEPLOYMENT_ENV</span><span class="o">=</span>lima
+<span class="c1"># or</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">DEPLOYMENT_ENV</span><span class="o">=</span>minikube
+</code></pre></div>
+
+Use the `default` namespace in lima vm cluster
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">OC_PROJECT</span><span class="o">=</span>default
+</code></pre></div>
+
+This step will create two env scripts under the workspace/${DEPLOYMENT_ENV}/env folder.  One script contains just the secret values template, and the other script contains all the other general Geospatial configuration.
+
+<div class="highlight"><pre><span></span><code>./deployment-scripts/setup-workspace-env.sh
+</code></pre></div>
+
+Update the CLUSTER_URL in `workspace/${DEPLOYMENT_ENV}/env/env.sh` to be:
+<div class="highlight"><pre><span></span><code><span class="c1"># CLUSTER</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CLUSTER_URL</span><span class="o">=</span>localhost
+</code></pre></div>
+
+***Note*** Work through each env var in `workspace/${DEPLOYMENT_ENV}/env` and poplulate environment variables as required at this time or as you generate them in the subsequent steps.
+
+
+## 2. Storage setup
+
+This section assumes you wish to use a cluster/locally deployed instance of Minio to provide S3-compatible object storage.  You can alternatively use an existing cloud-based storage (i.e. IBM Cloud Object Storage, AWS S3).  Alternatively, for a local deployment you can rely on a mounted volume from the local machine which provides easy access for debug and testing.
+
+> Note:  Source the variables to export any newly added variables.
+<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/env/env.sh
+</code></pre></div>
+
+### Set up S3 compatible storage
+
+#### Minio
+
+Deploy Minio for S3-compatible object storage:
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>deployment-scripts/minio-deployment.yaml<span class="w"> </span>-n<span class="w"> </span>default
+</code></pre></div>
+
+Wait for Minio to be ready:
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>minio<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>--timeout<span class="o">=</span>300s
+</code></pre></div>
+
+#### Access Minio Console
+To access the Minio console:
+<div class="highlight"><pre><span></span><code><span class="c1"># Port forward to access Minio console at http://localhost:9001</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/minio-console<span class="w"> </span><span class="m">9001</span>:9001<span class="w"> </span><span class="p">&amp;</span>
+</code></pre></div>
+Login with username: `minioadmin`, password: `minioadmin`
+...
+
+
+> Note:  This script should be run once only, if run before you should see the `deployment-scripts/.env` file 
+
+* Once the S3 instance has been created, you can add the credentials and endpoint to the `workspace/${DEPLOYMENT_ENV}/env/.env` file as shown below.
+
+  <div class="highlight"><pre><span></span><code>access_key_id=minioadmin
+secret_access_key=minioadmin
+#endpoint=https://minio.default.svc.cluster.local:9000
+endpoint=https://localhost:9000
+region=us-east
+</code></pre></div>
+
+* Also at this point update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with...
+  <div class="highlight"><pre><span></span><code><span class="c1"># Storage classes</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">COS_STORAGE_CLASS</span><span class="o">=</span>local-path
+<span class="nb">export</span><span class="w"> </span><span class="nv">NON_COS_STORAGE_CLASS</span><span class="o">=</span>local-path
+</code></pre></div>
+
+### Create the required buckets
+
+Run the following script to create the buckets:
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Port forward to access Minio api at https://localhost:9000</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/minio<span class="w"> </span><span class="m">9000</span>:9000<span class="w"> </span><span class="p">&amp;</span>
+</code></pre></div>
+
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>deployment-scripts/create_buckets.py<span class="w"> </span>--env-path<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</code></pre></div>
+
+> NB: to update the list of buckets to create, currently you need to edit the list in the python script.
+
+
+Once you create the buckets update the minio endpoint `workspace/${DEPLOYMENT_ENV}/env/.env` with
+
+<div class="highlight"><pre><span></span><code>endpoint=http://minio.default.svc.cluster.local:9000
+#endpoint=http://127.0.0.1:9000
+</code></pre></div>
+
+
+## 3. Database preparation
+The studio uses Postgresql for storing meta and operational data.  Here we will deploy an instance on the local cluster, you could alternatively use a cloud-managed instance.
+
+> Note:  Source the variables to export any newly added variables.
+<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/env/env.sh
+</code></pre></div>
+
+### Set up Postgresql instance
+
+#### Setting up a Postgresql database instance in cluster
+
+Add bitnami chart repository:
+
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>bitnami<span class="w">  </span>https://charts.bitnami.com/bitnami
+helm<span class="w"> </span>repo<span class="w"> </span>update
+</code></pre></div>
+
+Install postgres:
+
+***Note*** If you have an instance of postgres already installed, following this guide to [uninstall](postgres-uninstall.md).
+
+<div class="highlight"><pre><span></span><code>./deployment-scripts/install-postgres.sh
+</code></pre></div>
+
+Once completed, in terminal you will find some notes on the created postgres database. To prepare for the [create databases](#create-databases) section below, follow these steps..
+* To get the password for "postgres" run:
+  <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>--namespace<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>postgresql<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">&quot;{.data.postgres-password}&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="k">)</span>
+</code></pre></div>
+
+* To connect to your database from outside the cluster for [create databases](#create-databases) section below execute the following commands:
+
+***Note*** change host port from default 54320 in the command below if the value of `pg_forwarded_port` was changed in `workspace/${DEPLOYMENT_ENV}/env/.env`
+
+  <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>--namespace<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/postgresql<span class="w"> </span><span class="m">54320</span>:5432<span class="w"> </span><span class="p">&amp;</span>
+<span class="nv">PGPASSWORD</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$POSTGRES_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span>psql<span class="w"> </span>--host<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>-U<span class="w"> </span>postgres<span class="w"> </span>-d<span class="w"> </span>postgres<span class="w"> </span>-p<span class="w"> </span><span class="m">54320</span>
+</code></pre></div>
+
+* Update `workspace/${DEPLOYMENT_ENV}/env/.env` with...
+  <div class="highlight"><pre><span></span><code><span class="nv">pg_username</span><span class="o">=</span>postgres
+<span class="nv">pg_password</span><span class="o">=</span>&lt;POSTGRES_PASSWORD&gt;
+<span class="nv">pg_uri</span><span class="o">=</span><span class="m">127</span>.0.0.1
+<span class="nv">pg_port</span><span class="o">=</span><span class="m">5432</span>
+<span class="nv">pg_original_db_name</span><span class="o">=</span><span class="s1">&#39;postgres&#39;</span>
+</code></pre></div>
+  > Note: after completing [create databases](#create-databases) section below update   `pg_uri` in `workspace/${DEPLOYMENT_ENV}/env/.env` with...
+  <div class="highlight"><pre><span></span><code><span class="nv">pg_uri</span><span class="o">=</span>postgresql.default.svc.cluster.local
+</code></pre></div>
+
+### Create databases
+
+> Once you have created the postgresql instance, you will need to gather the instance url, the port, the username, password and initial database, put these in the `workspace/${DEPLOYMENT_ENV}/env/.env` file.
+
+To create the required databases and users, run the script:
+
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>deployment-scripts/create_studio_dbs.py<span class="w"> </span>--env-path<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</code></pre></div>
+
+Once you create the databases update the pg_uri in `workspace/${DEPLOYMENT_ENV}/env/.env` with
+
+<div class="highlight"><pre><span></span><code>pg_uri=postgresql.default.svc.cluster.local
+#pg_uri=127.0.0.1
+</code></pre></div>
+
+## 4. Authenticator setup
+We use an OAuth2 authenticatorfor user authentication for the platform. This can be configured to use an external authenticator service or a service deployed on the cluster. At the moment our charts are configured to use [Keycloak](https://www.keycloak.org), although you could update to use other OAuth2 providers, such as IBM Security Verify (code include).
+
+> Note:  Source the variables to export any newly added variables.
+<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/env/env.sh
+</code></pre></div>
+
+### Installing and setup
+
+#### 1. Keycloak
+
+Deploy Keycloak for authentication:
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>deployment-scripts/keycloak-deployment.yaml<span class="w"> </span>-n<span class="w"> </span>default
+</code></pre></div>
+
+Wait for Keycloak to be ready:
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>keycloak<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>--timeout<span class="o">=</span>300s
+</code></pre></div>
+
+#### Configure Keycloak Realm and Client
+You can either use the `deployment-scripts/setup-keycloak.sh` script to create the realm, client and test user, or you can follow the instructions below to create them manually through the Keycloak dashboard.
+
+---
+1. **Access Keycloak Admin Console**:
+   <div class="highlight"><pre><span></span><code><span class="c1"># Port forward to access Keycloak at http://localhost:8080</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span><span class="p">&amp;</span>
+</code></pre></div>
+   - Open: http://localhost:8080
+   - Login with username: `admin`, password: `admin`
+
+2. **Create Realm**:
+   - Click on "master" dropdown in top-left
+   - Click "Create Realm"
+   - Realm name: `geostudio`
+   - Click "Create"
+
+3. **Create Client**:
+   - Go to "Clients" → "Create client"
+   - Client ID: `geostudio-client`
+   - Client type: `OpenID Connect`
+   - Click "Next"
+   - Client authentication: `ON`
+   - Authorization: `OFF`
+   - Authentication flow: Check all boxes (Standard flow, Direct access grants, etc.)
+   - Valid redirect URIs: 
+     <div class="highlight"><pre><span></span><code>https://geofm-ui.default.svc.cluster.local:4180/oauth2/callback
+https://geofm-gateway.default.svc.cluster.local:4180/oauth2/callback
+</code></pre></div>
+   - Web origins: `*`
+   - Click "Save"
+
+4. **Get Client Secret**:
+   - Go to "Clients" → "geostudio-client" → "Credentials" tab
+   - Copy the "Client secret" value
+   - Generate cookie secret as below
+     <div class="highlight"><pre><span></span><code>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>--<span class="w"> </span><span class="s1">&#39;+/&#39;</span><span class="w"> </span><span class="s1">&#39;-_&#39;</span>
+</code></pre></div>
+   - Update your `workspace/${DEPLOYMENT_ENV}/env/.env` file with this secrets
+
+      <div class="highlight"><pre><span></span><code><span class="c1"># Oauth Credentials</span>
+<span class="nv">oauth_client_secret</span><span class="o">=</span>
+<span class="nv">oauth_cookie_secret</span><span class="o">=</span>
+</code></pre></div>
+
+5. **Create Test User** (Optional):
+   - Go to "Users" → "Create new user"
+   - Username: `testuser`
+   - Email: `test@example.com`
+   - First name: `Test`
+   - Last name: `User`
+   - Click "Create"
+   - Go to "Credentials" tab → "Set password"
+   - Password: `testpass123`
+   - Temporary: `OFF`
+   - Click "Save"
+---
+
+Once you setup the authenticator (with either method), update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with...
+<div class="highlight"><pre><span></span><code><span class="c1"># AUTH</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_TYPE</span><span class="o">=</span>keycloak<span class="w"> </span><span class="c1"># for Keycloak</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_CLIENT_ID</span><span class="o">=</span>geostudio-client
+<span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_ISSUER_URL</span><span class="o">=</span>http://keycloak.default.svc.cluster.local:8080/realms/geostudio
+<span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_URL</span><span class="o">=</span>http://keycloak.default.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth
+</code></pre></div>
+
+For a kubernetes environment create a tls secret key and crt pair.
+<div class="highlight"><pre><span></span><code><span class="c1"># create tls.key and tls.crt</span>
+
+openssl<span class="w"> </span>req<span class="w"> </span>-x509<span class="w"> </span>-nodes<span class="w"> </span>-days<span class="w"> </span><span class="m">365</span><span class="w"> </span>-newkey<span class="w"> </span>rsa:2048<span class="w"> </span>-keyout<span class="w"> </span>tls.key<span class="w"> </span>-out<span class="w"> </span>tls.crt<span class="w"> </span>-subj<span class="w"> </span><span class="s2">&quot;/CN=default.svc.cluster.local&quot;</span>
+
+<span class="c1"># extract the cert and key into env vars</span>
+
+<span class="nb">export</span><span class="w"> </span><span class="nv">TLS_CRT_B64</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>base64<span class="w"> </span>-in<span class="w"> </span>tls.crt<span class="w"> </span>-A<span class="k">)</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TLS_KEY_B64</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>base64<span class="w"> </span>-in<span class="w"> </span>tls.key<span class="w"> </span>-A<span class="k">)</span>
+</code></pre></div>
+
+Update `workspace/${DEPLOYMENT_ENV}/env/.env` with...
+
+<div class="highlight"><pre><span></span><code><span class="nv">tls_crt_b64</span><span class="o">=</span><span class="nv">$TLS_CRT_B64</span>
+<span class="nv">tls_key_b64</span><span class="o">=</span><span class="nv">$TLS_KEY_B64</span>
+</code></pre></div>
+
+Update `workspace/${DEPLOYMENT_ENV}/env/env.sh` with...
+
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">CREATE_TLS_SECRET</span><span class="o">=</span><span class="nb">true</span>
+</code></pre></div>
+
+Update your etc hosts with the local urls
+<div class="highlight"><pre><span></span><code><span class="c1"># Add our internal cluster urls to etc hosts for seamless connectivity since some of the services may call these internal urls on host machine</span>
+
+<span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;\n#lima\n127.0.0.1 keycloak.default.svc.cluster.local postgresql.default.svc.cluster.local minio.default.svc.cluster.local geofm-ui.default.svc.cluster.local geofm-gateway.default.svc.cluster.local&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>/etc/hosts
+</code></pre></div>
+
+## 5. Geoserver setup
+To deploy Geoserver.  This will deploy geoserver, wait for the deployment to be completed and then start the required port-forwarding:
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>./deployment-scripts/update-deployment-template.py<span class="w"> </span>--filename<span class="w"> </span>deployment-scripts/geoserver-deployment.yaml<span class="w"> </span>--disable-route<span class="w"> </span><span class="p">|</span><span class="w"> </span>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>gfm-geoserver<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>--timeout<span class="o">=</span>900s
+
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/geofm-geoserver<span class="w"> </span><span class="m">3000</span>:3000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+</code></pre></div>
+
+Once the deployment is complete and the port-forwarding is started, run the following script to setup the geoserver instance:
+<div class="highlight"><pre><span></span><code>./deployment-scripts/setup_geoserver.sh
+</code></pre></div>
+
+Update `workspace/${DEPLOYMENT_ENV}/env/.env` with the Geoserver credentials.
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Geoserver credentials</span>
+<span class="nv">geoserver_username</span><span class="o">=</span>admin
+<span class="nv">geoserver_password</span><span class="o">=</span>geoserver
+</code></pre></div>
+
+## 6 Extra configuration
+
+Now we will generate or load an API key and encryption key for the studio.  If these are not already present, they will be generated and written to the file `.studio-api-key`.  If the file already exists, those will be used.  *NB: this is important for redeploying a cluster which will reuse persisted data.*
+
+<div class="highlight"><pre><span></span><code><span class="nv">file</span><span class="o">=</span>./.studio-api-key
+<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$file</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;File exists&quot;</span>
+<span class="w">    </span><span class="nb">source</span><span class="w"> </span><span class="nv">$file</span>
+<span class="k">else</span><span class="w"> </span>
+<span class="w">    </span><span class="nb">export</span><span class="w"> </span><span class="nv">STUDIO_API_KEY</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;pak-</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">24</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-dc<span class="w"> </span><span class="s1">&#39;a-zA-Z0-9&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-c<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="s2">&quot;</span><span class="k">)</span>
+<span class="w">    </span><span class="nb">export</span><span class="w"> </span><span class="nv">API_ENCRYPTION_KEY</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span><span class="s1">&#39;+/&#39;</span><span class="w"> </span><span class="s1">&#39;-_&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;\n&#39;</span><span class="k">)</span><span class="s2">&quot;</span><span class="k">)</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;export STUDIO_API_KEY=</span><span class="nv">$STUDIO_API_KEY</span><span class="s2">&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>./.studio-api-key
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;export API_ENCRYPTION_KEY=</span><span class="nv">$API_ENCRYPTION_KEY</span><span class="s2">&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>./.studio-api-key
+<span class="k">fi</span>
+</code></pre></div>
+
+Update `workspace/${DEPLOYMENT_ENV}/env/.env`
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Studio api key</span>
+<span class="nv">studio_api_key</span><span class="o">=</span><span class="nv">$STUDIO_API_KEY</span>
+
+<span class="c1"># Studio api encryption_key</span>
+<span class="nv">studio_api_encryption_key</span><span class="o">=</span><span class="nv">$API_ENCRYPTION_KEY</span>
+
+<span class="c1"># Redis password</span>
+<span class="nv">redis_password</span><span class="o">=</span>devPassword
+
+<span class="c1"># imagePullSecret b64secret (if required)</span>
+<span class="nv">image_pull_secret_b64</span><span class="o">=</span>
+</code></pre></div>
+
+Update `workspace/${DEPLOYMENT_ENV}/env/.env.sh`
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Environment vars</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">ENVIRONMENT</span><span class="o">=</span><span class="nb">local</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">ROUTE_ENABLED</span><span class="o">=</span><span class="nb">false</span>
+
+<span class="c1"># storage config</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">SHARE_PIPELINE_PVC</span><span class="o">=</span><span class="nb">true</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">STORAGE_PVC_ENABLED</span><span class="o">=</span><span class="nb">true</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">STORAGE_FILESYSTEM_ENABLED</span><span class="o">=</span><span class="nb">true</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CREATE_TUNING_FOLDERS_FLAG</span><span class="o">=</span><span class="nb">false</span>
+
+<span class="c1"># switch off oauth config (optional)</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_PROXY_ENABLED</span><span class="o">=</span><span class="nb">false</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_PROXY_PORT</span><span class="o">=</span><span class="m">4180</span>
+</code></pre></div>
+
+## 7. Deploy Geospatial Studio services
+
+> Note:  Source the variables to export any newly added variables.
+<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</code></pre></div>
+
+At this point, review `workspace/${DEPLOYMENT_ENV}/env/.env` and `workspace/${DEPLOYMENT_ENV}/env/env.sh` to ensure that you have collected all the needed environment variables and secrets. To generate values.yaml for `studio` and `studio-pipelines charts`, run the command below.
+
+<div class="highlight"><pre><span></span><code>./deployment-scripts/values-file-generate.sh
+</code></pre></div>
+
+This will generate two values files
+* `workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml`
+* `workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml`
+
+>If you get a permision error when auto-retrieving the cluster url, you need to manually enter the `CLUSTER_URL` in `workspace/$DEPLOYMENT_ENV/env/env.sh`.
+
+It is recommended not to edit these values.yaml and instead create copies of them with names `values-deploy.yaml.`:
+
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio/values.yaml<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio/values-deploy.yaml
+
+cp<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio-pipelines/values.yaml<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio-pipelines/values-deploy.yaml
+</code></pre></div>
+
+Now review the `values-deploy.yaml` files above. Explanation of each can be found in the file comments.  Once you have completed this you can use `helm` to deploy.  
+
+<!-- Update `workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml`
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Essential services for local development</span>
+<span class="nt">geofm-ui</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># ... more configurations</span>
+<span class="w">  </span><span class="nt">resources</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">ui</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">oauth</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># ... more configurations</span>
+
+<span class="nt">gfm-studio-gateway</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># ... more configurations</span>
+<span class="w">  </span><span class="nt">resources</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">api</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">oauth</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">celeryWorker</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">celeryFlower</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">securityContext</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">api</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">runAsUser</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1001</span>
+<span class="w">  </span><span class="nt">extraEnvironment</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">api</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">PIPELINES_V2_INFERENCE_ROOT_FOLDER</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/data/&quot;</span>
+<span class="w">  </span><span class="c1"># ... more configurations</span>
+
+<span class="nt">gfm-geoserver</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># ... more configurations</span>
+<span class="w">  </span><span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">persistence</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">pvc_type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;cluster&quot;</span>
+<span class="w">    </span><span class="nt">capacity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20Gi</span>
+<span class="w">  </span><span class="c1"># ... more configurations</span>
+
+
+<span class="c1"># Optional services (disabled for minimal local setup)</span>
+
+<span class="nt">gfm-mlflow</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># ... more configurations</span>
+<span class="w">  </span><span class="nt">resources</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># ... more configurations</span>
+</code></pre></div>
+
+
+Update `workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml`
+
+<div class="highlight"><pre><span></span><code><span class="c1"># Optional services (disabled for minimal local setup)</span>
+<span class="nt">terrakit-data-fetch</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="c1"># ... more configurations</span>
+
+<span class="nt">postprocess-generic</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="c1"># ... more configurations</span>
+
+<span class="nt">sentinelhub-connector</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="c1"># ... more configurations</span>
+
+<span class="nt">terratorch-inference</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="c1"># ... more configurations</span>
+
+<span class="nt">run-inference</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="c1"># ... more configurations</span>
+<span class="err">```</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--&gt;</span>
+
+<span class="l l-Scalar l-Scalar-Plain">Now you need to pull dependecies for dependent charts. Also, in some instances you might need to delete `geospatial-studio/Chart.lock` file when there are conflicts.</span>
+
+<span class="err">```</span><span class="l l-Scalar l-Scalar-Plain">bash</span>
+<span class="l l-Scalar l-Scalar-Plain">helm dependency build ./geospatial-studio/</span>
+</code></pre></div>
+
+To see the helm template you can run the following command:
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>template<span class="w"> </span>-f<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/values/geospatial-studio/values-deploy.yaml<span class="w"> </span>studio<span class="w"> </span>./geospatial-studio/<span class="w"> </span>--debug<span class="w"> </span>&gt;<span class="w"> </span>dryrun.yaml
+
+helm<span class="w"> </span>template<span class="w"> </span>-f<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/values/geospatial-studio-pipelines/values-deploy.yaml<span class="w"> </span>studio<span class="w"> </span>./geospatial-studio-pipelines/<span class="w"> </span>--debug<span class="w"> </span>&gt;<span class="w"> </span>dryrun.yaml
+</code></pre></div>
+
+To begin deployment run the two commands to deploy studio core services and the pipelines.
+
+<div class="highlight"><pre><span></span><code>./deployment-scripts/deploy_studio.sh
+
+./deployment-scripts/deploy_pipelines.sh
+</code></pre></div>
+
+If for any reason you need to uninstall the deployments you can use:
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>uninstall<span class="w"> </span>studio
+helm<span class="w"> </span>uninstall<span class="w"> </span>studio-pipelines
+</code></pre></div>
+
+<!-- To restart all pods, run
+<div class="highlight"><pre><span></span><code>./deployment-scripts/restart-all-studio-pods.sh
+<span class="sb">```</span><span class="w"> </span>--&gt;
+
+
+
+Following<span class="w"> </span>deployment,<span class="w"> </span>you<span class="w"> </span>will<span class="w"> </span>need<span class="w"> </span>to<span class="w"> </span>setup<span class="w"> </span>port-forwarding<span class="w"> </span>to<span class="w"> </span>access<span class="w"> </span>the<span class="w"> </span>different<span class="w"> </span>deployed<span class="w"> </span>services:
+<span class="sb">```</span>bash
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/postgresql<span class="w"> </span><span class="m">54320</span>:5432<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/geofm-geoserver<span class="w"> </span><span class="m">3000</span>:3000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-ui<span class="w"> </span><span class="m">4180</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-gateway<span class="w"> </span><span class="m">4181</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-mlflow<span class="w"> </span><span class="m">5000</span>:5000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+</code></pre></div>
+
+| After deployment: | |
+|---|---|
+| Access the Studio UI | [https://localhost:4180](https://localhost:4180) |
+| Access the Studio API | [https://localhost:4181](https://localhost:4181) |
+| Authenticate | username: `testuser` password: `testpass123` |
+| Access Geoserver | [https://localhost:3000](https://localhost:3000) |
+| Access Keycloak | [https://localhost:8080](https://localhost:8080) |
+| Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
+
+
+<!-- ## Enable Permissions in Lima vm local directory
+
+
+```bash
+# ssh to studio vm
+limactl shell studio
+# chmod 777 to /data/studio-inference-pv directory
+sudo chmod 777 -R /data/studio-inference-pv
+``` -->
+
+<h2 id="9-api-testing-guide">9. API Testing Guide</h2>
+<p>To test the APIs using the provided payloads, follow this guide. You'll need an API client like curl or <a href="https://insomnia.rest/">Insomnia</a>.</p>
+<p>Check the API's Swagger Page: [http://localhost:8000]</p>
+<h3 id="authenticate-with-the-api-key">Authenticate with the API Key</h3>
+<p>The API requires an api-key or oauth-token for authentication. Use the default api-key used in your deployment flow to get started.</p>
+<p>In your requests, you'll pass this key in a header: <code>-H "X-API-Key: $STUDIO_API_KEY"</code></p>
+<h3 id="test-payload">Test Payload</h3>
+<p>Use the default data provided under <code>/tests/api-data/*.json</code> as the payloads to hit the endpoints.</p>
+<p><strong><em>Sample POST requests:</em></strong></p>
+<ol>
+<li>
+<p>ADD a sandbox models resource</p>
+<p><code>bash
+curl -X POST 'http://localhost:8000/v2/models' \
+  --header 'Content-Type: application/json' \
+  --header "X-API-Key: $STUDIO_API_KEY" \
+  --data @tests/api-data/00-inf-models.json</code></p>
+</li>
+<li>
+<p>SUBMIT a test inference</p>
+<p><code>bash
+curl -X POST 'http://localhost:8000/v2/inference' \
+  --header 'Content-Type: application/json' \
+  --header "X-API-Key: $STUDIO_API_KEY" \
+  --data @tests/api-data/01-inf-inferences.json</code></p>
+<p>Check the UI, inference lab history to check the onboarded inference</p>
+</li>
+<li>
+<p>SUBMIT a test onboarding dataset</p>
+<p><code>bash
+curl -X POST 'http://localhost:8000/v2/datasets/onboard' \
+  --header 'Content-Type: application/json' \
+  --header "X-API-Key: $STUDIO_API_KEY" \
+  --data @tests/api-data/02-ft-datasets.json</code></p>
+</li>
+<li>
+<p>SUBMIT a test onboarding finetuning base model</p>
+<p><code>bash
+curl -X POST 'http://localhost:8000/v2/base-models' \
+  --header 'Content-Type: application/json' \
+  --header "X-API-Key: $STUDIO_API_KEY" \
+  --data @tests/api-data/04-ft-base-models.json</code></p>
+</li>
+<li>
+<p>SUBMIT a test onboarding finetuning template</p>
+<p><code>bash
+curl -X POST 'http://localhost:8000/v2/tune-templates' \
+  --header 'Content-Type: application/json' \
+  --header "X-API-Key: $STUDIO_API_KEY" \
+  --data @tests/api-data/03-ft-templates.json</code></p>
+</li>
+</ol></div>
+
+
+
+
+
+
+
+  
+    
+  
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="December 9, 2025 14:17:02 UTC">December 9, 2025</span>
+  </span>
+
+    
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>
