@@ -1,7 +1,7 @@
 site_name: IBM Geospatial Exploration and Orchestration Studio
 docs_dir: docs
 hooks:
-  - my_hooks.py
+  - docs/my_hooks.py
 nav:
   - Home: index.md
   - Getting started:

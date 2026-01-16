@@ -7,7 +7,6 @@ This section has the documentation for the IBM Geospatial Exploration and Orches
 1. Install [hatch](https://hatch.pypa.io/1.9/install/#command-line-installer) in your workstation
 2. Change to the docs directory, create hatch environment and enter the environment created:
 ```sh
-$ cd docs
 $ hatch env create
 $ hatch shell
 ``` 

@@ -1,4 +1,4 @@
-![Geospatial Studio banner](./docs/images/banner.png)
+![Geospatial Studio banner](./docs/assets/banner.png)
 
 # 🌍 Geospatial Exploration and Orchestration Studio
 
@@ -54,7 +54,7 @@ By leveraging tools like **TerraTorch**, **TerraKit**, and **Iterate**, the Geos
 
 The studio is builds upon the broader ecosystem utilising [TerraTorch](https://github.com/terrastackai/terratorch) for model fine-tuning and inference, and leveraging [TerraKit](https://github.com/terrastackai/terrakit) for geospatial data search, query and processing.
 
-![Geospatial Studio UI Screenshots](./docs/images/ui-screenshots.png)
+![Geospatial Studio UI Screenshots](./docs/assets/ui-screenshots.png)
 
 ---
 
@@ -131,7 +131,7 @@ The Geospatial Studio is made up of a gateway API which provides access to all t
 
 When deployed the studio will consist of the gateway api (which can trigger onboarding, fine-tuning and inference tasks), UI, deployed inference pipeline components, backend Postgresql database, MLflow and Geoserver.  These are supported by an OAuth2 authenticator and S3-compatible object storage (both usually external).  The architecture is shown in the diagram below.
 
-![Geospatial Studio banner](./docs/images/architecture.png)
+![Geospatial Studio banner](./docs/assets/architecture.png)
 
 ---
 
@@ -403,7 +403,7 @@ Now you have a clean deployment of the studio and it is time to start using it. 
 
 1. Navigate to the UI front page and create an api key.  Click on the `Manage your API keys` link. This should pop-up a window where you can generate, access and delete your api keys.
 
-![Location of API key link](docs/images/sdk-auth.png)
+![Location of API key link](docs/assets/sdk-auth.png)
 
 2. Copy your new api key to an env in your terminal:
 ```shell

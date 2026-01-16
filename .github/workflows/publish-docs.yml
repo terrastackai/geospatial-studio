@@ -12,6 +12,7 @@ on:
       - main
     paths:
       - 'docs/**'
+      - '.github/workflows/publish-docs.yml'
     types: [opened, synchronize, reopened]
 
 jobs:
@@ -46,5 +47,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/geospatial-studio-docs/site
+          publish_dir: ./site
           cname: terrastackai.github.io

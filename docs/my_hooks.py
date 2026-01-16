@@ -4,7 +4,7 @@ import subprocess
 
 
 def on_pre_build(config):
-    source_dir = Path("../../populate-studio/payloads")
+    source_dir = Path("populate-studio/payloads")
     dest_dir = Path("docs/payloads")
 
     if not os.path.exists(dest_dir):
