@@ -39,8 +39,6 @@ spec:
               mountPath: /populate-buckets-script
           command: ["/bin/sh"]
           args: ["-c", "/populate-buckets-script/populate-buckets-script.sh"]
-      tolerations:
-        - operator: Exists
 
 ---
 apiVersion: v1
