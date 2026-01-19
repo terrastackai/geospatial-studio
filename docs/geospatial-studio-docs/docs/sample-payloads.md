@@ -16,6 +16,7 @@ Click below to see example configurations for onboarding a new dataset to the st
 ### Tuning templates
 
 Click below for sample configs for each of the tune templates we have in the studio:
+**For HPO fine-tuning with terratorch-iterate:** [Download YAML](sample_files/burnscars-iterate-hpo.yaml) | [View  sample congifg file](/sample-files/)
 
 <div class=tuning-templates>
     <button onclick="showExample('regression')" class="button">Regression</button>
@@ -24,6 +25,7 @@ Click below for sample configs for each of the tune templates we have in the stu
     <button onclick="showExample('claySegmentation')" class="button">clay_v1 : Segmentation</button>
     <button onclick="showExample('resnetSegmentation')" class="button">timm_resnet : Segmentation</button>
     <button onclick="showExample('convnextSegmentation')" class="button">timm_convnext : Segmentation</button>
+    <button onclick="showExample('terratorchIterate')" class="button">HPO With Terratorch Iterate</button>
 </div>
 
 ### Tunes
@@ -33,7 +35,7 @@ Click below for example payloads for running a fine-tuning job through the studi
 <div class=tunes>
     <button onclick="showExample('floodTuning')" class="button">Flooding tuning</button>
     <button onclick="showExample('burnScarsTuning')" class="button">Burn scars tuning</button>
-</div>
+ </div>
 
 ## Inference
 
@@ -294,6 +296,12 @@ const exampleConfigs = {
     jsonFile: "../payloads/templates/template-timm_convnext_seg.json",
     endpoint: "/v2/tune-templates",
     method: "POST"
+  },
+  terratorchIterate:{
+    title:"terratorch-iterate",
+    jsonFile:"../payloads/finetuning/terratorch-iterate-hpo.json",
+    endpoint:"/v2/submit-hpo-tune",
+    method:"POST"
   },
   floodTuning: {
     title: "Example configs for fine-tuning a flood model",
