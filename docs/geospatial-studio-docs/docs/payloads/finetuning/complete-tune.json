@@ -1,0 +1,6 @@
+    {
+        "name": "flood-test-001",
+        "description": "Fine-tuned model for flooding detection",
+        "tune_checkpoint_url": "checkpoint_download_url",
+        "tune_config_url": "config_download_url"
+    }
