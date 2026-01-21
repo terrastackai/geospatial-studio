@@ -35,7 +35,7 @@ Click below for example payloads for running a fine-tuning job through the studi
 <div class=tunes>
     <button onclick="showExample('floodTuning')" class="button">Flooding tuning</button>
     <button onclick="showExample('burnScarsTuning')" class="button">Burn scars tuning</button>
- </div>
+</div>
 
 ## Inference
 
