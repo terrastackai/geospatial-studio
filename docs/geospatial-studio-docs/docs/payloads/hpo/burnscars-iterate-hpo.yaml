@@ -138,3 +138,7 @@ tasks:
       w_crop: 224
       w_stride: 196
   type: segmentation
+<<<<<<< HEAD
+=======
+  
+>>>>>>> b3a2698 (docs: add a downlable sample chekpoint file and a tuning config file)
