@@ -1,0 +1,13 @@
+{
+        "name": "user-new-task",
+        "description": "user new task",
+        "purpose": "Other",
+        "content": "your  sample file encoded_content ",
+        "extra_info": {
+            "runtime_image": "us.icr.io/gfmaas/geostudio-ft-deploy:feat-update_tt_version-142",
+            "model_framework": "terratorch-v2"
+        },
+        "model_params": {},
+        "dataset_id": "selected_dataset" 
+    }
+    

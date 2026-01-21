@@ -16,8 +16,8 @@ Click below to see example configurations for onboarding a new dataset to the st
 ### Tuning templates
 
 Click below for sample configs for each of the tune templates we have in the studio:
-**For HPO fine-tuning with terratorch-iterate:** [Download YAML](sample_files/burnscars-iterate-hpo.yaml) | [View  sample congifg file](/sample-files/)
-
+- [Download HPO config](sample_files/burnscars-iterate-hpo.yaml) for terratorch-iterate fine-tuning | [View details](/sample-files/#burnscars-iterate-hpo)
+- [View ConvNeXT template](/sample-files/#convnext-template) for user-defined tuning
 <div class=tuning-templates>
     <button onclick="showExample('regression')" class="button">Regression</button>
     <button onclick="showExample('segmentation')" class="button">Segmentation</button>
@@ -26,16 +26,18 @@ Click below for sample configs for each of the tune templates we have in the stu
     <button onclick="showExample('resnetSegmentation')" class="button">timm_resnet : Segmentation</button>
     <button onclick="showExample('convnextSegmentation')" class="button">timm_convnext : Segmentation</button>
     <button onclick="showExample('terratorchIterate')" class="button">HPO With Terratorch Iterate</button>
+    <button onclick="showExample('userDefinedtuneTemplate')" class="button">User Defined tune Template task</button>
 </div>
 
 ### Tunes
 
-Click below for example payloads for running a fine-tuning job through the studio:
-
+Click below for example payloads for running a fine-tuning job and for uploading a complete tune through the studio:
+To upload a complete tune you will need a config_url and checkpoint_url.
 <div class=tunes>
     <button onclick="showExample('floodTuning')" class="button">Flooding tuning</button>
     <button onclick="showExample('burnScarsTuning')" class="button">Burn scars tuning</button>
-</div>
+    <button onclick="showExample('completeTune')" class="button">Upload a complete tune</button>
+ </div>
 
 ## Inference
 
@@ -303,6 +305,12 @@ const exampleConfigs = {
     endpoint:"/v2/submit-hpo-tune",
     method:"POST"
   },
+  userDefinedtuneTemplate:{
+    title:"terratorch-iterate",
+    jsonFile:"../payloads/finetuning/create-user-defined-template.json",
+    endpoint:"/v2/tune-templates",
+    method:"POST"
+  },
   floodTuning: {
     title: "Example configs for fine-tuning a flood model",
     jsonFile: "../payloads/tunes/tune-prithvi-eo-flood.json",
@@ -314,6 +322,12 @@ const exampleConfigs = {
     jsonFile: "../payloads/tunes/tune-test-fire.json",
     endpoint: "/v2/tune-templates",
     method: "POST"
+  },
+  completeTune:{
+    title: "Register your tune to the studio platform ",
+    jsonFile: "../payloads/finetuning/complete-tune.json",
+    endpoint:"/v2/submit-hpo-tune",
+    method:"POST",
   },
   karenInference: {
     title: "Example config for inference run",
