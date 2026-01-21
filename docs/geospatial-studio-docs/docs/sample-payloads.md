@@ -35,8 +35,8 @@ Click below for sample configs for each of the tune templates we have in the stu
 Click below for example payloads for running a fine-tuning job and for uploading a complete tune through the studio:
 
 - To upload a complete tune a `config_url` and a `checkpoint_url`.
-  - `config_url`: URL to tuning configuration YAML file (see [sample config](/sample-files/#floods-finetuning-config-file) for reference)
-  - `checkpoint_url`: URL to your trained model checkpoint file(.ckpt)
+  - `config_url`: URL to tuning configuration YAML file (see [sample config](/sample-files/#floods-finetuning-config-file) for reference) | [Download the config file](sample_files/prithvi-eo-flood-config.yaml)
+  - `checkpoint_url`: URL to your trained model checkpoint file(.ckpt).[Download sample checkpoint file](sample_files/prithvi-eo-flood-bestEpoch_Fixed_updated.ckpt)
 <div class=tunes>
     <button onclick="showExample('floodTuning')" class="button">Flooding tuning</button>
     <button onclick="showExample('burnScarsTuning')" class="button">Burn scars tuning</button>
