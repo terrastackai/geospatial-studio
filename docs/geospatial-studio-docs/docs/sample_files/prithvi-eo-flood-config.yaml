@@ -1,0 +1,164 @@
+# lightning.pytorch==2.2.0.post0
+seed_everything: 0
+trainer:
+  accelerator: auto
+  strategy: auto
+  devices: auto
+  num_nodes: 1
+  precision: 16-mixed
+
+  fast_dev_run: false
+  max_epochs: 200
+  min_epochs: null
+  max_steps: -1
+  min_steps: null
+  max_time: null
+  limit_train_batches: null
+  limit_val_batches: null
+  limit_test_batches: null
+  limit_predict_batches: null
+  overfit_batches: 0.0
+  val_check_interval: null
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: null
+  log_every_n_steps: 50
+  enable_checkpointing: true
+  enable_progress_bar: null
+  enable_model_summary: null
+  accumulate_grad_batches: 1
+  gradient_clip_val: null
+  gradient_clip_algorithm: null
+  deterministic: null
+  benchmark: null
+  inference_mode: true
+  use_distributed_sampler: true
+  profiler: null
+  detect_anomaly: false
+  barebones: false
+  plugins: null
+  sync_batchnorm: false
+  reload_dataloaders_every_n_epochs: 0
+predict_output_dir: null
+data:
+  class_path: terratorch.datamodules.GenericNonGeoSegmentationDataModule
+  init_args:
+    batch_size: 4
+    num_workers: 8
+    train_data_root: /dccstor/geofm-finetuning/flood_mapping/sen1floods11/data/data/flood_events/HandLabeled/S2GeodnHand6Bands
+    val_data_root: /dccstor/geofm-finetuning/flood_mapping/sen1floods11/data/data/flood_events/HandLabeled/S2GeodnHand6Bands
+    test_data_root: /dccstor/geofm-finetuning/flood_mapping/sen1floods11/data/data/flood_events/HandLabeled/S2GeodnHand6Bands
+    img_grep: "*_S2GeodnHand.tif"
+    label_grep: "*_LabelHand.tif"
+    means:
+      - 0.107582
+      - 0.13471393
+      - 0.12520133
+      - 0.3236181
+      - 0.2341743
+      - 0.15878009
+    stds:
+      - 0.07145836
+      - 0.06783548
+      - 0.07323416
+      - 0.09489725
+      - 0.07938496
+      - 0.07089546
+    num_classes: 2
+    predict_data_root: null
+    train_label_data_root: /dccstor/geofm-finetuning/flood_mapping/sen1floods11/data/data/flood_events/HandLabeled/LabelHand
+    val_label_data_root: /dccstor/geofm-finetuning/flood_mapping/sen1floods11/data/data/flood_events/HandLabeled/LabelHand
+    test_label_data_root: /dccstor/geofm-finetuning/flood_mapping/sen1floods11/data/data/flood_events/HandLabeled/LabelHand
+    train_split: /dccstor/geofm-finetuning/flood_mapping/sen1floods11/splits/splits/flood_handlabeled/flood_train_data_S2_geodn.txt
+    val_split: /dccstor/geofm-finetuning/flood_mapping/sen1floods11/splits/splits/flood_handlabeled/flood_valid_data_S2_geodn.txt
+    test_split: /dccstor/geofm-finetuning/flood_mapping/sen1floods11/splits/splits/flood_handlabeled/flood_test_data_S2_geodn.txt
+    ignore_split_file_extensions: true
+    allow_substring_split_file: true
+    output_bands:
+      - BLUE
+      - GREEN
+      - RED
+      - NIR_NARROW
+      - SWIR_1
+      - SWIR_2
+    dataset_bands:
+      - RED
+      - GREEN
+      - BLUE
+      - NIR_NARROW
+      - SWIR_1
+      - SWIR_2
+    predict_dataset_bands:
+      - BLUE
+      - GREEN
+      - RED
+      - NIR_NARROW
+      - SWIR_1
+      - SWIR_2
+    constant_scale: 0.0001
+    rgb_indices:
+      - 2
+      - 1
+      - 0
+    train_transform: null
+    val_transform: null
+    test_transform: null
+    expand_temporal_dimension: false
+    reduce_zero_label: false
+    no_data_replace: 0.0
+    drop_last: true
+model:
+  class_path: terratorch.tasks.SemanticSegmentationTask
+  init_args:
+    model_args:
+      decoder: UperNetDecoder
+      pretrained: false
+      backbone: prithvi_swin_B
+      backbone_drop_path_rate: 0.3
+      backbone_window_size: 7
+      decoder_channels: 256
+      in_channels: 6
+      bands:
+        - BLUE
+        - GREEN
+        - RED
+        - NIR_NARROW
+        - SWIR_1
+        - SWIR_2
+      num_frames: 1
+      num_classes: 2
+      head_dropout: 0.1
+      head_channel_list:
+        - 256
+    model_factory: PrithviModelFactory
+    loss: ce
+    aux_heads: null
+    aux_loss: null
+    class_weights:
+      - 0.3
+      - 0.7
+    ignore_index: -1
+    lr: 0.001
+    optimizer: torch.optim.Adam
+    optimizer_hparams: null
+    scheduler: null
+    scheduler_hparams: null
+    freeze_backbone: false
+    freeze_decoder: false
+    plot_on_val: 2
+    class_names: null
+    tiled_inference_parameters: null
+optimizer:
+  class_path: torch.optim.AdamW
+  init_args:
+    lr: 6.0e-05
+    betas:
+      - 0.9
+      - 0.999
+    eps: 1.0e-08
+    weight_decay: 0.05
+    amsgrad: false
+    maximize: false
+    foreach: null
+    capturable: false
+    differentiable: false
+    fused: null

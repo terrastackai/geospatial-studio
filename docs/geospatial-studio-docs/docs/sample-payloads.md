@@ -16,6 +16,7 @@ Click below to see example configurations for onboarding a new dataset to the st
 ### Tuning templates
 
 Click below for sample configs for each of the tune templates we have in the studio:
+
 - [Download HPO config](sample_files/burnscars-iterate-hpo.yaml) for terratorch-iterate fine-tuning | [View details](/sample-files/#burnscars-iterate-hpo)
 - [View ConvNeXT template](/sample-files/#convnext-template) for user-defined tuning
 <div class=tuning-templates>
@@ -32,7 +33,10 @@ Click below for sample configs for each of the tune templates we have in the stu
 ### Tunes
 
 Click below for example payloads for running a fine-tuning job and for uploading a complete tune through the studio:
-To upload a complete tune you will need a config_url and checkpoint_url.
+
+- To upload a complete tune a `config_url` and a `checkpoint_url`.
+  - `config_url`: URL to tuning configuration YAML file (see [sample config](/sample-files/#floods-finetuning-config-file) for reference)
+  - `checkpoint_url`: URL to your trained model checkpoint file(.ckpt)
 <div class=tunes>
     <button onclick="showExample('floodTuning')" class="button">Flooding tuning</button>
     <button onclick="showExample('burnScarsTuning')" class="button">Burn scars tuning</button>
