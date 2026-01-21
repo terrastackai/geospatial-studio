@@ -16,7 +16,6 @@ Click below to see example configurations for onboarding a new dataset to the st
 ### Tuning templates
 
 Click below for sample configs for each of the tune templates we have in the studio:
-
 - [Download HPO config](sample_files/burnscars-iterate-hpo.yaml) for terratorch-iterate fine-tuning | [View details](/sample-files/#burnscars-iterate-hpo)
 - [View ConvNeXT template](/sample-files/#convnext-template) for user-defined tuning
 <div class=tuning-templates>
