@@ -99,8 +99,9 @@ spec:
         - name: {{ .Values.global.appNames.gateway }}-mlflow-notify
           resources:
             {{- toYaml .Values.resources.mlflowNotify | nindent 12 }}
-          image: {{ .Values.images.mlflow_notify.name }}:{{ .Values.images.mlflow_notify.tag }}
+          image: {{ .Values.image.name }}:{{ .Values.image.tag }}
           imagePullPolicy: Always
+          command: ["python", "gfmstudio/fine_tuning/subscribe_new_mlflow_run.py"]
           envFrom:
             - secretRef:
                 name: {{ .Values.global.appNames.gateway }}-secrets
