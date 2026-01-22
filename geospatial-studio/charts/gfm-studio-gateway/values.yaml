@@ -24,8 +24,8 @@ images:
     name: quay.io/geospatial-studio/geostudio-curated-upload
     tag: v0.1.0
   amo_pipeline:
-    name: quay.io/geospatial-studio/geostudio-amo-artifacts
-    tag: v0.1.0
+    name: linuxserver/yq
+    tag: latest
 
 command:
   api:
