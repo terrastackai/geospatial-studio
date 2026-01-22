@@ -137,7 +137,7 @@ gfm-studio-gateway:
     tag: latest
   images:
     cleanup_cronjob:
-      name: quay.io/geospatial-studio/geostudio-gateway-cronjob
+      name: bitnamilegacy/kubectl
       tag: latest
     mlflow_notify:
       name: quay.io/geospatial-studio/geostudio-mlflow-sync

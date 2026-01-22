@@ -9,8 +9,8 @@ images:
     name: postgres
     tag: latest
   cleanup_cronjob:
-    name: quay.io/geospatial-studio/geostudio-gateway-cronjob
-    tag: v0.1.0
+    name: bitnamilegacy/kubectl
+    tag: latest
   mlflow_notify:
     name: quay.io/geospatial-studio/geostudio-mlflow-sync
     tag: v0.1.0
