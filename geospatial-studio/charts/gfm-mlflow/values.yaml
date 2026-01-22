@@ -10,7 +10,7 @@ replicaCount: 1
 
 images:
   api:
-    repository: quay.io/geospatial-studio/geostudio-mlflow
+    repository: ghcr.io/mlflow/mlflow
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: latest

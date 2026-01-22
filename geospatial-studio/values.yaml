@@ -208,7 +208,7 @@ gfm-mlflow:
   enabled: true
   resources:
   image:
-    name: quay.io/geospatial-studio/geostudio-mlflow
+    name: ghcr.io/mlflow/mlflow
     pullPolicy: Always
     tag: latest
   route:
