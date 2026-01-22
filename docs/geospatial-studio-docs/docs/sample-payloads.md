@@ -41,7 +41,7 @@ Click below for example payloads for running a fine-tuning job and for uploading
     <button onclick="showExample('floodTuning')" class="button">Flooding tuning</button>
     <button onclick="showExample('burnScarsTuning')" class="button">Burn scars tuning</button>
     <button onclick="showExample('completeTune')" class="button">Upload a complete tune</button>
- </div>
+</div>
 
 ## Inference
 

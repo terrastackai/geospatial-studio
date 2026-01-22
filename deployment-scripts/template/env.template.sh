@@ -28,7 +28,7 @@ export CREATE_TUNING_FOLDERS_FLAG=true
 export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=
 
 # Populate buckets with data
-export LULC_TILE_ROOT=https://lulctimeseries.blob.core.windows.net/lulctimeseriesv003/lc2024/lulc2024.zip
+export LULC_TILE_ROOT=
 export LULC_TILE_SHAPEFILE=
 export LAND_POLYGON_PATH=https://osmdata.openstreetmap.de/download/land-polygons-complete-4326.zip
 
