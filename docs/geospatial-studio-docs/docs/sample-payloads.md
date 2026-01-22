@@ -36,7 +36,7 @@ Click below for example payloads for running a fine-tuning job and for uploading
 
 - To upload a complete tune a `config_url` and a `checkpoint_url`.
   - `config_url`: URL to tuning configuration YAML file (see [sample config](/sample-files/#floods-finetuning-config-file) for reference) | [Download the config file](sample_files/prithvi-eo-flood-config.yaml)
-  - `checkpoint_url`: URL to your trained model checkpoint file(.ckpt).[Download sample checkpoint file](sample_files/prithvi-eo-flood-bestEpoch_Fixed_updated.ckpt)
+  - `checkpoint_url`: URL to your trained model checkpoint file(.ckpt).[Download sample checkpoint file](https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-flood/prithvi-eo-flood-bestEpoch_Fixed_updated.ckpt)
 <div class=tunes>
     <button onclick="showExample('floodTuning')" class="button">Flooding tuning</button>
     <button onclick="showExample('burnScarsTuning')" class="button">Burn scars tuning</button>
