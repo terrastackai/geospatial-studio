@@ -11,6 +11,7 @@ nav:
   - User guides:
     - Intro: intro.md
     - Sample payloads: sample-payloads.md
+    - Sample files: sample-files.md
     - Studio UI user guide:
       - Inferencing:  inference-lab.md
       - Fine-tuning dataset factory: dataset-factory.md
@@ -48,6 +49,8 @@ theme:
         name: Switch to light mode
   font:
     text: IBM Plex Sans
+  features:
+    - content.code.copy
 plugins:
   - mkdocs-video
   - glightbox
@@ -71,3 +74,5 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.snippets:
+      base_path: docs

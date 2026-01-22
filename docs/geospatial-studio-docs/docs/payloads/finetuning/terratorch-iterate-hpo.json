@@ -1,0 +1,8 @@
+{
+    "tune_metadata": {
+        "name": "fire-scars-hpo-tune-016",
+        "description": "Fine-tuned TerraTorch model for fire scar detection",
+        "dataset_id": "geodata-gdctf3vb3znbbtgptqvuku"
+    },
+    "config_file": "../sample_files/burnscars-iterate-hpo.yaml"
+}
