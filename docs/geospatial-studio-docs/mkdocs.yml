@@ -26,6 +26,8 @@ nav:
     - Architechture and Dependencies: architecture_and_requirements.md
     - Cluster Deployment: detailed_deployment_cluster.md
     - Local Deployment: detailed_deployment_local.md
+    - Kind Cluster Deployment: kind_cluster_deployment.md
+    - Nkind cluster deployment: nvkind cluster deployment.md
 # theme: material
 theme:
   name: material
