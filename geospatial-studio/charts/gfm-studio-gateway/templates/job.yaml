@@ -55,9 +55,14 @@ spec:
         volumeMounts:
         - name: db-init-config
           mountPath: /etc/config
+        - name: db-trigger-config
+          mountPath: /etc/config
       volumes:
       - name: db-init-config
         configMap:
           name: {{ $values.global.appNames.gateway }}-seed-data
+      - name: db-trigger-config
+        configMap:
+          name: {{ $values.global.appNames.mlflow }}-run-trigger
 ---
 {{- end }}

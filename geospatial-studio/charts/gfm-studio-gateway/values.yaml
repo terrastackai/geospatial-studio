@@ -69,6 +69,22 @@ hooks:
           sed -i "s|secret_placeholder_key|$FT_API_KEY|" /tmp/init.sql
           DB_URI=$(echo "$AUTH_DATABASE_URI" | sed 's/+pg8000//')
           psql "$DB_URI" -f /tmp/init.sql
+  db-mlflow-run-trigger:
+      enabled: true
+      image:  postgres:13
+      # volumes: # this will be tricky
+      when:
+        # Wait until the DB is available
+        - post-install
+        - post-upgrade
+      weight: -10
+      command:
+        - "sh"
+        - "-c"
+        - |
+          cp /etc/config/trigger.sql /tmp/trigger.sql
+          DB_URI=$(echo "$MLFLOW_DATABASE_URI" | sed 's/+pg8000//')
+          psql "$DB_URI" -f /tmp/trigger.sql
 
 extraEnvironment:
   api:
