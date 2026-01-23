@@ -54,9 +54,11 @@ spec:
               name: {{ $values.global.appNames.gateway }}-secrets
         volumeMounts:
         - name: db-init-config
-          mountPath: /etc/config
+          mountPath: /etc/config/init.sql
+          subPath: init.sql
         - name: db-trigger-config
-          mountPath: /etc/config
+          mountPath: /etc/config/trigger.sql
+          subPath: trigger.sql
       volumes:
       - name: db-init-config
         configMap:
