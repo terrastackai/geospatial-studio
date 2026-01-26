@@ -37,7 +37,7 @@ This sample file demonstrates how to create a user-defined tuning template. To u
     "purpose": "Other", // Do not change
     "content": "<BASE64_ENCODED_YAML_HERE>", // Paste your Base64-encoded YAML here
     "extra_info": {
-        "runtime_image": "us.icr.io/gfmaas/geostudio-ft-deploy:feat-update_tt_version-142",
+        "runtime_image": "quay.io/geospatial-studio/terratorch:latest",
         "model_framework": "terratorch-v2"
     },
     "model_params": {},

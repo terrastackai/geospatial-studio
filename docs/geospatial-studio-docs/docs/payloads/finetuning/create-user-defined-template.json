@@ -4,7 +4,7 @@
         "purpose": "Other",
         "content": "your  sample file encoded_content ",
         "extra_info": {
-            "runtime_image": "us.icr.io/gfmaas/geostudio-ft-deploy:feat-update_tt_version-142",
+            "runtime_image": "quay.io/geospatial-studio/terratorch:latest",
             "model_framework": "terratorch-v2"
         },
         "model_params": {},

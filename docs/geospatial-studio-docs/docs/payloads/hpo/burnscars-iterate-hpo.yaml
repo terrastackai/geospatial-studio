@@ -18,7 +18,7 @@ defaults:
         experiment_name: prithvi-eo2
         run_name: prithvi-eo2-burnscars
         save_dir: /working/mlflow
-        tracking_uri: https://gfm-mlflow-internal-nasageospatial-dev.cash.sl.cloud9.ibm.com
+        tracking_uri: http://mlflow.local
     max_epochs: 4
 experiment_name: test_geotune-burnscars-config
 n_trials: 4
@@ -138,4 +138,3 @@ tasks:
       w_crop: 224
       w_stride: 196
   type: segmentation
-  
