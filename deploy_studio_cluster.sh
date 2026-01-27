@@ -201,6 +201,7 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
     echo "**********************************************************************"
     echo "-----------  Configure s3 storage classes --------------"
+    echo "--- You should already have setup the cloud object storage drivers ---"
     echo "**********************************************************************"
     echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/env.sh ***********"
     echo "-----------  export COS_STORAGE_CLASS= -------------------------------"
