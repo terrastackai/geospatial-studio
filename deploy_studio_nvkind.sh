@@ -51,7 +51,7 @@ openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-pub
 
 kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT}
 kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system
-python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/minio-deployment.yaml --storageclass standard | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml --storageclass standard | kubectl apply -f - -n ${OC_PROJECT}
 kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
 sleep 5
@@ -160,6 +160,8 @@ sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_E
 sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 # Geoserver setup
+
+export GEOSERVER_URL=http://localhost:3000/geoserver
 
 sed -i -e "s/geoserver_username=.*/geoserver_username=$GEOSERVER_USERNAME/g" workspace/${DEPLOYMENT_ENV}/env/.env
 sed -i -e "s/geoserver_password=.*/geoserver_password=$GEOSERVER_PASSWORD/g" workspace/${DEPLOYMENT_ENV}/env/.env

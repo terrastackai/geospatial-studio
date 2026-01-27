@@ -215,7 +215,7 @@ source workspace/$DEPLOYMENT_ENV/env/env.sh
 
 Deploy Minio for S3-compatible object storage:
 ```bash
-kubectl apply -f deployment-scripts/minio-deployment.yaml -n default
+python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml | kubectl apply -f - -n default
 ```
 
 Wait for Minio to be ready:
@@ -476,6 +476,8 @@ echo -e "\n#lima\n127.0.0.1 keycloak.default.svc.cluster.local postgresql.defaul
 ## 5. Geoserver setup
 To deploy Geoserver.  This will deploy geoserver, wait for the deployment to be completed and then start the required port-forwarding:
 ```bash
+export GEOSERVER_URL=http://localhost:3000/geoserver
+
 python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --disable-route | kubectl apply -f - -n ${OC_PROJECT}
 
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n default --timeout=900s
