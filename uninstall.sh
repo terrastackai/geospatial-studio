@@ -10,7 +10,7 @@ get_user_input() {
         printf "%s\n" "$prompt_msg"
 
         read -r input
-        
+
         if [[ -z "$input" ]]; then
             echo "Error: Input cannot be blank. Please try again."
         fi
@@ -44,7 +44,7 @@ do
     echo "No processes found running on port $PORT"
   else
     # Use 'kill -9' for forceful termination if needed
-    # kill -9 $PIDS 
+    # kill -9 $PIDS
     # Use 'kill' for a graceful termination
     kill -9 $PIDS
     echo "Killed processes: $PIDS on port $PORT"
