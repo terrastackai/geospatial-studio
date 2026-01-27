@@ -13,7 +13,7 @@ export ROUTE_ENABLED=true
 export CONTAINER_IMAGE_REPOSITORY=geospatial-studio
 
 # POSTGRESQL version for cluster DB
-export PG_VERSION=12.4.2
+export PG_VERSION=18.2.0
 
 # CLUSTER
 export CLUSTER_URL=

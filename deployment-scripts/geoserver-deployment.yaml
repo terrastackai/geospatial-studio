@@ -288,6 +288,8 @@ spec:
         app.kubernetes.io/name: gfm-geoserver
         app.kubernetes.io/instance: geoserver-vanilla
     spec:
+      imagePullSecrets:
+        - name: us-icr-pull-secret
       securityContext:
         {}
       containers:
