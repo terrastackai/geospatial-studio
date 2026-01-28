@@ -1,12 +1,12 @@
 {
-        "name": "user-new-task",
-        "description": "user new task",
-        "purpose": "Other",
-        "content": "your  sample file encoded_content ",
-        "extra_info": {
-            "runtime_image": "quay.io/geospatial-studio/terratorch:latest",
-            "model_framework": "terratorch-v2"
-        },
-        "model_params": {},
-        "dataset_id": "selected_dataset" 
-    }
+    "name": "user-new-task",
+    "description": "user new task",
+    "purpose": "Other",
+    "content": "your  sample file encoded_content ",
+    "extra_info": {
+        "runtime_image": "quay.io/geospatial-studio/terratorch:latest",
+        "model_framework": "terratorch-v2"
+    },
+    "model_params": {},
+    "dataset_id": "selected_dataset"
+}
