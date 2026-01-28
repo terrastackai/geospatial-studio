@@ -89,10 +89,10 @@ processors:
   - name: inference-planner
     enabled: true
     image:
-      name: quay.io/geospatial-studio/gsp-inference-planner
+      name: quay.io/geospatial-studio/geostudio-pipelines
       tag: latest
     process_id: inference-planner
-    process_exec: 'python claimed_inference_planner.py'
+    process_exec: 'python inference_planner.py'
     extra_envs:
       - name: bbox_to_tile_threshold_area
         value: '1000000000000000000000000'
@@ -114,10 +114,10 @@ processors:
   - name: terrakit-data-fetch
     enabled: true
     image:
-      name: quay.io/geospatial-studio/gsp-terrakit-data
+      name: quay.io/geospatial-studio/geostudio-pipelines
       tag: latest
     process_id: terrakit-data-fetch
-    process_exec: 'python claimed_terrakit_data_fetch.py'
+    process_exec: 'python terrakit_data_fetch.py'
     extra_envs:
       - name: SH_CLIENT_ID
         valueFrom:
@@ -137,10 +137,10 @@ processors:
   - name: push-to-geoserver
     enabled: true
     image:
-      name: quay.io/geospatial-studio/gsp-push-to-geoserver
+      name: quay.io/geospatial-studio/geostudio-pipelines
       tag: latest
     process_id: push-to-geoserver
-    process_exec: 'python claimed_push_to_geoserver.py'
+    process_exec: 'python push_to_geoserver.py'
     extra_envs:
       - name: geoserver_username
         valueFrom:
@@ -155,20 +155,20 @@ processors:
   - name: url-connector
     enabled: true
     image:
-      name: quay.io/geospatial-studio/gsp-url-connector
+      name: quay.io/geospatial-studio/geostudio-pipelines
       tag: latest
     process_id: url-connector
-    process_exec: 'python claimed_url_connector_single.py'
+    process_exec: 'python url_connector_single.py'
     extra_envs:
       - name: CHECK_DISK_FREE_SPACE
         value: 'FALSE'
   - name: run-inference
     enabled: true
     image:
-      name: quay.io/geospatial-studio/gsp-run-inference
+      name: quay.io/geospatial-studio/geostudio-pipelines
       tag: latest
     process_id: run-inference
-    process_exec: 'python claimed_run-inference.py'
+    process_exec: 'python run-inference.py'
     extra_envs:
       - name: push_model_input
         value: 'True'
@@ -177,11 +177,11 @@ processors:
   - name: postprocess-generic
     enabled: true
     image:
-      name: quay.io/geospatial-studio/gsp-postprocess-generic
+      name: quay.io/geospatial-studio/geostudio-pipelines
       tag: latest
     replicas: 1
     process_id: postprocess-generic
-    process_exec: 'python claimed_postprocess-generic-single.py'
+    process_exec: 'python postprocess-generic-single.py'
     extra_envs:
       - name: LULC_TILE_ROOT
         value: /auxdata/lulc/lc2021/
@@ -201,7 +201,7 @@ processors:
       name: quay.io/geospatial-studio/terratorch
       tag: latest
     process_id: terratorch-inference
-    process_exec: 'python claimed_terratorch_inference.py'
+    process_exec: 'python terratorch_inference.py'
     extra_envs:
       - name: PYTORCH_CUDA_ALLOC_CONF
         value: 'expandable_segments:True'
