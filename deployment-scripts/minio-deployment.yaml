@@ -27,7 +27,6 @@ spec:
   accessModes:
     - ReadWriteOnce
   claimRef:
-    namespace: default
     name: minio-pvc
   hostPath:
     path: "/data/minio_home"
@@ -49,7 +48,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: minio
-  namespace: default
   labels:
     app: minio
 spec:
@@ -112,7 +110,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: minio
-  namespace: default
   labels:
     app: minio
   annotations:
@@ -130,3 +127,35 @@ spec:
     name: console
   selector:
     app: minio
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: minio-console
+  annotations:
+    haproxy.router.openshift.io/timeout: 900s
+spec:
+  port:
+    targetPort: 9001
+  to:
+    kind: Service
+    name: minio
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: None
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: minio-api
+  annotations:
+    haproxy.router.openshift.io/timeout: 900s
+spec:
+  port:
+    targetPort: 9000
+  to:
+    kind: Service
+    name: minio
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: None
