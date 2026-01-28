@@ -10,6 +10,7 @@ source workspace/$DEPLOYMENT_ENV/env/.env
 helm upgrade -f workspace/$DEPLOYMENT_ENV/values/geospatial-studio-pipelines/values-deploy.yaml studio-pipelines \
             ./geospatial-studio-pipelines/ \
             --install \
+            --wait \
             --history-max 5 \
             --set "imagePullSecret.b64secret=${image_pull_secret_b64}" \
             --set "orchestrate_db.pg_username=${pg_username}" \

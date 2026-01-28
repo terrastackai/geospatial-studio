@@ -225,3 +225,53 @@ data:
     -- SQL command to insert default data.
     INSERT INTO public."user" (first_name, last_name, email, data_usage_consent, organization_id, extra_data, id, created_at, updated_at, created_by, updated_by, active, deleted) VALUES('Studio', 'Dev', 'Studio.Dev@dev.com', false, NULL, 'null'::json, '57db2b61-2192-40cc-a7b9-86cbf89f9a07'::uuid, '2024-07-07 20:31:07.713', '2024-07-07 17:31:07.725', 'system@ibm.com', 'system@ibm.com', true, false);
     INSERT INTO public.apikey (value,last_used_at,user_id,expires_on,id,created_at,updated_at,created_by,updated_by,active,deleted) VALUES ('secret_placeholder_key',NULL,'57db2b61-2192-40cc-a7b9-86cbf89f9a07'::uuid,'2025-12-10 17:38:58.213','aa87b231-46b7-417e-a10d-c59d0a9d5c17'::uuid,'2025-08-11 20:38:58.200','2025-08-12 17:38:58.213','system@ibm.com','system@ibm.com',true,false);
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.global.appNames.mlflow }}-run-trigger
+data:
+  trigger.sql: |
+    -- SQL command to create mlflow run trigger.
+    CREATE OR REPLACE FUNCTION public.notify_new_mlflow_run()
+    RETURNS TRIGGER AS $$
+    DECLARE
+      experiment_name TEXT;
+      notification_payload TEXT;
+      log_table_name TEXT := 'run_log_queue';
+      insert_log_sql TEXT;
+      run_status TEXT := 'PENDING';
+    BEGIN
+      SELECT name INTO experiment_name
+      FROM experiments
+      WHERE experiment_id = NEW.experiment_id;
+
+      notification_payload := NEW.experiment_id::text || ',' || experiment_name || ',' || NEW.run_uuid::text || ',' || NEW.name::text;
+
+      EXECUTE format('CREATE TABLE IF NOT EXISTS public.%I (
+          experiment_name TEXT,
+          experiment_id INTEGER,
+          run_uuid TEXT,
+          run_name TEXT,
+          status TEXT,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )', log_table_name);
+      RAISE NOTICE 'Ensured % table exists.', log_table_name;
+
+      insert_log_sql := format('INSERT INTO public.%I (experiment_name, experiment_id, run_uuid, run_name, status) VALUES (%L, %L, %L, %L, %L)',
+                              log_table_name, experiment_name, NEW.experiment_id, NEW.run_uuid, NEW.name, run_status);
+      RAISE NOTICE 'Inserting into log table: %', insert_log_sql;
+      EXECUTE insert_log_sql;
+
+      PERFORM pg_notify('new_run_event', notification_payload);
+      RAISE NOTICE 'Notification sent: %', notification_payload;
+
+      RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    CREATE OR REPLACE TRIGGER mlflow_runs_insert_trigger
+    AFTER INSERT ON runs
+    FOR EACH ROW
+    EXECUTE FUNCTION notify_new_mlflow_run();

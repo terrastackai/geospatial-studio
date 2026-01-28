@@ -3,14 +3,17 @@
 
 
 # Check if geoserver is ready
-sleep 10
-echo "Loading \\c"
+sleep 5
+printf "Loading \n"
 
-until kubectl logs --tail=2000 --follow=false -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} | grep "Catalina.start Server startup in" > /dev/null; do
-    echo ".\\c"
-    sleep 10
+until curl --silent --show-error -u $GEOSERVER_USERNAME:$GEOSERVER_PASSWORD -f http://localhost:3000/geoserver/rest/workspaces > /dev/null; do
+  echo "Endpoint not available yet. Sleeping for 5 seconds..."
+  kubectl port-forward -n $OC_PROJECT svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
+  kill -9 $(lsof -t -i:3000) > /dev/null 2>&1
+  sleep 5
 done
-echo "\nUpdating settings"
+
+printf "\nUpdating settings\n"
 
 # Create workspace
 curl --silent --show-error -u $GEOSERVER_USERNAME:$GEOSERVER_PASSWORD -L -X POST $GEOSERVER_URL/rest/workspaces \
@@ -28,3 +31,5 @@ curl --silent --show-error -u $GEOSERVER_USERNAME:$GEOSERVER_PASSWORD -L -X PUT 
 curl --silent --show-error -u $GEOSERVER_USERNAME:$GEOSERVER_PASSWORD -L -X POST $GEOSERVER_URL/rest/security/acl/services \
 --header "Content-type: application/json" \
 --data '{"gwc.*":"*","wcs.*":"*","wfs.*":"*","wms.*":"*"}'
+
+printf "\nCompleted geoserver configuration\n"

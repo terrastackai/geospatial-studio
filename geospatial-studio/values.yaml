@@ -137,7 +137,7 @@ gfm-studio-gateway:
     tag: latest
   images:
     cleanup_cronjob:
-      name: quay.io/geospatial-studio/geostudio-gateway-cronjob
+      name: bitnamilegacy/kubectl
       tag: latest
     mlflow_notify:
       name: quay.io/geospatial-studio/geostudio-mlflow-sync
@@ -152,7 +152,7 @@ gfm-studio-gateway:
       name: quay.io/geospatial-studio/geostudio-curated-upload
       tag: latest
     amo_pipeline:
-      name: quay.io/geospatial-studio/geostudio-amo-artifacts
+      name: linuxserver/yq
       tag: latest
   route:
     enabled: ROUTE_ENABLED
@@ -208,7 +208,7 @@ gfm-mlflow:
   enabled: true
   resources:
   image:
-    name: quay.io/geospatial-studio/geostudio-mlflow
+    name: ghcr.io/mlflow/mlflow
     pullPolicy: Always
     tag: latest
   route:

@@ -383,9 +383,9 @@ After successful deployment you can jump to [First steps](#first-steps).
 | Access the Studio UI | [https://localhost:4180](https://localhost:4180) |
 | Access the Studio API | [https://localhost:4181](https://localhost:4181) |
 | Authenticate Studio | username: `testuser` password: `testpass123` |
-| Access Geoserver | [https://localhost:3000/geoserver](https://localhost:3000/geoserver) |
+| Access Geoserver | [http://localhost:3000/geoserver](http://localhost:3000/geoserver) |
 | Authenticate Geoserver | username: `admin` password: `geoserver` |
-| Access MLflow | [https://localhost:5000](https://localhost:5000) |
+| Access MLflow | [http://localhost:5000](http://localhost:5000) |
 | Access Keycloak | [https://localhost:8080](https://localhost:8080) |
 | Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
 | Authenticate Minio | username: `minioadmin` password: `minioadmin` |

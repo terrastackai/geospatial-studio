@@ -39,12 +39,18 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: {{ .Values.image.name }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/bin/sh"]
+          command: ["/bin/bash", "-c"]
           args:
-            - "-c"
             - |
-              # mkdir -p /tls
-              mlflow server --host 0.0.0.0 --port 5000 --allowed-hosts "*" --backend-store-uri $BACKEND_URI --artifacts-destination file:///mlruns
+              export PYTHONUSERBASE=/mlruns/.pip-packages
+              export PATH="$PYTHONUSERBASE/bin:$PATH"
+              pip install --user psycopg2-binary
+              exec mlflow server \
+                --host 0.0.0.0 \
+                --port 5000 \
+                --allowed-hosts "*" \
+                --backend-store-uri $(BACKEND_URI) \
+                --artifacts-destination file:///mlruns
           envFrom:
           - secretRef:
               name: {{ .Values.global.appNames.mlflow }}-secrets

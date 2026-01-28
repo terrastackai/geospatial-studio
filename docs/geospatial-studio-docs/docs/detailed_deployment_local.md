@@ -151,6 +151,13 @@ kubectl port-forward -n default deployment/geofm-gateway 4181:4180 >> studio-pf.
 kubectl port-forward -n default deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
 ```
 
+This is printed at the end of the installation script. In case you missed it and have issues with keycloak, Run this command to configure the `etc/hosts ` for seamless connection as some of the services may call the internal urls on the host machine.
+
+```shell
+echo -e \"127.0.0.1 keycloak.default.svc.cluster.local postgresql.default.svc.cluster.local minio.default.svc.cluster.local geofm-ui.default.svc.cluster.local geofm-gateway.default.svc.cluster.local geofm-geoserver.default.svc.cluster.local\" >> /etc/hosts
+
+```
+
 ## Geospatial Studio - Deployment instructions (manual)
 
 > Note: Strictly run all the scripts in this guide from the root directory of this repository.

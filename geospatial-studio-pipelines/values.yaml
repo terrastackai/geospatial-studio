@@ -198,7 +198,7 @@ processors:
   - name: terratorch-inference
     enabled: true
     image:
-      name: quay.io/geospatial-studio/gsp-terratorch-inference
+      name: quay.io/geospatial-studio/terratorch
       tag: latest
     process_id: terratorch-inference
     process_exec: 'python claimed_terratorch_inference.py'
