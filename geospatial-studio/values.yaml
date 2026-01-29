@@ -139,9 +139,6 @@ gfm-studio-gateway:
     cleanup_cronjob:
       name: bitnamilegacy/kubectl
       tag: latest
-    mlflow_notify:
-      name: quay.io/geospatial-studio/geostudio-mlflow-sync
-      tag: latest
     tt_caikit:
       name: quay.io/geospatial-studio/geospatial-model-inference-service
       tag: latest
@@ -149,7 +146,7 @@ gfm-studio-gateway:
       name: quay.io/geospatial-studio/gfmstudio-hpo
       tag: latest
     dataset_pipeline:
-      name: quay.io/geospatial-studio/geostudio-curated-upload
+      name: quay.io/geospatial-studio/geostudio-pipelines
       tag: latest
     amo_pipeline:
       name: linuxserver/yq

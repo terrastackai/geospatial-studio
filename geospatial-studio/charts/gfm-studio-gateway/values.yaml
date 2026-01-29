@@ -11,9 +11,6 @@ images:
   cleanup_cronjob:
     name: bitnamilegacy/kubectl
     tag: latest
-  mlflow_notify:
-    name: quay.io/geospatial-studio/geostudio-mlflow-sync
-    tag: v0.1.0
   tt_caikit:
     name: quay.io/geospatial-studio/geospatial-model-inference-service
     tag: v0.1.0
@@ -21,7 +18,7 @@ images:
     name: quay.io/geospatial-studio/gfmstudio-hpo
     tag: v0.1.0
   dataset_pipeline:
-    name: quay.io/geospatial-studio/geostudio-curated-upload
+    name: quay.io/geospatial-studio/geostudio-pipelines
     tag: v0.1.0
   amo_pipeline:
     name: linuxserver/yq
