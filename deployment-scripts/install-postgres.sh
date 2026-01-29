@@ -29,6 +29,6 @@ if [[ -n "$DO_NOT_SET_SCC" ]] && [[ "$DO_NOT_SET_SCC" == "DO_NOT_SET_SCC" ]]; th
     helm install postgresql --version $PG_VERSION bitnami/postgresql --set postgresql.serviceAccount.name="default" --set image.repository="bitnamilegacy/postgresql" --set primary.persistence.existingClaim="postgresql-pvc" --set global.postgresql.auth.postgresPassword=$POSTGRES_PASSWORD --set volumePermissions.enabled=false --set shmVolume.enabled=false --set volumePermissions.image.repository="bitnamilegacy/os-shell" --set primary.podSecurityContext.fsGroup=null --set primary.securityContext.enabled=false --set primary.containerSecurityContext.enabled=false
 else
     oc adm policy add-scc-to-user anyuid -n $OC_PROJECT -z default
-    helm install postgresql --version $PG_VERSION bitnami/postgresql --set postgresql.serviceAccount.name="default" --set image.repository="bitnamilegacy/postgresql" --set primary.persistence.existingClaim="postgresql-pvc" --set global.postgresql.auth.postgresPassword=$POSTGRES_PASSWORD --set volumePermissions.enabled=false --set shmVolume.enabled=false --set volumePermissions.image.repository="bitnamilegacy/os-shell"
+    helm install postgresql --version $PG_VERSION bitnami/postgresql --set postgresql.serviceAccount.name="default" --set image.repository="bitnamilegacy/postgresql" --set primary.persistence.existingClaim="postgresql-pvc" --set global.postgresql.auth.postgresPassword=$POSTGRES_PASSWORD --set volumePermissions.enabled=true --set shmVolume.enabled=false --set volumePermissions.image.repository="bitnamilegacy/os-shell"
 fi
 
