@@ -1311,7 +1311,7 @@ kubectl<span class="w"> </span>config<span class="w"> </span>current-context
 </li>
 </ol>
 <h2 id="geospatial-studio-deployment-instructions-automated">Geospatial Studio - Deployment instructions (automated)</h2>
-<!-- Alternatively, you can install using an automated script.  This will deploy the dependencies (Minio, Keycloak, Postgres) and set them up, before deploying the studio and pipelines.
+<!-- Alternatively, you can install using an automated script.  This will deploy the dependencies (MinIO, Keycloak, Postgres) and set them up, before deploying the studio and pipelines.
 
 NB: you need to be in a python environment with the requirements installed (from `requirements.txt`). -->
 <!-- 
@@ -1322,7 +1322,7 @@ NB: you need to be in a python environment with the requirements installed (from
 If<span class="w"> </span>you<span class="w"> </span>want<span class="w"> </span>to<span class="w"> </span>use<span class="w"> </span>the<span class="w"> </span>automated<span class="w"> </span>deployment<span class="w"> </span>script,<span class="w"> </span>run<span class="w"> </span>the<span class="w"> </span>following<span class="w"> </span>command:
 
 <span class="sb">```</span>shell
-./deploy_studio_local.sh
+./deploy_studio_lima.sh
 </code></pre></div>
 
 *Deployment can take ~10 minutes (or longer) depending available download speed for container images.*
@@ -1336,10 +1336,13 @@ k9s
 |---|---|
 | Access the Studio UI | [https://localhost:4180](https://localhost:4180) |
 | Access the Studio API | [https://localhost:4181](https://localhost:4181) |
-| Authenticate | username: `testuser` password: `testpass123` |
-| Access Geoserver | [https://localhost:3000](https://localhost:3000) |
-| Access Keycloak | [https://localhost:8080](https://localhost:8080) |
-| Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
+| Authenticate Studio | username: `testuser` password: `testpass123` |
+| Access Geoserver | [http://localhost:3000](http://localhost:3000) |
+| Authenticate Geoserver | username: `admin` password: `geoserver` |
+| Access Keycloak | [http://localhost:8080](http://localhost:8080) |
+| Authenticate Keycloak | username: `admin` password: `admin` |
+| Access MinIO | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
+| Authenticate MinIO | username: `minioadmin` password: `minioadmin` |
 
 If you need to restart any of the port-forwards you can use the following commands:
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
@@ -1402,7 +1405,12 @@ Update the CLUSTER_URL in `workspace/${DEPLOYMENT_ENV}/env/env.sh` to be:
 
 ## 2. Storage setup
 
-This section assumes you wish to use a cluster/locally deployed instance of Minio to provide S3-compatible object storage.  You can alternatively use an existing cloud-based storage (i.e. IBM Cloud Object Storage, AWS S3).  Alternatively, for a local deployment you can rely on a mounted volume from the local machine which provides easy access for debug and testing.
+The following storage options are supported:
+- MinIO. A local cloud object storage installation (Default)
+- External cloud object storage service e.g. IBM Cloud Object Storage, AWS S3
+- Mounted volumes utilizing local storage on the host machine.
+
+This section assumes you wish to use a locally deployed instance of MinIO to provide S3-compatible object storage.
 
 > Note:  Source the variables to export any newly added variables.
 <div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/env/env.sh
@@ -1410,23 +1418,40 @@ This section assumes you wish to use a cluster/locally deployed instance of Mini
 
 ### Set up S3 compatible storage
 
-#### Minio
+#### MinIO
 
-Deploy Minio for S3-compatible object storage:
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>./deployment-scripts/update-deployment-template.py<span class="w"> </span>--disable-route<span class="w"> </span>--filename<span class="w"> </span>deployment-scripts/minio-deployment.yaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span>-n<span class="w"> </span>default
+Deploy MinIO for S3-compatible object storage:
+<div class="highlight"><pre><span></span><code><span class="c1"># Install MinIO</span>
+<span class="c1"># Create TLS for MinIO</span>
+openssl<span class="w"> </span>genrsa<span class="w"> </span>-out<span class="w"> </span>minio-private.key<span class="w"> </span><span class="m">2048</span>
+openssl<span class="w"> </span>req<span class="w"> </span>-new<span class="w"> </span>-x509<span class="w"> </span>-nodes<span class="w"> </span>-days<span class="w"> </span><span class="m">730</span><span class="w"> </span>-keyout<span class="w"> </span>minio-private.key<span class="w"> </span>-out<span class="w"> </span>minio-public.crt<span class="w"> </span>--config<span class="w"> </span>deployment-scripts/minio-openssl.conf
+
+kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>tls<span class="w"> </span>minio-tls-secret<span class="w"> </span>--cert<span class="o">=</span>minio-public.crt<span class="w"> </span>--key<span class="o">=</span>minio-private.key<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+<span class="c1"># Create configmap required by cloud object storage drivers</span>
+kubectl<span class="w"> </span>create<span class="w"> </span>configmap<span class="w"> </span>minio-public-config<span class="w"> </span>--from-file<span class="o">=</span>minio-public.crt<span class="w"> </span>-n<span class="w"> </span>kube-system
+<span class="c1"># Install MinIO</span>
+python<span class="w"> </span>./deployment-scripts/update-deployment-template.py<span class="w"> </span>--disable-route<span class="w"> </span>--filename<span class="w"> </span>deployment-scripts/minio-deployment.yaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
 </code></pre></div>
 
-Wait for Minio to be ready:
+Wait for MinIO to be ready:
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>minio<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>--timeout<span class="o">=</span>300s
 </code></pre></div>
 
-#### Access Minio Console
-To access the Minio console:
-<div class="highlight"><pre><span></span><code><span class="c1"># Port forward to access Minio console at http://localhost:9001</span>
+#### Access MinIO Console
+To access the MinIO console:
+<div class="highlight"><pre><span></span><code><span class="c1"># Port forward to access MinIO console at http://localhost:9001</span>
 kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/minio-console<span class="w"> </span><span class="m">9001</span>:9001<span class="w"> </span><span class="p">&amp;</span>
 </code></pre></div>
 Login with username: `minioadmin`, password: `minioadmin`
 ...
+
+#### Install cloud object storage drivers in the cluster
+<div class="highlight"><pre><span></span><code><span class="c1"># Ensure node has labels required by drivers</span>
+kubectl<span class="w"> </span>label<span class="w"> </span>nodes<span class="w"> </span>lima-studio<span class="w"> </span>topology.kubernetes.io/region<span class="o">=</span>us-east-1<span class="w"> </span>topology.kubernetes.io/zone<span class="o">=</span>us-east-1a
+
+<span class="c1"># Install the drivers</span>
+kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>deployment-scripts/ibm-object-csi-driver/
+</code></pre></div>
 
 
 > Note:  This script should be run once only, if run before you should see the `deployment-scripts/.env` file 
@@ -1442,7 +1467,7 @@ region=us-east
 
 * Also at this point update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with...
   <div class="highlight"><pre><span></span><code><span class="c1"># Storage classes</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">COS_STORAGE_CLASS</span><span class="o">=</span>local-path
+<span class="nb">export</span><span class="w"> </span><span class="nv">COS_STORAGE_CLASS</span><span class="o">=</span>cos-s3-csi-s3fs-sc
 <span class="nb">export</span><span class="w"> </span><span class="nv">NON_COS_STORAGE_CLASS</span><span class="o">=</span>local-path
 </code></pre></div>
 
@@ -1450,7 +1475,7 @@ region=us-east
 
 Run the following script to create the buckets:
 
-<div class="highlight"><pre><span></span><code><span class="c1"># Port forward to access Minio api at https://localhost:9000</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># Port forward to access MinIO api at https://localhost:9000</span>
 kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/minio<span class="w"> </span><span class="m">9000</span>:9000<span class="w"> </span><span class="p">&amp;</span>
 </code></pre></div>
 
@@ -1462,8 +1487,8 @@ kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class
 
 Once you create the buckets update the minio endpoint `workspace/${DEPLOYMENT_ENV}/env/.env` with
 
-<div class="highlight"><pre><span></span><code>endpoint=http://minio.default.svc.cluster.local:9000
-#endpoint=http://127.0.0.1:9000
+<div class="highlight"><pre><span></span><code>endpoint=https://minio.default.svc.cluster.local:9000
+#endpoint=https://127.0.0.1:9000
 </code></pre></div>
 
 
@@ -1850,10 +1875,13 @@ kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class
 |---|---|
 | Access the Studio UI | [https://localhost:4180](https://localhost:4180) |
 | Access the Studio API | [https://localhost:4181](https://localhost:4181) |
-| Authenticate | username: `testuser` password: `testpass123` |
-| Access Geoserver | [https://localhost:3000](https://localhost:3000) |
+| Authenticate Studio | username: `testuser` password: `testpass123` |
+| Access Geoserver | [http://localhost:3000](http://localhost:3000) |
+| Authenticate Geoserver | username: `admin` password: `geoserver` |
 | Access Keycloak | [https://localhost:8080](https://localhost:8080) |
-| Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
+| Authenticate Keycloak | username: `admin` password: `admin` |
+| Access MinIO | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
+| Authenticate MinIO | username: `minioadmin` password: `minioadmin` |
 
 
 <!-- ## Enable Permissions in Lima vm local directory
@@ -1868,7 +1896,7 @@ sudo chmod 777 -R /data/studio-inference-pv
 
 <h2 id="9-api-testing-guide">9. API Testing Guide</h2>
 <p>To test the APIs using the provided payloads, follow this guide. You'll need an API client like curl or <a href="https://insomnia.rest/">Insomnia</a>.</p>
-<p>Check the API's Swagger Page: [http://localhost:8000]</p>
+<p>Check the API's Swagger Page: [https://localhost:4181]</p>
 <h3 id="authenticate-with-the-api-key">Authenticate with the API Key</h3>
 <p>The API requires an api-key or oauth-token for authentication. Use the default api-key used in your deployment flow to get started.</p>
 <p>In your requests, you'll pass this key in a header: <code>-H "X-API-Key: $STUDIO_API_KEY"</code></p>
@@ -1879,7 +1907,7 @@ sudo chmod 777 -R /data/studio-inference-pv
 <li>
 <p>ADD a sandbox models resource</p>
 <p><code>bash
-curl -X POST 'http://localhost:8000/v2/models' \
+curl -kX POST 'https://localhost:4181/v2/models' \
   --header 'Content-Type: application/json' \
   --header "X-API-Key: $STUDIO_API_KEY" \
   --data @tests/api-data/00-inf-models.json</code></p>
@@ -1887,7 +1915,7 @@ curl -X POST 'http://localhost:8000/v2/models' \
 <li>
 <p>SUBMIT a test inference</p>
 <p><code>bash
-curl -X POST 'http://localhost:8000/v2/inference' \
+curl -kX POST 'https://localhost:4181/v2/inference' \
   --header 'Content-Type: application/json' \
   --header "X-API-Key: $STUDIO_API_KEY" \
   --data @tests/api-data/01-inf-inferences.json</code></p>
@@ -1896,7 +1924,7 @@ curl -X POST 'http://localhost:8000/v2/inference' \
 <li>
 <p>SUBMIT a test onboarding dataset</p>
 <p><code>bash
-curl -X POST 'http://localhost:8000/v2/datasets/onboard' \
+curl -kX POST 'https://localhost:4181/v2/datasets/onboard' \
   --header 'Content-Type: application/json' \
   --header "X-API-Key: $STUDIO_API_KEY" \
   --data @tests/api-data/02-ft-datasets.json</code></p>
@@ -1904,7 +1932,7 @@ curl -X POST 'http://localhost:8000/v2/datasets/onboard' \
 <li>
 <p>SUBMIT a test onboarding finetuning base model</p>
 <p><code>bash
-curl -X POST 'http://localhost:8000/v2/base-models' \
+curl -kX POST 'https://localhost:4181/v2/base-models' \
   --header 'Content-Type: application/json' \
   --header "X-API-Key: $STUDIO_API_KEY" \
   --data @tests/api-data/04-ft-base-models.json</code></p>
@@ -1912,7 +1940,7 @@ curl -X POST 'http://localhost:8000/v2/base-models' \
 <li>
 <p>SUBMIT a test onboarding finetuning template</p>
 <p><code>bash
-curl -X POST 'http://localhost:8000/v2/tune-templates' \
+curl -kX POST 'https://localhost:4181/v2/tune-templates' \
   --header 'Content-Type: application/json' \
   --header "X-API-Key: $STUDIO_API_KEY" \
   --data @tests/api-data/03-ft-templates.json</code></p>
@@ -1938,7 +1966,7 @@ curl -X POST 'http://localhost:8000/v2/tune-templates' \
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 27, 2026 12:17:05 UTC">January 27, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 30, 2026 16:36:59 UTC">January 30, 2026</span>
   </span>
 
     
