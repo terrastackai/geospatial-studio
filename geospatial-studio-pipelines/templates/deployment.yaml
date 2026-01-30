@@ -27,6 +27,7 @@ spec:  {{ if hasKey $v "replicas" }}
     spec:
       # securityContext:
       #   fsGroup: 1000880000
+      serviceAccountName: {{ $.Values.serviceAccount.name }}
       imagePullSecrets:
        - name: {{ $.Values.imagePullSecret.name }}
       {{- if and (hasKey $v "affinity") ($.Values.gpuConfig.enabled) }}
