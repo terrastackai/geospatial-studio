@@ -135,13 +135,7 @@ When deployed the studio will consist of the gateway api (which can trigger onbo
 
 ---
 
-## 💻🏢 Getting Started (cluster deployment)
-
-*If you want detailed description 📚 of the deployment process on an external cluster [see here 📚](./docs/geospatial-studio-docs/docs/detailed_deployment_cluster.md).*
-
-The Geospatial Studio is primarily developed to be deployed on a Red Hat OpenShift or Kubernetes cluster, with access to NVIDIA GPU resources (for tuning and inference).  This repository containers the Helm chart and scripts for full scale deployment.
-
-To deploy in cluster:
+## 💻🏢 Getting Started (OCP Cluster Deployment)
 
 #### Prerequisites:
 * [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
@@ -149,8 +143,14 @@ To deploy in cluster:
 * Kubectl (bundled with above) 
 * [jq](https://github.com/jqlang/jq) - json command-line processor
 * [yq](https://github.com/mikefarah/yq) - yaml command-line processor
-* [s3 storage class](https://cloud.ibm.com/docs/openshift?topic=openshift-storage_cos_install) - e.g. ibm-object-s3fs or equivalent to install s3 storage in the cluster
-* [s3 compatible storage](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-provision) - e.g. IBM Cloud COS to set up cloud object storage
+* [s3 storage class](https://cloud.ibm.com/docs/openshift?topic=openshift-storage_cos_install) - e.g. ibm-object-s3fs or equivalent to install cloud object storage driver in the cluster
+* [s3 compatible cloud object storage](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-provision) - e.g. IBM Cloud COS to set up cloud object storage
+
+*If you want detailed description 📚 of the deployment process on an external cluster [see here 📚](./docs/geospatial-studio-docs/docs/detailed_deployment_cluster.md).*
+
+The Geospatial Studio is primarily developed to be deployed on a Red Hat OpenShift or Kubernetes cluster, with access to NVIDIA GPU resources (for tuning and inference).  This repository containers the Helm chart and scripts for full scale deployment.
+
+To deploy in an openshift cluster:
 
 #### Deployment steps
 1. Install Python dependencies:
@@ -164,7 +164,7 @@ oc login --token=<cluster-token> --server=<cluster-server>
 ```
 3. Deploy the geospatial studio:
 ```shell
-./deploy_studio_cluster.sh
+./deploy_studio_ocp.sh
 ```
 
 *Deployment is interactive and can take ~10 minutes (or longer) depending available download speed for container images.*
@@ -176,7 +176,15 @@ After deployment the UI will pop up on the screen and you can jump to [First ste
 
 ---
 
-## 💻⚙️ Getting Started (local deployment)
+## 💻⚙️ Getting Started (Local Deployment)
+
+#### Prerequisites:
+* [Lima VM](https://lima-vm.io/docs/installation/) - v1.2.1 (*currently incompatible with v2*)
+* [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
+* [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html)
+* Kubectl (bundled with above)
+* [jq](https://github.com/jqlang/jq) - json command-line processor
+* [yq](https://github.com/mikefarah/yq) - yaml command-line processor
 
 *If you want detailed description 📚 of the local deployment process [see here 📚](./docs/geospatial-studio-docs/docs/detailed_deployment_local.md).*
 
@@ -187,15 +195,6 @@ Data for the deployment will be persisted in a local folder `~/studio-data`, you
 The automated shell script will deploy the local dependencies (Minio, Keycloak and Postgresql), before generating the deployment configuration for the studio and then deploying the main studio services + pipelines.
 
 To deploy locally:
-
-#### Prerequisites:
-* [Lima VM](https://lima-vm.io/docs/installation/) - v1.2.1 (*currently incompatible with v2*)
-* [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
-* [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html)
-* Kubectl (bundled with above) 
-* [jq](https://github.com/jqlang/jq) - json command-line processor
-* [yq](https://github.com/mikefarah/yq) - yaml command-line processor
-
 
 #### Deployment steps
 1. Install [Lima VM](https://github.com/lima-vm/lima).
@@ -220,7 +219,7 @@ export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 ```
 5. Deploy the geospatial studio:
 ```shell
-./deploy_studio_local.sh
+./deploy_studio_lima.sh
 ```
 
 *Deployment can take ~10 minutes (or longer) depending available download speed for container images.*
@@ -234,13 +233,7 @@ After successful deployment you can jump to [First steps](#first-steps).
 
 ---
 
-## 💻⚙️ Getting Started (kind cluster deployment)
-
-Whilst not providing full performance and functionality, the studio can be deployed for testing and development purposes.  The instructions below will deploy the main components of the Geospatial Studio in a Kubernetes cluster on a local or remote machine.  This is provisioned through a [Kind Cluster](https://kind.sigs.k8s.io/).
-
-The automated shell script will deploy dependencies (Minio, Keycloak and Postgresql), before generating the deployment configuration for the studio and then deploying the main studio services + pipelines.
-
-To deploy:
+## 💻⚙️ Getting Started (Kind Cluster Deployment)
 
 #### Prerequisites:
 * [kind](https://kind.sigs.k8s.io/) - tool for running local Kubernetes clusters using Docker container nodes.
@@ -250,6 +243,11 @@ To deploy:
 * [jq](https://github.com/jqlang/jq) - json command-line processor
 * [yq](https://github.com/mikefarah/yq) - yaml command-line processor
 
+Whilst not providing full performance and functionality, the studio can be deployed for testing and development purposes.  The instructions below will deploy the main components of the Geospatial Studio in a Kubernetes cluster on a local or remote machine.  This is provisioned through a [Kind Cluster](https://kind.sigs.k8s.io/).
+
+The automated shell script will deploy dependencies (Minio, Keycloak and Postgresql), before generating the deployment configuration for the studio and then deploying the main studio services + pipelines.
+
+To deploy:
 
 #### Deployment steps
 1. Create a kind cluster using the command
@@ -275,7 +273,7 @@ To deploy:
 
 4. Deploy the geospatial studio:
    ```shell
-   ./deploy_studio_nvkind.sh
+   ./deploy_studio_k8s.sh
    ```
 
 *Deployment can take ~10 minutes (or longer) depending available download speed for container images.*
@@ -288,13 +286,7 @@ After successful deployment you can jump to [First steps](#first-steps).
 
 ---
 
-## 💻⚙️ Getting Started (nvkind cluster deployment)
-
-This section targets cases where you have a host machine (local or remote) that has access to NVIDIA GPUs and leverage [`nvkind`](https://github.com/NVIDIA/nvkind/blob/f1a690fa3f4b0dcb41eb8d6acdda05accf045187/README.md) to create and manage `kind` kubernetes clusters with access to GPUs.
-
-The automated shell script will deploy dependencies (Minio, Keycloak and Postgresql), before generating the deployment configuration for the studio and then deploying the main studio services + pipelines.
-
-To deploy:
+## 💻⚙️ Getting Started (NVKind Cluster Deployment)
 
 #### Prerequisites:
 * [nvkind](https://github.com/NVIDIA/nvkind/blob/f1a690fa3f4b0dcb41eb8d6acdda05accf045187/README.md) - tool to create and manage kind clusters with access to GPUs
@@ -304,6 +296,11 @@ To deploy:
 * [jq](https://github.com/jqlang/jq) - json command-line processor
 * [yq](https://github.com/mikefarah/yq) - yaml command-line processor
 
+This section targets cases where you have a host machine (local or remote) that has access to NVIDIA GPUs and leverage [`nvkind`](https://github.com/NVIDIA/nvkind/blob/f1a690fa3f4b0dcb41eb8d6acdda05accf045187/README.md) to create and manage `kind` kubernetes clusters with access to GPUs.
+
+The automated shell script will deploy dependencies (Minio, Keycloak and Postgresql), before generating the deployment configuration for the studio and then deploying the main studio services + pipelines.
+
+To deploy:
 
 #### Deployment steps
 1. Navigate to [`nvkind`](https://github.com/NVIDIA/nvkind/blob/f1a690fa3f4b0dcb41eb8d6acdda05accf045187/README.md) GitHub repository documentation
@@ -365,7 +362,7 @@ To deploy:
 
 3. Deploy the geospatial studio:
 ```shell
-./deploy_studio_nvkind.sh
+./deploy_studio_k8s.sh
 ```
 
 *Deployment can take ~10 minutes (or longer) depending available download speed for container images.*
@@ -386,7 +383,8 @@ After successful deployment you can jump to [First steps](#first-steps).
 | Access Geoserver | [http://localhost:3000/geoserver](http://localhost:3000/geoserver) |
 | Authenticate Geoserver | username: `admin` password: `geoserver` |
 | Access MLflow | [http://localhost:5000](http://localhost:5000) |
-| Access Keycloak | [https://localhost:8080](https://localhost:8080) |
+| Access Keycloak | [http://localhost:8080](http://localhost:8080) |
+| Authenticate Keycloak  | username: `admin` password: `admin` |
 | Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
 | Authenticate Minio | username: `minioadmin` password: `minioadmin` |
 

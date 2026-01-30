@@ -69,20 +69,17 @@ These steps only need to be done once for the cluster
 * _Node Feature Discovery_ in `openshift-nfd` namespace, follow these instructions https://docs.nvidia.com/datacenter/cloud-native/openshift/24.9.0/install-nfd.html
 
 
-### Installing S3 storage classes for OpenShift [Admin]
+### Installing S3 compatible cloud object storage drivers for OpenShift [Admin]
 
 These steps only need to be done once for the cluster
 
 > Only users with cluster admin privileges can perform these steps.
 
-#### 1. IBM Cloud COS
+#### 1. IBM Cloud Object Storage plug-in
 Follow these instructions: https://cloud.ibm.com/docs/openshift?topic=openshift-storage_cos_install to install _IBM Cloud Object Storage_ in `ibm-object-s3fs` namespace.
 
-#### 2. AWS S3
-...
+This will provide storage classes that are S3 compatible and can connect to MinIO, AWS S3, IBM COS Object storage instances
 
-#### 3. Minio
-...
 
 ## 2. Initialize environment variables
 
@@ -110,32 +107,47 @@ source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 ### Set up S3 compatible storage
 
-#### 1. IBM Cloud COS
-Follow these instructions: https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-provision to provision an IBM Cloud COS instance.
+The following storage options are supported:
+- MinIO. A cluster-installed cloud object storage installation (Default)
+- External cloud object storage service e.g. IBM Cloud Object Storage, AWS S3 etc
 
-#### 2. AWS S3
-...
-
-#### 3. Minio
-...
-
-
-> Note:  This script should be run once only, if run before you should see the `deployment-scripts/.env` file 
-
-* Once the S3 instance has been created, you can add the credentials and endpoint to the `workspace/${DEPLOYMENT_ENV}/env/.env` file as shown below.
-  ```
-  access_key_id=
-  secret_access_key=
-  endpoint=
-  region='
-  ```
+This section assumes you wish to use a cluster-installed instance of MinIO to provide S3-compatible object storage.
 
 * Also at this point update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with...
   ```bash
   # Storage classes
+  # Verify the available storage classes in your cluster and set the following env vars
   export COS_STORAGE_CLASS=
   export NON_COS_STORAGE_CLASS=
   ```
+
+> Note:  Source the variables to export any newly added variables.
+```bash
+source workspace/$DEPLOYMENT_ENV/env/env.sh
+```
+
+### Set up S3 compatible storage
+
+#### MinIO
+
+Deploy MinIO for S3-compatible object storage:
+```bash
+# Install MinIO
+python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} | kubectl apply -f - -n ${OC_PROJECT}
+kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
+MINIO_API_URL="https://minio-api-$OC_PROJECT.$CLUSTER_URL"
+
+# Update .env with the MinIO details for connection
+sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
+sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
+sed -i -e "s|endpoint=.*|endpoint=$MINIO_API_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
+sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
+```
+
+
+> Note:  This script should be run once only, if run before you should see the `deployment-scripts/.env` file
+
+* Once the S3 instance has been created and .env updated, you can validate the credentials and endpoint in the `workspace/${DEPLOYMENT_ENV}/env/.env`
 
 ### Create the required buckets
 
@@ -206,7 +218,7 @@ Install postgres:
 ***Note*** If you have an instance of postgres already installed, following this guide to [uninstall](postgres-uninstall.md).
 
 ```bash
-./deployment-scripts/install-postgres.sh UPDATE_STORAGE
+./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV DO_NOT_SET_SCC
 ```
 
 Once completed, in terminal you will find some notes on the created postgres database. To prepare for the [create databases](#create-databases) section below, follow these steps..
@@ -295,7 +307,24 @@ kubectl wait --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeou
 ```
 
 #### Configure Keycloak Realm and Client
-You can either use the `deployment-scripts/setup-keycloak.sh` script to create the realm, client and test user, or you can follow the instructions below to create them manually through the Keycloak dashboard.
+
+You can follow the following commands to auto configure
+```bash
+export client_secret=`cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32`
+export cookie_secret=`cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32`
+
+./deployment-scripts/setup-keycloak.sh
+
+sed -i -e "s/oauth_cookie_secret=.*/oauth_cookie_secret=$cookie_secret/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+sed -i -e "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "https://%s-%s.%s/realms/geostudio" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=$(printf "https://%s-%s.%s/realms/geostudio/protocol/openid-connect/auth" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=${OAUTH_PROXY_PORT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+```
+
+Otherwise; if you have not run the above bash block you can follow the instructions below to create them manually through the Keycloak dashboard.
 
 ---
 1. **Access Keycloak Admin Console**:
@@ -356,20 +385,22 @@ You can either use the `deployment-scripts/setup-keycloak.sh` script to create t
    - Click "Save"
 ---
 
-Once you setup the authenticator (with either method), update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with...
+Update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with the following script
+
 ```bash
-# AUTH
-export OAUTH_TYPE=keycloak # for Keycloak
-export OAUTH_CLIENT_ID=geostudio-client
-export OAUTH_ISSUER_URL=http://keycloak.default.svc.cluster.local:8080/realms/geostudio
-export OAUTH_URL=http://keycloak.default.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth
+sed -i -e "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "https://%s-%s.%s/realms/geostudio" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=$(printf "https://%s-%s.%s/realms/geostudio/protocol/openid-connect/auth" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 ```
+
+Once you setup the authenticator (with either method), validate `workspace/${DEPLOYMENT_ENV}/env/.env.sh`
 
 ## 6. Geoserver setup
 
 To deploy Geoserver.  This will deploy geoserver, wait for the deployment to be completed and then start the required port-forwarding:
 ```bash
-python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} | kubectl apply -f - -n ${OC_PROJECT}
 
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
 
