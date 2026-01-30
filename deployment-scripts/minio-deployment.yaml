@@ -141,8 +141,8 @@ spec:
     kind: Service
     name: minio
   tls:
-    termination: edge
-    insecureEdgeTerminationPolicy: None
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
 ---
 apiVersion: route.openshift.io/v1
 kind: Route
@@ -157,5 +157,5 @@ spec:
     kind: Service
     name: minio
   tls:
-    termination: edge
-    insecureEdgeTerminationPolicy: None
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect

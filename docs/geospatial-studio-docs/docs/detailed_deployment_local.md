@@ -109,7 +109,7 @@ minikube dashboard
 
 
 ## Geospatial Studio - Deployment instructions (automated)
-<!-- Alternatively, you can install using an automated script.  This will deploy the dependencies (Minio, Keycloak, Postgres) and set them up, before deploying the studio and pipelines.
+<!-- Alternatively, you can install using an automated script.  This will deploy the dependencies (MinIO, Keycloak, Postgres) and set them up, before deploying the studio and pipelines.
 
 NB: you need to be in a python environment with the requirements installed (from `requirements.txt`). -->
 <!-- 
@@ -121,7 +121,7 @@ NB: you need to be in a python environment with the requirements installed (from
 If you want to use the automated deployment script, run the following command:
 
 ```shell
-./deploy_studio_local.sh
+./deploy_studio_lima.sh
 ```
 
 *Deployment can take ~10 minutes (or longer) depending available download speed for container images.*
@@ -136,10 +136,13 @@ k9s
 |---|---|
 | Access the Studio UI | [https://localhost:4180](https://localhost:4180) |
 | Access the Studio API | [https://localhost:4181](https://localhost:4181) |
-| Authenticate | username: `testuser` password: `testpass123` |
-| Access Geoserver | [https://localhost:3000](https://localhost:3000) |
-| Access Keycloak | [https://localhost:8080](https://localhost:8080) |
-| Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
+| Authenticate Studio | username: `testuser` password: `testpass123` |
+| Access Geoserver | [http://localhost:3000](http://localhost:3000) |
+| Authenticate Geoserver | username: `admin` password: `geoserver` |
+| Access Keycloak | [http://localhost:8080](http://localhost:8080) |
+| Authenticate Keycloak | username: `admin` password: `admin` |
+| Access MinIO | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
+| Authenticate MinIO | username: `minioadmin` password: `minioadmin` |
 
 If you need to restart any of the port-forwards you can use the following commands:
 ```shell
@@ -209,7 +212,12 @@ export CLUSTER_URL=localhost
 
 ## 2. Storage setup
 
-This section assumes you wish to use a cluster/locally deployed instance of Minio to provide S3-compatible object storage.  You can alternatively use an existing cloud-based storage (i.e. IBM Cloud Object Storage, AWS S3).  Alternatively, for a local deployment you can rely on a mounted volume from the local machine which provides easy access for debug and testing.
+The following storage options are supported:
+- MinIO. A local cloud object storage installation (Default)
+- External cloud object storage service e.g. IBM Cloud Object Storage, AWS S3
+- Mounted volumes utilizing local storage on the host machine.
+
+This section assumes you wish to use a locally deployed instance of MinIO to provide S3-compatible object storage.
 
 > Note:  Source the variables to export any newly added variables.
 ```bash
@@ -218,26 +226,44 @@ source workspace/$DEPLOYMENT_ENV/env/env.sh
 
 ### Set up S3 compatible storage
 
-#### Minio
+#### MinIO
 
-Deploy Minio for S3-compatible object storage:
+Deploy MinIO for S3-compatible object storage:
 ```bash
-python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml | kubectl apply -f - -n default
+# Install MinIO
+# Create TLS for MinIO
+openssl genrsa -out minio-private.key 2048
+openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config deployment-scripts/minio-openssl.conf
+
+kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT}
+# Create configmap required by cloud object storage drivers
+kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system
+# Install MinIO
+python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml | kubectl apply -f - -n ${OC_PROJECT}
 ```
 
-Wait for Minio to be ready:
+Wait for MinIO to be ready:
 ```bash
 kubectl wait --for=condition=ready pod -l app=minio -n default --timeout=300s
 ```
 
-#### Access Minio Console
-To access the Minio console:
+#### Access MinIO Console
+To access the MinIO console:
 ```bash
-# Port forward to access Minio console at http://localhost:9001
+# Port forward to access MinIO console at http://localhost:9001
 kubectl port-forward -n default svc/minio-console 9001:9001 &
 ```
 Login with username: `minioadmin`, password: `minioadmin`
 ...
+
+#### Install cloud object storage drivers in the cluster
+```bash
+# Ensure node has labels required by drivers
+kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
+
+# Install the drivers
+kubectl apply -k deployment-scripts/ibm-object-csi-driver/
+```
 
 
 > Note:  This script should be run once only, if run before you should see the `deployment-scripts/.env` file 
@@ -255,7 +281,7 @@ Login with username: `minioadmin`, password: `minioadmin`
 * Also at this point update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with...
   ```bash
   # Storage classes
-  export COS_STORAGE_CLASS=local-path
+  export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc
   export NON_COS_STORAGE_CLASS=local-path
   ```
 
@@ -264,7 +290,7 @@ Login with username: `minioadmin`, password: `minioadmin`
 Run the following script to create the buckets:
 
 ```bash
-# Port forward to access Minio api at https://localhost:9000
+# Port forward to access MinIO api at https://localhost:9000
 kubectl port-forward -n default svc/minio 9000:9000 &
 ```
 
@@ -278,8 +304,8 @@ python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_EN
 Once you create the buckets update the minio endpoint `workspace/${DEPLOYMENT_ENV}/env/.env` with
 
 ```
-endpoint=http://minio.default.svc.cluster.local:9000
-#endpoint=http://127.0.0.1:9000
+endpoint=https://minio.default.svc.cluster.local:9000
+#endpoint=https://127.0.0.1:9000
 ```
 
 
@@ -702,10 +728,13 @@ kubectl port-forward -n default deployment/geofm-mlflow 5000:5000 >> studio-pf.l
 |---|---|
 | Access the Studio UI | [https://localhost:4180](https://localhost:4180) |
 | Access the Studio API | [https://localhost:4181](https://localhost:4181) |
-| Authenticate | username: `testuser` password: `testpass123` |
-| Access Geoserver | [https://localhost:3000](https://localhost:3000) |
+| Authenticate Studio | username: `testuser` password: `testpass123` |
+| Access Geoserver | [http://localhost:3000](http://localhost:3000) |
+| Authenticate Geoserver | username: `admin` password: `geoserver` |
 | Access Keycloak | [https://localhost:8080](https://localhost:8080) |
-| Access Minio | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
+| Authenticate Keycloak | username: `admin` password: `admin` |
+| Access MinIO | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
+| Authenticate MinIO | username: `minioadmin` password: `minioadmin` |
 
 
 <!-- ## Enable Permissions in Lima vm local directory
@@ -722,7 +751,7 @@ sudo chmod 777 -R /data/studio-inference-pv
 
 To test the APIs using the provided payloads, follow this guide. You'll need an API client like curl or [Insomnia](https://insomnia.rest/).
 
-Check the API's Swagger Page: [http://localhost:8000]
+Check the API's Swagger Page: [https://localhost:4181]
 
 ### Authenticate with the API Key
 
@@ -739,7 +768,7 @@ Use the default data provided under `/tests/api-data/*.json` as the payloads to 
 1. ADD a sandbox models resource
 
     ```bash
-    curl -X POST 'http://localhost:8000/v2/models' \
+    curl -kX POST 'https://localhost:4181/v2/models' \
       --header 'Content-Type: application/json' \
       --header "X-API-Key: $STUDIO_API_KEY" \
       --data @tests/api-data/00-inf-models.json
@@ -748,7 +777,7 @@ Use the default data provided under `/tests/api-data/*.json` as the payloads to 
 2. SUBMIT a test inference
 
     ```bash
-    curl -X POST 'http://localhost:8000/v2/inference' \
+    curl -kX POST 'https://localhost:4181/v2/inference' \
       --header 'Content-Type: application/json' \
       --header "X-API-Key: $STUDIO_API_KEY" \
       --data @tests/api-data/01-inf-inferences.json
@@ -759,7 +788,7 @@ Use the default data provided under `/tests/api-data/*.json` as the payloads to 
 3. SUBMIT a test onboarding dataset
 
     ```bash
-    curl -X POST 'http://localhost:8000/v2/datasets/onboard' \
+    curl -kX POST 'https://localhost:4181/v2/datasets/onboard' \
       --header 'Content-Type: application/json' \
       --header "X-API-Key: $STUDIO_API_KEY" \
       --data @tests/api-data/02-ft-datasets.json
@@ -768,7 +797,7 @@ Use the default data provided under `/tests/api-data/*.json` as the payloads to 
 4. SUBMIT a test onboarding finetuning base model
 
     ```bash
-    curl -X POST 'http://localhost:8000/v2/base-models' \
+    curl -kX POST 'https://localhost:4181/v2/base-models' \
       --header 'Content-Type: application/json' \
       --header "X-API-Key: $STUDIO_API_KEY" \
       --data @tests/api-data/04-ft-base-models.json
@@ -777,7 +806,7 @@ Use the default data provided under `/tests/api-data/*.json` as the payloads to 
 3. SUBMIT a test onboarding finetuning template
 
     ```bash
-    curl -X POST 'http://localhost:8000/v2/tune-templates' \
+    curl -kX POST 'https://localhost:4181/v2/tune-templates' \
       --header 'Content-Type: application/json' \
       --header "X-API-Key: $STUDIO_API_KEY" \
       --data @tests/api-data/03-ft-templates.json

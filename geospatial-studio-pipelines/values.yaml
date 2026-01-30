@@ -85,6 +85,12 @@ objectStorage:
     inference_auxdata: BUCKET_INFERENCE_AUXDATA
   cos_storage_class: COS_STORAGE_CLASS
 
+serviceAccount:
+  # Specifies serviceaccount to be used
+  # Defaults to service account created by studio chart
+  # If you have an alternative service account change this
+  name: 'api-gateway-sa'
+
 processors:
   - name: inference-planner
     enabled: true

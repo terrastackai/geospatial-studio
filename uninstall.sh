@@ -57,6 +57,11 @@ helm uninstall studio
 
 helm uninstall postgresql
 
+kubectl delete pvc postgresql-pvc -n $OC_PROJECT
+kubectl delete pvc populate-buckets-pvc -n $OC_PROJECT
+kubectl delete pvc redis-data-geofm-redis-master-0 -n $OC_PROJECT
+kubectl delete pvc redis-data-geofm-redis-replicas-0 -n $OC_PROJECT
+
 kubectl delete -f deployment-scripts/geoserver-deployment.yaml -n $OC_PROJECT
 
 kubectl delete -f workspace/initialisation/$DEPLOYMENT_ENV/geoserver_docker_secret.yaml -n $OC_PROJECT

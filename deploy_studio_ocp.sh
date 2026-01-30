@@ -188,10 +188,25 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         --env-sh-variables ""
 
     if [ $? -ne 0 ]; then
-        typeset ips
-        get_user_input "Enter Image pull secret: " ips
-        echo "STUDIO_IMAGE_PULL_SECRET accepted: **$ips**"
-        export STUDIO_IMAGE_PULL_SECRET=$ips
+        echo "***********************************************************************************"
+        echo "-----------------------  Configure image pull secret ------------------------------"
+        echo "-----------------------------------------------------------------------------------"
+        image_pull_secret_config_options="Default User-Generated"
+        typeset image_pull_secret_config_type
+
+        get_menu_selection \
+        "Select whether to use the default image pull secret or to provide your own: " \
+        image_pull_secret_config_type \
+        "$image_pull_secret_config_options"
+
+        if [[ "$image_pull_secret_config_type" == "Default" ]]; then
+            export STUDIO_IMAGE_PULL_SECRET="eyJhdXRocyI6eyJleGFtcGxlLmlvIjp7InVzZXJuYW1lIjoiZXhhbXBsZSIsInBhc3N3b3JkIjoiZXhhbXBsZSIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImF1dGgiOiJaWGhoYlhCc1pUcGxlR0Z0Y0d4bCJ9fX0="
+        else
+            typeset ips
+            get_user_input "Enter Image pull secret: " ips
+            echo "STUDIO_IMAGE_PULL_SECRET accepted: **$ips**"
+            export STUDIO_IMAGE_PULL_SECRET=$ips
+        fi
 
         # Update the workspace env file with STUDIO_IMAGE_PULL_SECRET
         sed -i -e "s/image_pull_secret_b64=.*/image_pull_secret_b64=\"${STUDIO_IMAGE_PULL_SECRET}\"/g" workspace/${DEPLOYMENT_ENV}/env/.env
@@ -199,15 +214,18 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-    echo "**********************************************************************"
-    echo "-----------  Configure s3 storage classes --------------"
-    echo "--- You should already have setup the cloud object storage drivers ---"
+    echo "***********************************************************************************"
+    echo "-----------------------  Configure s3 storage classes -----------------------------"
+    echo "-----------------------------------------------------------------------------------"
+    echo "---------------- Verify the available storage classes in your cluster -------------"
+    echo "-----------------------------------------------------------------------------------"
+    echo "---------- You should already have setup the cloud object storage drivers ---------"
     echo "-- See: https://cloud.ibm.com/docs/openshift?topic=openshift-storage_cos_install --"
-    echo "**********************************************************************"
-    echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/env.sh ***********"
-    echo "-----------  export COS_STORAGE_CLASS= -------------------------------"
-    echo "-----------  export NON_COS_STORAGE_CLASS= ---------------------------"
-    echo "**********************************************************************"
+    echo "***********************************************************************************"
+    echo "******************  Update workspace/${DEPLOYMENT_ENV}/env/env.sh *****************"
+    echo "------------------------  export COS_STORAGE_CLASS= -------------------------------"
+    echo "------------------------  export NON_COS_STORAGE_CLASS= ---------------------------"
+    echo "***********************************************************************************"
     while true; do
         printf "%s " "Press enter to continue after entering the variables"
         read ans
