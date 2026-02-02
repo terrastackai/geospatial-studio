@@ -17,13 +17,13 @@ echo "------  Creating baseline deployment/values files  -------------------"
 echo "----------------------------------------------------------------------"
 
 # Set environment variables and source setup script
-export DEPLOYMENT_ENV=lima
+export DEPLOYMENT_ENV=k8s
 export OC_PROJECT=default
 export IMAGE_REGISTRY=geospatial-studio
 ./deployment-scripts/setup-workspace-env.sh
 
 sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=lima/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=k8s/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=default/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
@@ -286,7 +286,7 @@ echo "----------------------------------------------------------------------"
 echo "-----------------------  Deployment summary  -------------------------"
 echo "----------------------------------------------------------------------"
 
-printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed to Lima VM! \n"
+printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed to k8s! \n"
 printf "\U1F5FA   Access the Geospatial Studio UI at: http://localhost:4180\n"
 printf "\U1F4BB   Access the Geospatial Studio API at: http://localhost:4181\n"
 printf "K8S \U2388   To access the k8s cluster dashboard, run: minikube dashboard\n\n"
