@@ -248,7 +248,6 @@ spec:
   accessModes:
     - ReadWriteOnce
   claimRef:
-    namespace: default
     name: gfm-geoserver-pvc
   hostPath:
     path: "/data/geoserver"

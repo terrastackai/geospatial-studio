@@ -7,6 +7,7 @@
 
 
 mkdir -p workspace/$DEPLOYMENT_ENV/env
+mkdir -p workspace/$DEPLOYMENT_ENV/initialisation
 
 # Check if .env and env.sh exists
 ENV_FILE="workspace/$DEPLOYMENT_ENV/env/.env"

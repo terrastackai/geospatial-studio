@@ -73,7 +73,7 @@ Edit `workspace/${DEPLOYMENT_ENV}/env/env.sh` to set your cluster URL:
 ```bash
 sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=k8s/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=default/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 ```
 
 ### 1.5 Source Environment Variables
@@ -109,24 +109,28 @@ MinIO provides S3-compatible object storage for the Geospatial Studio.
 openssl genrsa -out minio-private.key 2048
 
 # Generate self-signed certificate
-openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config deployment-scripts/minio-openssl.conf
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/minio-openssl.conf > workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
+openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
 ```
 
 ### 3.2 Create Kubernetes Secrets and ConfigMaps
 
 ```bash
 # Create TLS secret for MinIO
-kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT}
+kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml -n ${OC_PROJECT}
 
 # Create ConfigMap for CSI driver (required by IBM Object CSI Driver)
-kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system
+kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
 ```
 
 ### 3.3 Deploy MinIO
 
 ```bash
 # Deploy MinIO with storage class configuration
-python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml --storageclass standard | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml --storageclass standard > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
 # Wait for MinIO to be ready
 kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
@@ -146,7 +150,10 @@ The IBM Object CSI Driver enables dynamic provisioning of S3-compatible storage:
 
 ```bash
 # Apply the CSI driver manifests
-kubectl apply -k deployment-scripts/ibm-object-csi-driver/
+cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
+kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
 
 # Wait for CSI controller to be ready
 kubectl wait --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s
@@ -179,7 +186,7 @@ sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=standa
 
 ```bash
 # Port forward MinIO API
-kubectl port-forward -n default svc/minio 9000:9000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT svc/minio 9000:9000 >> studio-pf.log 2>&1 &
 sleep 5
 ```
 
@@ -195,7 +202,7 @@ python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_EN
 After creating buckets, update the endpoint to use the internal cluster DNS:
 
 ```bash
-sed -i -e "s|endpoint=.*|endpoint=https://minio.default.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
 ```
 
 ### 3.11 Reload Environment Variables
@@ -267,7 +274,7 @@ python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT
 After creating databases, update the URI to use the internal cluster DNS:
 
 ```bash
-sed -i -e "s/pg_uri=.*/pg_uri=postgresql.default.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
+sed -i -e "s/pg_uri=.*/pg_uri=postgresql.$OC_PROJECT.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
 ```
 
 ### 4.8 Reload Environment Variables
@@ -286,17 +293,18 @@ Keycloak provides OAuth2 authentication for the Geospatial Studio.
 
 ```bash
 # Deploy Keycloak with environment-specific configuration
-python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 
 # Wait for Keycloak to be ready
-kubectl wait --for=condition=ready pod -l app=keycloak -n default --timeout=300s
+kubectl wait --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
 ```
 
 ### 5.2 Set Up Port Forwarding for Keycloak
 
 ```bash
 # Port forward Keycloak for local access
-kubectl port-forward -n default svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
 sleep 5
 ```
 
@@ -333,8 +341,8 @@ sed -i -e "s/oauth_cookie_secret=.*/oauth_cookie_secret=$cookie_secret/g" worksp
 # Update OAuth configuration in env.sh
 sed -i -e "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=http://keycloak.default.svc.cluster.local:8080/realms/geostudio|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=http://keycloak.default.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 ```
 
@@ -346,7 +354,7 @@ sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g" workspac
 
 ```bash
 # Generate self-signed certificate for Kubernetes services
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=default.svc.cluster.local"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=$OC_PROJECT.svc.cluster.local"
 ```
 
 ### 6.2 Encode Certificates to Base64
@@ -395,17 +403,18 @@ sed -i -e "s/geoserver_password=.*/geoserver_password=$GEOSERVER_PASSWORD/g" wor
 
 ```bash
 # Deploy Geoserver with storage configuration
-python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --storageclass standard --disable-route | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --storageclass standard --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
 
 # Wait for Geoserver to be ready (may take up to 15 minutes)
-kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n default --timeout=900s
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
 ```
 
 ### 7.4 Set Up Port Forwarding for Geoserver
 
 ```bash
 # Port forward Geoserver
-kubectl port-forward -n default svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
 sleep 5
 ```
 
@@ -600,7 +609,7 @@ This deploys:
 
 ```bash
 # Wait for gateway to be ready
-kubectl wait --for=condition=ready pod -l app=geofm-gateway -n default --timeout=300s
+kubectl wait --for=condition=ready pod -l app=geofm-gateway -n ${OC_PROJECT} --timeout=300s
 ```
 
 ### 10.2 Set Up Port Forwarding
@@ -621,7 +630,7 @@ kubectl port-forward deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
 Add internal cluster URLs to your `/etc/hosts` file for seamless connectivity:
 
 ```bash
-echo -e "127.0.0.1 keycloak.default.svc.cluster.local postgresql.default.svc.cluster.local minio.default.svc.cluster.local geofm-ui.default.svc.cluster.local geofm-gateway.default.svc.cluster.local geofm-geoserver.default.svc.cluster.local" | sudo tee -a /etc/hosts
+echo -e "127.0.0.1 keycloak.$OC_PROJECT.svc.cluster.local postgresql.$OC_PROJECT.svc.cluster.local minio.$OC_PROJECT.svc.cluster.local geofm-ui.$OC_PROJECT.svc.cluster.local geofm-gateway.$OC_PROJECT.svc.cluster.local geofm-geoserver.$OC_PROJECT.svc.cluster.local" | sudo tee -a /etc/hosts
 ```
 
 > **Note:** This is required because some services may call internal cluster URLs from the host machine.
@@ -636,8 +645,8 @@ After deployment, you can access the following services:
 
 | Service | URL | Credentials |
 |---------|-----|-------------|
-| **Studio UI** | http://localhost:4180 | username: `testuser`<br>password: `testpass123` |
-| **Studio API** | http://localhost:4181 | Use API key (see below) |
+| **Studio UI** | https://localhost:4180 | username: `testuser`<br>password: `testpass123` |
+| **Studio API** | https//localhost:4181 | Use API key (see below) |
 | **Geoserver** | http://localhost:3000 | username: `admin`<br>password: `geoserver` |
 | **Keycloak** | http://localhost:8080 | username: `admin`<br>password: `admin` |
 | **MinIO Console** | https://localhost:9001 | username: `minioadmin`<br>password: `minioadmin` |
@@ -665,8 +674,8 @@ echo "-----------------------  Deployment Summary  -------------------------"
 echo "----------------------------------------------------------------------"
 echo ""
 echo "🌍🌎🌏   Geospatial Studio deployed to Kubernetes!"
-echo "🗺️   Access the Geospatial Studio UI at: http://localhost:4180"
-echo "💻   Access the Geospatial Studio API at: http://localhost:4181"
+echo "🗺️   Access the Geospatial Studio UI at: https://localhost:4180"
+echo "💻   Access the Geospatial Studio API at: https://localhost:4181"
 echo ""
 echo "Dev Studio API Key: $STUDIO_API_KEY"
 echo "Dev Postgres Password: $POSTGRES_PASSWORD"
@@ -683,13 +692,13 @@ Use the Studio API key for programmatic access:
 export MY_GEOSTUDIO_KEY=$STUDIO_API_KEY
 
 # Test: Add a model
-curl -X POST "http://localhost:4181/studio-gateway/v2/models" \
+curl -X POST "https://localhost:4181/studio-gateway/v2/models" \
   --header 'Content-Type: application/json' \
   --header "X-API-Key: $MY_GEOSTUDIO_KEY" \
   --data @tests/api-data/00-models.json
 
 # Test: Submit an inference
-curl -X POST "http://localhost:4181/studio-gateway/v2/inference" \
+curl -X POST "https://localhost:4181/studio-gateway/v2/inference" \
   --header 'Content-Type: application/json' \
   --header "X-API-Key: $MY_GEOSTUDIO_KEY" \
   --data @tests/api-data/01-inferences.json
@@ -710,14 +719,14 @@ If port forwarding stops, restart it:
 pkill -f "kubectl port-forward"
 
 # Restart all port forwards
-kubectl port-forward -n default svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/minio 9000:9000 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/minio 9001:9001 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 >> studio-pf.log 2>&1 &
 ```
 
 #### 2. Pod Not Starting

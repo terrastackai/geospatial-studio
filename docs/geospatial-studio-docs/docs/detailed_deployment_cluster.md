@@ -133,7 +133,8 @@ source workspace/$DEPLOYMENT_ENV/env/env.sh
 Deploy MinIO for S3-compatible object storage:
 ```bash
 # Install MinIO
-python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 MINIO_API_URL="https://minio-api-$OC_PROJECT.$CLUSTER_URL"
 
@@ -298,7 +299,8 @@ Visit https://docs.verify.ibm.com/verify
 
 Deploy Keycloak for authentication:
 ```bash
-python ./deployment-scripts/update-keycloak-deployment.py --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-keycloak-deployment.py --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 ```
 
 Wait for Keycloak to be ready:
@@ -330,7 +332,7 @@ Otherwise; if you have not run the above bash block you can follow the instructi
 1. **Access Keycloak Admin Console**:
    ```bash
    # Port forward to access Keycloak at http://localhost:8080
-   kubectl port-forward -n default svc/keycloak 8080:8080 &
+   kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 &
    ```
    - Open: http://localhost:8080
    - Login with username: `admin`, password: `admin`
@@ -351,8 +353,8 @@ Otherwise; if you have not run the above bash block you can follow the instructi
    - Authentication flow: Check all boxes (Standard flow, Direct access grants, etc.)
    - Valid redirect URIs: 
      ```
-     https://geofm-ui.default.svc.cluster.local:4180/oauth2/callback
-     https://geofm-gateway.default.svc.cluster.local:4180/oauth2/callback
+     https://geofm-ui.$OC_PROJECT.svc.cluster.local:4180/oauth2/callback
+     https://geofm-gateway.$OC_PROJECT.svc.cluster.local:4180/oauth2/callback
      ```
    - Web origins: `*`
    - Click "Save"
@@ -400,7 +402,8 @@ Once you setup the authenticator (with either method), validate `workspace/${DEP
 
 To deploy Geoserver.  This will deploy geoserver, wait for the deployment to be completed and then start the required port-forwarding:
 ```bash
-python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
 
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
 
@@ -522,7 +525,7 @@ For a kubernetes environment create a tls secret key and crt pair.
 ```bash
 # create tls.key and tls.crt
 
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=default.svc.cluster.local"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=$OC_PROJECT.svc.cluster.local"
 
 # extract the cert and key into env vars
 
