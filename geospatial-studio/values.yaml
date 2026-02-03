@@ -80,6 +80,8 @@ global:
       mlflow: BUCKET_GFM_MLFLOW
       geoserver: BUCKET_GEOSERVER
       temporaryUploads: BUCKET_TEMP_UPLOAD
+      generic_python_processor: BUCKET_GENERIC_PYTHON_PROCESSOR
+
     cos_storage_class: COS_STORAGE_CLASS
 
   non_cos_storage_class: NON_COS_STORAGE_CLASS

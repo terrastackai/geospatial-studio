@@ -192,8 +192,10 @@ mountLocations:
   models_pvc_name: gfm-ft-models-pvc
   pipelines_pvc_name: inference-shared-pvc
   inference_auxdata_pvc_name: inference-auxdata-pvc
+  generic_python_processor_pvc_name: generic-python-processor
   data_mount: /ft-data/
   files_mount: /geotunes/
+  generic_python-processor_mount: /generic-processor-data/
 
 services:
   # baseName: gfm-studio-gateway

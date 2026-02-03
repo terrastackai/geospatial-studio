@@ -83,6 +83,7 @@ objectStorage:
     mlflow: BUCKET_GFM_MLFLOW
     geoserver: BUCKET_GEOSERVER
     inference_auxdata: BUCKET_INFERENCE_AUXDATA
+    generic_python_processor: BUCKET_GENERIC_PYTHON_PROCESSOR
   cos_storage_class: COS_STORAGE_CLASS
 
 processors:
@@ -225,3 +226,17 @@ processors:
               operator: In
               values:
               - NODE_GPU_SPEC
+  - name: generic-python-processor
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/geostudio-pipelines
+      tag: latest
+    replicas: 1
+    process_id: generic-python-processor
+    process_exec: ''
+    extra_volumes:
+      - name: test-inference-pvc
+        claimName: generic-processor-pvc
+        bucket_name: BUCKET_GENERIC_PROCESSOR
+        mountPath: /generic_data   
+        create: false  

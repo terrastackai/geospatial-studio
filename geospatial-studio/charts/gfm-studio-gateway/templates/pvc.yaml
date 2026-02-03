@@ -78,6 +78,32 @@ spec:
       storage: 200Gi
   # storageClassName: {{ .Values.global.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
   storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.mountLocations.generic_python_processor_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    ibm.io/region: {{ .Values.global.objectStorage.region }}
+    ibm.io/auto-create-bucket: {{ .Values.global.objectStorage.create_bucket | quote }}
+    ibm.io/auto-delete-bucket: {{ .Values.global.objectStorage.delete_bucket | quote }}
+    ibm.io/bucket: {{ .Values.global.objectStorage.buckets.generic_python_processor }} # Enter the name (not the ID) of the standard class, regional bucket created in a previous step
+    # ibm.io/object-path: "pvc2" # Uncomment line and enter valid subdirectory if desired
+    ibm.io/secret-name: {{ .Values.global.appNames.gateway }}-cos-secret # Enter the name of the OpenShift Secret created in a previous step
+    ibm.io/quota-limit: "false" # Disable or enable a quota limit for your PVC. To use this annotation you must specify the -set quotaLimit=true option during installation.
+    ibm.io/endpoint: {{ .Values.global.objectStorage.endpoint }}
+    ibm.io/tls-cipher-suite: "default"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Gi
+  # storageClassName: {{ .Values.global.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+  storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+
 {{- else if contains "cos-s3-csi-s3fs-sc" .Values.global.objectStorage.cos_storage_class }}
 
 ---
@@ -237,6 +263,39 @@ metadata:
   namespace: {{ .Values.global.namespace }}
   annotations:
     cos.csi.driver/secret: "gateway-auxdata-cos-s3fs-secret"
+    cos.csi.driver/secret-namespace: {{ .Values.global.namespace }}
+spec:
+  storageClassName: {{ .Values.global.objectStorage.cos_storage_class }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Secret
+type: cos-s3-csi-driver
+metadata:
+  name: generic-python-processor-cos-s3fs-secret
+  namespace: {{ .Values.global.namespace }}
+stringData:
+  uid: "10001" # Provide uid to run as non root user. This must match runAsUser in SecurityContext of pod spec.
+  bucketName: {{ .Values.global.objectStorage.buckets.generic_python_processor }}
+  cosEndpoint: {{ .Values.global.objectStorage.endpoint }}
+  accessKey: {{ .Values.global.objectStorage.access_key }}
+  secretKey: {{ .Values.global.objectStorage.secret_key }}
+  mountOptions: |
+    dbglevel=info
+    ssl_verify_hostname=0
+    no_check_certificate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mountLocations.generic_python_processor_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    cos.csi.driver/secret: "generic-python-processor-cos-s3fs-secret"
     cos.csi.driver/secret-namespace: {{ .Values.global.namespace }}
 spec:
   storageClassName: {{ .Values.global.objectStorage.cos_storage_class }}
@@ -520,6 +579,36 @@ spec:
     requests:
       storage: 60Gi
 ---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: generic-python-processor-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 60Gi
+  accessModes:
+    - ReadWriteMany
+  claimRef:
+    name: {{ .Values.mountLocations.generic_python_processor_pvc_name }}
+    namespace: {{ .Values.global.namespace }} 
+  hostPath:
+    path: "/data/generic-python-processor"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mountLocations.generic_python_processor_pvc_name }}
+  namespace: {{ .Values.global.namespace }} 
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 60Gi
 
 
 {{- end }}
