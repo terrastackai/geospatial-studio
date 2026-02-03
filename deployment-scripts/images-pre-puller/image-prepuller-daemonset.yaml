@@ -1,0 +1,173 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+#
+# DaemonSet to pre-pull container images on worker nodes only
+# This ensures images are available before deployment, reducing pod startup time
+#
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: geostudio-image-prepuller
+  namespace: default
+  labels:
+    app: geostudio-image-prepuller
+    component: image-prepuller
+spec:
+  selector:
+    matchLabels:
+      name: geostudio-image-prepuller
+  template:
+    metadata:
+      labels:
+        name: geostudio-image-prepuller
+        app: geostudio-image-prepuller
+    spec:
+      # Ensure DaemonSet only runs on worker nodes (not control plane)
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              # Exclude control plane nodes
+              - key: node-role.kubernetes.io/control-plane
+                operator: DoesNotExist
+              - key: node-role.kubernetes.io/master
+                operator: DoesNotExist
+      
+      # Allow scheduling on tainted worker nodes
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+      
+      # Pull images sequentially in init containers
+      # Each container exits after pulling, allowing progress tracking
+      initContainers:
+      
+      # 1. OAuth Proxy (~100MB)
+      - name: prepull-01-oauth-proxy
+        image: bitnamilegacy/oauth2-proxy:latest
+        command: ['sh', '-c', 'echo "✓ OAuth proxy image pulled" && sleep 1']
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+      
+      # 2. Gateway (~500MB-1GB)
+      - name: prepull-02-gateway
+        image: quay.io/geospatial-studio/geostudio-gateway:latest
+        command: ['sh', '-c', 'echo "✓ Gateway image pulled" && sleep 1']
+        resources:
+          requests:
+            cpu: 10m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 200Mi
+      
+      # 3. Kubectl (~50MB)
+      - name: prepull-03-kubectl
+        image: bitnamilegacy/kubectl:latest
+        command: ['sh', '-c', 'echo "✓ Kubectl image pulled" && sleep 1']
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+      
+      # 4. Pipelines (~500MB-1GB)
+      - name: prepull-06-pipelines
+        image: quay.io/geospatial-studio/geostudio-pipelines:latest
+        command: ['sh', '-c', 'echo "✓ Pipelines image pulled" && sleep 1']
+        resources:
+          requests:
+            cpu: 10m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 200Mi
+      
+      # 5. YQ (~20MB)
+      - name: prepull-07-yq
+        image: linuxserver/yq:latest
+        command: ['sh', '-c', 'echo "✓ YQ image pulled" && sleep 1']
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+      
+      # 6. UI (~200-500MB)
+      - name: prepull-08-ui
+        image: quay.io/geospatial-studio/geostudio-ui:latest
+        command: ['sh', '-c', 'echo "✓ UI image pulled" && sleep 1']
+        resources:
+          requests:
+            cpu: 10m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 200Mi
+      
+      # 7. MLflow (~500MB-1GB)
+      - name: prepull-09-mlflow
+        image: ghcr.io/mlflow/mlflow:latest
+        command: ['sh', '-c', 'echo "✓ MLflow image pulled" && sleep 1']
+        resources:
+          requests:
+            cpu: 10m
+            memory: 100Mi
+          limits:
+            cpu: 100m
+            memory: 200Mi
+      
+      # 8. Redis (~100MB)
+      - name: prepull-10-redis
+        image: bitnamilegacy/redis:latest
+        command: ['sh', '-c', 'echo "✓ Redis image pulled" && sleep 1']
+        resources:
+          requests:
+            cpu: 10m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 100Mi
+      
+      # 9. Terratorch (~3-5GB - Largest, GPU-focused)
+      - name: prepull-11-terratorch
+        image: quay.io/geospatial-studio/terratorch:latest
+        command: ['sh', '-c', 'echo "✓ Terratorch image pulled" && sleep 1']
+        resources:
+          requests:
+            cpu: 10m
+            memory: 200Mi
+          limits:
+            cpu: 100m
+            memory: 500Mi
+      
+      # Main container - keeps pod running for monitoring
+      containers:
+      - name: pause
+        image: gcr.io/google_containers/pause:3.2
+        resources:
+          requests:
+            cpu: 10m
+            memory: 10Mi
+          limits:
+            cpu: 50m
+            memory: 50Mi
+      
+      # Use image pull secret if required
+      imagePullSecrets:
+      - name: us-icr-pull-secret
+      
+      # Restart policy
+      restartPolicy: Always
