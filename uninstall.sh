@@ -51,8 +51,6 @@ do
   fi
 done
 
-helm uninstall studio-pipelines
-
 helm uninstall studio
 
 kubectl delete pvc redis-data-geofm-redis-master-0 -n $OC_PROJECT

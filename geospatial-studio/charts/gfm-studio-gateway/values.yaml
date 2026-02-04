@@ -36,19 +36,6 @@ tolerations:
 
 
 hooks:
-  db-migration:
-    enabled: true
-    # image: # if not defined, this will default
-    # volumes: # this will be tricky
-    when:
-      # Wait until the DB is available
-      - pre-upgrade
-      - pre-install
-    weight: -30
-    command:
-      - "sh"
-      - "-c"
-      - "alembic upgrade head && alembic -n auth upgrade head"
   db-seed-data:
       enabled: true
       image:  postgres:13
