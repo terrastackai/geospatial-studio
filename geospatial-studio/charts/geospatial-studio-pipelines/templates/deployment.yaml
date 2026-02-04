@@ -18,9 +18,6 @@ spec:  {{ if hasKey $v "replicas" }}
       geostudio: pipelines
   template:
     metadata:
-      annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") $ | sha256sum }}
-        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") $ | sha256sum }}
       labels:
         app: {{ $.Values.namePrefix }}-{{ $v.name }}
         geostudio: pipelines
@@ -46,7 +43,7 @@ spec:  {{ if hasKey $v "replicas" }}
         envFrom:
           - configMapRef:
               name: pipeline-gateway-cm
-        {{- if eq $.Values.observability.enabled true }}
+        {{- if and (hasKey $.Values "observability") (hasKey $.Values.observability "enabled") $.Values.observability.enabled }}
           - configMapRef:
               name: pipeline-observability-cm
         {{- end }}
@@ -60,7 +57,7 @@ spec:  {{ if hasKey $v "replicas" }}
                 key: orchestrate_db_uri
           - name: log_level
             value: {{ $.Values.log_level }}
-        {{- if eq $.Values.observability.enabled true }}
+        {{- if and (hasKey $.Values "observability") (hasKey $.Values.observability "enabled") $.Values.observability.enabled }}
           - name: process_exec
             value: {{ printf "opentelemetry-instrument %s" $v.process_exec }}
           - name: OTEL_SERVICE_NAME
@@ -91,7 +88,14 @@ spec:  {{ if hasKey $v "replicas" }}
           - name: dshm
             mountPath: /dev/shm {{ end }} {{ end }}
         {{- if hasKey $v "resources" }}
-        resources: {{ $v.resources | toYaml | nindent 10 }} {{- end }}  
+        resources:
+          {{- if hasKey $v.resources "limits" }}
+          limits: {{ $v.resources.limits | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if hasKey $v.resources "requests" }}
+          requests: {{ $v.resources.requests | toYaml | nindent 12 }}
+          {{- end }}
+        {{- end }}  
       volumes:
         - name: test-inference-pvc
           persistentVolumeClaim:
