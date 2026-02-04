@@ -18,6 +18,9 @@ spec:  {{ if hasKey $v "replicas" }}
       geostudio: pipelines
   template:
     metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") $ | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") $ | sha256sum }}
       labels:
         app: {{ $.Values.namePrefix }}-{{ $v.name }}
         geostudio: pipelines
@@ -88,14 +91,7 @@ spec:  {{ if hasKey $v "replicas" }}
           - name: dshm
             mountPath: /dev/shm {{ end }} {{ end }}
         {{- if hasKey $v "resources" }}
-        resources:
-          {{- if hasKey $v.resources "limits" }}
-          limits: {{ $v.resources.limits | toYaml | nindent 12 }}
-          {{- end }}
-          {{- if hasKey $v.resources "requests" }}
-          requests: {{ $v.resources.requests | toYaml | nindent 12 }}
-          {{- end }}
-        {{- end }}  
+        resources: {{ $v.resources | toYaml | nindent 10 }} {{- end }}
       volumes:
         - name: test-inference-pvc
           persistentVolumeClaim:
