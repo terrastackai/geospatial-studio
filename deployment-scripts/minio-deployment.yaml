@@ -1,18 +1,6 @@
 # © Copyright IBM Corporation 2025
 # SPDX-License-Identifier: Apache-2.0
 
-# PVC commented out for local deployment without shared storage
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: minio-pvc
-#   namespace: default
-# spec:
-#   accessModes:
-#     - ReadWriteOnce
-#   resources:
-#     requests:
-#       storage: 10Gi
 apiVersion: v1
 kind: PersistentVolume
 metadata:

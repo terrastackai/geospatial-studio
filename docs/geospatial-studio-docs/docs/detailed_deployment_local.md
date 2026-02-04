@@ -146,18 +146,18 @@ k9s
 
 If you need to restart any of the port-forwards you can use the following commands:
 ```shell
-kubectl port-forward -n default svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
 ```
 
 This is printed at the end of the installation script. In case you missed it and have issues with keycloak, Run this command to configure the `etc/hosts ` for seamless connection as some of the services may call the internal urls on the host machine.
 
 ```shell
-echo -e \"127.0.0.1 keycloak.default.svc.cluster.local postgresql.default.svc.cluster.local minio.default.svc.cluster.local geofm-ui.default.svc.cluster.local geofm-gateway.default.svc.cluster.local geofm-geoserver.default.svc.cluster.local\" >> /etc/hosts
+echo -e \"127.0.0.1 keycloak.$OC_PROJECT.svc.cluster.local postgresql.$OC_PROJECT.svc.cluster.local minio.$OC_PROJECT.svc.cluster.local geofm-ui.$OC_PROJECT.svc.cluster.local geofm-gateway.$OC_PROJECT.svc.cluster.local geofm-geoserver.$OC_PROJECT.svc.cluster.local\" >> /etc/hosts
 
 ```
 
@@ -233,25 +233,33 @@ Deploy MinIO for S3-compatible object storage:
 # Install MinIO
 # Create TLS for MinIO
 openssl genrsa -out minio-private.key 2048
-openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config deployment-scripts/minio-openssl.conf
+mkdir -p workspace/$DEPLOYMENT_ENV/initialisation
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/minio-openssl.conf > workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
+openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
 
-kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT}
-# Create configmap required by cloud object storage drivers
-kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system
+# Create TLS secret for MinIO
+kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml -n ${OC_PROJECT}
+
+# Create ConfigMap for CSI driver (required by IBM Object CSI Driver)
+kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
+
 # Install MinIO
-python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 ```
 
 Wait for MinIO to be ready:
 ```bash
-kubectl wait --for=condition=ready pod -l app=minio -n default --timeout=300s
+kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 ```
 
 #### Access MinIO Console
 To access the MinIO console:
 ```bash
 # Port forward to access MinIO console at http://localhost:9001
-kubectl port-forward -n default svc/minio-console 9001:9001 &
+kubectl port-forward -n ${OC_PROJECT} svc/minio-console 9001:9001 &
 ```
 Login with username: `minioadmin`, password: `minioadmin`
 ...
@@ -262,7 +270,10 @@ Login with username: `minioadmin`, password: `minioadmin`
 kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
 
 # Install the drivers
-kubectl apply -k deployment-scripts/ibm-object-csi-driver/
+cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
+kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
 ```
 
 
@@ -273,7 +284,7 @@ kubectl apply -k deployment-scripts/ibm-object-csi-driver/
   ```
   access_key_id=minioadmin
   secret_access_key=minioadmin
-  #endpoint=https://minio.default.svc.cluster.local:9000
+  #endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000
   endpoint=https://localhost:9000
   region=us-east
   ```
@@ -291,7 +302,7 @@ Run the following script to create the buckets:
 
 ```bash
 # Port forward to access MinIO api at https://localhost:9000
-kubectl port-forward -n default svc/minio 9000:9000 &
+kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 &
 ```
 
 ```bash
@@ -304,7 +315,7 @@ python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_EN
 Once you create the buckets update the minio endpoint `workspace/${DEPLOYMENT_ENV}/env/.env` with
 
 ```
-endpoint=https://minio.default.svc.cluster.local:9000
+endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000
 #endpoint=https://127.0.0.1:9000
 ```
 
@@ -361,7 +372,7 @@ Once completed, in terminal you will find some notes on the created postgres dat
   ```
   > Note: after completing [create databases](#create-databases) section below update   `pg_uri` in `workspace/${DEPLOYMENT_ENV}/env/.env` with...
   ```bash
-  pg_uri=postgresql.default.svc.cluster.local
+  pg_uri=postgresql.$OC_PROJECT.svc.cluster.local
   ```
 
 ### Create databases
@@ -377,7 +388,7 @@ python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT
 Once you create the databases update the pg_uri in `workspace/${DEPLOYMENT_ENV}/env/.env` with
 
 ```
-pg_uri=postgresql.default.svc.cluster.local
+pg_uri=postgresql.$OC_PROJECT.svc.cluster.local
 #pg_uri=127.0.0.1
 ```
 
@@ -395,12 +406,13 @@ source workspace/$DEPLOYMENT_ENV/env/env.sh
 
 Deploy Keycloak for authentication:
 ```bash
-kubectl apply -f deployment-scripts/keycloak-deployment.yaml -n default
+python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 ```
 
 Wait for Keycloak to be ready:
 ```bash
-kubectl wait --for=condition=ready pod -l app=keycloak -n default --timeout=300s
+kubectl wait --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
 ```
 
 #### Configure Keycloak Realm and Client
@@ -410,7 +422,7 @@ You can either use the `deployment-scripts/setup-keycloak.sh` script to create t
 1. **Access Keycloak Admin Console**:
    ```bash
    # Port forward to access Keycloak at http://localhost:8080
-   kubectl port-forward -n default svc/keycloak 8080:8080 &
+   kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 &
    ```
    - Open: http://localhost:8080
    - Login with username: `admin`, password: `admin`
@@ -431,8 +443,8 @@ You can either use the `deployment-scripts/setup-keycloak.sh` script to create t
    - Authentication flow: Check all boxes (Standard flow, Direct access grants, etc.)
    - Valid redirect URIs: 
      ```
-     https://geofm-ui.default.svc.cluster.local:4180/oauth2/callback
-     https://geofm-gateway.default.svc.cluster.local:4180/oauth2/callback
+     https://geofm-ui.$OC_PROJECT.svc.cluster.local:4180/oauth2/callback
+     https://geofm-gateway.$OC_PROJECT.svc.cluster.local:4180/oauth2/callback
      ```
    - Web origins: `*`
    - Click "Save"
@@ -470,15 +482,15 @@ Once you setup the authenticator (with either method), update `workspace/${DEPLO
 # AUTH
 export OAUTH_TYPE=keycloak # for Keycloak
 export OAUTH_CLIENT_ID=geostudio-client
-export OAUTH_ISSUER_URL=http://keycloak.default.svc.cluster.local:8080/realms/geostudio
-export OAUTH_URL=http://keycloak.default.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth
+export OAUTH_ISSUER_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio
+export OAUTH_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth
 ```
 
 For a kubernetes environment create a tls secret key and crt pair.
 ```bash
 # create tls.key and tls.crt
 
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=default.svc.cluster.local"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=$OC_PROJECT.svc.cluster.local"
 
 # extract the cert and key into env vars
 
@@ -503,7 +515,7 @@ Update your etc hosts with the local urls
 ```bash
 # Add our internal cluster urls to etc hosts for seamless connectivity since some of the services may call these internal urls on host machine
 
-echo -e "\n#lima\n127.0.0.1 keycloak.default.svc.cluster.local postgresql.default.svc.cluster.local minio.default.svc.cluster.local geofm-ui.default.svc.cluster.local geofm-gateway.default.svc.cluster.local" >> /etc/hosts
+echo -e "\n#lima\n127.0.0.1 keycloak.$OC_PROJECT.svc.cluster.local postgresql.$OC_PROJECT.svc.cluster.local minio.$OC_PROJECT.svc.cluster.local geofm-ui.$OC_PROJECT.svc.cluster.local geofm-gateway.$OC_PROJECT.svc.cluster.local" >> /etc/hosts
 ```
 
 ## 5. Geoserver setup
@@ -513,9 +525,9 @@ export GEOSERVER_URL=http://localhost:3000/geoserver
 
 python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --disable-route | kubectl apply -f - -n ${OC_PROJECT}
 
-kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n default --timeout=900s
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
 
-kubectl port-forward -n default svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
 ```
 
 Once the deployment is complete and the port-forwarding is started, run the following script to setup the geoserver instance:
@@ -716,12 +728,12 @@ helm uninstall studio-pipelines
 
 Following deployment, you will need to setup port-forwarding to access the different deployed services:
 ```bash
-kubectl port-forward -n default svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
 ```
 
 | After deployment: | |

@@ -55,19 +55,21 @@ helm uninstall studio-pipelines
 
 helm uninstall studio
 
-helm uninstall postgresql
-
-kubectl delete pvc postgresql-pvc -n $OC_PROJECT
-kubectl delete pvc populate-buckets-pvc -n $OC_PROJECT
 kubectl delete pvc redis-data-geofm-redis-master-0 -n $OC_PROJECT
 kubectl delete pvc redis-data-geofm-redis-replicas-0 -n $OC_PROJECT
 
-kubectl delete -f deployment-scripts/geoserver-deployment.yaml -n $OC_PROJECT
-
-kubectl delete -f workspace/initialisation/$DEPLOYMENT_ENV/geoserver_docker_secret.yaml -n $OC_PROJECT
-
-kubectl delete -f deployment-scripts/keycloak-deployment.yaml -n $OC_PROJECT
-
 kubectl delete -f workspace/$DEPLOYMENT_ENV/initialisation/populate-buckets-with-initial-data.yaml -n $OC_PROJECT
 
-kubectl delete -f deployment-scripts/minio-deployment.yaml -n $OC_PROJECT
+kubectl delete -f workspace/$DEPLOYMENT_ENV/initialisation/populate-buckets-default-pvc.yaml -n $OC_PROJECT
+
+kubectl delete -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n $OC_PROJECT
+
+kubectl delete -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml -n $OC_PROJECT
+
+kubectl delete -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n $OC_PROJECT
+
+helm uninstall postgresql
+
+kubectl delete -f workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml -n $OC_PROJECT
+
+kubectl delete -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n $OC_PROJECT

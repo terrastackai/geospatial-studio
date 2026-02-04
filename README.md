@@ -409,14 +409,14 @@ After successful deployment you can jump to [First steps](#first-steps).
 
 If you need to restart any of the port-forwards you can use the following commands:
 ```shell
-kubectl port-forward -n default svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/minio 9001:9001 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/minio 9000:9000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT svc/minio 9001:9001 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT svc/minio 9000:9000 >> studio-pf.log 2>&1 &
 ```
 
 Now you have a clean deployment of the studio and it is time to start using it.  The steps below will enable you to onboard some initial artefacts, before trying out the functionality.

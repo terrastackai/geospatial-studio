@@ -3,6 +3,8 @@
 # © Copyright IBM Corporation 2025
 # SPDX-License-Identifier: Apache-2.0
 
+# Source (import) common_functions.sh
+source ./common_functions.sh
 
 # Paste your image pull secret below
 ## This is a dummy image pull secret
@@ -17,14 +19,14 @@ echo "------  Creating baseline deployment/values files  -------------------"
 echo "----------------------------------------------------------------------"
 
 # Set environment variables and source setup script
-export DEPLOYMENT_ENV=lima
+export DEPLOYMENT_ENV=k8s
 export OC_PROJECT=default
 export IMAGE_REGISTRY=geospatial-studio
 ./deployment-scripts/setup-workspace-env.sh
 
 sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=lima/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=default/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=k8s/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
@@ -32,7 +34,14 @@ echo "----------------------------------------------------------------------"
 echo "--------------------  Add labels to node  ------------------"
 echo "----------------------------------------------------------------------"
 
-kubectl label nodes studio-worker topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
+# Set the cluster node name where the application will be deployed
+# CLUSTER_NODE_NAME
+typeset cluster_node_name
+get_user_input "Provide a name for the cluster node for deployment, e.g. studio-worker, studio-node... Run 'kubectl get nodes' to get the nodes available in the cluster" cluster_node_name
+echo "CLUSTER_NODE_NAME accepted: **$cluster_node_name**"
+export CLUSTER_NODE_NAME=$cluster_node_name
+
+kubectl label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
 
 # echo "----------------------------------------------------------------------"
 # echo "--------------------  Create local Storage Classes  ------------------"
@@ -44,21 +53,31 @@ echo "----------------------------------------------------------------------"
 echo "----------------------  Deploying Minio  -----------------------------"
 echo "----------------------------------------------------------------------"
 
-# # Install MinIO
+# Install MinIO
 # Create TLS for minio
 openssl genrsa -out minio-private.key 2048
-openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config deployment-scripts/minio-openssl.conf
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/minio-openssl.conf > workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
+openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
 
-kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT}
-kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system
-python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml --storageclass standard | kubectl apply -f - -n ${OC_PROJECT}
+kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml -n ${OC_PROJECT}
+
+kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
+
+python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml --storageclass standard > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
+
 kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
 sleep 5
 kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 >> studio-pf.log 2>&1 &
 sleep 5
 
-kubectl apply -k deployment-scripts/ibm-object-csi-driver/
+cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
+kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
 
 kubectl wait --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s
 kubectl wait --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=300s
@@ -74,12 +93,12 @@ sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
 sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=standard/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-kubectl port-forward -n default svc/minio 9000:9000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 >> studio-pf.log 2>&1 &
 sleep 5
 
 python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
-sed -i -e "s|endpoint=.*|endpoint=https://minio.default.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
 
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
@@ -112,7 +131,7 @@ sed -i -e "s/pg_original_db_name=.*/pg_original_db_name='postgres'/g" workspace/
 
 python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
-sed -i -e "s/pg_uri=.*/pg_uri=postgresql.default.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
+sed -i -e "s/pg_uri=.*/pg_uri=postgresql.$OC_PROJECT.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
@@ -120,11 +139,12 @@ echo "----------------------------------------------------------------------"
 echo "--------------------  Deploying Keycloak  ----------------------------"
 echo "----------------------------------------------------------------------"
 
-python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 
-kubectl wait --for=condition=ready pod -l app=keycloak -n default --timeout=300s
+kubectl wait --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
 
-kubectl port-forward -n default svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
 sleep 5
 
 # Keycloak setup
@@ -138,8 +158,8 @@ sed -i -e "s/oauth_cookie_secret=.*/oauth_cookie_secret=$cookie_secret/g" worksp
 
 sed -i -e "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=http://keycloak.default.svc.cluster.local:8080/realms/geostudio|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=http://keycloak.default.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 
@@ -148,7 +168,7 @@ echo "--------------------  Updating other values  -------------------------"
 echo "----------------------------------------------------------------------"
 # Kubernetes tls secret setup
 # create tls.key and tls.crt
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=default.svc.cluster.local"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=$OC_PROJECT.svc.cluster.local"
 
 # extract the cert and key into env vars
 
@@ -170,11 +190,13 @@ echo "----------------------------------------------------------------------"
 echo "--------------------  Deploying Geoserver  ----------------------------"
 echo "----------------------------------------------------------------------"
 
-python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --storageclass standard --disable-route | kubectl apply -f - -n ${OC_PROJECT}
 
-kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n default --timeout=900s
+python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --storageclass standard --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
 
-kubectl port-forward -n default svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
+kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n $OC_PROJECT --timeout=900s
+
+kubectl port-forward -n $OC_PROJECT svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
 sleep 5
 
 echo "----------------------------------------------------------------------"
@@ -231,7 +253,7 @@ cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${
 cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
 
 # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
-NVIDIA_GPUS_AVAILABLE=$(kubectl describe node studio-worker | grep -c "nvidia.com")
+NVIDIA_GPUS_AVAILABLE=$(kubectl describe node ${CLUSTER_NODE_NAME} | grep -c "nvidia.com")
 if [ "$NVIDIA_GPUS_AVAILABLE" -gt 0 ]; then
     echo "Cluster Type: nvkind"
     python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
@@ -276,7 +298,7 @@ echo "----------------------------------------------------------------------"
 echo "---------  Set up Port Forwarding for UI and API  --------------------"
 echo "----------------------------------------------------------------------"
 
-kubectl wait --for=condition=ready pod -l app=geofm-gateway -n default --timeout=300s
+kubectl wait --for=condition=ready pod -l app=geofm-gateway -n $OC_PROJECT --timeout=300s
 
 kubectl port-forward deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
 kubectl port-forward deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
@@ -286,12 +308,12 @@ echo "----------------------------------------------------------------------"
 echo "-----------------------  Deployment summary  -------------------------"
 echo "----------------------------------------------------------------------"
 
-printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed to Lima VM! \n"
-printf "\U1F5FA   Access the Geospatial Studio UI at: http://localhost:4180\n"
-printf "\U1F4BB   Access the Geospatial Studio API at: http://localhost:4181\n"
+printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed to k8s! \n"
+printf "\U1F5FA   Access the Geospatial Studio UI at: https://localhost:4180\n"
+printf "\U1F4BB   Access the Geospatial Studio API at: https://localhost:4181\n"
 printf "K8S \U2388   To access the k8s cluster dashboard, run: minikube dashboard\n\n"
 
-CONFIGURE_HOSTS_CMD="echo -e \"127.0.0.1 keycloak.default.svc.cluster.local postgresql.default.svc.cluster.local minio.default.svc.cluster.local geofm-ui.default.svc.cluster.local geofm-gateway.default.svc.cluster.local geofm-geoserver.default.svc.cluster.local\" >> /etc/hosts"
+CONFIGURE_HOSTS_CMD="echo -e \"127.0.0.1 keycloak.$OC_PROJECT.svc.cluster.local postgresql.$OC_PROJECT.svc.cluster.local minio.$OC_PROJECT.svc.cluster.local geofm-ui.$OC_PROJECT.svc.cluster.local geofm-gateway.$OC_PROJECT.svc.cluster.local geofm-geoserver.$OC_PROJECT.svc.cluster.local\" >> /etc/hosts"
 printf "\U1F4E1 Configure your etc hosts with the local urls:\n"
 printf "Add our internal cluster urls to etc hosts for seamless connectivity since some of the services may call these internal urls on host machine \n"
 printf "Use: %s\n\n" "$CONFIGURE_HOSTS_CMD"
