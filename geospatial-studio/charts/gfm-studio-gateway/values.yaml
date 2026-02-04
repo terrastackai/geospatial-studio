@@ -42,8 +42,8 @@ hooks:
     # volumes: # this will be tricky
     when:
       # Wait until the DB is available
-      - post-install
-      - post-upgrade
+      - pre-upgrade
+      - pre-install
     weight: -30
     command:
       - "sh"
