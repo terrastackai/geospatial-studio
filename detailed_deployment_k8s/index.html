@@ -1,0 +1,2718 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Geospatial Studio - Kubernetes Deployment Guide - IBM Geospatial Exploration and Orchestration Studio</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"IBM Plex Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#geospatial-studio-kubernetes-deployment-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="IBM Geospatial Exploration and Orchestration Studio" class="md-header__button md-logo" aria-label="IBM Geospatial Exploration and Orchestration Studio" data-md-component="logo">
+      
+  <img src="../assets/geospatial-studio-logo-white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IBM Geospatial Exploration and Orchestration Studio
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Geospatial Studio - Kubernetes Deployment Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-schema: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="IBM Geospatial Exploration and Orchestration Studio" class="md-nav__button md-logo" aria-label="IBM Geospatial Exploration and Orchestration Studio" data-md-component="logo">
+      
+  <img src="../assets/geospatial-studio-logo-white.svg" alt="logo">
+
+    </a>
+    IBM Geospatial Exploration and Orchestration Studio
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started-UI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started with the UI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started-SDK/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started with the SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intro
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sample-payloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sample payloads
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sample-files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sample files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4">
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Studio UI user guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Studio UI user guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inference-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inferencing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dataset-factory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning dataset factory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tuning-studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning studio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../walkthroughs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI walkthroughs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API specification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inference-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inference Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dataset-factory-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning Dataset Factory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fine-tuning-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment and architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment and architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture_and_requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architechture and Dependencies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../detailed_deployment_cluster/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cluster Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../detailed_deployment_local/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-environment-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Environment Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Environment Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-install-python-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Install Python Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-set-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Set Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-initialize-workspace-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Initialize Workspace Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-update-cluster-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Update Cluster Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-source-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.5 Source Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-node-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Node Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Node Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-label-kubernetes-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Label Kubernetes Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-minio-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. MinIO Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. MinIO Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-generate-tls-certificates-for-minio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Generate TLS Certificates for MinIO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-create-kubernetes-secrets-and-configmaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Create Kubernetes Secrets and ConfigMaps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-deploy-minio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Deploy MinIO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-set-up-port-forwarding-for-minio-console" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Set Up Port Forwarding for MinIO Console
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-install-ibm-object-csi-driver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Install IBM Object CSI Driver
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-update-environment-configuration-for-minio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 Update Environment Configuration for MinIO
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37-configure-storage-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7 Configure Storage Classes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#38-set-up-port-forwarding-for-minio-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8 Set Up Port Forwarding for MinIO API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#39-create-s3-buckets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.9 Create S3 Buckets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#310-update-minio-endpoint-for-in-cluster-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.10 Update MinIO Endpoint for In-Cluster Access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#311-reload-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.11 Reload Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-postgresql-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. PostgreSQL Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. PostgreSQL Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-add-bitnami-helm-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Add Bitnami Helm Repository
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-set-postgresql-password" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Set PostgreSQL Password
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-install-postgresql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Install PostgreSQL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-set-up-port-forwarding-for-postgresql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Set Up Port Forwarding for PostgreSQL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-update-environment-configuration-for-postgresql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Update Environment Configuration for PostgreSQL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-create-studio-databases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 Create Studio Databases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#47-update-postgresql-uri-for-in-cluster-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.7 Update PostgreSQL URI for In-Cluster Access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#48-reload-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.8 Reload Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-keycloak-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Keycloak Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Keycloak Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-deploy-keycloak" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Deploy Keycloak
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-set-up-port-forwarding-for-keycloak" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Set Up Port Forwarding for Keycloak
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-generate-oauth-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Generate OAuth Secrets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-configure-keycloak-realm-and-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Configure Keycloak Realm and Client
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-update-environment-configuration-for-keycloak" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Update Environment Configuration for Keycloak
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-tls-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. TLS Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. TLS Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-generate-tls-certificate-and-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Generate TLS Certificate and Key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-encode-certificates-to-base64" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Encode Certificates to Base64
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-update-environment-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Update Environment Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-geoserver-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Geoserver Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Geoserver Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-set-geoserver-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Set Geoserver Credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-update-environment-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Update Environment Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-deploy-geoserver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Deploy Geoserver
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-set-up-port-forwarding-for-geoserver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Set Up Port Forwarding for Geoserver
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-configure-geoserver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 Configure Geoserver
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-studio-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Studio Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Studio Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-generate-or-load-api-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Generate or Load API Keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-update-studio-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Update Studio Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-configure-environment-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Configure Environment Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-reload-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Reload Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-deploy-geospatial-studio-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Deploy Geospatial Studio Services
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Deploy Geospatial Studio Services">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-generate-deployment-values-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Generate Deployment Values Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-create-deployment-copies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Create Deployment Copies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-configure-gpu-settings-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Configure GPU Settings (Optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94-review-deployment-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 Review Deployment Values
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#95-build-helm-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.5 Build Helm Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#96-deploy-geospatial-studio-core" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.6 Deploy Geospatial Studio Core
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#97-deploy-geospatial-studio-pipelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.7 Deploy Geospatial Studio Pipelines
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-port-forwarding-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Port Forwarding Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Port Forwarding Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-wait-for-services-to-be-ready" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Wait for Services to be Ready
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-set-up-port-forwarding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Set Up Port Forwarding
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-configure-etchosts-important" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 Configure /etc/hosts (Important)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Testing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-access-the-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 Access the Services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-verify-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 Verify Deployment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-view-deployment-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.3 View Deployment Summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114-test-api-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.4 Test API Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-port-forwarding-stopped" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Port Forwarding Stopped
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-pod-not-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Pod Not Starting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-storage-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Storage Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-authentication-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Authentication Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-database-connection-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Database Connection Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#viewing-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Viewing Logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restarting-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restarting Services
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uninstalling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uninstalling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Support
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<div><h1 id="geospatial-studio-kubernetes-deployment-guide">Geospatial Studio - Kubernetes Deployment Guide</h1>
+<p>This guide provides detailed step-by-step instructions for deploying Geospatial Studio on a Kubernetes cluster. These instructions are derived from the automated deployment script and provide a manual approach for better understanding and control of the deployment process.</p>
+<blockquote>
+<p><strong>Note:</strong> All commands should be run from the root directory of the <a href="https://github.com/terrastackai/geospatial-studio">geospatial-studio repository</a>.</p>
+</blockquote>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Kubernetes cluster (v1.24+)</li>
+<li>kubectl CLI configured to access your cluster</li>
+<li><a href="https://helm.sh/docs/v3/">Helm</a> v3.19 (currently incompatible with v4)</li>
+<li><a href="https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html">OpenShift CLI</a> (includes kubectl)</li>
+<li><a href="https://github.com/jqlang/jq">jq</a> - JSON command-line processor</li>
+<li><a href="https://github.com/mikefarah/yq">yq</a> - YAML command-line processor</li>
+<li>Python 3.8+ with pip</li>
+<li>OpenSSL</li>
+<li>Minimum cluster resources: 8GB RAM, 4 CPUs</li>
+</ul>
+<h2 id="deployment-overview">Deployment Overview</h2>
+<p>The deployment process consists of the following major steps:</p>
+<ol>
+<li><a href="#1-environment-setup">Environment Setup</a></li>
+<li><a href="#2-node-configuration">Node Configuration</a></li>
+<li><a href="#3-minio-deployment">MinIO Deployment (Object Storage)</a></li>
+<li><a href="#4-postgresql-deployment">PostgreSQL Deployment (Database)</a></li>
+<li><a href="#5-keycloak-deployment">Keycloak Deployment (Authentication)</a></li>
+<li><a href="#6-tls-configuration">TLS Configuration</a></li>
+<li><a href="#7-geoserver-deployment">Geoserver Deployment</a></li>
+<li><a href="#8-studio-configuration">Studio Configuration</a></li>
+<li><a href="#9-deploy-geospatial-studio-services">Deploy Geospatial Studio Services</a></li>
+<li><a href="#10-port-forwarding-setup">Port Forwarding Setup</a></li>
+<li><a href="#11-testing">Testing</a></li>
+</ol>
+<hr>
+<h2 id="1-environment-setup">1. Environment Setup</h2>
+<h3 id="11-install-python-dependencies">1.1 Install Python Dependencies</h3>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</code></pre></div>
+<h3 id="12-set-environment-variables">1.2 Set Environment Variables</h3>
+<p>Define your deployment environment name and namespace:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">DEPLOYMENT_ENV</span><span class="o">=</span>k8s
+<span class="nb">export</span><span class="w"> </span><span class="nv">OC_PROJECT</span><span class="o">=</span>default
+<span class="nb">export</span><span class="w"> </span><span class="nv">IMAGE_REGISTRY</span><span class="o">=</span>geospatial-studio
+</code></pre></div>
+<blockquote>
+<p><strong>Note:</strong> Replace <code>default</code> with your actual namespace name.</p>
+</blockquote>
+<h3 id="13-initialize-workspace-environment">1.3 Initialize Workspace Environment</h3>
+<p>Run the setup script to create the workspace directory structure and environment files:</p>
+<div class="highlight"><pre><span></span><code>./deployment-scripts/setup-workspace-env.sh
+</code></pre></div>
+<p>This creates:
+- <code>workspace/${DEPLOYMENT_ENV}/env/env.sh</code> - General configuration variables
+- <code>workspace/${DEPLOYMENT_ENV}/env/.env</code> - Secret values and credentials</p>
+<h3 id="14-update-cluster-configuration">1.4 Update Cluster Configuration</h3>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/env/env.sh</code> to set your cluster URL:</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=k8s/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export OC_PROJECT=.*/export OC_PROJECT=</span><span class="nv">$OC_PROJECT</span><span class="s2">/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</code></pre></div>
+<h3 id="15-source-environment-variables">1.5 Source Environment Variables</h3>
+<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</code></pre></div>
+<hr>
+<h2 id="2-node-configuration">2. Node Configuration</h2>
+<h3 id="21-label-kubernetes-nodes">2.1 Label Kubernetes Nodes</h3>
+<p>Label your worker node with topology information required by storage drivers:</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>label<span class="w"> </span>nodes<span class="w"> </span>studio-worker<span class="w"> </span>topology.kubernetes.io/region<span class="o">=</span>us-east-1<span class="w"> </span>topology.kubernetes.io/zone<span class="o">=</span>us-east-1a
+</code></pre></div>
+<blockquote>
+<p><strong>Note:</strong> Replace <code>studio-worker</code> with your actual worker node name. You can list nodes with <code>kubectl get nodes</code>.</p>
+</blockquote>
+<hr>
+<h2 id="3-minio-deployment">3. MinIO Deployment</h2>
+<p>MinIO provides S3-compatible object storage for the Geospatial Studio.</p>
+<h3 id="31-generate-tls-certificates-for-minio">3.1 Generate TLS Certificates for MinIO</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Generate private key</span>
+openssl<span class="w"> </span>genrsa<span class="w"> </span>-out<span class="w"> </span>minio-private.key<span class="w"> </span><span class="m">2048</span>
+
+<span class="c1"># Generate self-signed certificate</span>
+sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/default/</span><span class="nv">$OC_PROJECT</span><span class="s2">/g"</span><span class="w"> </span>deployment-scripts/minio-openssl.conf<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-user-openssl.conf
+openssl<span class="w"> </span>req<span class="w"> </span>-new<span class="w"> </span>-x509<span class="w"> </span>-nodes<span class="w"> </span>-days<span class="w"> </span><span class="m">730</span><span class="w"> </span>-keyout<span class="w"> </span>minio-private.key<span class="w"> </span>-out<span class="w"> </span>minio-public.crt<span class="w"> </span>--config<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-user-openssl.conf
+</code></pre></div>
+<h3 id="32-create-kubernetes-secrets-and-configmaps">3.2 Create Kubernetes Secrets and ConfigMaps</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create TLS secret for MinIO</span>
+kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>tls<span class="w"> </span>minio-tls-secret<span class="w"> </span>--cert<span class="o">=</span>minio-public.crt<span class="w"> </span>--key<span class="o">=</span>minio-private.key<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>--dry-run<span class="o">=</span>client<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-tls-secret.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-tls-secret.yaml<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># Create ConfigMap for CSI driver (required by IBM Object CSI Driver)</span>
+kubectl<span class="w"> </span>create<span class="w"> </span>configmap<span class="w"> </span>minio-public-config<span class="w"> </span>--from-file<span class="o">=</span>minio-public.crt<span class="w"> </span>-n<span class="w"> </span>kube-system<span class="w"> </span>--dry-run<span class="o">=</span>client<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-public-config.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-public-config.yaml<span class="w"> </span>-n<span class="w"> </span>kube-system
+</code></pre></div>
+<h3 id="33-deploy-minio">3.3 Deploy MinIO</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Deploy MinIO with storage class configuration</span>
+python<span class="w"> </span>./deployment-scripts/update-deployment-template.py<span class="w"> </span>--disable-route<span class="w"> </span>--filename<span class="w"> </span>deployment-scripts/minio-deployment.yaml<span class="w"> </span>--storageclass<span class="w"> </span>standard<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-deployment.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-deployment.yaml<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># Wait for MinIO to be ready</span>
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>minio<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>--timeout<span class="o">=</span>300s
+</code></pre></div>
+<h3 id="34-set-up-port-forwarding-for-minio-console">3.4 Set Up Port Forwarding for MinIO Console</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Port forward MinIO console (runs in background)</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/minio<span class="w"> </span><span class="m">9001</span>:9001<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+sleep<span class="w"> </span><span class="m">5</span>
+</code></pre></div>
+<h3 id="35-install-ibm-object-csi-driver">3.5 Install IBM Object CSI Driver</h3>
+<p>The IBM Object CSI Driver enables dynamic provisioning of S3-compatible storage:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Apply the CSI driver manifests</span>
+cp<span class="w"> </span>-R<span class="w"> </span>deployment-scripts/ibm-object-csi-driver<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation
+sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/default/</span><span class="nv">$OC_PROJECT</span><span class="s2">/g"</span><span class="w"> </span>deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
+sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/default/</span><span class="nv">$OC_PROJECT</span><span class="s2">/g"</span><span class="w"> </span>deployment-scripts/template/cos-s3-csi-sc.yaml<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/ibm-object-csi-driver/
+
+<span class="c1"># Wait for CSI controller to be ready</span>
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>cos-s3-csi-controller<span class="w"> </span>-n<span class="w"> </span>kube-system<span class="w"> </span>--timeout<span class="o">=</span>300s
+
+<span class="c1"># Wait for CSI driver to be ready</span>
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>cos-s3-csi-driver<span class="w"> </span>-n<span class="w"> </span>kube-system<span class="w"> </span>--timeout<span class="o">=</span>300s
+</code></pre></div>
+<h3 id="36-update-environment-configuration-for-minio">3.6 Update Environment Configuration for MinIO</h3>
+<p>Update the <code>.env</code> file with MinIO connection details for local access:</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/access_key_id=.*/access_key_id=minioadmin/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/secret_access_key=.*/secret_access_key=minioadmin/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s|endpoint=.*|endpoint=https://localhost:9000|g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/region=.*/region=us-east-1/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</code></pre></div>
+<h3 id="37-configure-storage-classes">3.7 Configure Storage Classes</h3>
+<p>Set the storage class environment variables:</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=standard/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</code></pre></div>
+<h3 id="38-set-up-port-forwarding-for-minio-api">3.8 Set Up Port Forwarding for MinIO API</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Port forward MinIO API</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="nv">$OC_PROJECT</span><span class="w"> </span>svc/minio<span class="w"> </span><span class="m">9000</span>:9000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+sleep<span class="w"> </span><span class="m">5</span>
+</code></pre></div>
+<h3 id="39-create-s3-buckets">3.9 Create S3 Buckets</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create required buckets using Python script</span>
+python<span class="w"> </span>deployment-scripts/create_buckets.py<span class="w"> </span>--env-path<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</code></pre></div>
+<h3 id="310-update-minio-endpoint-for-in-cluster-access">3.10 Update MinIO Endpoint for In-Cluster Access</h3>
+<p>After creating buckets, update the endpoint to use the internal cluster DNS:</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s|endpoint=.*|endpoint=https://minio.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local:9000|g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</code></pre></div>
+<h3 id="311-reload-environment-variables">3.11 Reload Environment Variables</h3>
+<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</code></pre></div>
+<hr>
+<h2 id="4-postgresql-deployment">4. PostgreSQL Deployment</h2>
+<p>PostgreSQL is used for storing metadata and operational data.</p>
+<h3 id="41-add-bitnami-helm-repository">4.1 Add Bitnami Helm Repository</h3>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>bitnami<span class="w"> </span>https://charts.bitnami.com/bitnami
+helm<span class="w"> </span>repo<span class="w"> </span>update
+</code></pre></div>
+<h3 id="42-set-postgresql-password">4.2 Set PostgreSQL Password</h3>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>devPostgresql123
+</code></pre></div>
+<blockquote>
+<p><strong>Important:</strong> For production deployments, use a strong, randomly generated password.</p>
+</blockquote>
+<h3 id="43-install-postgresql">4.3 Install PostgreSQL</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Install PostgreSQL with storage configuration</span>
+./deployment-scripts/install-postgres.sh<span class="w"> </span>UPDATE_STORAGE<span class="w"> </span>ENABLE_PV
+
+<span class="c1"># Wait for PostgreSQL to be ready</span>
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod/postgresql-0<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>--timeout<span class="o">=</span>300s
+</code></pre></div>
+<h3 id="44-set-up-port-forwarding-for-postgresql">4.4 Set Up Port Forwarding for PostgreSQL</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Port forward PostgreSQL for local access</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>--namespace<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/postgresql<span class="w"> </span><span class="m">54320</span>:5432<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+sleep<span class="w"> </span><span class="m">5</span>
+</code></pre></div>
+<h3 id="45-update-environment-configuration-for-postgresql">4.5 Update Environment Configuration for PostgreSQL</h3>
+<p>Update the <code>.env</code> file with PostgreSQL connection details for local access:</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/pg_username=.*/pg_username=postgres/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/pg_password=.*/pg_password=</span><span class="si">${</span><span class="nv">POSTGRES_PASSWORD</span><span class="si">}</span><span class="s2">/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/pg_uri=.*/pg_uri=127.0.0.1/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/pg_port=.*/pg_port=5432/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/pg_original_db_name=.*/pg_original_db_name='postgres'/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</code></pre></div>
+<h3 id="46-create-studio-databases">4.6 Create Studio Databases</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create required databases and users</span>
+python<span class="w"> </span>deployment-scripts/create_studio_dbs.py<span class="w"> </span>--env-path<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</code></pre></div>
+<h3 id="47-update-postgresql-uri-for-in-cluster-access">4.7 Update PostgreSQL URI for In-Cluster Access</h3>
+<p>After creating databases, update the URI to use the internal cluster DNS:</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/pg_uri=.*/pg_uri=postgresql.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</code></pre></div>
+<h3 id="48-reload-environment-variables">4.8 Reload Environment Variables</h3>
+<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</code></pre></div>
+<hr>
+<h2 id="5-keycloak-deployment">5. Keycloak Deployment</h2>
+<p>Keycloak provides OAuth2 authentication for the Geospatial Studio.</p>
+<h3 id="51-deploy-keycloak">5.1 Deploy Keycloak</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Deploy Keycloak with environment-specific configuration</span>
+python<span class="w"> </span>./deployment-scripts/update-keycloak-deployment.py<span class="w"> </span>--disable-route<span class="w"> </span>--filename<span class="w"> </span>deployment-scripts/keycloak-deployment.yaml<span class="w"> </span>--env-path<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/keycloak-deployment.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/keycloak-deployment.yaml<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># Wait for Keycloak to be ready</span>
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>keycloak<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>--timeout<span class="o">=</span>300s
+</code></pre></div>
+<h3 id="52-set-up-port-forwarding-for-keycloak">5.2 Set Up Port Forwarding for Keycloak</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Port forward Keycloak for local access</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+sleep<span class="w"> </span><span class="m">5</span>
+</code></pre></div>
+<h3 id="53-generate-oauth-secrets">5.3 Generate OAuth Secrets</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Generate client secret (32 characters)</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">client_secret</span><span class="o">=</span><span class="k">$(</span>cat<span class="w"> </span>/dev/urandom<span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-dc<span class="w"> </span><span class="s1">'0-9a-zA-Z'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-c32<span class="k">)</span>
+
+<span class="c1"># Generate cookie secret (32 characters)</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">cookie_secret</span><span class="o">=</span><span class="k">$(</span>cat<span class="w"> </span>/dev/urandom<span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-dc<span class="w"> </span><span class="s1">'0-9a-zA-Z'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-c32<span class="k">)</span>
+</code></pre></div>
+<h3 id="54-configure-keycloak-realm-and-client">5.4 Configure Keycloak Realm and Client</h3>
+<p>Run the automated setup script:</p>
+<div class="highlight"><pre><span></span><code>./deployment-scripts/setup-keycloak.sh
+</code></pre></div>
+<p>This script will:
+- Create the <code>geostudio</code> realm
+- Create the <code>geostudio-client</code> OAuth client
+- Configure redirect URIs
+- Create a test user (<code>testuser</code> / <code>testpass123</code>)</p>
+<h3 id="55-update-environment-configuration-for-keycloak">5.5 Update Environment Configuration for Keycloak</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Update cookie secret in .env</span>
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/oauth_cookie_secret=.*/oauth_cookie_secret=</span><span class="nv">$cookie_secret</span><span class="s2">/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+
+<span class="c1"># Update OAuth configuration in env.sh</span>
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=http://keycloak.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local:8080/realms/geostudio|g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s|export OAUTH_URL=.*|export OAUTH_URL=http://keycloak.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth|g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</code></pre></div>
+<hr>
+<h2 id="6-tls-configuration">6. TLS Configuration</h2>
+<h3 id="61-generate-tls-certificate-and-key">6.1 Generate TLS Certificate and Key</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Generate self-signed certificate for Kubernetes services</span>
+openssl<span class="w"> </span>req<span class="w"> </span>-x509<span class="w"> </span>-nodes<span class="w"> </span>-days<span class="w"> </span><span class="m">365</span><span class="w"> </span>-newkey<span class="w"> </span>rsa:2048<span class="w"> </span>-keyout<span class="w"> </span>tls.key<span class="w"> </span>-out<span class="w"> </span>tls.crt<span class="w"> </span>-subj<span class="w"> </span><span class="s2">"/CN=</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local"</span>
+</code></pre></div>
+<h3 id="62-encode-certificates-to-base64">6.2 Encode Certificates to Base64</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Extract and encode certificate</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TLS_CRT_B64</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>base64<span class="w"> </span>-in<span class="w"> </span>tls.crt<span class="w"> </span>-A<span class="k">)</span>
+
+<span class="c1"># Extract and encode key</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TLS_KEY_B64</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>base64<span class="w"> </span>-in<span class="w"> </span>tls.key<span class="w"> </span>-A<span class="k">)</span>
+</code></pre></div>
+<h3 id="63-update-environment-configuration">6.3 Update Environment Configuration</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Update .env with base64-encoded TLS credentials</span>
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/tls_crt_b64=.*/tls_crt_b64=</span><span class="nv">$TLS_CRT_B64</span><span class="s2">/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/tls_key_b64=.*/tls_key_b64=</span><span class="nv">$TLS_KEY_B64</span><span class="s2">/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+
+<span class="c1"># Enable TLS secret creation</span>
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</code></pre></div>
+<hr>
+<h2 id="7-geoserver-deployment">7. Geoserver Deployment</h2>
+<p>Geoserver provides geospatial data visualization and serving capabilities.</p>
+<h3 id="71-set-geoserver-credentials">7.1 Set Geoserver Credentials</h3>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">GEOSERVER_USERNAME</span><span class="o">=</span><span class="s2">"admin"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">GEOSERVER_PASSWORD</span><span class="o">=</span><span class="s2">"geoserver"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">GEOSERVER_URL</span><span class="o">=</span>http://localhost:3000/geoserver
+</code></pre></div>
+<h3 id="72-update-environment-configuration">7.2 Update Environment Configuration</h3>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/geoserver_username=.*/geoserver_username=</span><span class="nv">$GEOSERVER_USERNAME</span><span class="s2">/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/geoserver_password=.*/geoserver_password=</span><span class="nv">$GEOSERVER_PASSWORD</span><span class="s2">/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</code></pre></div>
+<h3 id="73-deploy-geoserver">7.3 Deploy Geoserver</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Deploy Geoserver with storage configuration</span>
+python<span class="w"> </span>./deployment-scripts/update-deployment-template.py<span class="w"> </span>--filename<span class="w"> </span>deployment-scripts/geoserver-deployment.yaml<span class="w"> </span>--storageclass<span class="w"> </span>standard<span class="w"> </span>--proxy-base-url<span class="w"> </span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s2">"http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver"</span><span class="w"> </span><span class="s2">"</span><span class="nv">$OC_PROJECT</span><span class="s2">"</span><span class="k">)</span><span class="w"> </span>--disable-route<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/geoserver-deployment.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/geoserver-deployment.yaml<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># Wait for Geoserver to be ready (may take up to 15 minutes)</span>
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>gfm-geoserver<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>--timeout<span class="o">=</span>900s
+</code></pre></div>
+<h3 id="74-set-up-port-forwarding-for-geoserver">7.4 Set Up Port Forwarding for Geoserver</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Port forward Geoserver</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/geofm-geoserver<span class="w"> </span><span class="m">3000</span>:3000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+sleep<span class="w"> </span><span class="m">5</span>
+</code></pre></div>
+<h3 id="75-configure-geoserver">7.5 Configure Geoserver</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Run Geoserver setup script</span>
+./deployment-scripts/setup_geoserver.sh
+</code></pre></div>
+<p>This script configures:
+- Workspaces
+- Data stores
+- Layers
+- Styles</p>
+<hr>
+<h2 id="8-studio-configuration">8. Studio Configuration</h2>
+<h3 id="81-generate-or-load-api-keys">8.1 Generate or Load API Keys</h3>
+<p>The following script will generate new API keys or load existing ones from <code>.studio-api-key</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">file</span><span class="o">=</span>./.studio-api-key
+<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">"</span><span class="nv">$file</span><span class="s2">"</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"File exists - loading existing keys"</span>
+<span class="w">    </span><span class="nb">source</span><span class="w"> </span><span class="nv">$file</span>
+<span class="k">else</span><span class="w"> </span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Generating new API keys"</span>
+<span class="w">    </span><span class="nb">export</span><span class="w"> </span><span class="nv">STUDIO_API_KEY</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="s2">"pak-</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">24</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-dc<span class="w"> </span><span class="s1">'a-zA-Z0-9'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-c<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="s2">"</span><span class="k">)</span>
+<span class="w">    </span><span class="nb">export</span><span class="w"> </span><span class="nv">API_ENCRYPTION_KEY</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="s2">"</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span><span class="s1">'+/'</span><span class="w"> </span><span class="s1">'-_'</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tr<span class="w"> </span>-d<span class="w"> </span><span class="s1">'\n'</span><span class="k">)</span><span class="s2">"</span><span class="k">)</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"export STUDIO_API_KEY=</span><span class="nv">$STUDIO_API_KEY</span><span class="s2">"</span><span class="w"> </span>&gt;<span class="w"> </span>./.studio-api-key
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"export API_ENCRYPTION_KEY=</span><span class="nv">$API_ENCRYPTION_KEY</span><span class="s2">"</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>./.studio-api-key
+<span class="k">fi</span>
+</code></pre></div>
+<blockquote>
+<p><strong>Important:</strong> Keep the <code>.studio-api-key</code> file secure and backed up. It's required for redeployments.</p>
+</blockquote>
+<h3 id="82-update-studio-configuration">8.2 Update Studio Configuration</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Update API keys</span>
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/studio_api_key=.*/studio_api_key=</span><span class="nv">$STUDIO_API_KEY</span><span class="s2">/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/studio_api_encryption_key=.*/studio_api_encryption_key=</span><span class="nv">$API_ENCRYPTION_KEY</span><span class="s2">/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+
+<span class="c1"># Update Redis password</span>
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/redis_password=.*/redis_password=devPassword/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+
+<span class="c1"># Update image pull secret (if required)</span>
+<span class="c1"># Replace with your actual base64-encoded image pull secret</span>
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/image_pull_secret_b64=.*/image_pull_secret_b64=\"</span><span class="si">${</span><span class="nv">STUDIO_IMAGE_PULL_SECRET</span><span class="si">}</span><span class="s2">\"/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</code></pre></div>
+<h3 id="83-configure-environment-settings">8.3 Configure Environment Settings</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Set environment type</span>
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export ENVIRONMENT=.*/export ENVIRONMENT=local/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+
+<span class="c1"># Disable OpenShift routes (using port-forwarding instead)</span>
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export ROUTE_ENABLED=.*/export ROUTE_ENABLED=false/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+
+<span class="c1"># Configure storage settings</span>
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export SHARE_PIPELINE_PVC=.*/export SHARE_PIPELINE_PVC=true/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export STORAGE_PVC_ENABLED=.*/export STORAGE_PVC_ENABLED=true/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export STORAGE_FILESYSTEM_ENABLED=.*/export STORAGE_FILESYSTEM_ENABLED=false/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export CREATE_TUNING_FOLDERS_FLAG=.*/export CREATE_TUNING_FOLDERS_FLAG=false/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=.*|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/data|g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+
+<span class="c1"># Enable OAuth proxy</span>
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export OAUTH_PROXY_ENABLED=.*/export OAUTH_PROXY_ENABLED=true/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+
+<span class="c1"># Set container image repository</span>
+sed<span class="w"> </span>-i<span class="w"> </span>-e<span class="w"> </span><span class="s2">"s/export CONTAINER_IMAGE_REPOSITORY=.*/export CONTAINER_IMAGE_REPOSITORY=</span><span class="si">${</span><span class="nv">IMAGE_REGISTRY</span><span class="si">}</span><span class="s2">/g"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</code></pre></div>
+<h3 id="84-reload-environment-variables">8.4 Reload Environment Variables</h3>
+<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</code></pre></div>
+<hr>
+<h2 id="9-deploy-geospatial-studio-services">9. Deploy Geospatial Studio Services</h2>
+<h3 id="91-generate-deployment-values-files">9.1 Generate Deployment Values Files</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Generate values.yaml files for both charts</span>
+./deployment-scripts/values-file-generate.sh
+</code></pre></div>
+<p>This creates:
+- <code>workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml</code>
+- <code>workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml</code></p>
+<h3 id="92-create-deployment-copies">9.2 Create Deployment Copies</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Create deployment-specific copies</span>
+cp<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio/values.yaml<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio/values-deploy.yaml
+cp<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio-pipelines/values.yaml<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio-pipelines/values-deploy.yaml
+</code></pre></div>
+<h3 id="93-configure-gpu-settings-optional">9.3 Configure GPU Settings (Optional)</h3>
+<p>Check if NVIDIA GPUs are available and configure accordingly:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check for NVIDIA GPUs</span>
+<span class="nv">NVIDIA_GPUS_AVAILABLE</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>describe<span class="w"> </span>node<span class="w"> </span>studio-worker<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-c<span class="w"> </span><span class="s2">"nvidia.com"</span><span class="k">)</span>
+
+<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">"</span><span class="nv">$NVIDIA_GPUS_AVAILABLE</span><span class="s2">"</span><span class="w"> </span>-gt<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Cluster Type: GPU-enabled"</span>
+<span class="w">    </span><span class="c1"># Remove only GPU affinity, keep GPU resources</span>
+<span class="w">    </span>python<span class="w"> </span>./deployment-scripts/remove-pipeline-gpu.py<span class="w"> </span>--remove-affinity-only<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio-pipelines/values-deploy.yaml
+<span class="k">else</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Cluster Type: standard (no GPU)"</span>
+<span class="w">    </span><span class="c1"># Remove all GPU configurations</span>
+<span class="w">    </span>python<span class="w"> </span>./deployment-scripts/remove-pipeline-gpu.py<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio-pipelines/values-deploy.yaml
+<span class="k">fi</span>
+</code></pre></div>
+<h3 id="94-review-deployment-values">9.4 Review Deployment Values</h3>
+<p><strong>IMPORTANT:</strong> Review and customize the deployment values before proceeding:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Review studio values</span>
+cat<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio/values-deploy.yaml
+
+<span class="c1"># Review pipelines values</span>
+cat<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio-pipelines/values-deploy.yaml
+</code></pre></div>
+<p>Make any necessary adjustments to:
+- Resource limits and requests
+- Storage configurations
+- Service-specific settings
+- Feature flags</p>
+<p><strong>Pause here to review the values files. Press Enter when ready to continue.</strong></p>
+<div class="highlight"><pre><span></span><code><span class="nb">printf</span><span class="w"> </span><span class="s2">"%s "</span><span class="w"> </span><span class="s2">"Press enter to continue"</span>
+<span class="nb">read</span><span class="w"> </span>ans
+</code></pre></div>
+<h3 id="95-build-helm-dependencies">9.5 Build Helm Dependencies</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Update and build dependencies</span>
+helm<span class="w"> </span>dep<span class="w"> </span>update<span class="w"> </span>./geospatial-studio/
+helm<span class="w"> </span>dependency<span class="w"> </span>build<span class="w"> </span>./geospatial-studio/
+</code></pre></div>
+<h3 id="96-deploy-geospatial-studio-core">9.6 Deploy Geospatial Studio Core</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Deploy the main studio services</span>
+./deployment-scripts/deploy_studio.sh
+</code></pre></div>
+<p>This deploys:
+- UI service
+- Gateway API
+- MLflow
+- Redis
+- Other core services</p>
+<h3 id="97-deploy-geospatial-studio-pipelines">9.7 Deploy Geospatial Studio Pipelines</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Deploy the pipeline services</span>
+./deployment-scripts/deploy_pipelines.sh
+</code></pre></div>
+<p>This deploys:
+- Inference pipelines
+- Data processing pipelines
+- Model training pipelines</p>
+<hr>
+<h2 id="10-port-forwarding-setup">10. Port Forwarding Setup</h2>
+<h3 id="101-wait-for-services-to-be-ready">10.1 Wait for Services to be Ready</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Wait for gateway to be ready</span>
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>geofm-gateway<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>--timeout<span class="o">=</span>300s
+</code></pre></div>
+<h3 id="102-set-up-port-forwarding">10.2 Set Up Port Forwarding</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># UI (OAuth-protected)</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>deployment/geofm-ui<span class="w"> </span><span class="m">4180</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+
+<span class="c1"># Gateway API (OAuth-protected)</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>deployment/geofm-gateway<span class="w"> </span><span class="m">4181</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+
+<span class="c1"># MLflow</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>deployment/geofm-mlflow<span class="w"> </span><span class="m">5000</span>:5000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+</code></pre></div>
+<h3 id="103-configure-etchosts-important">10.3 Configure /etc/hosts (Important)</h3>
+<p>Add internal cluster URLs to your <code>/etc/hosts</code> file for seamless connectivity:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">"127.0.0.1 keycloak.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local postgresql.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local minio.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local geofm-ui.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local geofm-gateway.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local geofm-geoserver.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>tee<span class="w"> </span>-a<span class="w"> </span>/etc/hosts
+</code></pre></div>
+<blockquote>
+<p><strong>Note:</strong> This is required because some services may call internal cluster URLs from the host machine.</p>
+</blockquote>
+<hr>
+<h2 id="11-testing">11. Testing</h2>
+<h3 id="111-access-the-services">11.1 Access the Services</h3>
+<p>After deployment, you can access the following services:</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>URL</th>
+<th>Credentials</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Studio UI</strong></td>
+<td>https://localhost:4180</td>
+<td>username: <code>testuser</code><br>password: <code>testpass123</code></td>
+</tr>
+<tr>
+<td><strong>Studio API</strong></td>
+<td>https//localhost:4181</td>
+<td>Use API key (see below)</td>
+</tr>
+<tr>
+<td><strong>Geoserver</strong></td>
+<td>http://localhost:3000</td>
+<td>username: <code>admin</code><br>password: <code>geoserver</code></td>
+</tr>
+<tr>
+<td><strong>Keycloak</strong></td>
+<td>http://localhost:8080</td>
+<td>username: <code>admin</code><br>password: <code>admin</code></td>
+</tr>
+<tr>
+<td><strong>MinIO Console</strong></td>
+<td>https://localhost:9001</td>
+<td>username: <code>minioadmin</code><br>password: <code>minioadmin</code></td>
+</tr>
+<tr>
+<td><strong>MinIO API</strong></td>
+<td>https://localhost:9000</td>
+<td>username: <code>minioadmin</code><br>password: <code>minioadmin</code></td>
+</tr>
+<tr>
+<td><strong>MLflow</strong></td>
+<td>http://localhost:5000</td>
+<td>No authentication</td>
+</tr>
+</tbody>
+</table>
+<h3 id="112-verify-deployment">11.2 Verify Deployment</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check all pods are running</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># Check services</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>svc<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># Check persistent volume claims</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>pvc<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+</code></pre></div>
+<h3 id="113-view-deployment-summary">11.3 View Deployment Summary</h3>
+<div class="highlight"><pre><span></span><code><span class="nb">echo</span><span class="w"> </span><span class="s2">"----------------------------------------------------------------------"</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"-----------------------  Deployment Summary  -------------------------"</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"----------------------------------------------------------------------"</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">""</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"🌍🌎🌏   Geospatial Studio deployed to Kubernetes!"</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"🗺️   Access the Geospatial Studio UI at: https://localhost:4180"</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"💻   Access the Geospatial Studio API at: https://localhost:4181"</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">""</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"Dev Studio API Key: </span><span class="nv">$STUDIO_API_KEY</span><span class="s2">"</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"Dev Postgres Password: </span><span class="nv">$POSTGRES_PASSWORD</span><span class="s2">"</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">""</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"----------------------------------------------------------------------"</span>
+</code></pre></div>
+<h3 id="114-test-api-endpoints">11.4 Test API Endpoints</h3>
+<p>Use the Studio API key for programmatic access:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Set your API key</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">MY_GEOSTUDIO_KEY</span><span class="o">=</span><span class="nv">$STUDIO_API_KEY</span>
+
+<span class="c1"># Test: Add a model</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">"https://localhost:4181/studio-gateway/v2/models"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--header<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--header<span class="w"> </span><span class="s2">"X-API-Key: </span><span class="nv">$MY_GEOSTUDIO_KEY</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--data<span class="w"> </span>@tests/api-data/00-models.json
+
+<span class="c1"># Test: Submit an inference</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">"https://localhost:4181/studio-gateway/v2/inference"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--header<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--header<span class="w"> </span><span class="s2">"X-API-Key: </span><span class="nv">$MY_GEOSTUDIO_KEY</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--data<span class="w"> </span>@tests/api-data/01-inferences.json
+</code></pre></div>
+<hr>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="common-issues">Common Issues</h3>
+<h4 id="1-port-forwarding-stopped">1. Port Forwarding Stopped</h4>
+<p>If port forwarding stops, restart it:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Kill existing port forwards</span>
+pkill<span class="w"> </span>-f<span class="w"> </span><span class="s2">"kubectl port-forward"</span>
+
+<span class="c1"># Restart all port forwards</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/postgresql<span class="w"> </span><span class="m">54320</span>:5432<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/geofm-geoserver<span class="w"> </span><span class="m">3000</span>:3000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>deployment/geofm-ui<span class="w"> </span><span class="m">4180</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>deployment/geofm-gateway<span class="w"> </span><span class="m">4181</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>deployment/geofm-mlflow<span class="w"> </span><span class="m">5000</span>:5000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/minio<span class="w"> </span><span class="m">9000</span>:9000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/minio<span class="w"> </span><span class="m">9001</span>:9001<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+</code></pre></div>
+<h4 id="2-pod-not-starting">2. Pod Not Starting</h4>
+<p>Check pod logs:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># List pods</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># View logs for a specific pod</span>
+kubectl<span class="w"> </span>logs<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># Describe pod for events</span>
+kubectl<span class="w"> </span>describe<span class="w"> </span>pod<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+</code></pre></div>
+<h4 id="3-storage-issues">3. Storage Issues</h4>
+<p>Check PVC status:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># List PVCs</span>
+kubectl<span class="w"> </span>get<span class="w"> </span>pvc<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># Describe PVC</span>
+kubectl<span class="w"> </span>describe<span class="w"> </span>pvc<span class="w"> </span>&lt;pvc-name&gt;<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+</code></pre></div>
+<h4 id="4-authentication-issues">4. Authentication Issues</h4>
+<p>Verify Keycloak configuration:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check Keycloak logs</span>
+kubectl<span class="w"> </span>logs<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>keycloak<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># Verify realm and client exist</span>
+<span class="c1"># Access Keycloak at http://localhost:8080</span>
+</code></pre></div>
+<h4 id="5-database-connection-issues">5. Database Connection Issues</h4>
+<p>Test PostgreSQL connection:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Connect to PostgreSQL</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>--namespace<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/postgresql<span class="w"> </span><span class="m">54320</span>:5432<span class="w"> </span><span class="p">&amp;</span>
+<span class="nv">PGPASSWORD</span><span class="o">=</span><span class="s2">"</span><span class="nv">$POSTGRES_PASSWORD</span><span class="s2">"</span><span class="w"> </span>psql<span class="w"> </span>--host<span class="w"> </span><span class="m">127</span>.0.0.1<span class="w"> </span>-U<span class="w"> </span>postgres<span class="w"> </span>-d<span class="w"> </span>postgres<span class="w"> </span>-p<span class="w"> </span><span class="m">54320</span>
+</code></pre></div>
+<h3 id="viewing-logs">Viewing Logs</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># View all logs in namespace</span>
+kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>--all-containers<span class="o">=</span><span class="nb">true</span><span class="w"> </span>--tail<span class="o">=</span><span class="m">100</span>
+
+<span class="c1"># Follow logs for a specific deployment</span>
+kubectl<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>deployment/geofm-gateway<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># View port-forward logs</span>
+tail<span class="w"> </span>-f<span class="w"> </span>studio-pf.log
+</code></pre></div>
+<h3 id="restarting-services">Restarting Services</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Restart all studio pods</span>
+./deployment-scripts/restart-all-studio-pods.sh
+
+<span class="c1"># Restart specific deployment</span>
+kubectl<span class="w"> </span>rollout<span class="w"> </span>restart<span class="w"> </span>deployment/geofm-gateway<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+</code></pre></div>
+<hr>
+<h2 id="uninstalling">Uninstalling</h2>
+<p>To remove the Geospatial Studio deployment:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Uninstall Helm releases</span>
+helm<span class="w"> </span>uninstall<span class="w"> </span>studio<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+helm<span class="w"> </span>uninstall<span class="w"> </span>studio-pipelines<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># Delete PostgreSQL</span>
+helm<span class="w"> </span>uninstall<span class="w"> </span>postgresql<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># Delete other resources</span>
+kubectl<span class="w"> </span>delete<span class="w"> </span>-f<span class="w"> </span>deployment-scripts/keycloak-deployment.yaml<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+kubectl<span class="w"> </span>delete<span class="w"> </span>-f<span class="w"> </span>deployment-scripts/minio-deployment.yaml<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+kubectl<span class="w"> </span>delete<span class="w"> </span>-f<span class="w"> </span>deployment-scripts/geoserver-deployment.yaml<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># Delete CSI driver</span>
+kubectl<span class="w"> </span>delete<span class="w"> </span>-k<span class="w"> </span>deployment-scripts/ibm-object-csi-driver/
+
+<span class="c1"># Delete secrets and configmaps</span>
+kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>minio-tls-secret<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+kubectl<span class="w"> </span>delete<span class="w"> </span>configmap<span class="w"> </span>minio-public-config<span class="w"> </span>-n<span class="w"> </span>kube-system
+
+<span class="c1"># Delete PVCs (if you want to remove data)</span>
+kubectl<span class="w"> </span>delete<span class="w"> </span>pvc<span class="w"> </span>--all<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+</code></pre></div>
+<hr>
+<h2 id="additional-resources">Additional Resources</h2>
+<ul>
+<li><a href="https://github.com/terrastackai/geospatial-studio">Geospatial Studio Documentation</a></li>
+<li><a href="https://kubernetes.io/docs/">Kubernetes Documentation</a></li>
+<li><a href="https://helm.sh/docs/">Helm Documentation</a></li>
+<li><a href="https://min.io/docs/">MinIO Documentation</a></li>
+<li><a href="https://www.keycloak.org/documentation">Keycloak Documentation</a></li>
+<li><a href="https://www.postgresql.org/docs/">PostgreSQL Documentation</a></li>
+<li><a href="https://docs.geoserver.org/">Geoserver Documentation</a></li>
+</ul>
+<hr>
+<h2 id="next-steps">Next Steps</h2>
+<p>After successful deployment:</p>
+<ol>
+<li><strong>Configure External Services</strong> (Optional):</li>
+<li>Mapbox token for enhanced mapping</li>
+<li>Cesium token for 3D visualization</li>
+<li>Sentinel Hub credentials for satellite data</li>
+<li>
+<p>NASA Earth Data credentials</p>
+</li>
+<li>
+<p><strong>Set Up Monitoring</strong>:</p>
+</li>
+<li>Configure observability endpoints</li>
+<li>Set up log aggregation</li>
+<li>
+<p>Enable metrics collection</p>
+</li>
+<li>
+<p><strong>Production Hardening</strong>:</p>
+</li>
+<li>Replace self-signed certificates with proper TLS certificates</li>
+<li>Configure proper ingress/load balancer</li>
+<li>Set up backup and disaster recovery</li>
+<li>Implement proper secret management (e.g., Vault)</li>
+<li>Configure resource limits and autoscaling</li>
+<li>
+<p>Set up network policies</p>
+</li>
+<li>
+<p><strong>User Management</strong>:</p>
+</li>
+<li>Create additional users in Keycloak</li>
+<li>Configure role-based access control</li>
+<li>
+<p>Set up user groups and permissions</p>
+</li>
+<li>
+<p><strong>Data Onboarding</strong>:</p>
+</li>
+<li>Upload datasets to MinIO buckets</li>
+<li>Configure data sources in Geoserver</li>
+<li>Create model catalogs</li>
+<li>Set up inference pipelines</li>
+</ol>
+<hr>
+<h2 id="support">Support</h2>
+<p>For issues and questions:
+- GitHub Issues: <a href="https://github.com/terrastackai/geospatial-studio/issues">geospatial-studio/issues</a>
+- Documentation: <a href="https://github.com/terrastackai/geospatial-studio/tree/main/docs">geospatial-studio/docs</a></p></div>
+
+
+
+
+
+
+
+  
+    
+  
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="February 3, 2026 13:37:34 UTC">February 3, 2026</span>
+  </span>
+
+    
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

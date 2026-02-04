@@ -1345,17 +1345,17 @@ k9s
 | Authenticate MinIO | username: `minioadmin` password: `minioadmin` |
 
 If you need to restart any of the port-forwards you can use the following commands:
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/postgresql<span class="w"> </span><span class="m">54320</span>:5432<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/geofm-geoserver<span class="w"> </span><span class="m">3000</span>:3000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-ui<span class="w"> </span><span class="m">4180</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-gateway<span class="w"> </span><span class="m">4181</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-mlflow<span class="w"> </span><span class="m">5000</span>:5000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/postgresql<span class="w"> </span><span class="m">54320</span>:5432<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/geofm-geoserver<span class="w"> </span><span class="m">3000</span>:3000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>deployment/geofm-ui<span class="w"> </span><span class="m">4180</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>deployment/geofm-gateway<span class="w"> </span><span class="m">4181</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>deployment/geofm-mlflow<span class="w"> </span><span class="m">5000</span>:5000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
 </code></pre></div>
 
 This is printed at the end of the installation script. In case you missed it and have issues with keycloak, Run this command to configure the `etc/hosts ` for seamless connection as some of the services may call the internal urls on the host machine.
 
-<div class="highlight"><pre><span></span><code><span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="se">\&quot;</span><span class="m">127</span>.0.0.1<span class="w"> </span>keycloak.default.svc.cluster.local<span class="w"> </span>postgresql.default.svc.cluster.local<span class="w"> </span>minio.default.svc.cluster.local<span class="w"> </span>geofm-ui.default.svc.cluster.local<span class="w"> </span>geofm-gateway.default.svc.cluster.local<span class="w"> </span>geofm-geoserver.default.svc.cluster.local<span class="se">\&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>/etc/hosts
+<div class="highlight"><pre><span></span><code><span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="se">\&quot;</span><span class="m">127</span>.0.0.1<span class="w"> </span>keycloak.<span class="nv">$OC_PROJECT</span>.svc.cluster.local<span class="w"> </span>postgresql.<span class="nv">$OC_PROJECT</span>.svc.cluster.local<span class="w"> </span>minio.<span class="nv">$OC_PROJECT</span>.svc.cluster.local<span class="w"> </span>geofm-ui.<span class="nv">$OC_PROJECT</span>.svc.cluster.local<span class="w"> </span>geofm-gateway.<span class="nv">$OC_PROJECT</span>.svc.cluster.local<span class="w"> </span>geofm-geoserver.<span class="nv">$OC_PROJECT</span>.svc.cluster.local<span class="se">\&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>/etc/hosts
 </code></pre></div>
 
 ## Geospatial Studio - Deployment instructions (manual)
@@ -1424,23 +1424,31 @@ Deploy MinIO for S3-compatible object storage:
 <div class="highlight"><pre><span></span><code><span class="c1"># Install MinIO</span>
 <span class="c1"># Create TLS for MinIO</span>
 openssl<span class="w"> </span>genrsa<span class="w"> </span>-out<span class="w"> </span>minio-private.key<span class="w"> </span><span class="m">2048</span>
-openssl<span class="w"> </span>req<span class="w"> </span>-new<span class="w"> </span>-x509<span class="w"> </span>-nodes<span class="w"> </span>-days<span class="w"> </span><span class="m">730</span><span class="w"> </span>-keyout<span class="w"> </span>minio-private.key<span class="w"> </span>-out<span class="w"> </span>minio-public.crt<span class="w"> </span>--config<span class="w"> </span>deployment-scripts/minio-openssl.conf
+mkdir<span class="w"> </span>-p<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation
+sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;s/default/</span><span class="nv">$OC_PROJECT</span><span class="s2">/g&quot;</span><span class="w"> </span>deployment-scripts/minio-openssl.conf<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-user-openssl.conf
+openssl<span class="w"> </span>req<span class="w"> </span>-new<span class="w"> </span>-x509<span class="w"> </span>-nodes<span class="w"> </span>-days<span class="w"> </span><span class="m">730</span><span class="w"> </span>-keyout<span class="w"> </span>minio-private.key<span class="w"> </span>-out<span class="w"> </span>minio-public.crt<span class="w"> </span>--config<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-user-openssl.conf
 
-kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>tls<span class="w"> </span>minio-tls-secret<span class="w"> </span>--cert<span class="o">=</span>minio-public.crt<span class="w"> </span>--key<span class="o">=</span>minio-private.key<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
-<span class="c1"># Create configmap required by cloud object storage drivers</span>
-kubectl<span class="w"> </span>create<span class="w"> </span>configmap<span class="w"> </span>minio-public-config<span class="w"> </span>--from-file<span class="o">=</span>minio-public.crt<span class="w"> </span>-n<span class="w"> </span>kube-system
+<span class="c1"># Create TLS secret for MinIO</span>
+kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>tls<span class="w"> </span>minio-tls-secret<span class="w"> </span>--cert<span class="o">=</span>minio-public.crt<span class="w"> </span>--key<span class="o">=</span>minio-private.key<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>--dry-run<span class="o">=</span>client<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-tls-secret.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-tls-secret.yaml<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+
+<span class="c1"># Create ConfigMap for CSI driver (required by IBM Object CSI Driver)</span>
+kubectl<span class="w"> </span>create<span class="w"> </span>configmap<span class="w"> </span>minio-public-config<span class="w"> </span>--from-file<span class="o">=</span>minio-public.crt<span class="w"> </span>-n<span class="w"> </span>kube-system<span class="w"> </span>--dry-run<span class="o">=</span>client<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-public-config.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-public-config.yaml<span class="w"> </span>-n<span class="w"> </span>kube-system
+
 <span class="c1"># Install MinIO</span>
-python<span class="w"> </span>./deployment-scripts/update-deployment-template.py<span class="w"> </span>--disable-route<span class="w"> </span>--filename<span class="w"> </span>deployment-scripts/minio-deployment.yaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
+python<span class="w"> </span>./deployment-scripts/update-deployment-template.py<span class="w"> </span>--disable-route<span class="w"> </span>--filename<span class="w"> </span>deployment-scripts/minio-deployment.yaml<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-deployment.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/minio-deployment.yaml<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
 </code></pre></div>
 
 Wait for MinIO to be ready:
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>minio<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>--timeout<span class="o">=</span>300s
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>minio<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>--timeout<span class="o">=</span>300s
 </code></pre></div>
 
 #### Access MinIO Console
 To access the MinIO console:
 <div class="highlight"><pre><span></span><code><span class="c1"># Port forward to access MinIO console at http://localhost:9001</span>
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/minio-console<span class="w"> </span><span class="m">9001</span>:9001<span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/minio-console<span class="w"> </span><span class="m">9001</span>:9001<span class="w"> </span><span class="p">&amp;</span>
 </code></pre></div>
 Login with username: `minioadmin`, password: `minioadmin`
 ...
@@ -1450,7 +1458,10 @@ Login with username: `minioadmin`, password: `minioadmin`
 kubectl<span class="w"> </span>label<span class="w"> </span>nodes<span class="w"> </span>lima-studio<span class="w"> </span>topology.kubernetes.io/region<span class="o">=</span>us-east-1<span class="w"> </span>topology.kubernetes.io/zone<span class="o">=</span>us-east-1a
 
 <span class="c1"># Install the drivers</span>
-kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>deployment-scripts/ibm-object-csi-driver/
+cp<span class="w"> </span>-R<span class="w"> </span>deployment-scripts/ibm-object-csi-driver<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation
+sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;s/default/</span><span class="nv">$OC_PROJECT</span><span class="s2">/g&quot;</span><span class="w"> </span>deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
+sed<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;s/default/</span><span class="nv">$OC_PROJECT</span><span class="s2">/g&quot;</span><span class="w"> </span>deployment-scripts/template/cos-s3-csi-sc.yaml<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/ibm-object-csi-driver/
 </code></pre></div>
 
 
@@ -1460,7 +1471,7 @@ kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> <
 
   <div class="highlight"><pre><span></span><code>access_key_id=minioadmin
 secret_access_key=minioadmin
-#endpoint=https://minio.default.svc.cluster.local:9000
+#endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000
 endpoint=https://localhost:9000
 region=us-east
 </code></pre></div>
@@ -1476,7 +1487,7 @@ region=us-east
 Run the following script to create the buckets:
 
 <div class="highlight"><pre><span></span><code><span class="c1"># Port forward to access MinIO api at https://localhost:9000</span>
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/minio<span class="w"> </span><span class="m">9000</span>:9000<span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/minio<span class="w"> </span><span class="m">9000</span>:9000<span class="w"> </span><span class="p">&amp;</span>
 </code></pre></div>
 
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>deployment-scripts/create_buckets.py<span class="w"> </span>--env-path<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
@@ -1487,7 +1498,7 @@ kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class
 
 Once you create the buckets update the minio endpoint `workspace/${DEPLOYMENT_ENV}/env/.env` with
 
-<div class="highlight"><pre><span></span><code>endpoint=https://minio.default.svc.cluster.local:9000
+<div class="highlight"><pre><span></span><code>endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000
 #endpoint=https://127.0.0.1:9000
 </code></pre></div>
 
@@ -1537,7 +1548,7 @@ Once completed, in terminal you will find some notes on the created postgres dat
 <span class="nv">pg_original_db_name</span><span class="o">=</span><span class="s1">&#39;postgres&#39;</span>
 </code></pre></div>
   > Note: after completing [create databases](#create-databases) section below update   `pg_uri` in `workspace/${DEPLOYMENT_ENV}/env/.env` with...
-  <div class="highlight"><pre><span></span><code><span class="nv">pg_uri</span><span class="o">=</span>postgresql.default.svc.cluster.local
+  <div class="highlight"><pre><span></span><code><span class="nv">pg_uri</span><span class="o">=</span>postgresql.<span class="nv">$OC_PROJECT</span>.svc.cluster.local
 </code></pre></div>
 
 ### Create databases
@@ -1551,7 +1562,7 @@ To create the required databases and users, run the script:
 
 Once you create the databases update the pg_uri in `workspace/${DEPLOYMENT_ENV}/env/.env` with
 
-<div class="highlight"><pre><span></span><code>pg_uri=postgresql.default.svc.cluster.local
+<div class="highlight"><pre><span></span><code>pg_uri=postgresql.$OC_PROJECT.svc.cluster.local
 #pg_uri=127.0.0.1
 </code></pre></div>
 
@@ -1567,11 +1578,12 @@ We use an OAuth2 authenticatorfor user authentication for the platform. This can
 #### 1. Keycloak
 
 Deploy Keycloak for authentication:
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>deployment-scripts/keycloak-deployment.yaml<span class="w"> </span>-n<span class="w"> </span>default
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>./deployment-scripts/update-keycloak-deployment.py<span class="w"> </span>--disable-route<span class="w"> </span>--filename<span class="w"> </span>deployment-scripts/keycloak-deployment.yaml<span class="w"> </span>--env-path<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env<span class="w"> </span>&gt;<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/keycloak-deployment.yaml
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/initialisation/keycloak-deployment.yaml<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
 </code></pre></div>
 
 Wait for Keycloak to be ready:
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>keycloak<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>--timeout<span class="o">=</span>300s
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>keycloak<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>--timeout<span class="o">=</span>300s
 </code></pre></div>
 
 #### Configure Keycloak Realm and Client
@@ -1580,7 +1592,7 @@ You can either use the `deployment-scripts/setup-keycloak.sh` script to create t
 ---
 1. **Access Keycloak Admin Console**:
    <div class="highlight"><pre><span></span><code><span class="c1"># Port forward to access Keycloak at http://localhost:8080</span>
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span><span class="p">&amp;</span>
 </code></pre></div>
    - Open: http://localhost:8080
    - Login with username: `admin`, password: `admin`
@@ -1600,8 +1612,8 @@ kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class
    - Authorization: `OFF`
    - Authentication flow: Check all boxes (Standard flow, Direct access grants, etc.)
    - Valid redirect URIs: 
-     <div class="highlight"><pre><span></span><code>https://geofm-ui.default.svc.cluster.local:4180/oauth2/callback
-https://geofm-gateway.default.svc.cluster.local:4180/oauth2/callback
+     <div class="highlight"><pre><span></span><code>https://geofm-ui.$OC_PROJECT.svc.cluster.local:4180/oauth2/callback
+https://geofm-gateway.$OC_PROJECT.svc.cluster.local:4180/oauth2/callback
 </code></pre></div>
    - Web origins: `*`
    - Click "Save"
@@ -1636,14 +1648,14 @@ Once you setup the authenticator (with either method), update `workspace/${DEPLO
 <div class="highlight"><pre><span></span><code><span class="c1"># AUTH</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_TYPE</span><span class="o">=</span>keycloak<span class="w"> </span><span class="c1"># for Keycloak</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_CLIENT_ID</span><span class="o">=</span>geostudio-client
-<span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_ISSUER_URL</span><span class="o">=</span>http://keycloak.default.svc.cluster.local:8080/realms/geostudio
-<span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_URL</span><span class="o">=</span>http://keycloak.default.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth
+<span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_ISSUER_URL</span><span class="o">=</span>http://keycloak.<span class="nv">$OC_PROJECT</span>.svc.cluster.local:8080/realms/geostudio
+<span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_URL</span><span class="o">=</span>http://keycloak.<span class="nv">$OC_PROJECT</span>.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth
 </code></pre></div>
 
 For a kubernetes environment create a tls secret key and crt pair.
 <div class="highlight"><pre><span></span><code><span class="c1"># create tls.key and tls.crt</span>
 
-openssl<span class="w"> </span>req<span class="w"> </span>-x509<span class="w"> </span>-nodes<span class="w"> </span>-days<span class="w"> </span><span class="m">365</span><span class="w"> </span>-newkey<span class="w"> </span>rsa:2048<span class="w"> </span>-keyout<span class="w"> </span>tls.key<span class="w"> </span>-out<span class="w"> </span>tls.crt<span class="w"> </span>-subj<span class="w"> </span><span class="s2">&quot;/CN=default.svc.cluster.local&quot;</span>
+openssl<span class="w"> </span>req<span class="w"> </span>-x509<span class="w"> </span>-nodes<span class="w"> </span>-days<span class="w"> </span><span class="m">365</span><span class="w"> </span>-newkey<span class="w"> </span>rsa:2048<span class="w"> </span>-keyout<span class="w"> </span>tls.key<span class="w"> </span>-out<span class="w"> </span>tls.crt<span class="w"> </span>-subj<span class="w"> </span><span class="s2">&quot;/CN=</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local&quot;</span>
 
 <span class="c1"># extract the cert and key into env vars</span>
 
@@ -1665,7 +1677,7 @@ Update `workspace/${DEPLOYMENT_ENV}/env/env.sh` with...
 Update your etc hosts with the local urls
 <div class="highlight"><pre><span></span><code><span class="c1"># Add our internal cluster urls to etc hosts for seamless connectivity since some of the services may call these internal urls on host machine</span>
 
-<span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;\n#lima\n127.0.0.1 keycloak.default.svc.cluster.local postgresql.default.svc.cluster.local minio.default.svc.cluster.local geofm-ui.default.svc.cluster.local geofm-gateway.default.svc.cluster.local&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>/etc/hosts
+<span class="nb">echo</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;\n#lima\n127.0.0.1 keycloak.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local postgresql.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local minio.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local geofm-ui.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local geofm-gateway.</span><span class="nv">$OC_PROJECT</span><span class="s2">.svc.cluster.local&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>/etc/hosts
 </code></pre></div>
 
 ## 5. Geoserver setup
@@ -1674,9 +1686,9 @@ To deploy Geoserver.  This will deploy geoserver, wait for the deployment to be 
 
 python<span class="w"> </span>./deployment-scripts/update-deployment-template.py<span class="w"> </span>--filename<span class="w"> </span>deployment-scripts/geoserver-deployment.yaml<span class="w"> </span>--disable-route<span class="w"> </span><span class="p">|</span><span class="w"> </span>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span>
 
-kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>gfm-geoserver<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>--timeout<span class="o">=</span>900s
+kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>ready<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span>app.kubernetes.io/name<span class="o">=</span>gfm-geoserver<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>--timeout<span class="o">=</span>900s
 
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/geofm-geoserver<span class="w"> </span><span class="m">3000</span>:3000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/geofm-geoserver<span class="w"> </span><span class="m">3000</span>:3000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
 </code></pre></div>
 
 Once the deployment is complete and the port-forwarding is started, run the following script to setup the geoserver instance:
@@ -1863,12 +1875,12 @@ helm<span class="w"> </span>uninstall<span class="w"> </span>studio-pipelines
 
 Following<span class="w"> </span>deployment,<span class="w"> </span>you<span class="w"> </span>will<span class="w"> </span>need<span class="w"> </span>to<span class="w"> </span>setup<span class="w"> </span>port-forwarding<span class="w"> </span>to<span class="w"> </span>access<span class="w"> </span>the<span class="w"> </span>different<span class="w"> </span>deployed<span class="w"> </span>services:
 <span class="sb">```</span>bash
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/postgresql<span class="w"> </span><span class="m">54320</span>:5432<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/geofm-geoserver<span class="w"> </span><span class="m">3000</span>:3000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-ui<span class="w"> </span><span class="m">4180</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-gateway<span class="w"> </span><span class="m">4181</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
-kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-mlflow<span class="w"> </span><span class="m">5000</span>:5000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/postgresql<span class="w"> </span><span class="m">54320</span>:5432<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>svc/geofm-geoserver<span class="w"> </span><span class="m">3000</span>:3000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>deployment/geofm-ui<span class="w"> </span><span class="m">4180</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>deployment/geofm-gateway<span class="w"> </span><span class="m">4181</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span><span class="si">${</span><span class="nv">OC_PROJECT</span><span class="si">}</span><span class="w"> </span>deployment/geofm-mlflow<span class="w"> </span><span class="m">5000</span>:5000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
 </code></pre></div>
 
 | After deployment: | |
@@ -1966,7 +1978,7 @@ curl -kX POST 'https://localhost:4181/v2/tune-templates' \
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 30, 2026 16:36:59 UTC">January 30, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="February 3, 2026 13:37:34 UTC">February 3, 2026</span>
   </span>
 
     
