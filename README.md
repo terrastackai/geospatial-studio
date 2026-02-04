@@ -162,7 +162,7 @@ For OpenShift use the script below to login after supplying the token and server
 ```shell
 oc login --token=<cluster-token> --server=<cluster-server>
 ```
-3. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below:
+3. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below, [see details here](./deployment-scripts/images-pre-puller/README-image-prepuller.md):
 ```shell
 NAMESPACE=<my-namespace> ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
 ```
@@ -222,7 +222,7 @@ To deploy locally:
 ```shell
 export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 ```
-5. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below:
+5. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below, [see details here](./deployment-scripts/images-pre-puller/README-image-prepuller.md):
 ```shell
 NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
 ```
@@ -275,7 +275,7 @@ To deploy:
     kubectl cluster-info --context kind-studio
     ```
 
-3. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below:
+3. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below, [see details here](./deployment-scripts/images-pre-puller/README-image-prepuller.md):
     ```shell
     NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
     ```
@@ -364,7 +364,7 @@ To deploy:
         kubectl cluster-info --context kind-studio
         ```
 
-    - [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below:
+    - [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below, [see details here](./deployment-scripts/images-pre-puller/README-image-prepuller.md):
         ```shell
         NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
         ```
