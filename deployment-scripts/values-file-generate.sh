@@ -10,7 +10,6 @@ source workspace/$DEPLOYMENT_ENV/env/env.sh
 
 charts=( 
         geospatial-studio
-        geospatial-studio-pipelines
 	)
 
 for HELM_CHART_NAME in "${charts[@]}"
@@ -53,7 +52,9 @@ do
         -e "s|REDIS_ENABLED|${REDIS_ENABLED}|" \
         -e "s|REDIS_FULL_NAME_OVERRIDE|${REDIS_FULL_NAME_OVERRIDE}|" \
         -e "s|REDIS_ARCHITECTURE|${REDIS_ARCHITECTURE}|" \
+        -e "s|PIPELINES_ENABLED|${PIPELINES_ENABLED}|" \
         -e "s|CONFIGURE_GPU_AFFINITY_FLAG|${CONFIGURE_GPU_AFFINITY_FLAG}|" \
+        -e "s|CONFIGURE_GPU_AFFINITY|${CONFIGURE_GPU_AFFINITY}|" \
         -e "s|NODE_SELECTOR_KEY|${NODE_SELECTOR_KEY}|" \
         -e "s|NODE_GPU_SPEC|${NODE_GPU_SPEC}|" \
         -e "s|GEOSERVER_CM_WHITELIST|${GEOSERVER_CM_WHITELIST}|" \
