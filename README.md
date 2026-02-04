@@ -162,7 +162,12 @@ For OpenShift use the script below to login after supplying the token and server
 ```shell
 oc login --token=<cluster-token> --server=<cluster-server>
 ```
-3. Deploy the geospatial studio:
+3. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below:
+```shell
+NAMESPACE=<my-namespace> ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
+```
+
+4. Deploy the geospatial studio:
 ```shell
 ./deploy_studio_ocp.sh
 ```
@@ -217,7 +222,11 @@ To deploy locally:
 ```shell
 export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 ```
-5. Deploy the geospatial studio:
+5. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below:
+```shell
+NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
+```
+6. Deploy the geospatial studio:
 ```shell
 ./deploy_studio_lima.sh
 ```
@@ -266,12 +275,17 @@ To deploy:
     kubectl cluster-info --context kind-studio
     ```
 
-3. Install Python dependencies:
+3. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below:
+    ```shell
+    NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
+    ```
+
+4. Install Python dependencies:
    ```shell
    pip install -r requirements.txt
    ```
 
-4. Deploy the geospatial studio:
+5. Deploy the geospatial studio:
    ```shell
    ./deploy_studio_k8s.sh
    ```
@@ -348,6 +362,11 @@ To deploy:
     - Set up the kubectl context:
         ```shell
         kubectl cluster-info --context kind-studio
+        ```
+
+    - [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below:
+        ```shell
+        NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
         ```
 
     - Install NVIDIA gpu--operator in the cluster:

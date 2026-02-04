@@ -2,8 +2,8 @@
 # © Copyright IBM Corporation 2025
 # SPDX-License-Identifier: Apache-2.0
 #
-# Script to deploy the image pre-puller DaemonSet with progress monitoring
-# This script handles low bandwidth scenarios by monitoring progress without strict timeouts
+# Script to deploy the image pre-puller DaemonSet with automatic cluster detection
+# Automatically selects the appropriate YAML based on cluster topology
 
 set -e
 
@@ -12,14 +12,17 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
 NAMESPACE="${NAMESPACE:-default}"
 DAEMONSET_NAME="geostudio-image-prepuller"
-YAML_FILE="${1:-./deployment-scripts/images-pre-puller/image-prepuller-daemonset.yaml}"
-CHECK_INTERVAL=10  # Check progress every 10 seconds
-MAX_WAIT_TIME=7200  # Maximum wait time: 2 hours (for low bandwidth)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TEMPLATE_YAML="$SCRIPT_DIR/image-prepuller.yaml"
+CHECK_INTERVAL=10
+MAX_WAIT_TIME=7200  # 2 hours for low bandwidth
+AUTO_CLEANUP="${AUTO_CLEANUP:-true}"  # Set to false to keep DaemonSet running
 
 # Function to print colored messages
 print_info() {
@@ -36,6 +39,10 @@ print_warning() {
 
 print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
+}
+
+print_highlight() {
+    echo -e "${CYAN}[CLUSTER]${NC} $1"
 }
 
 # Function to check if kubectl is available
@@ -58,20 +65,53 @@ check_namespace() {
     fi
 }
 
-# Function to check if YAML file exists
-check_yaml_file() {
-    if [ ! -f "$YAML_FILE" ]; then
-        print_error "YAML file '$YAML_FILE' not found"
+# Function to detect cluster type and prepare configuration
+detect_cluster_topology() {
+    print_info "Detecting cluster topology..."
+    
+    # Get total node count
+    local total_nodes=$(kubectl get nodes --no-headers 2>/dev/null | wc -l | tr -d ' ')
+    
+    # Get worker node count (nodes without control-plane role)
+    local worker_nodes=$(kubectl get nodes -l '!node-role.kubernetes.io/control-plane' --no-headers 2>/dev/null | wc -l | tr -d ' ')
+    
+    # Get control plane node count
+    local control_plane_nodes=$(kubectl get nodes -l 'node-role.kubernetes.io/control-plane' --no-headers 2>/dev/null | wc -l | tr -d ' ')
+    
+    echo ""
+    print_highlight "Cluster Analysis:"
+    echo "  Total nodes: $total_nodes"
+    echo "  Control plane nodes: $control_plane_nodes"
+    echo "  Worker nodes: $worker_nodes"
+    echo ""
+    
+    # Check if template exists
+    if [ ! -f "$TEMPLATE_YAML" ]; then
+        print_error "Template YAML file '$TEMPLATE_YAML' not found"
         exit 1
     fi
-    print_success "YAML file '$YAML_FILE' found"
-}
-
-# Function to update namespace in YAML
-update_namespace() {
-    print_info "Updating namespace in YAML file..."
-    sed -i.bak "s/namespace: OC_PROJECT/namespace: $NAMESPACE/g" "$YAML_FILE"
-    print_success "Namespace updated to '$NAMESPACE'"
+    
+    # Decision logic
+    if [ "$worker_nodes" -eq 0 ]; then
+        # Single-node cluster (all nodes are control plane)
+        print_highlight "Detected: Single-node cluster (Minikube/Kind/Docker Desktop)"
+        print_info "Will deploy to ALL nodes (including control plane)"
+        CLUSTER_TYPE="single-node"
+        TARGET_NODE_COUNT=$total_nodes
+        NODE_AFFINITY_CONFIG="# No node affinity - run on all nodes including control plane"
+    else
+        # Multi-node cluster with dedicated workers
+        print_highlight "Detected: Multi-node cluster with $worker_nodes worker node(s)"
+        print_info "Will deploy to WORKER NODES ONLY (excluding control plane)"
+        CLUSTER_TYPE="multi-node"
+        TARGET_NODE_COUNT=$worker_nodes
+        NODE_AFFINITY_CONFIG="affinity:\n        nodeAffinity:\n          requiredDuringSchedulingIgnoredDuringExecution:\n            nodeSelectorTerms:\n            - matchExpressions:\n              - key: node-role.kubernetes.io/control-plane\n                operator: DoesNotExist"
+    fi
+    
+    echo ""
+    print_success "Configuration prepared for $CLUSTER_TYPE cluster"
+    print_info "Target nodes for image pre-pull: $TARGET_NODE_COUNT"
+    echo ""
 }
 
 # Function to deploy DaemonSet
@@ -84,13 +124,12 @@ deploy_daemonset() {
         sleep 5
     fi
     
-    kubectl apply -f "$YAML_FILE"
+    # Apply YAML directly from stdin (no temporary files)
+    sed "s|# NODE_AFFINITY_PLACEHOLDER|$NODE_AFFINITY_CONFIG|" "$TEMPLATE_YAML" | \
+    sed "s/namespace: OC_PROJECT/namespace: $NAMESPACE/" | \
+    kubectl apply -f -
+    
     print_success "DaemonSet deployed"
-}
-
-# Function to get worker node count
-get_worker_node_count() {
-    kubectl get nodes -l '!node-role.kubernetes.io/control-plane,!node-role.kubernetes.io/master' --no-headers 2>/dev/null | wc -l | tr -d ' '
 }
 
 # Function to get pod status
@@ -101,17 +140,27 @@ get_pod_status() {
 # Function to get detailed pod progress
 get_pod_progress() {
     local pod_name=$1
-    local init_containers=$(kubectl get pod "$pod_name" -n "$NAMESPACE" -o jsonpath='{.status.initContainerStatuses[*].name}' 2>/dev/null || echo "")
-    local init_ready=$(kubectl get pod "$pod_name" -n "$NAMESPACE" -o jsonpath='{.status.initContainerStatuses[*].ready}' 2>/dev/null || echo "")
     
-    if [ -z "$init_containers" ]; then
-        echo "0/11"
+    # Get init container statuses - both completed and running
+    local init_states=$(kubectl get pod "$pod_name" -n "$NAMESPACE" -o jsonpath='{range .status.initContainerStatuses[*]}{.state}{"\n"}{end}' 2>/dev/null || echo "")
+    
+    if [ -z "$init_states" ]; then
+        echo "0/14"
         return
     fi
     
-    local total=11
-    local ready_count=$(echo "$init_ready" | tr ' ' '\n' | grep -c "true" || echo "0")
-    echo "$ready_count/$total"
+    local total=14
+    # Count completed (terminated with exitCode 0) and currently running containers
+    local completed=$(echo "$init_states" | grep -c "exitCode.:0" 2>/dev/null | tr -d ' \n' || echo "0")
+    local running=$(echo "$init_states" | grep -c "running" 2>/dev/null | tr -d ' \n' || echo "0")
+    
+    completed=${completed:-0}
+    running=${running:-0}
+    
+    # If a container is running, count it as in-progress (completed + 1)
+    local progress=$((completed + running))
+    
+    echo "$progress/$total"
 }
 
 # Function to monitor progress
@@ -120,11 +169,8 @@ monitor_progress() {
     print_info "This may take a while depending on your network bandwidth..."
     echo ""
     
-    local worker_count=$(get_worker_node_count)
-    print_info "Worker nodes detected: $worker_count"
-    
-    if [ "$worker_count" -eq 0 ]; then
-        print_error "No worker nodes found. DaemonSet will not schedule any pods."
+    if [ "$TARGET_NODE_COUNT" -eq 0 ]; then
+        print_error "No target nodes found. Cannot proceed."
         exit 1
     fi
     
@@ -142,13 +188,32 @@ monitor_progress() {
         fi
         
         # Count pods in different states
-        local total_pods=$(echo "$pod_status" | wc -l | tr -d ' ')
-        local running_pods=$(echo "$pod_status" | grep -c "Running" || echo "0")
-        local pending_pods=$(echo "$pod_status" | grep -c "Pending" || echo "0")
-        local failed_pods=$(echo "$pod_status" | grep -c -E "Error|CrashLoopBackOff|ImagePullBackOff" || echo "0")
+        local total_pods=$(echo "$pod_status" | wc -l | tr -d ' \n')
+        local running_pods=$(echo "$pod_status" | grep -c "Running" 2>/dev/null | tr -d ' \n' || echo "0")
+        local init_pods=$(echo "$pod_status" | grep -c "PodInitializing\|Init:" 2>/dev/null | tr -d ' \n' || echo "0")
+        local pending_pods=$(echo "$pod_status" | grep -c "Pending" 2>/dev/null | tr -d ' \n' || echo "0")
+        local failed_pods=$(echo "$pod_status" | grep -c -E "Error|CrashLoopBackOff|ImagePullBackOff" 2>/dev/null | tr -d ' \n' || echo "0")
+        
+        # Ensure they are valid integers
+        running_pods=${running_pods:-0}
+        init_pods=${init_pods:-0}
+        pending_pods=${pending_pods:-0}
+        failed_pods=${failed_pods:-0}
+        
+        # Adjust counts - PodInitializing is a sub-state, not separate from Running/Pending
+        local active_pods=$((init_pods + running_pods))
+        
+        # Get detailed progress for each pod to include in status
+        local progress_summary=""
+        while IFS= read -r line; do
+            local pod_name=$(echo "$line" | awk '{print $1}')
+            local progress=$(get_pod_progress "$pod_name")
+            progress_summary="$progress"
+            break  # Only need first pod for summary
+        done <<< "$pod_status"
         
         # Get detailed progress for each pod
-        local current_status="Pods: $running_pods/$total_pods Running, $pending_pods Pending"
+        local current_status="Pods: $active_pods/$total_pods Active ($init_pods pulling images, $running_pods complete), $pending_pods Pending - Progress: $progress_summary"
         
         if [ "$current_status" != "$last_status" ]; then
             echo -e "\n${BLUE}[$(date '+%H:%M:%S')]${NC} $current_status"
@@ -157,13 +222,16 @@ monitor_progress() {
             while IFS= read -r line; do
                 local pod_name=$(echo "$line" | awk '{print $1}')
                 local pod_state=$(echo "$line" | awk '{print $3}')
-                local node_name=$(echo "$line" | awk '{print $7}')
+                local node_name=$(kubectl get pod "$pod_name" -n "$NAMESPACE" -o jsonpath='{.spec.nodeName}' 2>/dev/null || echo "unknown")
                 
                 if [ "$pod_state" = "Running" ]; then
                     local progress=$(get_pod_progress "$pod_name")
-                    echo "  ├─ $node_name: $progress images pulled"
+                    echo "  ├─ $node_name: ✓ Complete ($progress images pulled)"
+                elif [[ "$pod_state" =~ "Init:" ]] || [ "$pod_state" = "PodInitializing" ]; then
+                    local progress=$(get_pod_progress "$pod_name")
+                    echo "  ├─ $node_name: ⟳ Pulling images ($progress)"
                 elif [ "$pod_state" = "Pending" ]; then
-                    echo "  ├─ $node_name: Initializing..."
+                    echo "  ├─ $node_name: ⏳ Starting..."
                 fi
             done <<< "$pod_status"
             
@@ -171,13 +239,13 @@ monitor_progress() {
         fi
         
         # Check if all pods are running (all init containers completed)
-        if [ "$running_pods" -eq "$worker_count" ] && [ "$pending_pods" -eq 0 ]; then
+        if [ "$running_pods" -eq "$TARGET_NODE_COUNT" ] && [ "$pending_pods" -eq 0 ]; then
             # Verify all init containers are complete
             local all_complete=true
             while IFS= read -r line; do
                 local pod_name=$(echo "$line" | awk '{print $1}')
                 local progress=$(get_pod_progress "$pod_name")
-                if [ "$progress" != "11/11" ]; then
+                if [ "$progress" != "14/14" ]; then
                     all_complete=false
                     break
                 fi
@@ -185,7 +253,7 @@ monitor_progress() {
             
             if [ "$all_complete" = true ]; then
                 echo ""
-                print_success "All images successfully pulled on all worker nodes!"
+                print_success "All 14 images successfully pulled on all target nodes!"
                 print_info "Total time: $((elapsed / 60)) minutes $((elapsed % 60)) seconds"
                 return 0
             fi
@@ -208,27 +276,42 @@ monitor_progress() {
     return 1
 }
 
+# Function to cleanup DaemonSet after successful pull
+cleanup_daemonset() {
+    print_info "Cleaning up DaemonSet (images remain cached on nodes)..."
+    
+    if kubectl delete daemonset "$DAEMONSET_NAME" -n "$NAMESPACE" --wait=true 2>/dev/null; then
+        print_success "DaemonSet removed successfully"
+        print_info "Images remain cached on nodes for fast deployment"
+    else
+        print_warning "Failed to delete DaemonSet (may already be deleted)"
+    fi
+}
+
 # Function to show summary
 show_summary() {
     echo ""
     echo "=========================================="
     print_info "Image Pre-Pull Summary"
     echo "=========================================="
+    echo "Cluster Type: $CLUSTER_TYPE"
+    echo "Target Nodes: $TARGET_NODE_COUNT"
+    echo ""
     
-    local pod_status=$(get_pod_status)
-    echo "$pod_status"
+    if kubectl get daemonset "$DAEMONSET_NAME" -n "$NAMESPACE" &> /dev/null; then
+        print_info "DaemonSet Status:"
+        kubectl get daemonset "$DAEMONSET_NAME" -n "$NAMESPACE"
+        echo ""
+        print_info "To manually cleanup the DaemonSet:"
+        echo "  kubectl delete daemonset $DAEMONSET_NAME -n $NAMESPACE"
+    else
+        print_success "DaemonSet cleaned up"
+        print_info "Images cached and ready for deployment"
+    fi
     
     echo ""
-    print_info "To check detailed status:"
+    print_info "To check cached images on nodes:"
     echo "  kubectl get pods -n $NAMESPACE -l name=$DAEMONSET_NAME -o wide"
-    
-    echo ""
-    print_info "To view logs from a specific pod:"
-    echo "  kubectl logs -n $NAMESPACE <pod-name> -c <container-name>"
-    
-    echo ""
-    print_info "To cleanup the DaemonSet:"
-    echo "  ./cleanup-image-prepuller.sh"
     echo "=========================================="
 }
 
@@ -236,13 +319,13 @@ show_summary() {
 main() {
     echo "=========================================="
     echo "  Geospatial Studio Image Pre-Puller"
+    echo "  Smart Cluster Detection"
     echo "=========================================="
     echo ""
     
     check_kubectl
-    check_yaml_file
     check_namespace
-    update_namespace
+    detect_cluster_topology
     deploy_daemonset
     
     echo ""
@@ -250,6 +333,11 @@ main() {
     sleep 5
     
     if monitor_progress; then
+        # Auto-cleanup if enabled
+        if [ "$AUTO_CLEANUP" = "true" ]; then
+            echo ""
+            cleanup_daemonset
+        fi
         show_summary
         exit 0
     else
@@ -260,3 +348,4 @@ main() {
 
 # Run main function
 main
+
