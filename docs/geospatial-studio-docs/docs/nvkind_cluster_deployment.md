@@ -34,21 +34,12 @@ Follow the [nvkind prerequisites](https://github.com/NVIDIA/nvkind#prerequisites
 
 **Verify GPU detection:**
 ```bash
-nvidia-smi -L
-```
-
-**Expected output:**
-```
+$ nvidia-smi -L
 GPU 0: NVIDIA L4 (UUID: GPU-3e71c48d-90c0-f46f-195b-4150320f9910)
-```
 
-**Test Docker GPU access:**
+```
 ```bash
-docker run --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all ubuntu:20.04 nvidia-smi -L
-```
-
-**Expected output:**
-```
+$ docker run --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all ubuntu:20.04 nvidia-smi -L
 GPU 0: NVIDIA L4 (UUID: GPU-3e71c48d-90c0-f46f-195b-4150320f9910)
 ```
 ---
@@ -73,9 +64,6 @@ docker run -v /dev/null:/var/run/nvidia-container-devices/all ubuntu:20.04 nvidi
 ```bash
 # Install nvkind
 go install github.com/NVIDIA/nvkind/cmd/nvkind@latest
-
-# Clone and build (if needed)
-git clone https://github.com/NVIDIA/nvkind.git
 cd nvkind
 make
 ```
@@ -98,12 +86,16 @@ EOF
 
 ---
 
-### Step 5: Configure kubectl
+### Step 5: Set up the kubectl context
 ```bash
 kubectl cluster-info --context kind-studio
 ```
 
 ---
+**Optional:** If you have limited network bandwidth, you can pre-pull the container images. See [image pre-puller details](https://github.com/terrastackai/geospatial-studio/blob/main/deployment-scripts/images-pre-puller/README-image-prepuller.md).
+```bash
+NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
+```
 
 ### Step 6: Install NVIDIA GPU Operator
 ```bash
@@ -117,12 +109,6 @@ helm install --wait --generate-name \
 !!! info "GPU Operator"
     This may take several minutes. It manages NVIDIA drivers and device plugins in the cluster.
 
-**Verify installation:**
-```bash
-kubectl get pods -n gpu-operator
-```
-
-All pods should show `Running` status.
 
 ---
 
@@ -135,7 +121,7 @@ pip install -r requirements.txt
 
 ### Step 8: Deploy Geospatial Studio
 ```bash
-./deploy_studio_nvkind.sh
+./deploy_studio_k8s.sh
 ```
 
 !!! warning "Deployment Time"
