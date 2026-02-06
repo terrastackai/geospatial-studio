@@ -5,8 +5,6 @@
 This section targets cases where you have a host machine (local or remote) that has access to **NVIDIA GPUs** and leverage [`nvkind`](https://github.com/NVIDIA/nvkind/blob/f1a690fa3f4b0dcb41eb8d6acdda05accf045187/README.md) to create and manage `kind` kubernetes clusters with access to GPUs.
 
 The automated shell script will deploy dependencies (Minio, Keycloak and Postgresql), before generating the deployment configuration for the studio and then deploying the main studio services + pipelines.
-    
-    **For CPU-only:** Use [Local Development Setup](local-development-kind.md)
 
 ---
 
