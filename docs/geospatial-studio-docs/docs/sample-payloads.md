@@ -51,7 +51,7 @@ Click below for example payloads for submitting an inference request through the
     <button onclick="showExample('karenInference')" class="button">Inference agb Karen</button>
     <button onclick="showExample('tryInInference')" class="button">Try tune in lab</button>
     <button onclick="showExample('addLayer')" class="button">Add layer example</button> 
-    <button onclick="showExample('californiaInference')" class="button">Inference california wildire</button> 
+    <button onclick="showExample('californiaInference')" class="button">Inference california wildfire</button> 
 </div>
 
 
@@ -348,7 +348,7 @@ const exampleConfigs = {
   },
    californiaInference: {
     title: "Example config for trying out a tune",
-    jsonFile: "../payloads/inference/california.json",
+    jsonFile: "../payloads/inferences/california-fire-park.json",
     endpoint: "/v2/tunes/{tune-id}/try-out",
     method: "POST"
   },
