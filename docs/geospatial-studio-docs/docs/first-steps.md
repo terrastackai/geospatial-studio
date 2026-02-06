@@ -630,16 +630,7 @@ Onboard the tuning task `templates`.  These are the outline configurations to ma
     ```
 
 6. Upload the tune back to the studio.  In this case we do it from the local config and checkpoint files.  Once its complete, you should see the it in the UI under the tunes/models page.
-    ```shell
-    Add api call to upload tune
-    ```
-
-7. Now we can use it for inference.
-    ```shell
-    Add api call to run try out inference
-    ```
-
-
 
 **Get the notebook:**
-[View Notebook](notebooks/getting-started-tutorial.ipynb){ .md-button .md-button--primary }
+[View Notebook](https://github.com/terrastackai/geospatial-studio/blob/docs/test-local-installation-notebook/populate-studio/getting-started-notebook.ipynb){ .md-button .md-button--primary }
+
