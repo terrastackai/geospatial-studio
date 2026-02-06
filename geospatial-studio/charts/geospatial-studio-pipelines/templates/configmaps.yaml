@@ -23,7 +23,7 @@ data:
   {{- end }}
 
 ---
-{{ if eq $.Values.observability.enabled true }}
+{{- if and (hasKey .Values "observability") (hasKey .Values.observability "enabled") .Values.observability.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -36,4 +36,4 @@ data:
   OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.observability.otlp.endpoint }}
   OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: {{ .Values.observability.otlp.tracesEndpoint }}
   OTEL_PYTHON_LOG_LEVEL: debug
-{{ end }}
+{{- end }}

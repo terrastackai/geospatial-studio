@@ -553,13 +553,12 @@ export CREATE_TLS_SECRET=true
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 ```
 
-At this point, review `workspace/${DEPLOYMENT_ENV}/env/.env` and `workspace/${DEPLOYMENT_ENV}/env/env.sh` to ensure that you have collected all the needed environment variables and secrets. To generate values.yaml for `studio` and `studio-pipelines charts`, run the command below.
+At this point, review `workspace/${DEPLOYMENT_ENV}/env/.env` and `workspace/${DEPLOYMENT_ENV}/env/env.sh` to ensure that you have collected all the needed environment variables and secrets. To generate values.yaml for `studio` charts, run the command below.
 ```bash
 ./deployment-scripts/values-file-generate.sh
 ```
 This will generate two values files
 * workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml
-* workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml
 
 It is recommended not to edit these values.yaml and instead create copies of them with names values-deploy.yaml.
 
@@ -568,11 +567,6 @@ To prepare for deployment, make a copy of the values.yaml file:
 Copy for the studio
 ```bash
 cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-```
-
-Copy for the studio pipelines
-```bash
-cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
 ```
 
 Now review the `values-deploy.yaml` files above. Explanation of each can be found [here](deployment-values-details.md).  Once you have completed this you can use `helm` to deploy. If using OpenShift, ensure you are logged in to the cluster in the terminal (get the cli login link from the top right corner of the OpenShift dashboard, dropdown under your username). For Kubernetes, ensure the right context is set.
@@ -586,8 +580,6 @@ helm dependency build ./geospatial-studio/
 To see the helm template you can run the following command,
 ```bash
 helm template -f workspace/$DEPLOYMENT_ENV/values/geospatial-studio/values-deploy.yaml studio ./geospatial-studio/ --debug > dryrun.yaml
-
-helm template -f workspace/$DEPLOYMENT_ENV/values/geospatial-studio-pipelines/values-deploy.yaml studio ./geospatial-studio-pipelines/ --debug > dryrun.yaml
 ```
 
 Then proceed to deploy with studio with,
@@ -596,15 +588,9 @@ Then proceed to deploy with studio with,
 ./deployment-scripts/deploy_studio.sh
 ```
 
-You can also deploy the pipelines with,
-```bash
-./deployment-scripts/deploy_pipelines.sh
-```
-
 To uninstall use
 ```bash
 helm uninstall studio
-helm uninstall studio-pipelines
 ```
 
 To restart all pods, run

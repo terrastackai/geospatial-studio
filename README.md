@@ -91,19 +91,6 @@ The Geospatial Studio is made up of a gateway API which provides access to all t
   </td>
 </tr>
 <tr>
-  <td>geospatial-studio-pipelines</td>
-  <td>
-    <a href="https://github.com/terrastackai/geospatial-studio-pipelines">https://github.com/terrastackai/geospatial-studio-pipelines</a>
-  </td>
-  <td>
-    <ul>
-     <li> Inference pipeline components
-     <li> Pipeline orchestration wrapper
-     <li> Instructions and templates for creating new templates
-    </ul>
-  </td>
-</tr>
-<tr>
   <td>geospatial-studio-ui</td>
   <td>
     <a href="https://github.com/terrastackai/geospatial-studio-ui">https://github.com/terrastackai/geospatial-studio-ui</a>
@@ -823,32 +810,3 @@ Onboard the tuning task `templates`.  These are the outline configurations to ma
     ```shell
     Add api call to run try out inference
     ```
-
-
-
-
-<!-- ---
-
-##  Documentation
-Detailed deployment documentation
-
----
-
-## 🛠 Deployment Details
-This is a repository containing Helm Parent and Subcharts for Geospatial Studio Platform. The files in this directory are used to deploy geospatial studio infrastructure for inference and tuning on a Red Hat Openshift Container Platform.
-
-Helm is used to install the services.
-
-### Helm charts
-
-We expose two charts for deploying the studio core services and applications and another chart for deploying studio pipelines
-
-- geospatial-studio parent chart
-    - gfm-studio-gateway subchart
-    - geofm-ui subchart
-    - gfm-mlflow subchart
-    - gfm-geoserver subchart
-- geospatial-studio-pipelines chart -->
-
-
-

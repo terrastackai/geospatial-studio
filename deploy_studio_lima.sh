@@ -242,10 +242,9 @@ echo "----------------------------------------------------------------------"
 ./deployment-scripts/values-file-generate.sh
 
 cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
 
 # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
-python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
+python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
 echo "**********************************************************************"
 echo "**********************************************************************"
@@ -271,13 +270,6 @@ echo "----------------------------------------------------------------------"
 
 # Deploy Geospatial Studio
 ./deployment-scripts/deploy_studio.sh
-
-echo "----------------------------------------------------------------------"
-echo "-------------  Deploying the Studio Pipelines  -----------------------"
-echo "----------------------------------------------------------------------"
-
-# Deploy Geospatial Studio Pipelines
-./deployment-scripts/deploy_pipelines.sh
 
 echo "----------------------------------------------------------------------"
 echo "---------  Set up Port Forwarding for UI and API  --------------------"

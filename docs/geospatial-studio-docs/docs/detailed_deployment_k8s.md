@@ -513,14 +513,12 @@ source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 This creates:
 - `workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml`
-- `workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml`
 
 ### 9.2 Create Deployment Copies
 
 ```bash
 # Create deployment-specific copies
 cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
 ```
 
 ### 9.3 Configure GPU Settings (Optional)
@@ -534,11 +532,11 @@ NVIDIA_GPUS_AVAILABLE=$(kubectl describe node studio-worker | grep -c "nvidia.co
 if [ "$NVIDIA_GPUS_AVAILABLE" -gt 0 ]; then
     echo "Cluster Type: GPU-enabled"
     # Remove only GPU affinity, keep GPU resources
-    python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
+    python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 else
     echo "Cluster Type: standard (no GPU)"
     # Remove all GPU configurations
-    python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
+    python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 fi
 ```
 
@@ -549,9 +547,6 @@ fi
 ```bash
 # Review studio values
 cat workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-
-# Review pipelines values
-cat workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
 ```
 
 Make any necessary adjustments to:
@@ -587,19 +582,10 @@ This deploys:
 - Gateway API
 - MLflow
 - Redis
-- Other core services
-
-### 9.7 Deploy Geospatial Studio Pipelines
-
-```bash
-# Deploy the pipeline services
-./deployment-scripts/deploy_pipelines.sh
-```
-
-This deploys:
 - Inference pipelines
 - Data processing pipelines
 - Model training pipelines
+- Other core services
 
 ---
 
@@ -810,7 +796,6 @@ To remove the Geospatial Studio deployment:
 ```bash
 # Uninstall Helm releases
 helm uninstall studio -n ${OC_PROJECT}
-helm uninstall studio-pipelines -n ${OC_PROJECT}
 
 # Delete PostgreSQL
 helm uninstall postgresql -n ${OC_PROJECT}
