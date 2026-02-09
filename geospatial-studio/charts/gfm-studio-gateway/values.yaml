@@ -39,14 +39,41 @@ tolerations:
 
 
 hooks:
+  db-migration:
+      enabled: true
+      # Wait for database to be ready before running migration
+      waitForDb:
+        enabled: true
+        image: postgres:13
+        sleepTime: 5
+      # No volumes needed - alembic uses database connection
+      when:
+        - pre-install
+        - pre-upgrade
+      weight: -30
+      command:
+        - "sh"
+        - "-c"
+        - "alembic upgrade head && alembic -n auth upgrade head"
   db-seed-data:
       enabled: true
       image:  postgres:13
-      # volumes: # this will be tricky
+      # Wait for database to be ready before running seeding
+      waitForDb:
+        enabled: true
+        image: postgres:13
+        sleepTime: 5
+      # Mount seed data SQL file
+      volumeMounts:
+        - name: db-init-config
+          mountPath: /etc/config/init.sql
+          subPath: init.sql
+      volumes:
+        - name: db-init-config
+          configMapName: "{{ .Values.global.appNames.gateway }}-seed-data"
       when:
-        # Wait until the DB is available
-        - post-install
-        - post-upgrade
+        - pre-install
+        - pre-upgrade
       weight: -20
       command:
         - "sh"
@@ -59,9 +86,22 @@ hooks:
   db-mlflow-run-trigger:
       enabled: true
       image:  postgres:13
-      # volumes: # this will be tricky
+      waitForPods:
+        enabled: true
+        image: bitnami/kubectl:latest
+        sleepTime: 5
+        pods:
+          - selector: "app=geofm-gateway"
+          - selector: "app.kubernetes.io/name=mlflow"
+      # Mount mlflow trigger SQL file
+      volumeMounts:
+        - name: db-trigger-config
+          mountPath: /etc/config/trigger.sql
+          subPath: trigger.sql
+      volumes:
+        - name: db-trigger-config
+          configMapName: "{{ .Values.global.appNames.mlflow }}-run-trigger"
       when:
-        # Wait until the DB is available
         - post-install
         - post-upgrade
       weight: -10

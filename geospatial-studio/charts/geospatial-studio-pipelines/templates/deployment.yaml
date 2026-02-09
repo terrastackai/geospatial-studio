@@ -32,10 +32,25 @@ spec:  {{ if hasKey $v "replicas" }}
        - name: {{ $.Values.imagePullSecret.name }}
       {{- if and (hasKey $v "affinity") ($.Values.gpuConfig.enabled) }}
       affinity: {{ $v.affinity | toYaml | nindent 8 }} {{- end }}
+      {{- if $.Values.waitForGateway.enabled }}
+      initContainers:
+      - name: wait-for-gateway
+        image: {{ $.Values.waitForGateway.image }}
+        imagePullPolicy: {{ $.Values.image.pullPolicy }}
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Waiting for gateway service to be ready..."
+          until nc -z {{ $.Values.gateway.appName }}.{{ $.Values.namespace }}.svc.cluster.local {{ $.Values.waitForGateway.port }}; do
+            echo "Gateway service not ready yet, retrying in {{ $.Values.waitForGateway.sleepTime }} seconds..."
+            sleep {{ $.Values.waitForGateway.sleepTime }}
+          done
+          echo "Gateway service is ready!"
+      {{- end }}
       containers:
       - name: {{ $.Values.namePrefix }}-{{ $v.name }}
         image: {{ $v.image.name }}:{{ $v.image.tag }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        imagePullPolicy: {{ $.Values.image.pullPolicy }}
         # securityContext:
         #     capabilities:
         #       drop:

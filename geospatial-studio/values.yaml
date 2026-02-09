@@ -273,6 +273,11 @@ geospatial-studio-pipelines:
   enabled: PIPELINES_ENABLED
   image:
     pullPolicy: IfNotPresent
+  waitForGateway:
+    enabled: true
+    image: busybox:1.36
+    port: 4180
+    sleepTime: 5
   namePrefix: pipelines
   namespace: OC_PROJECT
   cluster_url: CLUSTER_URL

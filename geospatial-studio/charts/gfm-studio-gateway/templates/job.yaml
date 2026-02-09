@@ -35,6 +35,53 @@ spec:
       imagePullSecrets:
         - name: {{ $values.global.imagePullSecret.name }}
       {{- end }}
+      {{- if or (and (hasKey $config "waitForPods") $config.waitForPods.enabled) (and (hasKey $config "waitForDb") $config.waitForDb.enabled) }}
+      initContainers:
+      {{- end }}
+      # Init container to wait for database to be ready (for pre-install hooks)
+      {{- if hasKey $config "waitForDb" }}
+      {{- if $config.waitForDb.enabled }}
+      - name: wait-for-db
+        image: {{ $config.waitForDb.image | default "postgres:13" }}
+        imagePullPolicy: {{ $values.image.pullPolicy }}
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Waiting for database to be ready..."
+          DB_URI=$(echo "$AUTH_DATABASE_URI" | sed 's/+pg8000//')
+          until pg_isready -d "$DB_URI" -t 3; do
+            echo "Database not ready yet, retrying in {{ $config.waitForDb.sleepTime | default 5 }} seconds..."
+            sleep {{ $config.waitForDb.sleepTime | default 5 }}
+          done
+          echo "Database is ready!"
+        envFrom:
+          - configMapRef:
+              name: {{ $values.global.appNames.gateway }}-cm
+          - secretRef:
+              name: {{ $values.global.appNames.gateway }}-secrets
+      {{- end }}
+      {{- end }}
+      # Init container to wait for required pods to be ready (for post-install hooks)
+      {{- if hasKey $config "waitForPods" }}
+      {{- if $config.waitForPods.enabled }}
+      - name: wait-for-pods
+        image: {{ $config.waitForPods.image | default "bitnami/kubectl:latest" }}
+        imagePullPolicy: {{ $values.image.pullPolicy }}
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Waiting for required pods to be ready..."
+          {{- range $config.waitForPods.pods }}
+          echo "Checking {{ .selector }} in namespace {{ $.Values.global.namespace }}..."
+          until kubectl get pods -n {{ $.Values.global.namespace }} -l {{ .selector }} --field-selector=status.phase=Running 2>/dev/null | grep -q Running; do
+            echo "Pod {{ .selector }} not running yet, retrying in {{ $config.waitForPods.sleepTime | default 5 }} seconds..."
+            sleep {{ $config.waitForPods.sleepTime | default 5 }}
+          done
+          echo "Pod {{ .selector }} is running!"
+          {{- end }}
+          echo "All required pods are ready!"
+      {{- end }}
+      {{- end }}
       containers:
       - name: {{ $hook_name }}-job
         {{- if hasKey $config "image" }}
@@ -42,7 +89,7 @@ spec:
         {{- else }}
         image: "{{ $values.image.name }}:{{ $values.image.tag }}"
         {{- end }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        imagePullPolicy: {{ $values.image.pullPolicy }}
         command:
         {{- range $config.command }}
             - {{ . | quote }}
@@ -52,19 +99,23 @@ spec:
               name: {{ $values.global.appNames.gateway }}-cm
           - secretRef:
               name: {{ $values.global.appNames.gateway }}-secrets
+        {{- if hasKey $config "volumeMounts" }}
         volumeMounts:
-        - name: db-init-config
-          mountPath: /etc/config/init.sql
-          subPath: init.sql
-        - name: db-trigger-config
-          mountPath: /etc/config/trigger.sql
-          subPath: trigger.sql
+        {{- range $config.volumeMounts }}
+        - name: {{ .name }}
+          mountPath: {{ .mountPath }}
+          {{- if hasKey . "subPath" }}
+          subPath: {{ .subPath }}
+          {{- end }}
+        {{- end }}
+        {{- end }}
+      {{- if hasKey $config "volumes" }}
       volumes:
-      - name: db-init-config
+      {{- range $config.volumes }}
+      - name: {{ .name }}
         configMap:
-          name: {{ $values.global.appNames.gateway }}-seed-data
-      - name: db-trigger-config
-        configMap:
-          name: {{ $values.global.appNames.mlflow }}-run-trigger
+          name: {{ tpl .configMapName $ }}
+      {{- end }}
+      {{- end }}
 ---
 {{- end }}

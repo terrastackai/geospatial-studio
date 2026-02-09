@@ -36,19 +36,6 @@ spec:
       imagePullSecrets:
         - name: {{ .Values.global.imagePullSecret.name }}
       {{- end }}
-      initContainers:
-        - name: db-migration
-          image: {{ .Values.image.name }}:{{ .Values.image.tag }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command:
-            - "sh"
-            - "-c"
-            - "alembic upgrade head && alembic -n auth upgrade head"
-          envFrom:
-            - configMapRef:
-                name: {{ .Values.global.appNames.gateway }}-cm
-            - secretRef:
-                name: {{ .Values.global.appNames.gateway }}-secrets
       containers:
         - name: gateway-api
           resources:

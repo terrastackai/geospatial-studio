@@ -25,6 +25,13 @@ imagePullSecret:
 image:
   pullPolicy: IfNotPresent
 
+# Wait for gateway service to be ready before starting pipelines
+waitForGateway:
+  enabled: true
+  image: busybox:1.36
+  port: 4180
+  sleepTime: 5
+
 orchestrate_db:
   pg_username: pg_username
   pg_password: pg_password
