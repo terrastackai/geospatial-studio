@@ -162,7 +162,12 @@ For OpenShift use the script below to login after supplying the token and server
 ```shell
 oc login --token=<cluster-token> --server=<cluster-server>
 ```
-3. Deploy the geospatial studio:
+3. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below, [see details here](./deployment-scripts/images-pre-puller/README-image-prepuller.md):
+```shell
+NAMESPACE=<my-namespace> ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
+```
+
+4. Deploy the geospatial studio:
 ```shell
 ./deploy_studio_ocp.sh
 ```
@@ -227,7 +232,11 @@ To deploy locally:
 ```shell
 export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 ```
-5. Deploy the geospatial studio:
+5. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below, [see details here](./deployment-scripts/images-pre-puller/README-image-prepuller.md):
+```shell
+NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
+```
+6. Deploy the geospatial studio:
 ```shell
 ./deploy_studio_lima.sh
 ```
@@ -276,12 +285,17 @@ To deploy:
     kubectl cluster-info --context kind-studio
     ```
 
-3. Install Python dependencies:
+3. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below, [see details here](./deployment-scripts/images-pre-puller/README-image-prepuller.md):
+    ```shell
+    NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
+    ```
+
+4. Install Python dependencies:
    ```shell
    pip install -r requirements.txt
    ```
 
-4. Deploy the geospatial studio:
+5. Deploy the geospatial studio:
    ```shell
    ./deploy_studio_k8s.sh
    ```
@@ -360,6 +374,11 @@ To deploy:
         kubectl cluster-info --context kind-studio
         ```
 
+    - [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below, [see details here](./deployment-scripts/images-pre-puller/README-image-prepuller.md):
+        ```shell
+        NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
+        ```
+
     - Install NVIDIA gpu--operator in the cluster:
         ```shell
         helm repo add nvidia https://helm.ngc.nvidia.com/nvidia && helm repo update && helm install --wait --generate-name -n gpu-operator --create-namespace nvidia/gpu-operator --version=v25.10.0
@@ -400,14 +419,14 @@ After successful deployment you can jump to [First steps](#first-steps).
 
 If you need to restart any of the port-forwards you can use the following commands:
 ```shell
-kubectl port-forward -n default svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/minio 9001:9001 >> studio-pf.log 2>&1 &
-kubectl port-forward -n default svc/minio 9000:9000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT svc/minio 9001:9001 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT svc/minio 9000:9000 >> studio-pf.log 2>&1 &
 ```
 
 Now you have a clean deployment of the studio and it is time to start using it.  The steps below will enable you to onboard some initial artefacts, before trying out the functionality.

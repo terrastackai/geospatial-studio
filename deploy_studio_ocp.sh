@@ -19,23 +19,8 @@ printf "\n\n--- Is this cluster openshift? $IS_OPENSHIFT ---\n"
 
 # Functions
 
-# get_user_input
-get_user_input() {
-    local prompt_msg="$1"
-    local result_var_name="$2"
-    local input=""
-
-    while [[ -z "$input" ]]; do
-        printf "%s\n" "$prompt_msg"
-
-        read -r input
-        
-        if [[ -z "$input" ]]; then
-            echo "Error: Input cannot be blank. Please try again."
-        fi
-    done
-    eval "$result_var_name='$input'"
-}
+# Source (import) common_functions.sh
+source ./common_functions.sh
 
 # get_menu_selection
 get_menu_selection() {
@@ -256,7 +241,9 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         echo "----------------------------------------------------------------------"
 
         source workspace/${DEPLOYMENT_ENV}/env/env.sh
-        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} | kubectl apply -f - -n ${OC_PROJECT}
+        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+        kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
+
         kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
         MINIO_API_URL="https://minio-api-$OC_PROJECT.$CLUSTER_URL"
@@ -396,7 +383,8 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         echo "----------------------------------------------------------------------"
 
 
-        python ./deployment-scripts/update-keycloak-deployment.py --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env | kubectl apply -f - -n ${OC_PROJECT}
+        python ./deployment-scripts/update-keycloak-deployment.py --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+        kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 
         kubectl wait --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
 
@@ -491,7 +479,8 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     echo "----------------------------------------------------------------------"
 
     if [[ "$IS_OPENSHIFT" == "false" ]]; then
-        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} | kubectl apply -f - -n ${OC_PROJECT}
+        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+        kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
     else
         geoserver_install_options="Configure-SCC Use-Custom-Image"
         typeset geoserver_install_type
@@ -504,7 +493,8 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
         if [[ "$geoserver_install_type" == "Configure-SCC" ]]; then
             oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
-            python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} | kubectl apply -f - -n ${OC_PROJECT}
+            python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+            kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
         else
             printf "\n\n#Use this dockerfile to create a custom image\n\nFROM --platform=linux/amd64 docker.osgeo.org/geoserver:2.28.1\nRUN chmod -R 777 /tmp\nRUN addgroup --system geoserver && adduser --system -gid 101 geoserver\nRUN chown -R geoserver:geoserver /opt\nRUN chmod -R 777 /opt\nRUN chmod -R 777 /usr/local/tomcat\nUSER geoserver:geoserver\n"
             printf "\n\nBuild and push your image to your registry of choice. You'll be prompted to input configuration for the image pull secret:\n image registry uri. e.g. myimage.io\n image registry email. e.g. myemail@example.com\n image registry password\n geoserver image uri. e.g myimages.io/geostudio/patched_geoserver:v0\n\n"
@@ -517,7 +507,7 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
                 geoserver_image_pull_secret_name="geoserver-image-pull-secret"
                 typeset geoserver_image_registry_uri
                 get_user_input "Provide the geoserver image registry uri: " geoserver_image_registry_uri
-                echo "geoserver image uri accepted: **$geoserver_image_registry_uri**"
+                echo "geoserver image registry uri accepted: **$geoserver_image_registry_uri**"
 
                 typeset geoserver_image_registry_email
                 get_user_input "Provide the geoserver image registry email: " geoserver_image_registry_email
@@ -527,7 +517,6 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
                 get_user_input "Provide the geoserver image registry password: " geoserver_image_registry_password
                 echo "geoserver image registry password accepted"
 
-                mkdir -p workspace/$DEPLOYMENT_ENV/initialisation
                 kubectl create secret docker-registry ${geoserver_image_pull_secret_name} --docker-server=${geoserver_image_registry_uri} --docker-username=iamapikey --docker-password=${geoserver_image_registry_password} --docker-email=${geoserver_image_registry_email} --namespace ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
                 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
 
@@ -539,7 +528,8 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
                 get_user_input "Provide the geoserver image uri: " geoserver_image_uri
                 echo "geoserver image uri accepted: **$geoserver_image_uri**"
 
-                python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} --geoserver-run-unprivileged "false" --geoserver-image-pull-secret ${geoserver_image_pull_secret_name} --geoserver-image-uri ${geoserver_image_uri} | kubectl apply -f - -n ${OC_PROJECT}
+                python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} --geoserver-run-unprivileged "false" --geoserver-image-pull-secret ${geoserver_image_pull_secret_name} --geoserver-image-uri ${geoserver_image_uri} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+                kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
 
                 if [ $? -eq 0 ]; then
                     break
@@ -620,7 +610,21 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
 
     # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
-    python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
+    gpu_configuration_options="GPU-Available No-GPU-Available"
+    typeset gpu_configuration_type
+
+    # Call the function
+    get_menu_selection \
+        "Select whether you have GPU available in your cluster: " \
+        gpu_configuration_type \
+        "$gpu_configuration_options"
+
+    if [[ "$gpu_configuration_type" == "GPU-Available" ]]; then
+        python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
+    else
+        python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
+    fi
+
 else
     while true 
     do

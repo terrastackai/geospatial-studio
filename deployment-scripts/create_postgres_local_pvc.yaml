@@ -11,7 +11,6 @@ metadata:
 spec:
   storageClassName: local-path
   claimRef:
-    namespace: default
     name: postgresql-pvc
   capacity:
     storage: 30Gi

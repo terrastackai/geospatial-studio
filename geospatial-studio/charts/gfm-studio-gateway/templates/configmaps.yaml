@@ -35,18 +35,18 @@ data:
   {{- end }}
   {{- if eq .Values.global.environment "local" }}
   # Fine Tuning configs'
-  MLFLOW_URL: {{ printf "http://%s.default.svc.cluster.local:5000/" .Values.global.appNames.mlflow }}
-  # GEOFT_WEBHOOK_URL: {{ printf "http://%s.default.svc.cluster.local:8000/v2/notifications" .Values.global.appNames.gateway }}
+  MLFLOW_URL: {{ printf "http://%s.%s.svc.cluster.local:5000/" .Values.global.appNames.mlflow .Values.global.backends.namespace }}
+  # GEOFT_WEBHOOK_URL: {{ printf "http://%s.%s.svc.cluster.local:8000/v2/notifications" .Values.global.appNames.gateway .Values.global.backends.namespace }}
   {{- if .Values.global.oauth.oauthProxyEnabled }}
-  GEOFT_WEBHOOK_URL: {{ printf "https://%s.default.svc.cluster.local:%s/v2/notifications" .Values.global.appNames.gateway .Values.global.oauth.oauthProxyPort }}
+  GEOFT_WEBHOOK_URL: {{ printf "https://%s.%s.svc.cluster.local:%s/v2/notifications" .Values.global.appNames.gateway .Values.global.backends.namespace .Values.global.oauth.oauthProxyPort }}
   {{- else }}
-  GEOFT_WEBHOOK_URL: {{ printf "http://%s.default.svc.cluster.local:8000/v2/notifications" .Values.global.appNames.gateway }}
+  GEOFT_WEBHOOK_URL: {{ printf "http://%s.%s.svc.cluster.local:8000/v2/notifications" .Values.global.appNames.gateway .Values.global.backends.namespace }}
   {{- end }}
   {{- else }}
   # {{- if .Values.global.oauth.oauthProxyEnabled }}
-  # GEOFT_WEBHOOK_URL: {{ printf "https://%s.default.svc.cluster.local:%s/v2/notifications" .Values.global.appNames.gateway .Values.global.oauth.oauthProxyPort }}
+  # GEOFT_WEBHOOK_URL: {{ printf "https://%s.%s.svc.cluster.local:%s/v2/notifications" .Values.global.appNames.gateway .Values.global.backends.namespace .Values.global.oauth.oauthProxyPort }}
   # {{- else }}
-  # GEOFT_WEBHOOK_URL: {{ printf "http://%s.default.svc.cluster.local:8000/v2/notifications" .Values.global.appNames.gateway }}
+  # GEOFT_WEBHOOK_URL: {{ printf "http://%s.%s.svc.cluster.local:8000/v2/notifications" .Values.global.appNames.gateway .Values.global.backends.namespace }}
   # {{- end }}
 
   GEOFT_WEBHOOK_URL: {{ printf "https://%s-%s.%s/v2/notifications" .Values.global.appNames.gateway .Values.global.namespace .Values.global.cluster_url }}
