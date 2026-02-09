@@ -22,6 +22,9 @@ imagePullSecret:
   name: us-icr-pull-secret
   b64secret: image_pull_secret_b64
 
+image:
+  pullPolicy: IfNotPresent
+
 orchestrate_db:
   pg_username: pg_username
   pg_password: pg_password

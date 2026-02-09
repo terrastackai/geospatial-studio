@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+image:
+  pullPolicy: IfNotPresent
+
 images:
   api:
     name: quay.io/geospatial-studio/geostudio-gateway

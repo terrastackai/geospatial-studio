@@ -42,7 +42,7 @@ spec:
         {{- else }}
         image: "{{ $values.image.name }}:{{ $values.image.tag }}"
         {{- end }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
         {{- range $config.command }}
             - {{ . | quote }}

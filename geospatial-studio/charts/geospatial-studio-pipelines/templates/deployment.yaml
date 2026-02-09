@@ -35,7 +35,7 @@ spec:  {{ if hasKey $v "replicas" }}
       containers:
       - name: {{ $.Values.namePrefix }}-{{ $v.name }}
         image: {{ $v.image.name }}:{{ $v.image.tag }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         # securityContext:
         #     capabilities:
         #       drop:

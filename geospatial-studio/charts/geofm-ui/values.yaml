@@ -12,6 +12,8 @@
 #     name: quay.io/geospatial-studio/geostudio-ui
 #     tag: latest
 
+image:
+  pullPolicy: IfNotPresent
 
 replicaCount: 1
 

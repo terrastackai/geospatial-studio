@@ -135,6 +135,7 @@ gfm-studio-gateway:
   image:
     name: quay.io/geospatial-studio/geostudio-gateway
     tag: latest
+    pullPolicy: IfNotPresent
   images:
     cleanup_cronjob:
       name: bitnamilegacy/kubectl
@@ -191,6 +192,7 @@ geofm-ui:
   image:
     name: quay.io/geospatial-studio/geostudio-ui
     tag: latest
+    pullPolicy: IfNotPresent
   route:
     enabled: ROUTE_ENABLED
   securityContext:
@@ -206,7 +208,7 @@ gfm-mlflow:
   resources:
   image:
     name: ghcr.io/mlflow/mlflow
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     tag: latest
   route:
     enabled: ROUTE_ENABLED
@@ -269,6 +271,8 @@ redis:
 # geospatial-studio-pipelines
 geospatial-studio-pipelines:
   enabled: PIPELINES_ENABLED
+  image:
+    pullPolicy: IfNotPresent
   namePrefix: pipelines
   namespace: OC_PROJECT
   cluster_url: CLUSTER_URL
