@@ -38,7 +38,7 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext.api | nindent 16 }}
           image: {{ .Values.image.name }}:{{ .Values.image.tag }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
           {{-  with .Values.celery.beat.command }}
           command: ["/bin/sh"]
           args:

@@ -23,7 +23,9 @@ imagePullSecret:
   b64secret: image_pull_secret_b64
 
 image:
-  pullPolicy: IfNotPresent
+  # pullPolicy inherited from global.imagePullPolicy
+  # Can be overridden here if needed
+  pullPolicy: ""
 
 # Wait for gateway service to be ready before starting pipelines
 waitForGateway:

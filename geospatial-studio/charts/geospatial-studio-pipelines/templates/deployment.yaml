@@ -36,7 +36,7 @@ spec:  {{ if hasKey $v "replicas" }}
       initContainers:
       - name: wait-for-gateway
         image: {{ $.Values.waitForGateway.image }}
-        imagePullPolicy: {{ $.Values.image.pullPolicy }}
+        imagePullPolicy: {{ $.Values.image.pullPolicy | default $.Values.global.imagePullPolicy }}
         command: ['sh', '-c']
         args:
         - |
@@ -50,7 +50,7 @@ spec:  {{ if hasKey $v "replicas" }}
       containers:
       - name: {{ $.Values.namePrefix }}-{{ $v.name }}
         image: {{ $v.image.name }}:{{ $v.image.tag }}
-        imagePullPolicy: {{ $.Values.image.pullPolicy }}
+        imagePullPolicy: {{ $.Values.image.pullPolicy | default $.Values.global.imagePullPolicy }}
         # securityContext:
         #     capabilities:
         #       drop:

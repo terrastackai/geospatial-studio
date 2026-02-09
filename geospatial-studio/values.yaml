@@ -19,6 +19,10 @@ global:
   setupServiceAccount: true
   sharePipelinePvc: SHARE_PIPELINE_PVC
 
+  # Image pull policy for all containers
+  # Options: Always, IfNotPresent, Never
+  imagePullPolicy: Always
+
   imagePullSecret:
     name: us-icr-pull-secret
     b64secret: image_pull_secret_b64
@@ -135,7 +139,9 @@ gfm-studio-gateway:
   image:
     name: quay.io/geospatial-studio/geostudio-gateway
     tag: latest
-    pullPolicy: IfNotPresent
+    # pullPolicy inherited from global.imagePullPolicy
+    # Can be overridden here if needed
+    pullPolicy: ""
   images:
     cleanup_cronjob:
       name: bitnamilegacy/kubectl
@@ -192,7 +198,9 @@ geofm-ui:
   image:
     name: quay.io/geospatial-studio/geostudio-ui
     tag: latest
-    pullPolicy: IfNotPresent
+    # pullPolicy inherited from global.imagePullPolicy
+    # Can be overridden here if needed
+    pullPolicy: ""
   route:
     enabled: ROUTE_ENABLED
   securityContext:
@@ -208,7 +216,9 @@ gfm-mlflow:
   resources:
   image:
     name: ghcr.io/mlflow/mlflow
-    pullPolicy: IfNotPresent
+    # pullPolicy inherited from global.imagePullPolicy
+    # Can be overridden here if needed
+    pullPolicy: ""
     tag: latest
   route:
     enabled: ROUTE_ENABLED
@@ -220,6 +230,7 @@ redis:
   architecture: REDIS_ARCHITECTURE
   image:
     repository: bitnamilegacy/redis
+    pullPolicy: ""
   master:
     podSecurityContext:
       enabled: false
@@ -272,7 +283,9 @@ redis:
 geospatial-studio-pipelines:
   enabled: PIPELINES_ENABLED
   image:
-    pullPolicy: IfNotPresent
+    # pullPolicy inherited from global.imagePullPolicy
+    # Can be overridden here if needed
+    pullPolicy: ""
   waitForGateway:
     enabled: true
     image: busybox:1.36

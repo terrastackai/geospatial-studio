@@ -46,7 +46,7 @@ spec:
               protocol: TCP
           command:
             {{- toYaml .Values.command.api | nindent 12 }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
           envFrom:
             - configMapRef:
                 name: {{ .Values.global.appNames.gateway }}-cm
@@ -83,7 +83,7 @@ spec:
             # NOTE: Skipping Auth because authentication is handled in the app to support both api-key and bearer-token auth.
             - --skip-auth-route=^(/v[1|2]+/.*)|(/openapi\.json)$
           image: {{ .Values.global.oauth.image.name }}:{{ .Values.global.oauth.image.tag }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
           ports:
             - name: oauth-proxy
               containerPort: {{ .Values.global.oauth.oauthProxyPort }}
@@ -100,7 +100,7 @@ spec:
           resources:
             {{- toYaml .Values.resources.mlflowNotify | nindent 12 }}
           image: {{ .Values.image.name }}:{{ .Values.image.tag }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
           command: ["python", "gfmstudio/fine_tuning/subscribe_new_mlflow_run.py"]
           envFrom:
             - secretRef:

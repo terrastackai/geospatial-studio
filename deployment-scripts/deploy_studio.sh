@@ -13,6 +13,7 @@ helm upgrade -f workspace/$DEPLOYMENT_ENV/values/geospatial-studio/values-deploy
             --wait \
             --timeout 30m \
             --history-max 5 \
+            --set "global.imagePullPolicy=${image_pull_policy}" \
             --set "global.imagePullSecret.b64secret=${image_pull_secret_b64}" \
             --set "global.postgres.backend_uri_base=postgresql+pg8000://${pg_username}:${pg_password}@${pg_uri}:${pg_port}" \
             --set "global.postgres.dbs.gateway=${pg_studio_db_name}" \

@@ -13,7 +13,9 @@
 #     tag: latest
 
 image:
-  pullPolicy: IfNotPresent
+  # pullPolicy inherited from global.imagePullPolicy
+  # Can be overridden here if needed
+  # pullPolicy: Always
 
 replicaCount: 1
 

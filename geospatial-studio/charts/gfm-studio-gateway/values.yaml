@@ -3,7 +3,9 @@
 
 
 image:
-  pullPolicy: IfNotPresent
+  # pullPolicy inherited from global.imagePullPolicy
+  # Can be overridden here if needed
+  pullPolicy: ""
 
 images:
   api:
@@ -86,13 +88,6 @@ hooks:
   db-mlflow-run-trigger:
       enabled: true
       image:  postgres:13
-      waitForPods:
-        enabled: true
-        image: bitnami/kubectl:latest
-        sleepTime: 5
-        pods:
-          - selector: "app=geofm-gateway"
-          - selector: "app.kubernetes.io/name=mlflow"
       # Mount mlflow trigger SQL file
       volumeMounts:
         - name: db-trigger-config

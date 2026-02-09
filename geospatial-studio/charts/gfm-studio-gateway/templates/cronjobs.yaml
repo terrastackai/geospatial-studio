@@ -25,7 +25,7 @@ spec:
           containers:
           - name: cleanup
             image: {{ .Values.images.cleanup_cronjob.name }}:{{ .Values.images.cleanup_cronjob.tag }}
-            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
             command: ["/bin/bash", "/scripts/cleanup_jobs.sh"]  # Path to the script inside the container
             env:
             - name: FT_API_KEY
