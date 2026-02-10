@@ -106,7 +106,14 @@ spec:  {{ if hasKey $v "replicas" }}
           - name: dshm
             mountPath: /dev/shm {{ end }} {{ end }}
         {{- if hasKey $v "resources" }}
-        resources: {{ $v.resources | toYaml | nindent 10 }} {{- end }}
+        resources:
+          {{- if hasKey $v.resources "limits" }}
+          limits: {{ omit $v.resources.limits "shm" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if hasKey $v.resources "requests" }}
+          requests: {{ omit $v.resources.requests "shm" | toYaml | nindent 12 }}
+          {{- end }}
+        {{- end }}
       volumes:
         - name: test-inference-pvc
           persistentVolumeClaim:

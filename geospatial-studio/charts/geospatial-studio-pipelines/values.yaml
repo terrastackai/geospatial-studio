@@ -229,11 +229,16 @@ processors:
         bucket_name: BUCKET_FINE_TUNING
         mountPath: /tunes
         create: PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC
+    # Resources for the container
+    # Note: Shared memory (/dev/shm) is automatically mounted when GPU resources are requested
+    # To explicitly enable shared memory without GPU, add: shm: true (at the same level as limits/requests)
     resources:
       limits:
         nvidia.com/gpu: '1'
       requests:
         nvidia.com/gpu: '1'
+      # Example for explicit shm configuration (uncomment if needed):
+      # shm: true
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:
