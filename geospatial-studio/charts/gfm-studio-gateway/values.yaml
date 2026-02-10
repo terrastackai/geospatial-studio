@@ -192,10 +192,10 @@ mountLocations:
   models_pvc_name: gfm-ft-models-pvc
   pipelines_pvc_name: inference-shared-pvc
   inference_auxdata_pvc_name: inference-auxdata-pvc
-  generic_python_processor_pvc_name: generic-python-processor
+  generic_python_processor_pvc_name: generic-python-processor-pvc
   data_mount: /ft-data/
   files_mount: /geotunes/
-  generic_python-processor_mount: /generic-processor-data/
+  generic_python-processor_mount: /generic_data/
 
 services:
   # baseName: gfm-studio-gateway
@@ -210,26 +210,14 @@ services:
 
 resources:
   api:
-    requests:
-      cpu: "500m"
-      memory: "512Mi"
-    limits:
-      cpu: "1000m"
-      memory: "1Gi"
+    requests: {}
+    limits: {}
   oauth:
-    requests:
-      cpu: "200m"
-      memory: "128Mi"
-    limits:
-      cpu: "500m"
-      memory: "256Mi"
+    requests: {}
+    limits: {}
   celeryWorker:
-    requests:
-      cpu: "200m"
-      memory: "512Mi"
-    limits:
-      cpu: "500m"
-      memory: "1Gi"
+    requests: {}
+    limits: {}
   celeryFlower:
     requests: {}
     limits: {}

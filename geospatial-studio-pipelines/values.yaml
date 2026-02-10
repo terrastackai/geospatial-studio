@@ -241,8 +241,8 @@ processors:
     process_id: generic-python-processor
     process_exec: ''
     extra_volumes:
-      - name: test-inference-pvc
-        claimName: generic-processor-pvc
-        bucket_name: BUCKET_GENERIC_PROCESSOR
+      - name: generic-python-processor-scripts-pvc
+        claimName: generic-python-processor-pvc
+        bucket_name: BUCKET_GENERIC_PYTHON_PROCESSOR
         mountPath: /generic_data   
         create: false  

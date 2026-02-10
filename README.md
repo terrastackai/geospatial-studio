@@ -524,7 +524,7 @@ Onboard the tuning task `templates`.  These are the outline configurations to ma
     # select  1. Segmentation - Generic template v1 and v2 models: Segmentation
     ```
 
-*Note: Currently, for local deployments with access to non-NVIDIA GPUs (i.e. Mac), you will need to run the fine-tuning outside of the local cluster, and the resulting model can be onboarded back to the local cluster for inference.  This will be addressed in future, and is not an issue for cluster deployments with accessible GPUs. For this case jusp to [**Tuning a model from a dataset using Mac GPUs**](#tuning-a-model-from-a-dataset-using-mac-gpus)*
+*Note: Currently, for local deployments with access to non-NVIDIA GPUs (i.e. Mac), you will need to run the fine-tuning outside of the local cluster, and the resulting model can be onboarded back to the local cluster for inference.  This will be addressed in future, and is not an issue for cluster deployments with accessible GPUs. For this case jump to [**Tuning a model from a dataset using Mac GPUs**](#tuning-a-model-from-a-dataset-using-mac-gpus)*
 
 #### Tuning a model from a dataset in a cluster deployments with accessible GPUs
 

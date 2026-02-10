@@ -595,7 +595,7 @@ spec:
     name: {{ .Values.mountLocations.generic_python_processor_pvc_name }}
     namespace: {{ .Values.global.namespace }} 
   hostPath:
-    path: "/data/generic-python-processor"
+    path: "/generic_data"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

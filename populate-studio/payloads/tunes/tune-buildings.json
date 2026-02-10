@@ -1,0 +1,115 @@
+
+{
+  "name": "convnext-buildings",
+  "description": "Inria dataset 10k samples trained with timm_convnext_xlarge.fb_in22k model.",
+  "tune_config_url": "https://ibm.box.com/shared/static/r1805d3t7g9vkphvp5yr3ahmroeurz37.yaml",
+  "tune_checkpoint_url": "https://ibm.box.com/shared/static/e67itnf61zhda0xy5mda7pw15ehklc03.ckpt",
+  "model_input_data_spec": [
+    {
+      "bands": [
+        {
+          "index": "0",
+          "band_name": "Red",
+          "scaling_factor": 1,
+          "RGB_band": "R"
+        },
+        {
+          "index": "1",
+          "band_name": "Green",
+          "scaling_factor": 1,
+          "RGB_band": "G"
+        },
+        {
+          "index": "2",
+          "band_name": "Blue",
+          "scaling_factor": 1,
+          "RGB_band": "B"
+        }
+      ],
+      "connector": "sentinelhub",
+      "collection": "hls_s30",
+      "file_suffix": "_train.tif",
+      "modality_tag": "HLS_S30"
+    }
+  ],
+   "label_categories": [
+    {
+      "id": "0",
+      "name": "No Buildings",
+      "color": "#000000",
+      "opacity": 0,
+      "weight": null
+    },
+    {
+      "id": "1",
+      "name": "Buildings",
+      "color": "#fffafa",
+      "opacity": 1,
+      "weight": null
+    }
+  ],
+ "geoserver_push": [
+    {
+      "workspace": "geofm",
+      "layer_name": "input_rgb",
+      "display_name": "Input image (RGB)",
+      "filepath_key": "model_input_original_image_rgb",
+      "file_suffix": "",
+      "geoserver_style": {
+        "rgb": [
+          {
+            "label": "RedChannel",
+            "channel": 1,
+            "maxValue": 255,
+            "minValue": 0
+          },
+          {
+            "label": "GreenChannel",
+            "channel": 2,
+            "maxValue": 255,
+            "minValue": 0
+          },
+          {
+            "label": "BlueChannel",
+            "channel": 3,
+            "maxValue": 255,
+            "minValue": 0
+          }
+        ]
+      },
+      "z_index": 0,
+      "visible_by_default": "True"
+    },
+    {
+      "workspace": "geofm",
+      "layer_name": "pred",
+      "display_name": "Model prediction",
+      "filepath_key": "model_output_image",
+      "file_suffix": "",
+      "geoserver_style": {
+        "segmentation": [
+          {
+            "color": "#7d7247",
+            "label": "no-buildings",
+            "opacity": 0,
+            "quantity": "0"
+          },
+          {
+            "color": "#390c8c",
+            "label": "buildings",
+            "opacity": 1,
+            "quantity": "1"
+          }
+        ]
+      },
+      "z_index": 1,
+      "visible_by_default": "True"
+    }
+  ],
+  "post_processing": {
+    "cloud_masking": "False",
+    "ocean_masking": "False",
+    "snow_ice_masking": null,
+    "permanent_water_masking": "False"
+  }
+}

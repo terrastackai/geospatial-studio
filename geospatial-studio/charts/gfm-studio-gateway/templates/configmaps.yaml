@@ -26,6 +26,7 @@ data:
   DATA_PVC: {{ .Values.mountLocations.data_pvc_name }}
   NAMESPACE: {{ .Values.global.namespace }}
   PIPELINES_V2_COS_BUCKET: {{ .Values.global.objectStorage.buckets.inference }}
+  GENERIC_PROCESSOR_BUCKET: {{ .Values.global.objectStorage.buckets.generic_python_processor}}
   OBJECT_STORAGE_ENDPOINT: {{ .Values.global.objectStorage.endpoint }}
   OBJECT_STORAGE_REGION: {{ .Values.global.objectStorage.region }}
   SERVER_TYPE: {{ .Values.serverType.type }}
