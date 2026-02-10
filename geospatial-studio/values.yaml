@@ -289,7 +289,7 @@ geospatial-studio-pipelines:
   waitForGateway:
     enabled: true
     image: busybox:1.36
-    port: 4180
+    port: OAUTH_PROXY_PORT
     sleepTime: 5
   namePrefix: pipelines
   namespace: OC_PROJECT
