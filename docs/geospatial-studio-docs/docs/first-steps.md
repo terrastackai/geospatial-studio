@@ -82,7 +82,7 @@ Before you can use the Studio API or SDK, you need to generate an API key. This 
    - View existing keys
    - Delete old keys
 
-![Location of API key link](../images/sdk-auth.png)
+![Location of API key link](../../images/sdk-auth.png)
 
 3. Click **"Generate New Key"** (or similar button)
 4. **Copy the generated API key immediately** - you won't be able to see it again!
@@ -252,6 +252,10 @@ pkill -f "kubectl port-forward"
 ```shell
 ./deployment-scripts/add-sandbox-models.sh
 ```
+
+At this point you can opt to continue getting started with the studio with the steps below by running them in terminal, or you can opt to use [this jupyter notebook](../../../populate-studio/getting-started-notebook.ipynb), leveraging studio sdk to get started.  
+
+> The notebook is a good way to get started with the studio sdk and see how it works.  The notebook is located in the `./populate-studio/getting-started-notebook.ipynb` directory of this repo.
 
 **Onboard an existing inference output (useful for loading examples)**
 1. Onboard one of the `inferences`.  This will start a pipeline to pull the data and set it up in the platform.  You should now be able to browser to the inferences page in the UI and view the example/s you have added.

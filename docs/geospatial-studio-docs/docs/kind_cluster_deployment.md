@@ -1,4 +1,4 @@
-# Local Development Setup (Kind Cluster)
+# Kind Cluster Deployment without GPUs
 
 ## Overview
 
@@ -59,19 +59,27 @@ Point kubectl to your newly created Kind cluster.
 ```bash
 kubectl cluster-info --context kind-studio
 ```
-[Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below,
-```bash
-NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
-```
 
 ??? info "What does this do?"
     - Sets your kubectl context to `kind-studio`
     - Ensures all kubectl commands target the correct cluster
     - Displays cluster information to verify connectivity
 
+
+---
+### Step 3: [Optional] Pre-pull Container Images
+
+If you have limited network bandwidth, you can pre-pull the container images using the script below,
+```bash
+NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
+```
+
+??? info "What does this do?"
+    - [see details here](../../../deployment-scripts/images-pre-puller/README-image-prepuller.md): 
+
 ---
 
-### Step 3: Install Python Dependencies
+### Step 4: Install Python Dependencies
 
 Install required Python packages for the deployment scripts.
 ```bash
@@ -88,7 +96,7 @@ pip install -r requirements.txt
 
 ---
 
-### Step 4: Deploy Geospatial Studio
+### Step 5: Deploy Geospatial Studio
 
 Run the automated deployment script.
 ```bash
