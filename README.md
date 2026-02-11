@@ -184,7 +184,17 @@ After deployment the UI will pop up on the screen and you can jump to [First ste
 
 Whilst not providing full performance and functionality, the studio can be deployed locally for testing and development purposes.  The instructions below will deploy the main components of the Geospatial Studio in a Kubernetes cluster on the local machine (i.e. your laptop).  This is provisioned through a Lima VM.  
 
-Data for the deployment will be persisted in a local folder `~/studio-data`, you can change the location for this folder by editing the lima deployment configuration, `deployment-scripts/lima/studio.yaml`.  
+Data for the deployment will be persisted in a local folder `~/studio-data`, you can change the location for this folder by editing the lima deployment configuration, `deployment-scripts/lima/studio.yaml`.
+
+⚠️    Postgress versions mismatch can cause issues with the deployment.  
+
+If re-deploying studio and the `~/studio-data` folder existed or the location of the deployment data used above, kindly delete it first. The deployment updated the postgress version that will conflict with old files. 
+
+```sh
+rm -rf ~/studio-data
+```
+
+
 
 The automated shell script will deploy the local dependencies (Minio, Keycloak and Postgresql), before generating the deployment configuration for the studio and then deploying the main studio services + pipelines.
 
@@ -403,7 +413,7 @@ Onboard the tuning task `templates`.  These are the outline configurations to ma
     # select  1. Segmentation - Generic template v1 and v2 models: Segmentation
     ```
 
-*Note: Currently, for local deployments with access to non-NVIDIA GPUs (i.e. Mac), you will need to run the fine-tuning outside of the local cluster, and the resulting model can be onboarded back to the local cluster for inference.  This will be addressed in future, and is not an issue for cluster deployments with accessible GPUs. For this case jusp to [**Tuning a model from a dataset using Mac GPUs**](#tuning-a-model-from-a-dataset-using-mac-gpus)*
+*Note: Currently, for local deployments with access to non-NVIDIA GPUs (i.e. Mac), you will need to run the fine-tuning outside of the local cluster, and the resulting model can be onboarded back to the local cluster for inference.  This will be addressed in future, and is not an issue for cluster deployments with accessible GPUs. For this case jump to [**Tuning a model from a dataset using Mac GPUs**](#tuning-a-model-from-a-dataset-using-mac-gpus)*
 
 #### Tuning a model from a dataset in a cluster deployments with accessible GPUs
 
