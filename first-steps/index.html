@@ -1,0 +1,2017 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>First Steps After Deployment - IBM Geospatial Exploration and Orchestration Studio</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"IBM Plex Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#first-steps-after-deployment" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="IBM Geospatial Exploration and Orchestration Studio" class="md-header__button md-logo" aria-label="IBM Geospatial Exploration and Orchestration Studio" data-md-component="logo">
+      
+  <img src="../assets/geospatial-studio-logo-white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IBM Geospatial Exploration and Orchestration Studio
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              First Steps After Deployment
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-schema: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="IBM Geospatial Exploration and Orchestration Studio" class="md-nav__button md-logo" aria-label="IBM Geospatial Exploration and Orchestration Studio" data-md-component="logo">
+      
+  <img src="../assets/geospatial-studio-logo-white.svg" alt="logo">
+
+    </a>
+    IBM Geospatial Exploration and Orchestration Studio
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2">
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started-UI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started with the UI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started-SDK/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started with the SDK
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Intro
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sample-payloads/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sample payloads
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sample-files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sample files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4">
+        
+          
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Studio UI user guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Studio UI user guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inference-lab/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inferencing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dataset-factory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning dataset factory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tuning-studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning studio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../walkthroughs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    UI walkthroughs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API specification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inference-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inference Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dataset-factory-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning Dataset Factory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fine-tuning-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fine-tuning Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment and architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment and architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture_and_requirements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architechture and Dependencies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../detailed_deployment_cluster/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cluster Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../detailed_deployment_local/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kind_cluster_deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kind Cluster Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../nvkind_cluster_deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NVkind cluster deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#accessing-the-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Accessing the Services
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Accessing the Services">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-studio-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Studio Components
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#infrastructure-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Infrastructure Services
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#default-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default Credentials
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Default Credentials">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#studio-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Studio Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geoserver-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GeoServer Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#minio-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MinIO Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#initial-setup-api-key-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initial Setup - API Key Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Initial Setup - API Key Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-log-in-to-the-studio-ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Log In to the Studio UI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-generate-an-api-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Generate an API Key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-configure-your-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Configure Your Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-verify-your-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Verify Your Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#port-forwarding-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Port Forwarding Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Port Forwarding Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-port-forwarding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is Port Forwarding?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checking-active-port-forwards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking Active Port Forwards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restarting-port-forwards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restarting Port Forwards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restart-all-port-forwards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restart All Port Forwards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stop-all-port-forwards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stop All Port Forwards
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps-start-using-the-studio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps - Start Using the Studio
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Next Steps - Start Using the Studio">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tuning-a-model-from-a-dataset-in-a-cluster-deployments-with-accessible-gpus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tuning a model from a dataset in a cluster deployments with accessible GPUs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tuning-a-model-from-a-dataset-using-mac-gpus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tuning a model from a dataset using Mac GPUs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<div><h1 id="first-steps-after-deployment">First Steps After Deployment</h1>
+<h2 id="overview">Overview</h2>
+<p>Congratulations! 🎉 Your Geospatial Studio is now running locally. This guide will help you access and explore the various components of the platform.</p>
+<p>The studio deployment includes several services that work together to provide geospatial processing capabilities. Each service has its own web interface and purpose.</p>
+<hr>
+<h2 id="accessing-the-services">Accessing the Services</h2>
+<h3 id="core-studio-components">Core Studio Components</h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>URL</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Studio UI</strong></td>
+<td><a href="https://localhost:4180">https://localhost:4180</a></td>
+<td>Main web interface for the Geospatial Studio</td>
+</tr>
+<tr>
+<td><strong>Studio API</strong></td>
+<td><a href="https://localhost:4181">https://localhost:4181</a></td>
+<td>REST API for programmatic access</td>
+</tr>
+<tr>
+<td><strong>GeoServer</strong></td>
+<td><a href="https://localhost:3000/geoserver">https://localhost:3000/geoserver</a></td>
+<td>Geospatial data server and map rendering</td>
+</tr>
+<tr>
+<td><strong>MLflow</strong></td>
+<td><a href="https://localhost:5000">https://localhost:5000</a></td>
+<td>Machine learning experiment tracking</td>
+</tr>
+</tbody>
+</table>
+<h3 id="infrastructure-services">Infrastructure Services</h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>URL</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Keycloak</strong></td>
+<td><a href="https://localhost:8080">https://localhost:8080</a></td>
+<td>Authentication and user management</td>
+</tr>
+<tr>
+<td><strong>MinIO Console</strong></td>
+<td><a href="https://localhost:9001">https://localhost:9001</a></td>
+<td>Object storage web interface</td>
+</tr>
+<tr>
+<td><strong>MinIO API</strong></td>
+<td><a href="https://localhost:9000">https://localhost:9000</a></td>
+<td>Object storage API endpoint</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="default-credentials">Default Credentials</h2>
+<div class="admonition warning">
+<p class="admonition-title">Security Notice</p>
+<p>These are <strong>default credentials for local development only</strong>. Never use these credentials in production environments.</p>
+</div>
+<h3 id="studio-authentication">Studio Authentication</h3>
+<p>Access the Studio UI at <a href="https://localhost:4180">https://localhost:4180</a>
+</p><div class="highlight"><pre><span></span><code>Username: testuser
+Password: testpass123
+</code></pre></div>
+<h3 id="geoserver-authentication">GeoServer Authentication</h3>
+<p>Access GeoServer at <a href="https://localhost:3000/geoserver">https://localhost:3000/geoserver</a>
+</p><div class="highlight"><pre><span></span><code>Username: admin
+Password: geoserver
+</code></pre></div>
+<h3 id="minio-authentication">MinIO Authentication</h3>
+<p>Access MinIO Console at <a href="https://localhost:9001">https://localhost:9001</a>
+</p><div class="highlight"><pre><span></span><code>Username: minioadmin
+Password: minioadmin
+</code></pre></div>
+<hr>
+<h2 id="initial-setup-api-key-configuration">Initial Setup - API Key Configuration</h2>
+<p>Before you can use the Studio API or SDK, you need to generate an API key. This key authenticates your requests to the Studio backend.</p>
+<h3 id="step-1-log-in-to-the-studio-ui">Step 1: Log In to the Studio UI</h3>
+<ol>
+<li>Navigate to <a href="https://localhost:4180">https://localhost:4180</a></li>
+<li>Log in with default credentials:</li>
+<li>Username: <code>testuser</code></li>
+<li>Password: <code>testpass123</code></li>
+</ol>
+<hr>
+<h3 id="step-2-generate-an-api-key">Step 2: Generate an API Key</h3>
+<ol>
+<li>On the Studio UI homepage, locate and click the <strong>"Manage your API keys"</strong> link</li>
+<li>A popup window will appear where you can:</li>
+<li>Generate new API keys</li>
+<li>View existing keys</li>
+<li>Delete old keys</li>
+</ol>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../../images/sdk-auth.png" data-desc-position="bottom"><img alt="Location of API key link" src="../../images/sdk-auth.png"></a></p>
+<ol>
+<li>Click <strong>"Generate New Key"</strong> (or similar button)</li>
+<li><strong>Copy the generated API key immediately</strong> - you won't be able to see it again!</li>
+</ol>
+<div class="admonition warning">
+<p class="admonition-title">Save Your API Key</p>
+<p>Store your API key securely. Once you close the popup, you won't be able to retrieve the same key again. If you lose it, you'll need to generate a new one.</p>
+</div>
+<hr>
+<h3 id="step-3-configure-your-environment">Step 3: Configure Your Environment</h3>
+<p>Set up environment variables for easy access to the Studio API:
+</p><div class="highlight"><pre><span></span><code><span class="c1"># Set your API key</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">STUDIO_API_KEY</span><span class="o">=</span><span class="s2">"&lt;your api key from the UI&gt;"</span>
+
+<span class="c1"># Set the UI/API URL</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">UI_ROUTE_URL</span><span class="o">=</span><span class="s2">"https://localhost:4180"</span>
+</code></pre></div>
+<p><strong>Example:</strong>
+</p><div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">STUDIO_API_KEY</span><span class="o">=</span><span class="s2">"sk_1234567890abcdef1234567890abcdef"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">UI_ROUTE_URL</span><span class="o">=</span><span class="s2">"https://localhost:4180"</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Make It Permanent</p>
+<p>To avoid setting these variables every time, add them to your shell profile:</p>
+</div>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c1"># For bash</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s1">'export STUDIO_API_KEY="your-key-here"'</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s1">'export UI_ROUTE_URL="https://localhost:4180"'</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+<span class="w">    </span><span class="nb">source</span><span class="w"> </span>~/.bashrc
+
+<span class="w">    </span><span class="c1"># For zsh</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s1">'export STUDIO_API_KEY="your-key-here"'</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.zshrc
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s1">'export UI_ROUTE_URL="https://localhost:4180"'</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.zshrc
+<span class="w">    </span><span class="nb">source</span><span class="w"> </span>~/.zshrc
+</code></pre></div>
+<hr>
+<h3 id="step-4-verify-your-setup">Step 4: Verify Your Setup</h3>
+<p>Test that your API key works:
+</p><div class="highlight"><pre><span></span><code><span class="c1"># Using curl</span>
+curl<span class="w"> </span>-X<span class="w"> </span>GET<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">UI_ROUTE_URL</span><span class="si">}</span><span class="s2">/api/v1/health"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer </span><span class="si">${</span><span class="nv">STUDIO_API_KEY</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"accept: application/json"</span>
+</code></pre></div>
+<p><strong>Expected response:</strong>
+</p><div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"healthy"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.0.0"</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr>
+<h2 id="port-forwarding-management">Port Forwarding Management</h2>
+<h3 id="what-is-port-forwarding">What is Port Forwarding?</h3>
+<p>Port forwarding allows you to access services running inside the Kubernetes cluster from your local machine. The deployment script automatically sets up port forwards for all services.</p>
+<h3 id="checking-active-port-forwards">Checking Active Port Forwards</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># List all kubectl port-forward processes</span>
+ps<span class="w"> </span>aux<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">"port-forward"</span>
+
+<span class="c1"># Check if ports are in use</span>
+lsof<span class="w"> </span>-i<span class="w"> </span>:4180<span class="w">  </span><span class="c1"># Studio UI</span>
+lsof<span class="w"> </span>-i<span class="w"> </span>:4181<span class="w">  </span><span class="c1"># Studio API</span>
+lsof<span class="w"> </span>-i<span class="w"> </span>:3000<span class="w">  </span><span class="c1"># GeoServer</span>
+lsof<span class="w"> </span>-i<span class="w"> </span>:5000<span class="w">  </span><span class="c1"># MLflow</span>
+lsof<span class="w"> </span>-i<span class="w"> </span>:8080<span class="w">  </span><span class="c1"># Keycloak</span>
+lsof<span class="w"> </span>-i<span class="w"> </span>:9001<span class="w">  </span><span class="c1"># MinIO Console</span>
+lsof<span class="w"> </span>-i<span class="w"> </span>:9000<span class="w">  </span><span class="c1"># MinIO API</span>
+</code></pre></div>
+<h3 id="restarting-port-forwards">Restarting Port Forwards</h3>
+<p>If you need to restart any port forwards (e.g., after disconnection), use these commands:
+</p><div class="highlight"><pre><span></span><code><span class="c1"># Keycloak (Authentication)</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/keycloak<span class="w"> </span><span class="m">8080</span>:8080<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+
+<span class="c1"># PostgreSQL Database</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/postgresql<span class="w"> </span><span class="m">54320</span>:5432<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+
+<span class="c1"># GeoServer (Map Server)</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/geofm-geoserver<span class="w"> </span><span class="m">3000</span>:3000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+
+<span class="c1"># Studio UI (Frontend)</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-ui<span class="w"> </span><span class="m">4180</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+
+<span class="c1"># Studio API Gateway</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-gateway<span class="w"> </span><span class="m">4181</span>:4180<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+
+<span class="c1"># MLflow (ML Tracking)</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>deployment/geofm-mlflow<span class="w"> </span><span class="m">5000</span>:5000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+
+<span class="c1"># MinIO Console</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/minio<span class="w"> </span><span class="m">9001</span>:9001<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+
+<span class="c1"># MinIO API</span>
+kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/minio<span class="w"> </span><span class="m">9000</span>:9000<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+</code></pre></div>
+<details class="info">
+<summary>Understanding the Port Forward Command</summary>
+</details>
+<div class="highlight"><pre><span></span><code><span class="w">    </span>kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>default<span class="w"> </span>svc/minio<span class="w"> </span><span class="m">9001</span>:9001<span class="w"> </span>&gt;&gt;<span class="w"> </span>studio-pf.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+</code></pre></div>
+<pre><code>- `kubectl port-forward` - Creates the port forward
+- `-n default` - Uses the 'default' namespace
+- `svc/minio` - Targets the MinIO service
+- `9001:9001` - Maps local port 9001 to service port 9001
+- `&gt;&gt; studio-pf.log` - Appends output to log file
+- `2&gt;&amp;1` - Redirects errors to the log file
+- `&amp;` - Runs the command in the background
+</code></pre>
+<h3 id="restart-all-port-forwards">Restart All Port Forwards</h3>
+<p>To restart all port forwards at once:
+</p><div class="highlight"><pre><span></span><code><span class="c1"># Create a script to restart all port forwards</span>
+cat<span class="w"> </span>&gt;<span class="w"> </span>restart-portforwards.sh<span class="w"> </span><span class="s">&lt;&lt; 'EOF'</span>
+<span class="s">#!/bin/bash</span>
+
+<span class="s">echo "Stopping existing port forwards..."</span>
+<span class="s">pkill -f "kubectl port-forward"</span>
+
+<span class="s">echo "Starting port forwards..."</span>
+<span class="s">kubectl port-forward -n default svc/keycloak 8080:8080 &gt;&gt; studio-pf.log 2&gt;&amp;1 &amp;</span>
+<span class="s">kubectl port-forward -n default svc/postgresql 54320:5432 &gt;&gt; studio-pf.log 2&gt;&amp;1 &amp;</span>
+<span class="s">kubectl port-forward -n default svc/geofm-geoserver 3000:3000 &gt;&gt; studio-pf.log 2&gt;&amp;1 &amp;</span>
+<span class="s">kubectl port-forward -n default deployment/geofm-ui 4180:4180 &gt;&gt; studio-pf.log 2&gt;&amp;1 &amp;</span>
+<span class="s">kubectl port-forward -n default deployment/geofm-gateway 4181:4180 &gt;&gt; studio-pf.log 2&gt;&amp;1 &amp;</span>
+<span class="s">kubectl port-forward -n default deployment/geofm-mlflow 5000:5000 &gt;&gt; studio-pf.log 2&gt;&amp;1 &amp;</span>
+<span class="s">kubectl port-forward -n default svc/minio 9001:9001 &gt;&gt; studio-pf.log 2&gt;&amp;1 &amp;</span>
+<span class="s">kubectl port-forward -n default svc/minio 9000:9000 &gt;&gt; studio-pf.log 2&gt;&amp;1 &amp;</span>
+
+<span class="s">echo "Port forwards restarted. Check studio-pf.log for details."</span>
+<span class="s">EOF</span>
+
+chmod<span class="w"> </span>+x<span class="w"> </span>restart-portforwards.sh
+./restart-portforwards.sh
+</code></pre></div>
+<h3 id="stop-all-port-forwards">Stop All Port Forwards</h3>
+<p>When you're done working:
+</p><div class="highlight"><pre><span></span><code><span class="c1"># Stop all port forwards</span>
+pkill<span class="w"> </span>-f<span class="w"> </span><span class="s2">"kubectl port-forward"</span>
+</code></pre></div>
+<hr>
+<h2 id="next-steps-start-using-the-studio">Next Steps - Start Using the Studio</h2>
+<ol>
+<li>Onboard the <code>sandbox-model</code>s, these are placeholder models (pipelines) for onboarding existing inferences or testing tuned models.
+<div class="highlight"><pre><span></span><code>./deployment-scripts/add-sandbox-models.sh
+</code></pre></div></li>
+</ol>
+<p>At this point you can opt to continue getting started with the studio with the steps below by running them in terminal, or you can opt to use <a href="../../../populate-studio/getting-started-notebook.ipynb">this jupyter notebook</a>, leveraging studio sdk to get started.  </p>
+<blockquote>
+<p>The notebook is a good way to get started with the studio sdk and see how it works.  The notebook is located in the <code>./populate-studio/getting-started-notebook.ipynb</code> directory of this repo.</p>
+</blockquote>
+<p><strong>Onboard an existing inference output (useful for loading examples)</strong>
+1. Onboard one of the <code>inferences</code>.  This will start a pipeline to pull the data and set it up in the platform.  You should now be able to browser to the inferences page in the UI and view the example/s you have added.
+   </p><div class="highlight"><pre><span></span><code>python<span class="w"> </span>populate-studio/populate-studio.py<span class="w"> </span>inferences
+<span class="c1"># select "AGB Data - Karen, Nairobi,kenya"</span>
+</code></pre></div>
+<p><strong>Onboard an existing tuned models and run inference</strong>
+1. We will onboard a tuned model from a URL.  This is initiated by an API call, which will trigger the onboarding process, starting download in the backend.  Once the download is completed, it should appear with completed status in the UI models/tunes page.
+First we ensure we have a tuning task <code>templates</code>.    <br>
+Onboard the tuning task <code>templates</code>.  These are the outline configurations to make basic tuning tasks easier for users.</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>populate-studio/populate-studio.py<span class="w"> </span>templates
+<span class="c1"># select  1. Segmentation - Generic template v1 and v2 models: Segmentation</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>populate-studio/populate-studio.py<span class="w"> </span>tunes
+<span class="c1"># select "prithvi-eo-flood - prithvi-eo-flood"</span>
+</code></pre></div>
+<ol>
+<li>
+<p>Now we can trigger an inference run.  This can be run through the UI or API (as here), where you tell which spatial and temporal domain over which to run inference.  You need to get the <code>tune_id</code> for the onboarded tune (from the onboarding response or from the models/tunes page in the UI) and paste it into the command below.
+    </p><div class="highlight"><pre><span></span><code><span class="nv">tune_id</span><span class="o">=</span><span class="s2">"&lt;paste tune_id here&gt;"</span>
+
+<span class="nv">payload</span><span class="o">=</span><span class="s1">'{</span>
+<span class="s1">    "model_display_name": "geofm-sandbox-models",</span>
+<span class="s1">    "location": "Dakhin Petbaha, Raha, Nagaon, Assam, India",</span>
+<span class="s1">    "description": "Flood Assam local with sentinel aws",</span>
+<span class="s1">    "spatial_domain": {</span>
+<span class="s1">      "bbox": [</span>
+<span class="s1">        [</span>
+<span class="s1">          92.703396,26.247896,92.748087,26.267903</span>
+<span class="s1">        ]</span>
+<span class="s1">      ],</span>
+<span class="s1">      "urls": [],</span>
+<span class="s1">      "tiles": [],</span>
+<span class="s1">      "polygons": []</span>
+<span class="s1">    },</span>
+<span class="s1">    "temporal_domain": [</span>
+<span class="s1">      "2024-07-25_2024-07-28"</span>
+<span class="s1">    ]</span>
+<span class="s1">  }'</span>
+
+<span class="nb">echo</span><span class="w"> </span><span class="nv">$payload</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">UI_ROUTE_URL</span><span class="si">}</span><span class="s2">/studio-gateway/v2/tunes/</span><span class="si">${</span><span class="nv">tune_id</span><span class="si">}</span><span class="s2">/try-out"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--header<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--header<span class="w"> </span><span class="s2">"X-API-Key: </span><span class="nv">$STUDIO_API_KEY</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--insecure<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--data<span class="w"> </span>@-
+</code></pre></div>
+</li>
+<li>
+<p>You can follow the progress of the inference run in the UI in the inference page.  The files will be created and can be accessed via the <a href="https://localhost:9001">Minio ui</a>.</p>
+</li>
+</ol>
+<p><strong>Tuning a model from a dataset</strong></p>
+<ol>
+<li>
+<p>First onboard a tuning dataset. This can be done through the UI or the API, for now select and onboard a dataset using the below command.  This will trigger a backend task to download, validate and sort the dataset ready for use.  The dataset will appear in the UI datasets page, initally as pending, but will complete and change status after a few minutes.
+    </p><div class="highlight"><pre><span></span><code>python<span class="w"> </span>populate-studio/populate-studio.py<span class="w"> </span>datasets
+<span class="c1"># select "Wildfire burn scars"</span>
+</code></pre></div>
+</li>
+<li>
+<p>Onboard the backbone model/s from which we will fine-tune.
+    </p><div class="highlight"><pre><span></span><code>python<span class="w"> </span>populate-studio/populate-studio.py<span class="w"> </span>backbones
+<span class="c1"># select "Prithvi_EO_V2_300M"</span>
+</code></pre></div>
+</li>
+<li>
+<p>Onboard the tuning task <code>templates</code> if you have not done it.  These are the outline configurations to make basic tuning tasks easier for users.
+    </p><div class="highlight"><pre><span></span><code>python<span class="w"> </span>populate-studio/populate-studio.py<span class="w"> </span>templates
+<span class="c1"># select  1. Segmentation - Generic template v1 and v2 models: Segmentation</span>
+</code></pre></div>
+</li>
+</ol>
+<p><em>Note: Currently, for local deployments with access to non-NVIDIA GPUs (i.e. Mac), you will need to run the fine-tuning outside of the local cluster, and the resulting model can be onboarded back to the local cluster for inference.  This will be addressed in future, and is not an issue for cluster deployments with accessible GPUs. For this case jusp to <a href="#tuning-a-model-from-a-dataset-using-mac-gpus"><strong>Tuning a model from a dataset using Mac GPUs</strong></a></em></p>
+<h4 id="tuning-a-model-from-a-dataset-in-a-cluster-deployments-with-accessible-gpus">Tuning a model from a dataset in a cluster deployments with accessible GPUs</h4>
+<ol>
+<li>Now we can trigger a fine tuning job, using the payload and script below. First replace the values of keys <code>dataset_id</code>, <code>base_model_id</code>, and <code>tune_template_id</code> with the ids generated after onboarding 1, 2, and 3 above respectively. After submission, you can monitor the training in <a href="https://localhost:5000">MLflow ui</a>.</li>
+</ol>
+<details class="note">
+<summary>Click to view fine-tuning payload</summary>
+<div class="highlight"><pre><span></span><code><span class="nv">payload</span><span class="o">=</span><span class="s1">'{</span>
+<span class="s1">  "name": "burn-scars-demo",</span>
+<span class="s1">  "description": "Segmentation",</span>
+<span class="s1">  "dataset_id": "&lt;dataset id here&gt;",</span>
+<span class="s1">  "base_model_id": "&lt;backbone model id here&gt;",</span>
+<span class="s1">  "tune_template_id": "&lt;tune template id here&gt;",</span>
+<span class="s1">  "train_options": {</span>
+<span class="s1">    "model_input_data_spec": [</span>
+<span class="s1">      {</span>
+<span class="s1">        "bands": [</span>
+<span class="s1">          {</span>
+<span class="s1">            "index": "0",</span>
+<span class="s1">            "band_name": "Blue",</span>
+<span class="s1">            "scaling_factor": "0.0001",</span>
+<span class="s1">            "RGB_band": "B"</span>
+<span class="s1">          },</span>
+<span class="s1">          {</span>
+<span class="s1">            "index": "1",</span>
+<span class="s1">            "band_name": "Green",</span>
+<span class="s1">            "scaling_factor": "0.0001",</span>
+<span class="s1">            "RGB_band": "G"</span>
+<span class="s1">          },</span>
+<span class="s1">          {</span>
+<span class="s1">            "index": "2",</span>
+<span class="s1">            "band_name": "Red",</span>
+<span class="s1">            "scaling_factor": "0.0001",</span>
+<span class="s1">            "RGB_band": "R"</span>
+<span class="s1">          },</span>
+<span class="s1">          {</span>
+<span class="s1">            "index": "3",</span>
+<span class="s1">            "band_name": "NIR_Narrow",</span>
+<span class="s1">            "scaling_factor": "0.0001"</span>
+<span class="s1">          },</span>
+<span class="s1">          {</span>
+<span class="s1">            "index": "4",</span>
+<span class="s1">            "band_name": "SWIR1",</span>
+<span class="s1">            "scaling_factor": "0.0001"</span>
+<span class="s1">          },</span>
+<span class="s1">          {</span>
+<span class="s1">            "index": "5",</span>
+<span class="s1">            "band_name": "SWIR2",</span>
+<span class="s1">            "scaling_factor": "0.0001"</span>
+<span class="s1">          }</span>
+<span class="s1">        ],</span>
+<span class="s1">        "connector": "sentinelhub",</span>
+<span class="s1">        "collection": "hls_l30",</span>
+<span class="s1">        "file_suffix": "_merged.tif",</span>
+<span class="s1">        "modality_tag": "HLS_L30"</span>
+<span class="s1">      }</span>
+<span class="s1">    ],</span>
+<span class="s1">    "label_categories": [</span>
+<span class="s1">      {</span>
+<span class="s1">        "id": "-1",</span>
+<span class="s1">        "name": "Ignore",</span>
+<span class="s1">        "color": "#000000",</span>
+<span class="s1">        "opacity": 0,</span>
+<span class="s1">        "weight": null</span>
+<span class="s1">      },</span>
+<span class="s1">      {</span>
+<span class="s1">        "id": "0",</span>
+<span class="s1">        "name": "No data",</span>
+<span class="s1">        "color": "#000000",</span>
+<span class="s1">        "opacity": 0,</span>
+<span class="s1">        "weight": null</span>
+<span class="s1">      },</span>
+<span class="s1">      {</span>
+<span class="s1">        "id": "1",</span>
+<span class="s1">        "name": "Fire Scar",</span>
+<span class="s1">        "color": "#ab4f4f",</span>
+<span class="s1">        "opacity": 1,</span>
+<span class="s1">        "weight": null</span>
+<span class="s1">      }</span>
+<span class="s1">    ]</span>
+<span class="s1">  },</span>
+<span class="s1">  "model_parameters": {</span>
+<span class="s1">    "data": {</span>
+<span class="s1">      "check_stackability": "false"</span>
+<span class="s1">    },</span>
+<span class="s1">    "runner": {</span>
+<span class="s1">      "max_epochs": "5"</span>
+<span class="s1">    }</span>
+<span class="s1">  }</span>
+<span class="s1">}'</span>
+
+<span class="nb">echo</span><span class="w"> </span><span class="nv">$payload</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">UI_ROUTE_URL</span><span class="si">}</span><span class="s2">/studio-gateway/v2/submit-tune"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--header<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--header<span class="w"> </span><span class="s2">"X-API-Key: </span><span class="nv">$STUDIO_API_KEY</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--insecure<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--data<span class="w"> </span>@-
+</code></pre></div>
+</details>
+<ol>
+<li>After tune above completes, we can trigger an inference run.  This can be run through the UI, SDK or API (as here), where you tell which spatial and temporal domain over which to run inference.  You need to get the <code>tune_id</code> for the above tune (from the tune submission response or from the models/tunes page in the UI) and paste it into the command below. Here we show an expanded payload for submitting the inference to demonstrate how you can override the different configurations for your specific usecase.</li>
+</ol>
+<details class="note">
+<summary>Click to view inference payload</summary>
+<div class="highlight"><pre><span></span><code><span class="nv">tune_id</span><span class="o">=</span><span class="s2">"&lt;paste tune_id here&gt;"</span>
+
+<span class="nv">payload</span><span class="o">=</span><span class="s1">'{</span>
+<span class="s1">"model_display_name": "geofm-sandbox-models",</span>
+<span class="s1">"location": "Red Bluff, California, United States",</span>
+<span class="s1">"description": "Park Fire Aug 2024",</span>
+<span class="s1">"spatial_domain": {</span>
+<span class="s1">  "bbox": [],</span>
+<span class="s1">  "urls": [</span>
+<span class="s1">    "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/examples-for-inference/park_fire_scaled.tif"</span>
+<span class="s1">  ],</span>
+<span class="s1">  "tiles": [],</span>
+<span class="s1">  "polygons": []</span>
+<span class="s1">},</span>
+<span class="s1">"temporal_domain": [</span>
+<span class="s1">  "2024-08-12"</span>
+<span class="s1">],</span>
+<span class="s1">"pipeline_steps": [</span>
+<span class="s1">  {</span>
+<span class="s1">    "status": "READY",</span>
+<span class="s1">    "process_id": "url-connector",</span>
+<span class="s1">    "step_number": 0</span>
+<span class="s1">  },</span>
+<span class="s1">  {</span>
+<span class="s1">    "status": "WAITING",</span>
+<span class="s1">    "process_id": "terratorch-inference",</span>
+<span class="s1">    "step_number": 1</span>
+<span class="s1">  },</span>
+<span class="s1">  {</span>
+<span class="s1">    "status": "WAITING",</span>
+<span class="s1">    "process_id": "postprocess-generic",</span>
+<span class="s1">    "step_number": 2</span>
+<span class="s1">  },</span>
+<span class="s1">  {</span>
+<span class="s1">    "status": "WAITING",</span>
+<span class="s1">    "process_id": "push-to-geoserver",</span>
+<span class="s1">    "step_number": 3</span>
+<span class="s1">  }</span>
+<span class="s1">],</span>
+<span class="s1">"post_processing": {</span>
+<span class="s1">  "cloud_masking": "False",</span>
+<span class="s1">  "ocean_masking": "False",</span>
+<span class="s1">  "snow_ice_masking": null,</span>
+<span class="s1">  "permanent_water_masking": "False"</span>
+<span class="s1">},</span>
+<span class="s1">"model_input_data_spec": [</span>
+<span class="s1">  {</span>
+<span class="s1">    "bands": [</span>
+<span class="s1">      {</span>
+<span class="s1">        "index": "0",</span>
+<span class="s1">        "RGB_band": "B",</span>
+<span class="s1">        "band_name": "Blue",</span>
+<span class="s1">        "scaling_factor": "0.0001"</span>
+<span class="s1">      },</span>
+<span class="s1">      {</span>
+<span class="s1">        "index": "1",</span>
+<span class="s1">        "RGB_band": "G",</span>
+<span class="s1">        "band_name": "Green",</span>
+<span class="s1">        "scaling_factor": "0.0001"</span>
+<span class="s1">      },</span>
+<span class="s1">      {</span>
+<span class="s1">        "index": "2",</span>
+<span class="s1">        "RGB_band": "R",</span>
+<span class="s1">        "band_name": "Red",</span>
+<span class="s1">        "scaling_factor": "0.0001"</span>
+<span class="s1">      },</span>
+<span class="s1">      {</span>
+<span class="s1">        "index": "3",</span>
+<span class="s1">        "band_name": "NIR_Narrow",</span>
+<span class="s1">        "scaling_factor": "0.0001"</span>
+<span class="s1">      },</span>
+<span class="s1">      {</span>
+<span class="s1">        "index": "4",</span>
+<span class="s1">        "band_name": "SWIR1",</span>
+<span class="s1">        "scaling_factor": "0.0001"</span>
+<span class="s1">      },</span>
+<span class="s1">      {</span>
+<span class="s1">        "index": "5",</span>
+<span class="s1">        "band_name": "SWIR2",</span>
+<span class="s1">        "scaling_factor": "0.0001"</span>
+<span class="s1">      }</span>
+<span class="s1">    ],</span>
+<span class="s1">    "connector": "sentinelhub",</span>
+<span class="s1">    "collection": "hls_l30",</span>
+<span class="s1">    "file_suffix": "_merged.tif",</span>
+<span class="s1">    "modality_tag": "HLS_L30"</span>
+<span class="s1">  }</span>
+<span class="s1">],</span>
+<span class="s1">"geoserver_push": [</span>
+<span class="s1">  {</span>
+<span class="s1">    "z_index": 0,</span>
+<span class="s1">    "workspace": "geofm",</span>
+<span class="s1">    "layer_name": "input_rgb",</span>
+<span class="s1">    "file_suffix": "",</span>
+<span class="s1">    "display_name": "Input image (RGB)",</span>
+<span class="s1">    "filepath_key": "model_input_original_image_rgb",</span>
+<span class="s1">    "geoserver_style": {</span>
+<span class="s1">      "rgb": [</span>
+<span class="s1">        {</span>
+<span class="s1">          "label": "RedChannel",</span>
+<span class="s1">          "channel": 1,</span>
+<span class="s1">          "maxValue": 255,</span>
+<span class="s1">          "minValue": 0</span>
+<span class="s1">        },</span>
+<span class="s1">        {</span>
+<span class="s1">          "label": "GreenChannel",</span>
+<span class="s1">          "channel": 2,</span>
+<span class="s1">          "maxValue": 255,</span>
+<span class="s1">          "minValue": 0</span>
+<span class="s1">        },</span>
+<span class="s1">        {</span>
+<span class="s1">          "label": "BlueChannel",</span>
+<span class="s1">          "channel": 3,</span>
+<span class="s1">          "maxValue": 255,</span>
+<span class="s1">          "minValue": 0</span>
+<span class="s1">        }</span>
+<span class="s1">      ]</span>
+<span class="s1">    },</span>
+<span class="s1">    "visible_by_default": "True"</span>
+<span class="s1">  },</span>
+<span class="s1">  {</span>
+<span class="s1">    "z_index": 1,</span>
+<span class="s1">    "workspace": "geofm",</span>
+<span class="s1">    "layer_name": "pred",</span>
+<span class="s1">    "file_suffix": "",</span>
+<span class="s1">    "display_name": "Model prediction",</span>
+<span class="s1">    "filepath_key": "model_output_image",</span>
+<span class="s1">    "geoserver_style": {</span>
+<span class="s1">      "segmentation": [</span>
+<span class="s1">        {</span>
+<span class="s1">          "color": "#000000",</span>
+<span class="s1">          "label": "ignore",</span>
+<span class="s1">          "opacity": 0,</span>
+<span class="s1">          "quantity": "-1"</span>
+<span class="s1">        },</span>
+<span class="s1">        {</span>
+<span class="s1">          "color": "#000000",</span>
+<span class="s1">          "label": "no-data",</span>
+<span class="s1">          "opacity": 0,</span>
+<span class="s1">          "quantity": "0"</span>
+<span class="s1">        },</span>
+<span class="s1">        {</span>
+<span class="s1">          "color": "#ab4f4f",</span>
+<span class="s1">          "label": "fire-scar",</span>
+<span class="s1">          "opacity": 1,</span>
+<span class="s1">          "quantity": "1"</span>
+<span class="s1">        }</span>
+<span class="s1">      ]</span>
+<span class="s1">    },</span>
+<span class="s1">    "visible_by_default": "True"</span>
+<span class="s1">  }</span>
+<span class="s1"> ]</span>
+<span class="s1">}'</span>
+
+<span class="nb">echo</span><span class="w"> </span><span class="nv">$payload</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">UI_ROUTE_URL</span><span class="si">}</span><span class="s2">/studio-gateway/v2/tunes/</span><span class="si">${</span><span class="nv">tune_id</span><span class="si">}</span><span class="s2">/try-out"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--header<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--header<span class="w"> </span><span class="s2">"X-API-Key: </span><span class="nv">$STUDIO_API_KEY</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--insecure<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--data<span class="w"> </span>@-
+</code></pre></div>
+</details>
+<ol>
+<li>You can follow the progress of the inference run in the UI in the inference page.  The files will be created and can be accessed via the <a href="https://localhost:9001">Minio ui</a>.</li>
+</ol>
+<h4 id="tuning-a-model-from-a-dataset-using-mac-gpus">Tuning a model from a dataset using Mac GPUs</h4>
+<ol>
+<li>
+<p>Now we can prepare the tuning task.  In a cluster deployed studio instance a user will prepare and submit their tuning task in one step, however, for local deployments, due to GPU accessibility within VMs (especially on Mac), we will use the studio to create the tuning config file and then run it outside the studio with TerraTorch.
+    </p><div class="highlight"><pre><span></span><code><span class="c1">#Need to create a script to call the dry-run api, get the config to file and update paths.</span>
+<span class="nv">payload</span><span class="o">=</span><span class="s1">'{</span>
+<span class="s1">  "name": "burn-scars-demo",</span>
+<span class="s1">  "description": "Segmentation",</span>
+<span class="s1">  "dataset_id": "&lt;dataset id here&gt;",</span>
+<span class="s1">  "base_model_id": "&lt;backbone model id here&gt;",</span>
+<span class="s1">  "tune_template_id": "&lt;tune template id here&gt;",</span>
+<span class="s1">  "model_parameters": {</span>
+<span class="s1">    "runner": {</span>
+<span class="s1">      "max_epochs": "10"</span>
+<span class="s1">    },</span>
+<span class="s1">    "optimizer": {</span>
+<span class="s1">      "lr": 6e-05,</span>
+<span class="s1">      "type": "AdamW"</span>
+<span class="s1">    }</span>
+<span class="s1">  }</span>
+<span class="s1">}'</span>
+
+<span class="nb">echo</span><span class="w"> </span><span class="nv">$payload</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">UI_ROUTE_URL</span><span class="si">}</span><span class="s2">/studio-gateway/v2/submit-tune/dry-run"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--header<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--header<span class="w"> </span><span class="s2">"X-API-Key: </span><span class="nv">$STUDIO_API_KEY</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--insecure<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--data<span class="w"> </span>@-<span class="w"> </span>&gt;&gt;<span class="w"> </span>config.yaml
+
+./deployment-scripts/localize_config.sh<span class="w"> </span>config.yaml
+</code></pre></div>
+</li>
+<li>
+<p>Run the tuning task:
+    </p><div class="highlight"><pre><span></span><code>terratorch<span class="w"> </span>fit<span class="w"> </span>-c<span class="w"> </span>config.yaml
+</code></pre></div>
+</li>
+<li>
+<p>Upload the tune back to the studio.  In this case we do it from the local config and checkpoint files.  Once its complete, you should see the it in the UI under the tunes/models page.</p>
+</li>
+</ol>
+<p><strong>Get the notebook:</strong>
+<a class="md-button md-button--primary" href="https://github.com/terrastackai/geospatial-studio/blob/docs/test-local-installation-notebook/populate-studio/getting-started-notebook.ipynb">View Notebook</a></p></div>
+
+
+
+
+
+
+
+  
+    
+  
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="February 11, 2026 12:46:25 UTC">February 11, 2026</span>
+  </span>
+
+    
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>
