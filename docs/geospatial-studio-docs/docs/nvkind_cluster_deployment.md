@@ -1,4 +1,4 @@
-# GPU-Enabled Development Setup (nvkind)
+# NVKind Cluster Deployment with GPUs
 
 ## Overview
 
@@ -33,12 +33,19 @@ Follow the [nvkind prerequisites](https://github.com/NVIDIA/nvkind#prerequisites
 **Verify GPU detection:**
 ```bash
 $ nvidia-smi -L
-GPU 0: NVIDIA L4 (UUID: GPU-3e71c48d-90c0-f46f-195b-4150320f9910)
-
 ```
+**Expected output:**
+```bash
+# GPU 0: NVIDIA L4 (UUID: GPU-3e71c48d-90c0-f46f-195b-4150320f9910)
+```
+
 ```bash
 $ docker run --runtime=nvidia -e NVIDIA_VISIBLE_DEVICES=all ubuntu:20.04 nvidia-smi -L
-GPU 0: NVIDIA L4 (UUID: GPU-3e71c48d-90c0-f46f-195b-4150320f9910)
+```
+
+**Expected output:**
+```bash
+# GPU 0: NVIDIA L4 (UUID: GPU-3e71c48d-90c0-f46f-195b-4150320f9910)
 ```
 ---
 
