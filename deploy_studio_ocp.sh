@@ -607,7 +607,6 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     ./deployment-scripts/values-file-generate.sh
 
     cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-    cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
 
     # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
     gpu_configuration_options="GPU-Available No-GPU-Available"
@@ -620,9 +619,9 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         "$gpu_configuration_options"
 
     if [[ "$gpu_configuration_type" == "GPU-Available" ]]; then
-        python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
+        python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
     else
-        python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
+        python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
     fi
 
 else
@@ -666,13 +665,6 @@ echo "----------------------------------------------------------------------"
 
 # Deploy Geospatial Studio
 ./deployment-scripts/deploy_studio.sh
-
-echo "----------------------------------------------------------------------"
-echo "-------------  Deploying the Studio Pipelines  -----------------------"
-echo "----------------------------------------------------------------------"
-
-# Deploy Geospatial Studio Pipelines
-./deployment-scripts/deploy_pipelines.sh
 
 echo "----------------------------------------------------------------------"
 echo "-----------------------  Deployment summary  -------------------------"

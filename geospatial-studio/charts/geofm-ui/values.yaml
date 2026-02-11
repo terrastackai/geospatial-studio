@@ -12,6 +12,10 @@
 #     name: quay.io/geospatial-studio/geostudio-ui
 #     tag: latest
 
+image:
+  # pullPolicy inherited from global.imagePullPolicy
+  # Can be overridden here if needed
+  # pullPolicy: Always
 
 replicaCount: 1
 

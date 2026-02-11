@@ -2,6 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+image:
+  # pullPolicy inherited from global.imagePullPolicy
+  # Can be overridden here if needed
+  pullPolicy: ""
+
 images:
   api:
     name: quay.io/geospatial-studio/geostudio-gateway
@@ -37,26 +42,40 @@ tolerations:
 
 hooks:
   db-migration:
-    enabled: true
-    # image: # if not defined, this will default
-    # volumes: # this will be tricky
-    when:
-      # Wait until the DB is available
-      - post-install
-      - post-upgrade
-    weight: -30
-    command:
-      - "sh"
-      - "-c"
-      - "alembic upgrade head && alembic -n auth upgrade head"
+      enabled: true
+      # Wait for database to be ready before running migration
+      waitForDb:
+        enabled: true
+        image: postgres:13
+        sleepTime: 5
+      # No volumes needed - alembic uses database connection
+      when:
+        - pre-install
+        - pre-upgrade
+      weight: -30
+      command:
+        - "sh"
+        - "-c"
+        - "alembic upgrade head && alembic -n auth upgrade head"
   db-seed-data:
       enabled: true
       image:  postgres:13
-      # volumes: # this will be tricky
+      # Wait for database to be ready before running seeding
+      waitForDb:
+        enabled: true
+        image: postgres:13
+        sleepTime: 5
+      # Mount seed data SQL file
+      volumeMounts:
+        - name: db-init-config
+          mountPath: /etc/config/init.sql
+          subPath: init.sql
+      volumes:
+        - name: db-init-config
+          configMapName: "{{ .Values.global.appNames.gateway }}-seed-data"
       when:
-        # Wait until the DB is available
-        - post-install
-        - post-upgrade
+        - pre-install
+        - pre-upgrade
       weight: -20
       command:
         - "sh"
@@ -69,9 +88,15 @@ hooks:
   db-mlflow-run-trigger:
       enabled: true
       image:  postgres:13
-      # volumes: # this will be tricky
+      # Mount mlflow trigger SQL file
+      volumeMounts:
+        - name: db-trigger-config
+          mountPath: /etc/config/trigger.sql
+          subPath: trigger.sql
+      volumes:
+        - name: db-trigger-config
+          configMapName: "{{ .Values.global.appNames.mlflow }}-run-trigger"
       when:
-        # Wait until the DB is available
         - post-install
         - post-upgrade
       weight: -10
@@ -209,26 +234,14 @@ services:
 
 resources:
   api:
-    requests:
-      cpu: "500m"
-      memory: "512Mi"
-    limits:
-      cpu: "1000m"
-      memory: "1Gi"
+    requests: {}
+    limits: {}
   oauth:
-    requests:
-      cpu: "200m"
-      memory: "128Mi"
-    limits:
-      cpu: "500m"
-      memory: "256Mi"
+    requests: {}
+    limits: {}
   celeryWorker:
-    requests:
-      cpu: "200m"
-      memory: "512Mi"
-    limits:
-      cpu: "500m"
-      memory: "1Gi"
+    requests: {}
+    limits: {}
   celeryFlower:
     requests: {}
     limits: {}
