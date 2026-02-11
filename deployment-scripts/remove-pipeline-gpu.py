@@ -19,7 +19,7 @@ with open(args.filename) as stream:
         print(exc)
 
 try:
-    for p in data['processors']:
+    for p in data['geospatial-studio-pipelines']['processors']:
         if 'resources' in p:
             if args.remove_affinity_only:
                 p.pop('affinity', None)
