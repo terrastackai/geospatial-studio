@@ -180,8 +180,69 @@ After deployment the UI will pop up on the screen and you can jump to [First ste
 
 
 ---
+## 💻 ⚙️ Getting Started (Local Deployment, Mac M1/M2/M3, Lima)
+### Environment set-up and prerequisite install
+0a. Close Rancher Desktop and any other applications that you may have on you Mac that use `lima` and/or the `6443|6444|10010|1025` ports which will be used by the geospatial application.
 
-## 💻⚙️ Getting Started (Local Deployment)
+0b. If you haven't already, install Homebrew.
+
+1. Clone the `geospatial-studio` repository (repo)
+```bash
+git clone git@github.com:terrastackai/geospatial-studio
+```
+
+2. Navigate to the `geospatial-studio` repo and make the `bootstrap.sh` script executable:
+```bash
+chmod +x bootstrap.sh
+```
+
+3. Execute the `bootstrap.sh` `bash` script to install all of the prerequisite Homebrew tools, install `lima` version 1.2.1, and `helm` version 3.19.0; install the python virtual enviornment `venv` with all of its dependencies in `requirements.txt`; and download the base Ubuntu 24.04 image referenced in `deployment-scripts/lima/studio.yaml` Note: during execution, you will be prompted to enter the machine's password to set up the pinned-version shortcuts (e.g., `lima121` for `lima` version 1.2.1):
+  ```shell
+  ./bootstrap.sh
+  ```
+
+4. Set and persist the `lima` environment variables (`${DEPLOYMENT_ENV}=lima`, `S{OC_PROJECT}=default)` by using `direnv`, updating your locally-defined, repo-scoped `.env` and `.envrc` files.
+
+5. Ensure that `.geo-venv` python enviornment is activated.
+```bash
+source .geo-venv/bin/activate
+```
+### Local Lima configuration
+
+1. Start the Lima VM cluster:
+
+  For macOS >= 13.0, ARM use command below. For macOS >= 13.0, AMD consider using [VZ](https://lima-vm.io/docs/config/vmtype/vz/) without Rosetta, or use the QEMU as configured in `deployment-scripts/lima/studio-linux.yaml`
+  ```shell
+  limactl121 start --name=studio deployment-scripts/lima/studio.yaml
+  ```
+
+2. Set up the kubectl context:
+```shell
+export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
+```
+
+3. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below, [see details here](./deployment-scripts/images-pre-puller/README-image-prepuller.md):
+```shell
+NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
+```
+4. Deploy the geospatial studio:
+```shell
+./deploy_studio_lima.sh
+```
+
+*Deployment can take ~10 minutes (or longer) depending available download speed for container images.*
+
+You can monitor the progress and debug using [`k9s`](https://k9scli.io) or similar tools.
+```shell
+export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
+k9s
+```
+After successful deployment you can jump to [First steps](#first-steps).
+
+
+
+
+## 💻 ⚙️ Getting Started (Local Deployment)
 
 #### Prerequisites:
 * [Lima VM](https://lima-vm.io/docs/installation/) - v1.2.1 (*currently incompatible with v2*)

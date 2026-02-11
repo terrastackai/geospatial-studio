@@ -9,6 +9,7 @@ stfc_keycloak.yaml
 tasks
 dryrun.yaml
 *.env
+*.envrc
 *filtered_kubernetes_resources.json
 values-*.yaml
 venv
