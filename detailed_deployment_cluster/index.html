@@ -2294,19 +2294,15 @@ openssl<span class="w"> </span>req<span class="w"> </span>-x509<span class="w"> 
 </p><div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
 </code></pre></div>
 </blockquote>
-<p>At this point, review <code>workspace/${DEPLOYMENT_ENV}/env/.env</code> and <code>workspace/${DEPLOYMENT_ENV}/env/env.sh</code> to ensure that you have collected all the needed environment variables and secrets. To generate values.yaml for <code>studio</code> and <code>studio-pipelines charts</code>, run the command below.
+<p>At this point, review <code>workspace/${DEPLOYMENT_ENV}/env/.env</code> and <code>workspace/${DEPLOYMENT_ENV}/env/env.sh</code> to ensure that you have collected all the needed environment variables and secrets. To generate values.yaml for <code>studio</code> charts, run the command below.
 </p><div class="highlight"><pre><span></span><code>./deployment-scripts/values-file-generate.sh
 </code></pre></div>
 This will generate two values files
 * workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml
-* workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml
 <p>It is recommended not to edit these values.yaml and instead create copies of them with names values-deploy.yaml.</p>
 <p>To prepare for deployment, make a copy of the values.yaml file:</p>
 <p>Copy for the studio
 </p><div class="highlight"><pre><span></span><code>cp<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio/values.yaml<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio/values-deploy.yaml
-</code></pre></div>
-<p>Copy for the studio pipelines
-</p><div class="highlight"><pre><span></span><code>cp<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio-pipelines/values.yaml<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio-pipelines/values-deploy.yaml
 </code></pre></div>
 <p>Now review the <code>values-deploy.yaml</code> files above. Explanation of each can be found <a href="deployment-values-details.md">here</a>.  Once you have completed this you can use <code>helm</code> to deploy. If using OpenShift, ensure you are logged in to the cluster in the terminal (get the cli login link from the top right corner of the OpenShift dashboard, dropdown under your username). For Kubernetes, ensure the right context is set.</p>
 <p>Once you are logged in, if this is the first time you are deploying the studio or have made changes to the charts, you need to pull dependecies for redis. Also in some instances you might need to delete <code>geospatial-studio/Chart.lock</code> file when there are conflicts.</p>
@@ -2314,18 +2310,12 @@ This will generate two values files
 </code></pre></div>
 <p>To see the helm template you can run the following command,
 </p><div class="highlight"><pre><span></span><code>helm<span class="w"> </span>template<span class="w"> </span>-f<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/values/geospatial-studio/values-deploy.yaml<span class="w"> </span>studio<span class="w"> </span>./geospatial-studio/<span class="w"> </span>--debug<span class="w"> </span>&gt;<span class="w"> </span>dryrun.yaml
-
-helm<span class="w"> </span>template<span class="w"> </span>-f<span class="w"> </span>workspace/<span class="nv">$DEPLOYMENT_ENV</span>/values/geospatial-studio-pipelines/values-deploy.yaml<span class="w"> </span>studio<span class="w"> </span>./geospatial-studio-pipelines/<span class="w"> </span>--debug<span class="w"> </span>&gt;<span class="w"> </span>dryrun.yaml
 </code></pre></div>
 <p>Then proceed to deploy with studio with,</p>
 <div class="highlight"><pre><span></span><code>./deployment-scripts/deploy_studio.sh
 </code></pre></div>
-<p>You can also deploy the pipelines with,
-</p><div class="highlight"><pre><span></span><code>./deployment-scripts/deploy_pipelines.sh
-</code></pre></div>
 <p>To uninstall use
 </p><div class="highlight"><pre><span></span><code>helm<span class="w"> </span>uninstall<span class="w"> </span>studio
-helm<span class="w"> </span>uninstall<span class="w"> </span>studio-pipelines
 </code></pre></div>
 <p>To restart all pods, run
 </p><div class="highlight"><pre><span></span><code>./deployment-scripts/restart-all-studio-pods.sh
@@ -2390,7 +2380,7 @@ helm<span class="w"> </span>uninstall<span class="w"> </span>studio-pipelines
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="February 3, 2026 13:37:34 UTC">February 3, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="February 4, 2026 14:55:37 UTC">February 4, 2026</span>
   </span>
 
     
