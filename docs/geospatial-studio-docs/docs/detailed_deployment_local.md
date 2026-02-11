@@ -601,7 +601,7 @@ export OAUTH_PROXY_PORT=4180
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 ```
 
-At this point, review `workspace/${DEPLOYMENT_ENV}/env/.env` and `workspace/${DEPLOYMENT_ENV}/env/env.sh` to ensure that you have collected all the needed environment variables and secrets. To generate values.yaml for `studio` and `studio-pipelines charts`, run the command below.
+At this point, review `workspace/${DEPLOYMENT_ENV}/env/.env` and `workspace/${DEPLOYMENT_ENV}/env/env.sh` to ensure that you have collected all the needed environment variables and secrets. To generate values.yaml for `studio` charts, run the command below.
 
 ```bash
 ./deployment-scripts/values-file-generate.sh
@@ -609,7 +609,6 @@ At this point, review `workspace/${DEPLOYMENT_ENV}/env/.env` and `workspace/${DE
 
 This will generate two values files
 * `workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml`
-* `workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml`
 
 >If you get a permision error when auto-retrieving the cluster url, you need to manually enter the `CLUSTER_URL` in `workspace/$DEPLOYMENT_ENV/env/env.sh`.
 
@@ -617,8 +616,6 @@ It is recommended not to edit these values.yaml and instead create copies of the
 
 ```bash
 cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-
-cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio-pipelines/values-deploy.yaml
 ```
 
 Now review the `values-deploy.yaml` files above. Explanation of each can be found in the file comments.  Once you have completed this you can use `helm` to deploy.  
@@ -701,22 +698,17 @@ helm dependency build ./geospatial-studio/
 To see the helm template you can run the following command:
 ```bash
 helm template -f workspace/$DEPLOYMENT_ENV/values/geospatial-studio/values-deploy.yaml studio ./geospatial-studio/ --debug > dryrun.yaml
-
-helm template -f workspace/$DEPLOYMENT_ENV/values/geospatial-studio-pipelines/values-deploy.yaml studio ./geospatial-studio-pipelines/ --debug > dryrun.yaml
 ```
 
 To begin deployment run the two commands to deploy studio core services and the pipelines.
 
 ```bash
 ./deployment-scripts/deploy_studio.sh
-
-./deployment-scripts/deploy_pipelines.sh
 ```
 
 If for any reason you need to uninstall the deployments you can use:
 ```bash
 helm uninstall studio
-helm uninstall studio-pipelines
 ```
 
 <!-- To restart all pods, run

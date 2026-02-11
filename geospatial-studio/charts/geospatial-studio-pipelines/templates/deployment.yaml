@@ -32,10 +32,25 @@ spec:  {{ if hasKey $v "replicas" }}
        - name: {{ $.Values.imagePullSecret.name }}
       {{- if and (hasKey $v "affinity") ($.Values.gpuConfig.enabled) }}
       affinity: {{ $v.affinity | toYaml | nindent 8 }} {{- end }}
+      {{- if $.Values.waitForGateway.enabled }}
+      initContainers:
+      - name: wait-for-gateway
+        image: {{ $.Values.waitForGateway.image }}
+        imagePullPolicy: {{ $.Values.image.pullPolicy | default $.Values.global.imagePullPolicy }}
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Waiting for gateway service to be ready..."
+          until nc -z {{ $.Values.gateway.appName }}.{{ $.Values.namespace }}.svc.cluster.local {{ $.Values.waitForGateway.port }}; do
+            echo "Gateway service not ready yet, retrying in {{ $.Values.waitForGateway.sleepTime }} seconds..."
+            sleep {{ $.Values.waitForGateway.sleepTime }}
+          done
+          echo "Gateway service is ready!"
+      {{- end }}
       containers:
       - name: {{ $.Values.namePrefix }}-{{ $v.name }}
         image: {{ $v.image.name }}:{{ $v.image.tag }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ $.Values.image.pullPolicy | default $.Values.global.imagePullPolicy }}
         # securityContext:
         #     capabilities:
         #       drop:
@@ -46,7 +61,7 @@ spec:  {{ if hasKey $v "replicas" }}
         envFrom:
           - configMapRef:
               name: pipeline-gateway-cm
-        {{- if eq $.Values.observability.enabled true }}
+        {{- if and (hasKey $.Values "observability") (hasKey $.Values.observability "enabled") $.Values.observability.enabled }}
           - configMapRef:
               name: pipeline-observability-cm
         {{- end }}
@@ -60,7 +75,7 @@ spec:  {{ if hasKey $v "replicas" }}
                 key: orchestrate_db_uri
           - name: log_level
             value: {{ $.Values.log_level }}
-        {{- if eq $.Values.observability.enabled true }}
+        {{- if and (hasKey $.Values "observability") (hasKey $.Values.observability "enabled") $.Values.observability.enabled }}
           - name: process_exec
             value: {{ printf "opentelemetry-instrument %s" $v.process_exec }}
           - name: OTEL_SERVICE_NAME
@@ -91,7 +106,14 @@ spec:  {{ if hasKey $v "replicas" }}
           - name: dshm
             mountPath: /dev/shm {{ end }} {{ end }}
         {{- if hasKey $v "resources" }}
-        resources: {{ $v.resources | toYaml | nindent 10 }} {{- end }}  
+        resources:
+          {{- if hasKey $v.resources "limits" }}
+          limits: {{ omit $v.resources.limits "shm" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if hasKey $v.resources "requests" }}
+          requests: {{ omit $v.resources.requests "shm" | toYaml | nindent 12 }}
+          {{- end }}
+        {{- end }}
       volumes:
         - name: test-inference-pvc
           persistentVolumeClaim:

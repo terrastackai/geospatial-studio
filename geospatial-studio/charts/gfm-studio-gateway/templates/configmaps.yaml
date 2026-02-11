@@ -15,6 +15,9 @@ metadata:
   name: {{ .Values.global.appNames.gateway }}-cm
   labels:
     app: {{ .Values.global.appNames.gateway }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-40"
 data:
   TUNE_BASEDIR: {{ .Values.mountLocations.files_mount}}
   TUNES_FILES_BUCKET: {{ .Values.global.objectStorage.buckets.fineTuning }}
@@ -220,17 +223,23 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Values.global.appNames.gateway }}-seed-data
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-40"
 data:
   init.sql: |
     -- SQL command to insert default data.
-    INSERT INTO public."user" (first_name, last_name, email, data_usage_consent, organization_id, extra_data, id, created_at, updated_at, created_by, updated_by, active, deleted) VALUES('Studio', 'Dev', 'Studio.Dev@dev.com', false, NULL, 'null'::json, '57db2b61-2192-40cc-a7b9-86cbf89f9a07'::uuid, '2024-07-07 20:31:07.713', '2024-07-07 17:31:07.725', 'system@ibm.com', 'system@ibm.com', true, false);
-    INSERT INTO public.apikey (value,last_used_at,user_id,expires_on,id,created_at,updated_at,created_by,updated_by,active,deleted) VALUES ('secret_placeholder_key',NULL,'57db2b61-2192-40cc-a7b9-86cbf89f9a07'::uuid,'2025-12-10 17:38:58.213','aa87b231-46b7-417e-a10d-c59d0a9d5c17'::uuid,'2025-08-11 20:38:58.200','2025-08-12 17:38:58.213','system@ibm.com','system@ibm.com',true,false);
+    INSERT INTO public."user" (first_name, last_name, email, data_usage_consent, organization_id, extra_data, id, created_at, updated_at, created_by, updated_by, active, deleted) VALUES('Studio', 'Dev', 'Studio.Dev@dev.com', false, NULL, 'null'::json, '57db2b61-2192-40cc-a7b9-86cbf89f9a07'::uuid, '2024-07-07 20:31:07.713', '2024-07-07 17:31:07.725', 'system@ibm.com', 'system@ibm.com', true, false) ON CONFLICT (id) DO NOTHING;
+    INSERT INTO public.apikey (value,last_used_at,user_id,expires_on,id,created_at,updated_at,created_by,updated_by,active,deleted) VALUES ('secret_placeholder_key',NULL,'57db2b61-2192-40cc-a7b9-86cbf89f9a07'::uuid,'2025-12-10 17:38:58.213','aa87b231-46b7-417e-a10d-c59d0a9d5c17'::uuid,'2025-08-11 20:38:58.200','2025-08-12 17:38:58.213','system@ibm.com','system@ibm.com',true,false) ON CONFLICT (id) DO NOTHING;
 
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Values.global.appNames.mlflow }}-run-trigger
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-15"
 data:
   trigger.sql: |
     -- SQL command to create mlflow run trigger.

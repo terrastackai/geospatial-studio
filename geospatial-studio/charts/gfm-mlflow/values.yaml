@@ -46,6 +46,9 @@ service:
   type: ClusterIP
   port: 5000
 
+route:
+  enabled: false
+
 # ingress:
 #   enabled: false
 #   className: ""
