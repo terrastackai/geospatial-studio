@@ -37,6 +37,10 @@ export REDIS_ENABLED=true
 export REDIS_FULL_NAME_OVERRIDE=geofm-redis
 export REDIS_ARCHITECTURE=replication
 
+# Pipelines configuration
+export PIPELINES_ENABLED=true
+export PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC=true
+
 # AUTH
 export OAUTH_PROXY_ENABLED=true
 export OAUTH_PROXY_PORT=8443
@@ -67,6 +71,7 @@ export BUCKET_GENERIC_PYTHON_PROCESSOR=${DEPLOYMENT_ENV}-generic-python-processo
 
 # GPU_CONFIG
 export CONFIGURE_GPU_AFFINITY_FLAG=false
+export CONFIGURE_GPU_AFFINITY=false
 export NODE_SELECTOR_KEY=nvidia.com/gpu.product
 export NODE_GPU_SPEC=NVIDIA-A100-SXM4-80GB
 

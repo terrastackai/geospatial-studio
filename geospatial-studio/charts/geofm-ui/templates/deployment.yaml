@@ -33,7 +33,7 @@ spec:
       containers:
         - name: {{ .Values.global.appNames.ui }}
           image: {{ .Values.image.name }}:{{ .Values.image.tag }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
           securityContext:
             {{- toYaml .Values.securityContext.pod | nindent 14 }}
           ports:
@@ -55,7 +55,7 @@ spec:
             runAsNonRoot: true
             allowPrivilegeEscalation: false
           image: {{ .Values.global.oauth.image.name }}:{{ .Values.global.oauth.image.tag }}
-          imagePullPolicy: Always
+          imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
           ports:
             - name: oauth-proxy
               containerPort: {{ .Values.global.oauth.oauthProxyPort }}
