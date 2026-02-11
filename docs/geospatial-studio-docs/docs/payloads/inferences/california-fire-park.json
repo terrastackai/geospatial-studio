@@ -1,0 +1,151 @@
+{
+    "model_display_name": "geofm-sandbox-models",
+    "location": "Red Bluff, California, United States",
+    "description": "Park Fire Aug 2024",
+    "spatial_domain": {
+        "bbox": [],
+        "urls": [
+            "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/examples-for-inference/park_fire_scaled.tif"
+        ],
+        "tiles": [],
+        "polygons": []
+    },
+    "temporal_domain": [
+        "2024-08-12"
+    ],
+    "pipeline_steps": [
+        {
+            "status": "READY",
+            "process_id": "url-connector",
+            "step_number": 0
+        },
+        {
+            "status": "WAITING",
+            "process_id": "terratorch-inference",
+            "step_number": 1
+        },
+        {
+            "status": "WAITING",
+            "process_id": "postprocess-generic",
+            "step_number": 2
+        },
+        {
+            "status": "WAITING",
+            "process_id": "push-to-geoserver",
+            "step_number": 3
+        }
+    ],
+    "post_processing": {
+        "cloud_masking": "False",
+        "ocean_masking": "False",
+        "snow_ice_masking": null,
+        "permanent_water_masking": "False"
+    },
+    "model_input_data_spec": [
+        {
+            "bands": [
+                {
+                    "index": "0",
+                    "RGB_band": "B",
+                    "band_name": "Blue",
+                    "scaling_factor": "0.0001"
+                },
+                {
+                    "index": "1",
+                    "RGB_band": "G",
+                    "band_name": "Green",
+                    "scaling_factor": "0.0001"
+                },
+                {
+                    "index": "2",
+                    "RGB_band": "R",
+                    "band_name": "Red",
+                    "scaling_factor": "0.0001"
+                },
+                {
+                    "index": "3",
+                    "band_name": "NIR_Narrow",
+                    "scaling_factor": "0.0001"
+                },
+                {
+                    "index": "4",
+                    "band_name": "SWIR1",
+                    "scaling_factor": "0.0001"
+                },
+                {
+                    "index": "5",
+                    "band_name": "SWIR2",
+                    "scaling_factor": "0.0001"
+                }
+            ],
+            "connector": "sentinelhub",
+            "collection": "hls_l30",
+            "file_suffix": "_merged.tif",
+            "modality_tag": "HLS_L30"
+        }
+    ],
+    "geoserver_push": [
+        {
+            "z_index": 0,
+            "workspace": "geofm",
+            "layer_name": "input_rgb",
+            "file_suffix": "",
+            "display_name": "Input image (RGB)",
+            "filepath_key": "model_input_original_image_rgb",
+            "geoserver_style": {
+                "rgb": [
+                    {
+                        "label": "RedChannel",
+                        "channel": 1,
+                        "maxValue": 255,
+                        "minValue": 0
+                    },
+                    {
+                        "label": "GreenChannel",
+                        "channel": 2,
+                        "maxValue": 255,
+                        "minValue": 0
+                    },
+                    {
+                        "label": "BlueChannel",
+                        "channel": 3,
+                        "maxValue": 255,
+                        "minValue": 0
+                    }
+                ]
+            },
+            "visible_by_default": "True"
+        },
+        {
+            "z_index": 1,
+            "workspace": "geofm",
+            "layer_name": "pred",
+            "file_suffix": "",
+            "display_name": "Model prediction",
+            "filepath_key": "model_output_image",
+            "geoserver_style": {
+                "segmentation": [
+                    {
+                        "color": "#000000",
+                        "label": "ignore",
+                        "opacity": 0,
+                        "quantity": "-1"
+                    },
+                    {
+                        "color": "#000000",
+                        "label": "no-data",
+                        "opacity": 0,
+                        "quantity": "0"
+                    },
+                    {
+                        "color": "#ab4f4f",
+                        "label": "fire-scar",
+                        "opacity": 1,
+                        "quantity": "1"
+                    }
+                ]
+            },
+            "visible_by_default": "True"
+        }
+    ]
+}
