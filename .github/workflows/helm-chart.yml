@@ -1,0 +1,110 @@
+name: Build & Publish Helm Charts
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'geospatial-studio/**'
+      - '.github/workflows/helm-chart.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'geospatial-studio/**'
+    types: [opened, synchronize, reopened]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'latest'
+
+      - name: Add Bitnami repository
+        run: helm repo add bitnami https://charts.bitnami.com/bitnami
+
+      - name: Update Helm dependencies
+        working-directory: geospatial-studio
+        run: helm dependency update
+
+      - name: Lint Helm chart
+        working-directory: geospatial-studio
+        run: helm lint .
+
+  package:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'latest'
+
+      - name: Add Bitnami repository
+        run: helm repo add bitnami https://charts.bitnami.com/bitnami
+
+      - name: Update Helm dependencies
+        working-directory: geospatial-studio
+        run: helm dependency update
+
+      - name: Package Helm chart
+        working-directory: geospatial-studio
+        run: helm package .
+
+      - name: Upload packaged chart
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main')
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-chart
+          path: geospatial-studio/*.tgz
+          retention-days: 30
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: package
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'latest'
+
+      - name: Download packaged chart
+        uses: actions/download-artifact@v4
+        with:
+          name: helm-chart
+          path: .
+
+      - name: Login to Quay.io
+        env:
+          QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
+        run: |
+          echo "$QUAY_TOKEN" | helm registry login quay.io --username 'geospatial-studio+github_actions' --password-stdin
+
+      - name: Push chart to Quay.io
+        run: |
+          CHART_FILE=$(ls geospatial-studio-*.tgz)
+          helm push "$CHART_FILE" oci://quay.io/geospatial-studio/charts
+
+      - name: Logout from Quay.io
+        if: always()
+        run: helm registry logout quay.io
