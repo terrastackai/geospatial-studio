@@ -120,6 +120,7 @@ extraEnvironment:
     ## NOTE: If set to True, values for NODE_SELECTOR_KEY and 
     ## NODE_GPU_SPEC should be defined
     CONFIGURE_GPU_AFFINITY: false
+    DEFAULT_SYSTEM_USER: "Studio.Dev@dev.com"
     ## The node label key used for GPU node affinity. By default, this uses
     ## the standard Kubernetes label `nvidia.com/gpu.product` provided by
     ## the NVIDIA device plugin.
