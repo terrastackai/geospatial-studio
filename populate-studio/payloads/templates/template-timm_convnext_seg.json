@@ -13,7 +13,8 @@
                 "default": {
                 "batch_size": 4,
                 "constant_multiply": 1,
-                "workers_per_gpu": 2
+                "workers_per_gpu": 2,
+                "check_stackability": false
                 },
                 "properties": {
                 "batch_size": {
@@ -33,6 +34,12 @@
                     "description": "Workers per GPU",
                     "type": "int",
                     "default": 2
+                },
+                "check_stackability": {
+                    "studio_name": "Check Stackability",
+                    "description": "Check Stackability",
+                    "type": "bool",
+                    "default": false
                 }
                 },
                 "studio_name": "Data loading"
