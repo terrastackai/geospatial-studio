@@ -1,72 +1,207 @@
 # GEOStudio Operator
 
-A Kubernetes operator for deploying and managing GEOStudio using the Operator SDK with Helm.
+This operator manages the deployment and lifecycle of GEOStudio on Kubernetes/OpenShift using the Operator SDK with Helm.
 
-## Documentation
+## Prerequisites
 
-- **[QUICKSTART.md](QUICKSTART.md)** - Fast-track deployment guide with minimal steps
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Comprehensive deployment guide with production considerations
+- Kubernetes cluster (Lima, Minikube, or any K8s cluster)
+- `kubectl` configured to access your cluster
+- `helm` CLI (v3.12+)
+- `docker` CLI with access to push to quay.io
+- `envsubst` command (install via `brew install gettext` on macOS)
 
-Choose the guide that fits your needs:
-- Use **QUICKSTART** if you want to get up and running quickly
-- Use **DEPLOYMENT** for production deployments with detailed explanations
+## Deployment Steps
 
-## What is GEOStudio?
-
-GEOStudio is a comprehensive geospatial data platform that provides:
-- Machine learning model inference and fine-tuning
-- Geospatial data processing pipelines
-- Data visualization and management
-- Integration with object storage and databases
-
-## Operator Features
-
-- **Declarative Deployment**: Define your GEOStudio configuration as a Kubernetes custom resource
-- **Automated Lifecycle Management**: The operator handles installation, upgrades, and configuration changes
-- **Namespace Isolation**: Deploy operator and applications in separate namespaces
-- **Flexible Configuration**: Customize all aspects of the deployment via environment variables
-- **Production Ready**: Supports high availability, monitoring, and security best practices
-
-## Architecture
-
-The operator manages a Helm chart that deploys multiple components:
-- **Gateway API**: Backend services for geospatial operations
-- **UI**: Web interface for user interaction
-- **MLflow**: Machine learning experiment tracking
-- **Redis**: Caching and message queue
-- **Pipelines**: Data processing workflows
-
-Infrastructure components (deployed separately):
-- **PostgreSQL**: Database for application data
-- **MinIO**: S3-compatible object storage
-- **Keycloak**: Authentication and authorization
-- **GeoServer**: Geospatial data serving
-
-## Quick Start
-
-For the fastest deployment experience:
+### 1. Set Kubernetes Context
 
 ```bash
-# Clone the repository
-git clone https://github.com/IBM/geospatial-studio.git
-cd geospatial-studio
+# For Lima users
+export KUBECONFIG="/Users/brianglar/.lima/studio/copied-from-guest/kubeconfig.yaml"
 
-# Follow the QUICKSTART guide
-cat operators/QUICKSTART.md
+# For other clusters, ensure your kubeconfig is set
+kubectl config current-context
 ```
 
-Or jump directly to specific sections:
-- [Build and push Helm chart](QUICKSTART.md#2-build-and-push-helm-chart)
-- [Deploy infrastructure](QUICKSTART.md#3-deploy-infrastructure)
-- [Install operator](QUICKSTART.md#5-install-operator)
-- [Deploy application](QUICKSTART.md#6-deploy-geostudio-application)
+### 2. Build and Push Helm Chart
 
-## Support
+```bash
+cd geospatial-studio
 
-- **Issues**: https://github.com/IBM/geospatial-studio/issues
-- **Discussions**: https://github.com/IBM/geospatial-studio/discussions
+# Update dependencies
+helm dependency update
 
-## License
+# Package the chart
+helm package . --destination .
 
-Copyright IBM Corporation 2025  
-SPDX-License-Identifier: Apache-2.0
+# Push to quay.io (replace version if needed)
+helm push geospatial-studio-0.1.4.tgz oci://quay.io/geospatial-studio/charts/geospatial-studio
+```
+
+### 3. Deploy Infrastructure
+
+```bash
+# Deploy PostgreSQL, Keycloak, MinIO, and GeoServer
+./operators/scripts/setup-infrastructure.sh
+```
+
+**Note:** This script will prompt for namespace and other configuration options.
+
+### 4. Build and Push Operator
+
+```bash
+cd operators
+
+# Build operator image (update version tag as needed)
+docker build --load \
+  --build-arg CHART_VERSION=0.1.4 \
+  -t quay.io/geospatial-studio/geostudio-operator:v0.0.2a10 .
+
+# Push to quay.io
+docker push quay.io/geospatial-studio/geostudio-operator:v0.0.2a10
+```
+
+### 5. Install Operator
+
+```bash
+# Install CRDs and deploy operator to geostudio-operator-system namespace
+make install NAMESPACE=geostudio-operator-system IMG=quay.io/geospatial-studio/geostudio-operator
+```
+
+### 6. Deploy GeoStudio Application
+
+```bash
+# Copy example environment file
+cp operators/examples/.env.example .geostudio-env
+
+# Edit the environment file with your configuration
+vim .geostudio-env
+
+# Source the environment variables
+set -a
+source .geostudio-env
+set +a
+
+# Generate GeoStudio custom resource from template
+envsubst < operators/examples/geostudio-template2.yaml > my-geostudio.yaml
+
+# Review the generated configuration (optional but recommended)
+cat my-geostudio.yaml
+
+# Deploy GeoStudio application
+kubectl apply -f my-geostudio.yaml
+```
+
+### 7. Verify Deployment
+
+```bash
+# Check operator status
+kubectl get pods -n geostudio-operator-system
+
+# Check GeoStudio custom resource
+kubectl get geostudio -n ${NAMESPACE:-default}
+
+# Check application pods
+kubectl get pods -n ${NAMESPACE:-default}
+
+# Watch deployment progress
+kubectl get pods -n ${NAMESPACE:-default} -w
+```
+
+## Accessing the Application
+
+### Port Forwarding
+
+```bash
+# Forward UI port
+kubectl port-forward svc/geofm-ui 8080:80 -n ${NAMESPACE:-default}
+
+# Forward API Gateway port
+kubectl port-forward svc/geofm-gateway 8081:4180 -n ${NAMESPACE:-default}
+
+# Forward MLflow port
+kubectl port-forward svc/geofm-mlflow 5000:5000 -n ${NAMESPACE:-default}
+```
+
+Access the application:
+- **UI:** http://localhost:8080
+- **API:** http://localhost:8081
+- **MLflow:** http://localhost:5000
+
+## Configuration
+
+### Environment Variables
+
+Edit `.geostudio-env` to customize your deployment. Key variables include:
+
+```bash
+NAMESPACE=default                          # Target namespace
+CLUSTER_URL=localhost                      # Cluster URL for routes
+POSTGRES_PASSWORD=your-secure-password     # PostgreSQL password
+MINIO_PASSWORD=your-secure-password        # MinIO password
+REDIS_PASSWORD=your-secure-password        # Redis password
+```
+
+For a complete list of variables, see `operators/examples/.env.example`.
+
+## Updating the Deployment
+
+### Update Application Configuration
+
+```bash
+# Edit environment variables
+vim .geostudio-env
+
+# Regenerate and apply
+set -a
+source .geostudio-env
+set +a
+envsubst < operators/examples/geostudio-template2.yaml > my-geostudio.yaml
+kubectl apply -f my-geostudio.yaml
+```
+
+### Update Operator
+
+```bash
+cd operators
+
+# Build new operator version
+docker build --load \
+  --build-arg CHART_VERSION=0.1.4 \
+  -t quay.io/geospatial-studio/geostudio-operator:v0.0.2a11 .
+
+# Push to registry
+docker push quay.io/geospatial-studio/geostudio-operator:v0.0.2a11
+
+# Update deployment
+make deploy IMG=quay.io/geospatial-studio/geostudio-operator:v0.0.2a11 NAMESPACE=geostudio-operator-system
+```
+
+## Cleanup
+
+### Remove Application
+
+```bash
+kubectl delete -f my-geostudio.yaml
+```
+
+### Remove Infrastructure
+
+```bash
+kubectl delete deployment minio keycloak geoserver -n ${NAMESPACE:-default}
+helm uninstall postgresql -n ${NAMESPACE:-default}
+```
+
+### Remove Operator
+
+```bash
+cd operators
+make undeploy NAMESPACE=geostudio-operator-system
+make uninstall
+```
+
+### Remove Namespace
+
+```bash
+kubectl delete namespace ${NAMESPACE:-default}
+kubectl delete namespace geostudio-operator-system
+```
