@@ -13,7 +13,8 @@
             "default": {
                 "batch_size": 4,
                 "constant_multiply": 1,
-                "workers_per_gpu": 2
+                "workers_per_gpu": 2,
+                "check_stackability": false
             },
             "properties": {
                 "batch_size": {
@@ -33,7 +34,13 @@
                 "description": "Workers per GPU",
                 "type": "int",
                 "default": 2
-                }
+            },
+            "check_stackability": {
+                "studio_name": "Check Stackability",
+                "description": "Check Stackability",
+                "type": "bool",
+                "default": false
+            }
             },
             "studio_name": "Data loading"
             },
@@ -48,13 +55,13 @@
                     "type": "CrossEntropyLoss",
                     "avg_non_ignore": true
                 }
-                },
+            },
                 "frozen_backbone": false,
                 "tiled_inference_parameters": {
                 "h_crop": 224,
-                "h_stride": 196,
+                "h_stride": 208,
                 "w_crop": 224,
-                "w_stride": 196,
+                "w_stride": 208,
                 "average_patches": true
                 }
             },
@@ -192,9 +199,9 @@
                 "type": "object",
                 "default": {
                     "h_crop": 224,
-                    "h_stride": 196,
+                    "h_stride": 208,
                     "w_crop": 224,
-                    "w_stride": 196,
+                    "w_stride": 208,
                     "average_patches": true
                 },
                 "properties": {
@@ -224,7 +231,7 @@
                     },
                     "average_patches": {
                     "type": "bool",
-                    "default": true,
+                    "default": false,
                     "description": "Whether to use average_patches",
                     "studio_name": "average_patches"
                     }
