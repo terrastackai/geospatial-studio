@@ -1,0 +1,390 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+# ==============================================================================
+# GEOStudio Template - Environment Variable Substitution
+# ==============================================================================
+# This template uses environment variables for easy customization without
+# needing to edit the file directly.
+#
+# Usage:
+#   # 1. Set environment variables (required - defaults shown below)
+# export NAMESPACE=default
+# export CLUSTER_URL=localhost
+# export MINIO_USER=minioadmin
+# export MINIO_PASSWORD=minioadmin
+# export POSTGRES_PASSWORD=devPostgresql123
+# export REDIS_PASSWORD=redis123
+# export MINIO_STORAGE=20Gi
+# export POSTGRES_STORAGE=10Gi
+# export GEOSERVER_STORAGE=20Gi
+# export ENVIRONMENT=development
+# export STORAGE_CLASS=""
+# export IMAGE_PULL_POLICY=IfNotPresent
+# export MLFLOW_TAG=latest
+# export GATEWAY_TAG=latest
+# export GEOSERVER_TAG=2.28.1
+# export UI_TAG=latest
+#
+#   # 2. Generate and apply in one command
+#   envsubst < examples/geostudio-template.yaml | kubectl apply -f -
+#
+# Alternative: Source defaults and override what you need
+#   source examples/.env.example
+#   export NAMESPACE=production
+#   export POSTGRES_PASSWORD=$(openssl rand -base64 32)
+#   envsubst < examples/geostudio-template.yaml | kubectl apply -f -
+#
+# Alternative: Generate to a file first
+#   envsubst < examples/geostudio-template.yaml > my-geostudio.yaml
+#   kubectl apply -f my-geostudio.yaml
+#
+# Note: envsubst is available on most Linux/Unix systems. On macOS, install via:
+#   brew install gettext
+#   brew link --force gettext
+# ==============================================================================
+
+apiVersion: geostudio.geostudio.ibm.com/v1alpha1
+kind: GEOStudio
+metadata:
+  name: geostudio
+  namespace: $NAMESPACE
+
+spec:
+  # ==========================================================================
+  # Infrastructure - Auto-Deploy Everything
+  # ==========================================================================
+  # infrastructure:
+  #   # MinIO - Object Storage
+  #   minio:
+  #     enabled: false
+  #     mode: standalone
+  #     replicas: 1
+  #     persistence:
+  #       enabled: true
+  #       size: $MINIO_STORAGE
+  #     resources:
+  #       requests:
+  #         memory: 512Mi
+  #         cpu: 250m
+  #     rootUser: $MINIO_USER
+  #     rootPassword: $MINIO_PASSWORD
+  #     buckets:
+  #       - name: geofm-inference
+  #       - name: geofm-inference-auxdata
+  #       - name: geofm-fine-tuning
+  #       - name: geofm-fine-tuning-models
+  #       - name: geofm-dataset-factory
+  #       - name: geofm-amo
+  #       - name: geofm-mlflow
+  #       - name: geofm-geoserver
+  #       - name: geofm-temp-uploads
+    
+  #   # PostgreSQL - Database
+  #   postgresql:
+  #     enabled: false
+  #     auth:
+  #       username: postgres
+  #       password: $POSTGRES_PASSWORD
+  #       database: postgres
+  #     primary:
+  #       persistence:
+  #         enabled: true
+  #         size: $POSTGRES_STORAGE
+  #       resources:
+  #         requests:
+  #           memory: 256Mi
+  #           cpu: 250m
+  #       initdb:
+  #         scripts:
+  #           create-geostudio-dbs.sh: |
+  #             #!/bin/bash
+  #             set -e
+  #             psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+  #                 SELECT 'CREATE DATABASE geostudio'
+  #                 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'geostudio')\gexec
+                  
+  #                 SELECT 'CREATE DATABASE geostudio_auth'
+  #                 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'geostudio_auth')\gexec
+                  
+  #                 SELECT 'CREATE DATABASE mlflow'
+  #                 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mlflow')\gexec
+  #             EOSQL
+    
+  #   # Keycloak - Authentication (Optional)
+  #   keycloak:
+  #     enabled: false  # Set to true to enable OAuth
+  
+  infrastructure:
+    minio:
+      enabled: false  # Use external S3/MinIO
+    postgresql:
+      enabled: false  # Use external PostgreSQL
+    keycloak:
+      enabled: false  # Use external Keycloak
+  # ==========================================================================
+  # Global Configuration
+  # ==========================================================================
+  global:
+    cluster_url: $CLUSTER_URL
+    namespace: $NAMESPACE
+    environment: $ENVIRONMENT
+    label: geofm-studio
+    
+    # Image pull policy
+    imagePullPolicy: $IMAGE_PULL_POLICY
+    
+    # Storage configuration
+    storage:
+      pvc:
+        enabled: true
+      filesystem:
+        enabled: false
+    
+    # Storage classes
+    non_cos_storage_class: $STORAGE_CLASS
+    
+    # Object Storage - configured for auto-deployed MinIO
+    objectStorage:
+      endpoint: https://minio.$NAMESPACE.svc.cluster.local:9000
+      access_key: $MINIO_USER
+      secret_key: $MINIO_PASSWORD
+      region: us-east-1
+      create_bucket: true
+      createCosSecret: true
+      cos_storage_class: $STORAGE_CLASS
+      buckets:
+        inference: lima-inference
+        inference_auxdata: lima-inference-auxdata
+        fineTuning: lima-fine-tuning
+        fineTuningModels: lima-fine-tuning-models
+        datasetFactory: lima-dataset-factory
+        amo: lima-amo
+        mlflow: lima-mlflow
+        geoserver: lima-geoserver
+        temporaryUploads: lima-temp-uploads
+    
+    # PostgreSQL - configured for auto-deployed database
+    postgres:
+      # in_cluster_db: true
+      postgres_host: postgresql.$NAMESPACE.svc.cluster.local
+      postgres_port: 5432
+      postgres_username: postgres
+      postgres_password: $POSTGRES_PASSWORD
+      postgres_db: postgres
+
+      backend_uri_base: postgresql+pg8000://postgres:$POSTGRES_PASSWORD@postgresql.$NAMESPACE.svc.cluster.local:5432
+      dbs:
+        mlflow: mlflow
+        gateway: geostudio
+        auth: geostudio_auth
+    
+    # Service Account
+    serviceAccount:
+      create: true
+      name: geostudio-sa
+    
+    # OAuth/Authentication (disabled by default)
+    oauth:
+      oauthProxyEnabled: true
+      oauthProxyPort: "4180"
+      type: keycloak
+      clientId: geostudio-client
+      
+      # External Keycloak endpoints
+      issuerUrl: https://auth.example.com/realms/geostudio
+      oauthUrl: https://auth.example.com/realms/geostudio/protocol/openid-connect/auth
+      
+      # Secrets (use Kubernetes secrets in production)
+      clientSecret: $OAUTH_CLIENT_SECRET
+      cookieSecret: $OAUTH_COOKIE_SECRET
+      extraOauthProxyArgs: $OAUTH_EXTRA_PROXY_ARGS
+      # TLS configuration
+      createTLSSecret: true
+      tlsCrtB64: $TLS_CRT_B64
+      tlsKeyB64: $TLS_KEY_B64
+
+  # oauth:
+
+  #   oauthProxyEnabled: OAUTH_PROXY_ENABLED
+  #   oauthProxyPort: "OAUTH_PROXY_PORT"
+  #   type: OAUTH_TYPE # other supported types include keycloak
+  #   clientId: OAUTH_CLIENT_ID
+  #   # UI needs
+  #   oauthUrl: OAUTH_URL # authorization_endpoint consumed by the UI 
+  #   scope: "openid email profile"
+  #   loginHint: loginHint
+  #   prompt: prompt
+  #   responseType: responseType
+  #   # oauth2-proxy needs
+  #   issuerUrl: OAUTH_ISSUER_URL # authorization_endpoint used in oauth2-proxy
+  #   clientSecret: clientSecret
+  #   cookieSecret: cookieSecret
+  #   extraOauthProxyArgs: OAUTH_EXTRA_PROXY_ARGS
+  #   # for kubernetes we need the tls secret
+  #   createTLSSecret: CREATE_TLS_SECRET
+  #   tlsCrtB64: tlsCrtB64
+  #   tlsKeyB64: tlsKeyB64
+  
+  # ==========================================================================
+  # Application Components - All Enabled with Defaults
+  # ==========================================================================
+  
+  # MinIO - Infrastructure subchart configuration
+  # Note: Configuration is duplicated here for Helm subchart consumption
+  # minio:
+  #   mode: $MINIO_MODE
+  #   replicas: 1
+  #   persistence:
+  #     enabled: true
+  #     size: $MINIO_STORAGE
+  #   resources:
+  #     requests:
+  #       memory: 512Mi
+  #       cpu: 250m
+  #   rootUser: $MINIO_USER
+  #   rootPassword: $MINIO_PASSWORD
+  #   buckets:
+  #     - name: geofm-inference
+  #     - name: geofm-inference-auxdata
+  #     - name: geofm-fine-tuning
+  #     - name: geofm-fine-tuning-models
+  #     - name: geofm-dataset-factory
+  #     - name: geofm-amo
+  #     - name: geofm-mlflow
+  #     - name: geofm-geoserver
+  #     - name: geofm-temp-uploads
+  
+  # # PostgreSQL - Infrastructure subchart configuration
+  # # Note: Configuration is duplicated here for Helm subchart consumption
+  # postgresql:
+  #   auth:
+  #     username: postgres
+  #     password: $POSTGRES_PASSWORD
+  #     database: postgres
+  #   primary:
+  #     persistence:
+  #       enabled: true
+  #       size: $POSTGRES_STORAGE
+  #     resources:
+  #       requests:
+  #         memory: 256Mi
+  #         cpu: 250m
+  #     initdb:
+  #       scripts:
+  #         create-geostudio-dbs.sh: |
+  #           #!/bin/bash
+  #           set -e
+  #           psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+  #               SELECT 'CREATE DATABASE geostudio'
+  #               WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'geostudio')\gexec
+                
+  #               SELECT 'CREATE DATABASE geostudio_auth'
+  #               WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'geostudio_auth')\gexec
+                
+  #               SELECT 'CREATE DATABASE mlflow'
+  #               WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mlflow')\gexec
+  #           EOSQL
+  
+  # Redis - Cache and Message Broker
+  redis:
+    enabled: true
+    architecture: standalone
+    fullnameOverride: "geostudio-redis"
+    auth:
+      enabled: true
+      password: $REDIS_PASSWORD
+    # master:
+    #   persistence:
+    #     enabled: false
+    # image:
+    #   repository: bitnamilegacy/redis
+    #   pullPolicy: $IMAGE_PULL_POLICY
+  
+  # MLflow - Model Tracking
+  gfm-mlflow:
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/geostudio-mlflow
+      tag: $MLFLOW_TAG
+    route:
+      enabled: false  # Set to true on OpenShift
+    # resources:
+    #   limits:
+    #     cpu: 2000m
+    #     memory: 2Gi
+    #   requests:
+    #     cpu: 500m
+    #     memory: 1Gi
+  
+  # Studio Gateway - API Server
+  gfm-studio-gateway:
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/geostudio-gateway
+      tag: $GATEWAY_TAG
+    route:
+      enabled: false  # Set to true on OpenShift
+  
+  # GeoServer - Geospatial Data Server
+  gfm-geoserver:
+    enabled: true
+    image:
+      repository: docker.osgeo.org/geoserver
+      tag: $GEOSERVER_TAG
+    service:
+      port: 3000
+      targetPort: 8080
+    persistence:
+      enabled: true
+      size: $GEOSERVER_STORAGE
+    # resources:
+    #   limits:
+    #     cpu: 2000m
+    #     memory: 4Gi
+    #   requests:
+    #     cpu: 500m
+    #     memory: 2Gi
+    route:
+      enabled: false  # Set to true on OpenShift
+  
+  # UI - Web Interface
+  geofm-ui:
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/geostudio-ui
+      tag: $UI_TAG
+    route:
+      enabled: false  # Set to true on OpenShift
+  
+  # Pipelines - ML Pipelines (Optional)
+  geospatial-studio-pipelines:
+    enabled: false
+
+# ==============================================================================
+# Quick Reference
+# ==============================================================================
+# Common deployment scenarios:
+#
+# 1. Deploy to custom namespace:
+#    export NAMESPACE=production
+#    envsubst < geostudio-template.yaml | kubectl apply -f -
+#
+# 2. Production deployment with custom passwords:
+#    export NAMESPACE=production
+#    export CLUSTER_URL=apps.prod.example.com
+#    export POSTGRES_PASSWORD=$(openssl rand -base64 32)
+#    export MINIO_PASSWORD=$(openssl rand -base64 32)
+#    export REDIS_PASSWORD=$(openssl rand -base64 32)
+#    envsubst < geostudio-template.yaml | kubectl apply -f -
+#
+# 3. Deploy with larger storage:
+#    export NAMESPACE=production
+#    export MINIO_STORAGE=100Gi
+#    export POSTGRES_STORAGE=50Gi
+#    export GEOSERVER_STORAGE=100Gi
+#    envsubst < geostudio-template.yaml | kubectl apply -f -
+#
+# 4. Check what will be deployed (dry-run):
+#    envsubst < geostudio-template.yaml | kubectl apply --dry-run=client -f -
+# ==============================================================================

@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Add common labels to all resources
+commonLabels:
+  app.kubernetes.io/name: geostudio-operator
+  app.kubernetes.io/part-of: geostudio
+  app.kubernetes.io/component: operator
+  app.kubernetes.io/managed-by: kustomize
