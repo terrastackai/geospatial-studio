@@ -1,6 +1,9 @@
 {
-    "name" : "terramind_v1_tiny",
-    "description" : "Terramind Multimodal tiny backbone base",
-    "checkpoint_filename" : "terramind_v1_tiny\/terramind_v1_tiny.pt",
-    "model_params" : {"backbone": "terramind_v1_tiny", "model_category": "terramind"}
+    "name": "terramind_v1_tiny",
+    "description": "Terramind Multimodal tiny backbone base",
+    "checkpoint_filename": "terramind_v1_tiny\/terramind_v1_tiny.pt",
+    "model_params": {
+        "backbone": "terramind_v1_tiny",
+        "model_category": "terramind"
+    }
 }
