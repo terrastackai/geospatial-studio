@@ -21,3 +21,7 @@ minio-public.crt
 
 # mkdocs documentation
 **/site/
+
+# Python virtual environment
+.venv/
+
