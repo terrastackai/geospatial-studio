@@ -46,7 +46,23 @@ helm push geospatial-studio-0.1.4.tgz oci://quay.io/geospatial-studio/charts/geo
 
 **Note:** This script will prompt for namespace and other configuration options.
 
-### 4. Build and Push Operator
+### 4. Configure IBM CSI S3 Driver (For MinIO with Self-Signed Certificates)
+
+If you're using MinIO with the IBM CSI S3 driver (`cos-s3-csi-s3fs-sc` storage class), you need to configure the CSI driver to trust MinIO's self-signed certificate:
+
+```bash
+# Run once per cluster
+./operators/scripts/setup-minio-csi-tls.sh
+```
+
+This script will:
+- Extract MinIO's CA certificate
+- Create a ConfigMap in kube-system namespace
+- Configure the IBM CSI driver to trust the certificate
+
+**This is a one-time setup per cluster** and allows PVCs using `cos-s3-csi-s3fs-sc` storage class to bind successfully.
+
+### 5. Build and Push Operator
 
 ```bash
 cd operators
@@ -82,7 +98,7 @@ source .geostudio-env
 set +a
 
 # Generate GeoStudio custom resource from template
-envsubst < operators/examples/geostudio-template2.yaml > my-geostudio.yaml
+envsubst < operators/examples/geostudio-template.yaml > my-geostudio.yaml
 
 # Review the generated configuration (optional but recommended)
 cat my-geostudio.yaml
@@ -155,7 +171,7 @@ vim .geostudio-env
 set -a
 source .geostudio-env
 set +a
-envsubst < operators/examples/geostudio-template2.yaml > my-geostudio.yaml
+envsubst < operators/examples/geostudio-template.yaml > my-geostudio.yaml
 kubectl apply -f my-geostudio.yaml
 ```
 

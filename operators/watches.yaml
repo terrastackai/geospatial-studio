@@ -3,4 +3,7 @@
   version: v1alpha1
   kind: GEOStudio
   chart: helm-charts/geospatial-studio
+  watchDependentResources: false
+  overrideValues:
+    maxHistory: 3
 # +kubebuilder:scaffold:watch

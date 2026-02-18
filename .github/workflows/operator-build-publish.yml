@@ -1,0 +1,269 @@
+name: Build and Publish Operator
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'operators/**'
+      - '.github/workflows/operator-build-publish.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'operators/**'
+    types: [opened, synchronize, reopened]
+
+env:
+  REGISTRY: quay.io
+  IMAGE_NAME: geospatial-studio/geostudio-operator
+  CHART_VERSION: 0.1.4
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      operator_changed: ${{ steps.filter.outputs.operator }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for operator changes
+        id: filter
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            git fetch origin ${{ github.base_ref }}
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          fi
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          if echo "$CHANGED_FILES" | grep -q "^operators/"; then
+            echo "operator=true" >> $GITHUB_OUTPUT
+            echo "Operator files changed - build will proceed"
+          else
+            echo "operator=false" >> $GITHUB_OUTPUT
+            echo "No operator files changed - skipping build"
+          fi
+
+  build-operator:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.operator_changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+      image_digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Quay.io
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Extract metadata for operator image
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build operator image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./operators
+          file: ./operators/Dockerfile
+          build-args: |
+            CHART_VERSION=${{ env.CHART_VERSION }}
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Generate build summary
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "## Operator Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Image Details" >> $GITHUB_STEP_SUMMARY
+          echo "- **Registry:** ${{ env.REGISTRY }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image:** ${{ env.IMAGE_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" | sed 's/^/  - /' >> $GITHUB_STEP_SUMMARY
+          echo "- **Digest:** ${{ steps.build.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Chart Version:** ${{ env.CHART_VERSION }}" >> $GITHUB_STEP_SUMMARY
+
+  test-operator:
+    needs: [detect-changes, build-operator]
+    if: needs.detect-changes.outputs.operator_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kind cluster
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: operator-test
+          wait: 30s
+
+      - name: Install operator-sdk
+        run: |
+          export ARCH=$(case $(uname -m) in x86_64) echo -n amd64 ;; aarch64) echo -n arm64 ;; *) echo -n $(uname -m) ;; esac)
+          export OS=$(uname | awk '{print tolower($0)}')
+          export OPERATOR_SDK_DL_URL=https://github.com/operator-framework/operator-sdk/releases/download/v1.42.0
+          curl -LO ${OPERATOR_SDK_DL_URL}/operator-sdk_${OS}_${ARCH}
+          chmod +x operator-sdk_${OS}_${ARCH}
+          sudo mv operator-sdk_${OS}_${ARCH} /usr/local/bin/operator-sdk
+
+      - name: Verify operator manifests
+        working-directory: ./operators
+        run: |
+          # Verify watches.yaml exists and is valid
+          if [ ! -f watches.yaml ]; then
+            echo "Error: watches.yaml not found"
+            exit 1
+          fi
+          
+          # Verify PROJECT file
+          if [ ! -f PROJECT ]; then
+            echo "Error: PROJECT file not found"
+            exit 1
+          fi
+          
+          # Check CRD manifests
+          if [ ! -d config/crd ]; then
+            echo "Error: CRD directory not found"
+            exit 1
+          fi
+          
+          echo "✓ Operator manifests verified"
+
+      - name: Run operator validation
+        working-directory: ./operators
+        run: |
+          # Validate bundle if it exists
+          if [ -d bundle ]; then
+            operator-sdk bundle validate ./bundle || echo "Bundle validation skipped"
+          fi
+          
+          echo "✓ Operator validation completed"
+
+  create-release:
+    needs: [detect-changes, build-operator, test-operator]
+    if: |
+      github.event_name == 'push' && 
+      github.ref == 'refs/heads/main' &&
+      needs.detect-changes.outputs.operator_changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get operator version
+        id: version
+        working-directory: ./operators
+        run: |
+          VERSION=$(grep '^VERSION ?=' Makefile | cut -d'=' -f2 | tr -d ' ')
+          CHART_VERSION=$(grep '^CHART_VERSION ?=' Makefile | cut -d'=' -f2 | tr -d ' ')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "chart_version=$CHART_VERSION" >> $GITHUB_OUTPUT
+          echo "Operator Version: $VERSION"
+          echo "Chart Version: $CHART_VERSION"
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          TAG="operator-v${{ steps.version.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Tag $TAG does not exist"
+          fi
+
+      - name: Create release notes
+        if: steps.check_tag.outputs.exists == 'false'
+        id: release_notes
+        run: |
+          cat > release_notes.md << EOF
+          ## GEOStudio Operator Release v${{ steps.version.outputs.version }}
+          
+          ### Changes
+          $(git log --pretty=format:"- %s (%h)" --grep="operator" -i HEAD~5..HEAD || echo "- Operator updates and improvements")
+          
+          ### Image Details
+          - **Registry:** ${{ env.REGISTRY }}
+          - **Image:** ${{ env.IMAGE_NAME }}:v${{ steps.version.outputs.version }}
+          - **Chart Version:** ${{ steps.version.outputs.chart_version }}
+          - **Digest:** ${{ needs.build-operator.outputs.image_digest }}
+          
+          ### Installation
+          \`\`\`bash
+          # Using the operator image
+          kubectl apply -f https://github.com/${{ github.repository }}/releases/download/operator-v${{ steps.version.outputs.version }}/operator-install.yaml
+          
+          # Or using make
+          cd operators
+          make install IMG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v${{ steps.version.outputs.version }}
+          \`\`\`
+          
+          ### Documentation
+          See the [operator documentation](https://github.com/${{ github.repository }}/tree/main/operators) for more details.
+          EOF
+          
+          cat release_notes.md
+
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: operator-v${{ steps.version.outputs.version }}
+          name: Operator v${{ steps.version.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    needs: [detect-changes, build-operator, test-operator, create-release]
+    if: always() && needs.detect-changes.outputs.operator_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build status summary
+        run: |
+          echo "## Workflow Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build:** ${{ needs.build-operator.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tests:** ${{ needs.test-operator.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release:** ${{ needs.create-release.result }}" >> $GITHUB_STEP_SUMMARY

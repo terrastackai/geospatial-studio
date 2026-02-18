@@ -501,6 +501,7 @@ geospatial-studio-pipelines:
                 operator: In
                 values:
                 - NODE_GPU_SPEC
+
     - name: generic-python-processor
       enabled: true
       image:
@@ -515,3 +516,97 @@ geospatial-studio-pipelines:
           bucket_name: BUCKET_GENERIC_PYTHON_PROCESSOR
           mountPath: /generic_data   
           create: false  
+
+# ==============================================================================
+# Infrastructure Dependencies
+# ==============================================================================
+infrastructure:
+  postgresql:
+    enabled: true
+  minio:
+    enabled: false
+  keycloak:
+    enabled: false
+
+# PostgreSQL Configuration
+# Only used when infrastructure.postgresql.enabled=true
+# Deployed via pre-install Helm hook job (templates/postgresql-install-job.yaml)
+# The job runs with hook-weight -100 to ensure PostgreSQL is ready before other components
+# Two jobs are created:
+#   1. postgresql-installer (weight: -100): Deploys PostgreSQL using Bitnami Helm chart
+#   2. postgresql-db-creator (weight: -90): Creates required databases (geostudio, geostudio_auth, mlflow)
+postgresql:
+  chartVersion: "16.2.1"
+  fullnameOverride: "postgresql"
+  auth:
+    username: postgres
+    password: "devPostgresql123"
+    database: postgres
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: ""
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+      limits:
+        memory: 1Gi
+        cpu: 1000m
+
+# Keycloak Configuration
+# Only used when infrastructure.keycloak.enabled=true
+# Deployed via pre-install Helm hook job (templates/keycloak-install-job.yaml)
+# The job runs with hook-weight -80 (after PostgreSQL) to ensure Keycloak is ready before other components
+# Two jobs are created:
+#   1. keycloak-installer (weight: -80): Deploys Keycloak with PostgreSQL backend
+#   2. keycloak-configurator (weight: -70): Creates realm, client, and test user
+keycloak:
+  image: quay.io/keycloak/keycloak
+  tag: "26.4.5"
+  database: keycloak
+  realm: geostudio
+  clientSecret: "AUwQ0WG5N9TRIlWPW1hAJLGyaKcfP0PB"
+  auth:
+    adminUser: admin
+    adminPassword: admin
+  testUser:
+    username: testuser
+    password: testpass123
+    email: test@example.com
+    firstName: Test
+    lastName: User
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 500m
+    limits:
+      memory: 2Gi
+      cpu: 1000m
+
+# MinIO Configuration
+# Only used when infrastructure.minio.enabled=true
+# Deployed via pre-install Helm hook jobs (templates/minio-install-job.yaml)
+# Jobs run with hook-weight -80 and -70 (same as Keycloak)
+# Three jobs are created:
+#   1. minio-tls-cert-generator (weight: -80): Generates self-signed TLS certificate
+#   2. minio-installer (weight: -80): Deploys MinIO with TLS
+#   3. minio-bucket-creator (weight: -70): Creates required S3 buckets
+minio:
+  image: quay.io/minio/minio
+  tag: "latest"
+  auth:
+    rootUser: minioadmin
+    rootPassword: minioadmin
+  persistence:
+    enabled: true
+    size: 100Gi
+    storageClass: local-path
+  resources:
+    requests:
+      memory: 2Gi
+      cpu: 2000m
+    limits:
+      memory: 4Gi
+      cpu: 4000m

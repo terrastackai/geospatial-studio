@@ -1,0 +1,367 @@
+{{- if .Values.infrastructure.keycloak.enabled }}
+---
+# Job to deploy Keycloak before other components
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-keycloak-installer
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: keycloak-installer
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-80"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 5
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: geostudio
+        app.kubernetes.io/component: keycloak-installer
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ .Values.global.serviceAccount.name }}
+      {{- if .Values.global.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecret.name }}
+      {{- end }}
+      containers:
+      - name: keycloak-installer
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          
+          echo "=================================================="
+          echo "Keycloak Installation Job"
+          echo "=================================================="
+          echo "Release Name: {{ .Release.Name }}"
+          echo "Namespace: {{ .Values.global.namespace }}"
+          echo "Keycloak Image: {{ .Values.keycloak.image }}:{{ .Values.keycloak.tag }}"
+          echo "=================================================="
+          
+          # Create Keycloak Deployment
+          cat <<EOF | kubectl apply -f -
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: keycloak
+            namespace: {{ .Values.global.namespace }}
+            labels:
+              app: keycloak
+              app.kubernetes.io/name: keycloak
+              app.kubernetes.io/managed-by: {{ .Release.Service }}
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: keycloak
+            template:
+              metadata:
+                labels:
+                  app: keycloak
+              spec:
+                containers:
+                - name: keycloak
+                  image: {{ .Values.keycloak.image }}:{{ .Values.keycloak.tag }}
+                  args:
+                  - "start"
+                  env:
+                  - name: KEYCLOAK_ADMIN
+                    value: "{{ .Values.keycloak.auth.adminUser }}"
+                  - name: KEYCLOAK_ADMIN_PASSWORD
+                    value: "{{ .Values.keycloak.auth.adminPassword }}"
+                  - name: KC_HOSTNAME_STRICT
+                    value: "false"
+                  - name: KC_HOSTNAME_STRICT_HTTPS
+                    value: "false"
+                  - name: KC_HTTP_ENABLED
+                    value: "true"
+                  - name: KC_HOSTNAME_STRICT_BACKCHANNEL
+                    value: "false"
+                  - name: KC_HEALTH_ENABLED
+                    value: "true"
+                  - name: KC_METRICS_ENABLED
+                    value: "true"
+                  - name: KC_DB_USERNAME
+                    value: "{{ .Values.postgresql.auth.username }}"
+                  - name: KC_DB_PASSWORD
+                    value: "{{ .Values.postgresql.auth.password }}"
+                  - name: KC_DB
+                    value: "postgres"
+                  - name: KC_DB_URL_HOST
+                    value: "{{ .Values.postgresql.fullnameOverride }}.{{ .Values.global.namespace }}.svc.cluster.local"
+                  - name: KC_DB_URL_DATABASE
+                    value: "{{ .Values.keycloak.database }}"
+                  - name: KC_PROXY_HEADERS
+                    value: "xforwarded"
+                  ports:
+                  - name: http
+                    containerPort: 8080
+                  - name: health
+                    containerPort: 9000
+                  startupProbe:
+                    httpGet:
+                      path: /health/started
+                      port: 9000
+                    periodSeconds: 5
+                    failureThreshold: 120
+                  readinessProbe:
+                    httpGet:
+                      path: /health/ready
+                      port: 9000
+                    periodSeconds: 10
+                    failureThreshold: 3
+                  livenessProbe:
+                    httpGet:
+                      path: /health/live
+                      port: 9000
+                    periodSeconds: 10
+                    failureThreshold: 3
+                  resources:
+                    requests:
+                      cpu: {{ .Values.keycloak.resources.requests.cpu }}
+                      memory: {{ .Values.keycloak.resources.requests.memory }}
+                    limits:
+                      cpu: {{ .Values.keycloak.resources.limits.cpu }}
+                      memory: {{ .Values.keycloak.resources.limits.memory }}
+          EOF
+          
+          echo "Keycloak deployment created"
+          
+          # Create Keycloak Service
+          cat <<EOF | kubectl apply -f -
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: keycloak
+            namespace: {{ .Values.global.namespace }}
+            labels:
+              app: keycloak
+              app.kubernetes.io/name: keycloak
+              app.kubernetes.io/managed-by: {{ .Release.Service }}
+          spec:
+            selector:
+              app: keycloak
+            ports:
+            - name: http
+              port: 8080
+              targetPort: 8080
+              protocol: TCP
+            type: ClusterIP
+          EOF
+          
+          echo "Keycloak service created"
+          
+          # Wait for Keycloak to be ready
+          echo "Waiting for Keycloak pod to be ready..."
+          kubectl wait --for=condition=ready pod \
+            -l app=keycloak \
+            -n {{ .Values.global.namespace }} \
+            --timeout=600s
+          
+          echo "Keycloak is ready!"
+          
+          # Display Keycloak connection info
+          echo "=================================================="
+          echo "Keycloak Connection Information:"
+          echo "Internal URL: http://keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080"
+          echo "Admin User: {{ .Values.keycloak.auth.adminUser }}"
+          echo "Admin Console: http://keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080/admin"
+          echo "=================================================="
+          
+          echo "Installation job completed successfully"
+---
+# Job to configure Keycloak realm, client, and test user
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-keycloak-configurator
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: keycloak-configurator
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-70"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: geostudio
+        app.kubernetes.io/component: keycloak-configurator
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: Never
+      {{- if .Values.global.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecret.name }}
+      {{- end }}
+      containers:
+      - name: keycloak-configurator
+        image: alpine/curl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          
+          echo "=================================================="
+          echo "Keycloak Configuration Job"
+          echo "=================================================="
+          echo "Keycloak Host: keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080"
+          echo "Realm: {{ .Values.keycloak.realm }}"
+          echo "=================================================="
+          
+          # Install jq for JSON parsing
+          apk add --no-cache jq bash
+          
+          export KEYCLOAK_URL="http://keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080"
+          export CLIENT_SECRET="{{ .Values.keycloak.clientSecret }}"
+          
+          # Wait for Keycloak to be ready
+          echo "Waiting for Keycloak to accept connections..."
+          until curl -f -s "$KEYCLOAK_URL" >/dev/null 2>&1; do
+            echo "Keycloak not ready yet, retrying in 5 seconds..."
+            sleep 5
+          done
+          echo "Keycloak is ready!"
+          
+          # Get admin access token
+          echo "Getting admin access token..."
+          KC_TOKEN=$(curl -s --request POST --url "$KEYCLOAK_URL/realms/master/protocol/openid-connect/token" \
+            --header 'content-type: application/x-www-form-urlencoded' \
+            --data client_id=admin-cli \
+            --data grant_type=password \
+            --data username={{ .Values.keycloak.auth.adminUser }} \
+            --data password={{ .Values.keycloak.auth.adminPassword }} | jq -r '.access_token')
+          
+          if [ -z "$KC_TOKEN" ] || [ "$KC_TOKEN" = "null" ]; then
+            echo "ERROR: Failed to get admin access token"
+            exit 1
+          fi
+          echo "Access token obtained successfully"
+          
+          # Create realm
+          echo "Creating realm '{{ .Values.keycloak.realm }}'..."
+          curl -s -L -X POST "$KEYCLOAK_URL/admin/realms" \
+            --header "Content-Type: application/json" \
+            --header "Authorization: Bearer $KC_TOKEN" \
+            --data '{"realm": "{{ .Values.keycloak.realm }}", "enabled": true}' || echo "Realm may already exist"
+          
+          # Create client
+          echo "Creating client 'geostudio-client'..."
+          CLUSTER_URL="{{ .Values.global.cluster_url }}"
+          NAMESPACE="{{ .Values.global.namespace }}"
+          
+          curl -s -L -X POST "$KEYCLOAK_URL/admin/realms/{{ .Values.keycloak.realm }}/clients" \
+            --header "Content-Type: application/json" \
+            --header "Authorization: Bearer $KC_TOKEN" \
+            --data '{
+              "clientId": "geostudio-client",
+              "enabled": true,
+              "clientAuthenticatorType": "client-secret",
+              "secret": "'"${CLIENT_SECRET}"'",
+              "redirectUris": [
+                "https://geofm-ui.'"${NAMESPACE}"'.svc.cluster.local:4180/oauth2/callback",
+                "https://geofm-gateway.'"${NAMESPACE}"'.svc.cluster.local:4180/oauth2/callback",
+                "https://localhost:4180/oauth2/callback",
+                "https://localhost:4181/oauth2/callback",
+                "https://geofm-ui-'"${NAMESPACE}"'.'"${CLUSTER_URL}"'/oauth2/callback",
+                "https://geofm-gateway-'"${NAMESPACE}"'.'"${CLUSTER_URL}"'/oauth2/callback",
+                "http://localhost:3000/*"
+              ],
+              "webOrigins": ["*"],
+              "notBefore": 0,
+              "bearerOnly": false,
+              "consentRequired": false,
+              "standardFlowEnabled": true,
+              "implicitFlowEnabled": true,
+              "directAccessGrantsEnabled": true,
+              "serviceAccountsEnabled": true,
+              "publicClient": false,
+              "frontchannelLogout": true,
+              "protocol": "openid-connect",
+              "attributes": {
+                "oidc.ciba.grant.enabled": "false",
+                "oauth2.device.authorization.grant.enabled": "false",
+                "backchannel.logout.session.required": "true",
+                "backchannel.logout.revoke.offline.tokens": "false"
+              }
+            }' || echo "Client may already exist"
+          
+          # Get client UUID
+          echo "Getting client UUID..."
+          CLIENT_UUID=$(curl -s -X GET "$KEYCLOAK_URL/admin/realms/{{ .Values.keycloak.realm }}/clients?clientId=geostudio-client" \
+            --header "Content-Type: application/json" \
+            --header "Authorization: Bearer $KC_TOKEN" | jq -r '.[0].id')
+          
+          echo "Client UUID: $CLIENT_UUID"
+          
+          # Verify client secret
+          ACTUAL_SECRET=$(curl -s -X GET "$KEYCLOAK_URL/admin/realms/{{ .Values.keycloak.realm }}/clients/$CLIENT_UUID/client-secret" \
+            --header "Content-Type: application/json" \
+            --header "Authorization: Bearer $KC_TOKEN" | jq -r '.value')
+          
+          echo "Client Secret configured: $ACTUAL_SECRET"
+          
+          # Create test user
+          echo "Creating test user '{{ .Values.keycloak.testUser.username }}'..."
+          curl -s -L -X POST "$KEYCLOAK_URL/admin/realms/{{ .Values.keycloak.realm }}/users" \
+            --header "Content-Type: application/json" \
+            --header "Authorization: Bearer $KC_TOKEN" \
+            --data '{
+              "username": "{{ .Values.keycloak.testUser.username }}",
+              "email": "{{ .Values.keycloak.testUser.email }}",
+              "enabled": true,
+              "firstName": "{{ .Values.keycloak.testUser.firstName }}",
+              "lastName": "{{ .Values.keycloak.testUser.lastName }}",
+              "emailVerified": true
+            }' || echo "User may already exist"
+          
+          # Get user ID
+          echo "Getting user ID..."
+          USER_ID=$(curl -s -X GET "$KEYCLOAK_URL/admin/realms/{{ .Values.keycloak.realm }}/users?username={{ .Values.keycloak.testUser.username }}" \
+            --header "Content-Type: application/json" \
+            --header "Authorization: Bearer $KC_TOKEN" | jq -r '.[0].id')
+          
+          echo "User ID: $USER_ID"
+          
+          # Set user password
+          echo "Setting user password..."
+          curl -s -L -X PUT "$KEYCLOAK_URL/admin/realms/{{ .Values.keycloak.realm }}/users/$USER_ID/reset-password" \
+            --header "Content-Type: application/json" \
+            --header "Authorization: Bearer $KC_TOKEN" \
+            --data '{
+              "type": "password",
+              "value": "{{ .Values.keycloak.testUser.password }}",
+              "temporary": false
+            }'
+          
+          echo ""
+          echo "=================================================="
+          echo "Keycloak configuration completed successfully!"
+          echo "=================================================="
+          echo "Realm: {{ .Values.keycloak.realm }}"
+          echo "Client ID: geostudio-client"
+          echo "Client Secret: $CLIENT_SECRET"
+          echo "Test User: {{ .Values.keycloak.testUser.username }}"
+          echo "Test Password: {{ .Values.keycloak.testUser.password }}"
+          echo "=================================================="
+          echo "Issuer URL: http://keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080/realms/{{ .Values.keycloak.realm }}"
+          echo "Auth URL: http://keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080/realms/{{ .Values.keycloak.realm }}/protocol/openid-connect/auth"
+          echo "=================================================="
+{{- end }}
