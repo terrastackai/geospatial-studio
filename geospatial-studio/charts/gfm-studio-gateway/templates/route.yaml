@@ -14,7 +14,7 @@ metadata:
   name: {{ .Values.global.appNames.gateway }}
 spec:
   port:
-  targetPort: oauth
+    targetPort: oauth
   to:
     kind: Service
     name: {{ .Values.global.appNames.gateway }}
@@ -34,7 +34,7 @@ metadata:
   name: {{ .Values.global.appNames.gateway }}-internal
 spec:
   port:
-  targetPort: oauth
+    targetPort: oauth
   to:
     kind: Service
     name: {{ .Values.global.appNames.gateway }}
