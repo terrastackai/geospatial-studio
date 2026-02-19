@@ -1,4 +1,5 @@
 site_name: IBM Geospatial Exploration and Orchestration Studio
+site_url: https://terrastackai.github.io/geospatial-studio/
 docs_dir: docs
 hooks:
   - my_hooks.py

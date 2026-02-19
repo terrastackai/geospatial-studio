@@ -1,0 +1,6 @@
+{
+    "name" : "Prithvi_EO_V2_300M",
+    "description" : "Geospatial pre-traineed foundation model Prithvi-EO-V2 (Prithvi_EO_V2_300M)",
+    "checkpoint_filename" : "prithvi_eo_v2_300\/Prithvi_EO_V2_300M.pt",
+    "model_params" : {"backbone": "prithvi_eo_v2_300", "embed_dim": 768, "num_heads": 12, "tile_size": 1, "num_layers": 12, "patch_size": 16, "tubelet_size": 1, "model_category": "prithvi"}
+}
