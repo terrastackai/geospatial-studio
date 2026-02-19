@@ -6,12 +6,14 @@ on:
       - main
     paths:
       - 'docs/**'
+      - 'workshop/**'
       - '.github/workflows/publish-docs.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'docs/**'
+      - 'workshop/**'
     types: [opened, synchronize, reopened]
 
 jobs:
@@ -37,14 +39,25 @@ jobs:
         working-directory: .
         run: hatch env create
 
-      - name: Build documentation
+      - name: Build main documentation
         working-directory: .
         run: hatch run build
+
+      - name: Build workshop documentation
+        working-directory: .
+        run: hatch run build-workshop
+
+      - name: Prepare combined site
+        run: |
+          mkdir -p combined_site
+          cp -r docs/geospatial-studio-docs/site/* combined_site/
+          mkdir -p combined_site/workshop
+          cp -r workshop/site/* combined_site/workshop/
 
       - name: Deploy to GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/geospatial-studio-docs/site
+          publish_dir: ./combined_site
           cname: terrastackai.github.io
