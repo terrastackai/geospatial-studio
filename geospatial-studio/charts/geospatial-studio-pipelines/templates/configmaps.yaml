@@ -6,6 +6,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name:  pipeline-gateway-cm
+  namespace: {{ .Values.namespace }}
   labels:
     app:  pipeline-gateway
 data:
