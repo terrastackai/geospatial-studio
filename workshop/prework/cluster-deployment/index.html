@@ -1,0 +1,3388 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A hands-on workshop for learning IBM Geospatial Studio - from deployment to running geospatial AI models">
+      
+      
+        <meta name="author" content="IBM Research">
+      
+      
+        <link rel="canonical" href="https://terrastackai.github.io/geospatial-studio/workshop/prework/cluster-deployment/">
+      
+      
+        <link rel="prev" href="../local-deployment/">
+      
+      
+        <link rel="next" href="../verification/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>Cluster Deployment - IBM Geospatial Studio Workshop</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,300i,400,400i,700,700i%7CIBM+Plex+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"IBM Plex Sans";--md-code-font:"IBM Plex Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../css/timeago.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cluster-deployment-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="IBM Geospatial Studio Workshop" class="md-header__button md-logo" aria-label="IBM Geospatial Studio Workshop" data-md-component="logo">
+      
+  <img src="../../assets/geospatial-studio-logo-white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IBM Geospatial Studio Workshop
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Cluster Deployment
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"></path></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/terrastackai/geospatial-studio" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    terrastackai/geospatial-studio
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Pre-work
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../introduction/welcome/" class="md-tabs__link">
+          
+  
+  
+  Introduction
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../notebooks/lab1-getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Lab 1
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../notebooks/lab2-onboarding-examples/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Lab 2
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../notebooks/lab3-running-inference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Lab 3
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../notebooks/lab4-burnscars-workflow/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Lab 4
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../resources/additional-resources/" class="md-tabs__link">
+          
+  
+  
+  Resources
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="IBM Geospatial Studio Workshop" class="md-nav__button md-logo" aria-label="IBM Geospatial Studio Workshop" data-md-component="logo">
+      
+  <img src="../../assets/geospatial-studio-logo-white.svg" alt="logo">
+
+    </a>
+    IBM Geospatial Studio Workshop
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/terrastackai/geospatial-studio" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    terrastackai/geospatial-studio
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pre-work
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pre-work
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../prerequisites/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prerequisites
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment-options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment Options
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../local-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cluster Deployment
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cluster Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment Approach
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deployment Approach">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#service-configuration-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service Configuration Options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Service Configuration Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#in-cluster-services-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In-Cluster Services (Default)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-cloud-services-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Cloud Services (Production)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment Options
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-by-step-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step-by-Step Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step-by-Step Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-clone-the-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Clone the Repository
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-install-python-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Install Python Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-configure-cluster-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Configure Cluster Access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-optional-pre-pull-container-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: (Optional) Pre-pull Container Images
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-run-the-interactive-deployment-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Run the Interactive Deployment Script
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interactive-configuration-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interactive Configuration Workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interactive Configuration Workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-basic-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Basic Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-storage-classes-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Storage Classes Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-object-storage-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Object Storage Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-database-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Database Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-authentication-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Authentication Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-geoserver-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. GeoServer Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-deploy-geospatial-studio-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Deploy Geospatial Studio Services
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-deployment-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring Deployment Progress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#post-deployment-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post-Deployment Steps
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Post-Deployment Steps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#access-the-studio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access the Studio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-api-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create API Key
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#onboard-sandbox-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Onboard Sandbox Models
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verify-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#re-running-the-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Re-running the Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Re-running the Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#jump-to-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jump to Deployment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gpu-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GPU Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GPU Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#verify-gpu-availability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify GPU Availability
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configure-gpu-in-workspace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure GPU in Workspace
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-configuration-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Configuration Options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Configuration Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rate-limiting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate Limiting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-advisor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Advisor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gpu-node-affinity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GPU Node Affinity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fine-tuning-resource-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fine-Tuning Resource Limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-retry-and-timeout-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Retry and Timeout Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observability-and-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observability and Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-service-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Service Credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#celery-task-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Celery Task Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debug-and-development-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debug and Development Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-docker-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Docker Images
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storage-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Storage Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#applying-advanced-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Applying Advanced Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Considerations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Production Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#high-availability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        High Availability
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backup-and-disaster-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup and Disaster Recovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring-and-observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring and Observability
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#quick-troubleshooting-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Troubleshooting Tips
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#upgrading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upgrading
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uninstalling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uninstalling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Resources
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../verification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Verification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3">
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Introduction
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../introduction/welcome/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Welcome
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../introduction/what-is-geospatial-studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What is Geospatial Studio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../introduction/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../introduction/key-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Key Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/lab1-getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/lab2-onboarding-examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/lab3-running-inference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 3
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/lab4-burnscars-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 4
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8">
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resources
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Resources
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../resources/additional-resources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Additional Resources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../resources/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../resources/faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../resources/next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Next Steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation">
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Pre-work
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="cluster-deployment-guide">Cluster Deployment Guide<a class="headerlink" href="#cluster-deployment-guide" title="Permanent link">¶</a></h1>
+<p>This guide walks you through deploying Geospatial Studio on a Red Hat OpenShift or Kubernetes cluster using the interactive deployment script.</p>
+<div class="admonition info">
+<p class="admonition-title">Deployment Time</p>
+<p><strong>Estimated time:</strong> 45-60 minutes (depending on cluster and network speed)</p>
+</div>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">¶</a></h2>
+<p>Cluster deployment provides full production capabilities including:</p>
+<ul>
+<li>✅ GPU acceleration for model training</li>
+<li>✅ Scalable inference pipelines</li>
+<li>✅ High availability</li>
+<li>✅ Production-grade security</li>
+<li>✅ Resource isolation</li>
+<li>✅ Flexible service configuration (in-cluster or external cloud services)</li>
+</ul>
+<h2 id="deployment-approach">Deployment Approach<a class="headerlink" href="#deployment-approach" title="Permanent link">¶</a></h2>
+<p>This guide uses an <strong>interactive deployment script</strong> (<a href="https://github.com/terrastackai/geospatial-studio/blob/main/deploy_studio_ocp.sh"><code>deploy_studio_ocp.sh</code></a> for OpenShift or <a href="https://github.com/terrastackai/geospatial-studio/blob/main/deploy_studio_k8s.sh"><code>deploy_studio_k8s.sh</code></a> for Kubernetes) that:</p>
+<ol>
+<li><strong>Creates a workspace</strong> with environment configuration files</li>
+<li><strong>Prompts for settings</strong> (storage, database, authentication)</li>
+<li><strong>Pauses for manual configuration</strong> when needed</li>
+<li><strong>Validates configuration</strong> before proceeding</li>
+<li><strong>Deploys all services</strong> to your cluster</li>
+</ol>
+<div class="admonition info">
+<p class="admonition-title">Alternative: Manual Deployment</p>
+<p>If you prefer step-by-step manual deployment or need more control over the process, detailed manual deployment guides are available:</p>
+<ul>
+<li><a href="https://terrastackai.github.io/geospatial-studio/detailed_deployment_cluster/">Manual OpenShift Deployment Guide</a></li>
+<li><a href="https://terrastackai.github.io/geospatial-studio/detailed_deployment_k8s/">Manual Kubernetes Deployment Guide</a></li>
+</ul>
+<p>These guides provide the same deployment steps but without automation, allowing you to understand each component and customize as needed.</p>
+</div>
+<h3 id="configuration-files">Configuration Files<a class="headerlink" href="#configuration-files" title="Permanent link">¶</a></h3>
+<p>The script creates a workspace directory: <code>workspace/${DEPLOYMENT_ENV}/env/</code> containing:</p>
+<ul>
+<li><strong><code>.env</code></strong> - Secrets and credentials (database passwords, API keys, OAuth secrets)</li>
+<li><strong><code>env.sh</code></strong> - General configuration (storage classes, bucket names, cluster settings)</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Workspace Regeneration</p>
+<p>The deployment script regenerates workspace files each time it runs. If you have an existing workspace:</p>
+<ul>
+<li>Your current files are backed up with a timestamp</li>
+<li>Fresh templates are created from the latest deployment scripts</li>
+<li>Your previous values are merged into the new templates</li>
+<li>You're prompted to update any new or missing configuration</li>
+</ul>
+</div>
+<h2 id="service-configuration-options">Service Configuration Options<a class="headerlink" href="#service-configuration-options" title="Permanent link">¶</a></h2>
+<h3 id="in-cluster-services-default">In-Cluster Services (Default)<a class="headerlink" href="#in-cluster-services-default" title="Permanent link">¶</a></h3>
+<p>The deployment automatically provisions services within your cluster:</p>
+<ul>
+<li><strong>PostgreSQL</strong> - Database (Bitnami Helm chart)</li>
+<li><strong>MinIO</strong> - S3-compatible object storage</li>
+<li><strong>Keycloak</strong> - OAuth2 authentication provider</li>
+<li><strong>Redis</strong> - Caching and message queue</li>
+<li><strong>GeoServer</strong> - Geospatial data visualization</li>
+<li><strong>MLflow</strong> - Experiment tracking</li>
+</ul>
+<h3 id="external-cloud-services-production">External Cloud Services (Production)<a class="headerlink" href="#external-cloud-services-production" title="Permanent link">¶</a></h3>
+<p>For production deployments, configure external cloud-managed services:</p>
+<table>
+<thead>
+<tr>
+<th>Service Type</th>
+<th>Supported Providers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Database</strong></td>
+<td>IBM Cloud Databases, AWS RDS, Azure PostgreSQL, GCP Cloud SQL</td>
+</tr>
+<tr>
+<td><strong>Object Storage</strong></td>
+<td>IBM COS, AWS S3, Azure Blob Storage, GCP Cloud Storage</td>
+</tr>
+<tr>
+<td><strong>Authentication</strong></td>
+<td>IBM Security Verify, External Keycloak, Azure AD, Okta</td>
+</tr>
+</tbody>
+</table>
+<p>Configuration is done through workspace environment files during the interactive deployment.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">¶</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Complete Prerequisites First</p>
+<p>Before proceeding, ensure you have completed all requirements in the <a href="../prerequisites/">Prerequisites</a> section:</p>
+<ul>
+<li>✅ Cluster access (OpenShift or Kubernetes)</li>
+<li>✅ kubectl/oc CLI tools installed</li>
+<li>✅ Helm v3.19+ installed</li>
+<li>✅ Python 3.11+ installed</li>
+<li>✅ Git installed</li>
+<li>✅ (Optional) External cloud services provisioned</li>
+</ul>
+</div>
+<h2 id="deployment-options">Deployment Options<a class="headerlink" href="#deployment-options" title="Permanent link">¶</a></h2>
+<p>Choose your target cluster type:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:4"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio"><input id="__tabbed_1_2" name="__tabbed_1" type="radio"><input id="__tabbed_1_3" name="__tabbed_1" type="radio"><input id="__tabbed_1_4" name="__tabbed_1" type="radio"><div class="tabbed-labels"><label for="__tabbed_1_1">OpenShift Cluster</label><label for="__tabbed_1_2">Kubernetes Cluster</label><label for="__tabbed_1_3">Kind Cluster (CPU Only)</label><label for="__tabbed_1_4">NVKind Cluster (GPU Enabled)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>Recommended for enterprise deployments</strong></p>
+<ul>
+<li>Full IBM support</li>
+<li>Built-in Routes for ingress</li>
+<li>Security Context Constraints (SCC)</li>
+<li>Integrated monitoring and logging</li>
+</ul>
+<p><strong>Use script:</strong> <code>deploy_studio_ocp.sh</code></p>
+</div>
+<div class="tabbed-block">
+<p><strong>Works with any Kubernetes distribution</strong></p>
+<ul>
+<li>EKS, GKE, AKS, or self-managed</li>
+<li>Requires Ingress controller</li>
+<li>Standard Kubernetes RBAC</li>
+</ul>
+<p><strong>Use script:</strong> <code>deploy_studio_k8s.sh</code></p>
+</div>
+<div class="tabbed-block">
+<p><strong>For local/remote testing without GPU</strong></p>
+<p><strong>Quick Setup:</strong>
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Create Kind cluster</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>cat<span class="w"> </span><span class="s">&lt;&lt; EOF | kind create cluster --name=studio --config=-</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="s">kind: Cluster</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="s">apiVersion: kind.x-k8s.io/v1alpha4</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="s">nodes:</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="s">- role: control-plane</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="s">- role: worker</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="s">EOF</span>
+</span></code></pre></div><p></p>
+<p><strong>What gets deployed:</strong>
+- 2-node Kubernetes cluster (control-plane + worker)
+- CPU-only processing (no GPU acceleration)
+- Ideal for testing and development</p>
+<p><a href="https://terrastackai.github.io/geospatial-studio/kind_cluster_deployment/">Full Kind Deployment Guide →</a></p>
+</div>
+<div class="tabbed-block">
+<p><strong>For local/remote testing with NVIDIA GPU</strong></p>
+<p><strong>Prerequisites:</strong>
+- NVIDIA GPU with drivers installed
+- Docker with NVIDIA runtime
+- nvkind installed</p>
+<p><strong>Quick Setup:</strong>
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Verify GPU detection</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>nvidia-smi<span class="w"> </span>-L
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Create nvkind cluster</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>cat<span class="w"> </span><span class="s">&lt;&lt; EOF | nvkind cluster create --name=studio --config-template= -</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="s">kind: Cluster</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="s">apiVersion: kind.x-k8s.io/v1alpha4</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="s">nodes:</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="s">- role: control-plane</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="s">- role: worker</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="s">  extraMounts:</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="s">    - hostPath: /dev/null</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="s">      containerPath: /var/run/nvidia-container-devices/all</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="s">EOF</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="c1"># Configure kubectl</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>kubectl<span class="w"> </span>cluster-info<span class="w"> </span>--context<span class="w"> </span>kind-studio
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="c1"># Install NVIDIA GPU Operator</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>nvidia<span class="w"> </span>https://helm.ngc.nvidia.com/nvidia
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>helm<span class="w"> </span>repo<span class="w"> </span>update
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>helm<span class="w"> </span>install<span class="w"> </span>--wait<span class="w"> </span>--generate-name<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">  </span>-n<span class="w"> </span>gpu-operator<span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">  </span>nvidia/gpu-operator<span class="w"> </span>--version<span class="o">=</span>v25.10.0
+</span></code></pre></div><p></p>
+<p><strong>What gets deployed:</strong>
+- 2-node Kubernetes cluster with GPU access
+- NVIDIA GPU Operator for GPU management
+- GPU-accelerated processing</p>
+<p><a href="https://terrastackai.github.io/geospatial-studio/nvkind_cluster_deployment/">Full NVKind Deployment Guide →</a></p>
+</div>
+</div>
+</div>
+<h2 id="step-by-step-deployment">Step-by-Step Deployment<a class="headerlink" href="#step-by-step-deployment" title="Permanent link">¶</a></h2>
+<h3 id="step-1-clone-the-repository">Step 1: Clone the Repository<a class="headerlink" href="#step-1-clone-the-repository" title="Permanent link">¶</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/terrastackai/geospatial-studio.git
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">cd</span><span class="w"> </span>geospatial-studio
+</span></code></pre></div>
+<h3 id="step-2-install-python-dependencies">Step 2: Install Python Dependencies<a class="headerlink" href="#step-2-install-python-dependencies" title="Permanent link">¶</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</span></code></pre></div>
+<h3 id="step-3-configure-cluster-access">Step 3: Configure Cluster Access<a class="headerlink" href="#step-3-configure-cluster-access" title="Permanent link">¶</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio"><input id="__tabbed_2_2" name="__tabbed_2" type="radio"><div class="tabbed-labels"><label for="__tabbed_2_1">OpenShift</label><label for="__tabbed_2_2">Kubernetes</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Login to OpenShift cluster</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>oc<span class="w"> </span>login<span class="w"> </span>--token<span class="o">=</span>&lt;your-token&gt;<span class="w"> </span>--server<span class="o">=</span>&lt;cluster-server&gt;
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Verify connection</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>oc<span class="w"> </span>whoami
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>oc<span class="w"> </span>get<span class="w"> </span>nodes
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Set kubectl context</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>kubectl<span class="w"> </span>config<span class="w"> </span>use-context<span class="w"> </span>&lt;your-context&gt;
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># For Kind and NVKind clusters</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>kubectl<span class="w"> </span>cluster-info<span class="w"> </span>--context<span class="w"> </span>kind-studio
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Verify connection</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>kubectl<span class="w"> </span>get<span class="w"> </span>nodes
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<h3 id="step-4-optional-pre-pull-container-images">Step 4: (Optional) Pre-pull Container Images<a class="headerlink" href="#step-4-optional-pre-pull-container-images" title="Permanent link">¶</a></h3>
+<p>For faster deployment, especially in bandwidth-constrained environments:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Set your namespace</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nv">NAMESPACE</span><span class="o">=</span>&lt;your-namespace&gt;<span class="w"> </span>./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
+</span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">CRITICAL: Wait for Pre-puller to Complete</p>
+<p><strong>If you choose to pre-pull images, you MUST wait for completion before proceeding.</strong></p>
+<ul>
+<li>Pre-pulling can take 10-20 minutes depending on network speed</li>
+<li>Monitor progress: <code>kubectl get pods -n &lt;your-namespace&gt; -w</code></li>
+<li>Wait for message: "✅ Pre-pull complete"</li>
+</ul>
+<p><strong>Starting deployment before completion will cause:</strong>
+- Image pull conflicts and deployment failures
+- Pods stuck in ImagePullBackOff state
+- Need to restart the entire deployment</p>
+</div>
+<h3 id="step-5-run-the-interactive-deployment-script">Step 5: Run the Interactive Deployment Script<a class="headerlink" href="#step-5-run-the-interactive-deployment-script" title="Permanent link">¶</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio"><input id="__tabbed_3_2" name="__tabbed_3" type="radio"><div class="tabbed-labels"><label for="__tabbed_3_1">OpenShift</label><label for="__tabbed_3_2">Kubernetes</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>./deploy_studio_ocp.sh
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>./deploy_studio_k8s.sh
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>The script will guide you through the deployment process with interactive prompts.</p>
+<h2 id="interactive-configuration-workflow">Interactive Configuration Workflow<a class="headerlink" href="#interactive-configuration-workflow" title="Permanent link">¶</a></h2>
+<p>The deployment script will prompt you for configuration in the following order:</p>
+<h3 id="1-basic-setup">1. Basic Setup<a class="headerlink" href="#1-basic-setup" title="Permanent link">¶</a></h3>
+<p><strong>Deployment Environment Name:</strong>
+</p><div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Provide a name for the deployment environment (e.g., my-cluster-prod, dev-cluster)
+</span></code></pre></div>
+This creates a workspace directory: <code>workspace/&lt;your-name&gt;/</code><p></p>
+<p><strong>Namespace/Project Name:</strong>
+</p><div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>Provide the namespace/project name (e.g., geospatial-studio)
+</span></code></pre></div><p></p>
+<p><strong>Cluster URL:</strong>
+- Auto-detected for OpenShift
+- Manually entered for Kubernetes
+- Example: <code>apps.mycluster.example.com</code></p>
+<p><strong>Image Pull Secret:</strong>
+- Choose default or provide custom secret
+- Default is sufficient for public images</p>
+<h3 id="2-storage-classes-configuration">2. Storage Classes Configuration<a class="headerlink" href="#2-storage-classes-configuration" title="Permanent link">¶</a></h3>
+<p>The script will pause and display:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>***********************************************************************************
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>-----------------------  Configure s3 storage classes -----------------------------
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>-----------------------------------------------------------------------------------
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>---------------- Verify the available storage classes in your cluster -------------
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>-----------------------------------------------------------------------------------
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>***********************************************************************************
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>******************  Update workspace/${DEPLOYMENT_ENV}/env/env.sh *****************
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>------------------------  export COS_STORAGE_CLASS= -------------------------------
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>------------------------  export NON_COS_STORAGE_CLASS= ---------------------------
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>***********************************************************************************
+</span></code></pre></div>
+<p><strong>Action Required:</strong></p>
+<ol>
+<li>
+<p>Check available storage classes:
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>storageclass
+</span></code></pre></div><p></p>
+</li>
+<li>
+<p>Edit the workspace file:
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>vi<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</span></code></pre></div><p></p>
+</li>
+<li>
+<p>Set the storage classes:
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># For S3-compatible storage (used by MinIO or external S3)</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">COS_STORAGE_CLASS</span><span class="o">=</span>&lt;your-s3-compatible-storage-class&gt;
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># For block storage (used by databases, Redis, etc.)</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">NON_COS_STORAGE_CLASS</span><span class="o">=</span>&lt;your-block-storage-class&gt;
+</span></code></pre></div><p></p>
+</li>
+<li>
+<p>Press Enter in the script terminal to continue</p>
+</li>
+</ol>
+<p><strong>Common Storage Class Examples:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Cloud Provider</th>
+<th>COS Storage Class</th>
+<th>Non-COS Storage Class</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>IBM Cloud</strong></td>
+<td><code>ibmc-s3fs-standard-regional</code></td>
+<td><code>ibmc-block-gold</code></td>
+</tr>
+<tr>
+<td><strong>AWS EKS</strong></td>
+<td><code>efs-sc</code> (with EFS CSI)</td>
+<td><code>gp3</code></td>
+</tr>
+<tr>
+<td><strong>Azure AKS</strong></td>
+<td><code>azurefile-csi</code></td>
+<td><code>managed-premium</code></td>
+</tr>
+<tr>
+<td><strong>GCP GKE</strong></td>
+<td><code>standard-rwo</code></td>
+<td><code>pd-ssd</code></td>
+</tr>
+<tr>
+<td><strong>OpenShift</strong></td>
+<td><code>ocs-storagecluster-cephfs</code></td>
+<td><code>ocs-storagecluster-ceph-rbd</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Storage Class Requirements</p>
+<ul>
+<li><strong>COS_STORAGE_CLASS</strong>: Must support S3-compatible storage or file storage</li>
+<li><strong>NON_COS_STORAGE_CLASS</strong>: Must support ReadWriteOnce (RWO) block storage</li>
+</ul>
+</div>
+<h3 id="3-object-storage-configuration">3. Object Storage Configuration<a class="headerlink" href="#3-object-storage-configuration" title="Permanent link">¶</a></h3>
+<p>The script will prompt:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>Select whether to deploy a cloud object storage in cluster or use a cloud managed instance:
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>  1) Cluster-deployment (Default)
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>  2) Cloud-managed-instance
+</span></code></pre></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio"><input id="__tabbed_4_2" name="__tabbed_4" type="radio"><div class="tabbed-labels"><label for="__tabbed_4_1">Option 1: Cluster-deployment (MinIO)</label><label for="__tabbed_4_2">Option 2: Cloud-managed-instance</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>Automatic configuration</strong> - The script will:</p>
+<ul>
+<li>Deploy MinIO in your cluster</li>
+<li>Auto-configure credentials (minioadmin/minioadmin)</li>
+<li>Create required buckets</li>
+<li>Update workspace <code>.env</code> file automatically</li>
+</ul>
+<p><strong>Best for:</strong> Development, testing, small deployments</p>
+</div>
+<div class="tabbed-block">
+<p><strong>Manual configuration required</strong> - The script will pause:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>**********************************************************************
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>-----------  Configure s3 storage and update the values --------------
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>**********************************************************************
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>***********  Update workspace/${DEPLOYMENT_ENV}/env/.env *************
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>-----------  access_key_id= ------------------------------------------
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>-----------  secret_access_key= --------------------------------------
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>-----------  endpoint= -----------------------------------------------
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>-----------  region= -------------------------------------------------
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>**********************************************************************
+</span></code></pre></div>
+<p><strong>Action Required:</strong></p>
+<ol>
+<li>
+<p>Edit the workspace file:
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>vi<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</span></code></pre></div><p></p>
+</li>
+<li>
+<p>Configure your cloud storage credentials:</p>
+</li>
+</ol>
+<p><strong>For IBM Cloud Object Storage:</strong>
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nv">access_key_id</span><span class="o">=</span>1234567890abcdef1234567890abcdef
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="nv">secret_access_key</span><span class="o">=</span>abcdef1234567890abcdef1234567890abcdef12
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="nv">endpoint</span><span class="o">=</span>https://s3.us-south.cloud-object-storage.appdomain.cloud
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="nv">region</span><span class="o">=</span>us-south
+</span></code></pre></div><p></p>
+<p><strong>For AWS S3:</strong>
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="nv">access_key_id</span><span class="o">=</span>AKIAIOSFODNN7EXAMPLE
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="nv">secret_access_key</span><span class="o">=</span>wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="nv">endpoint</span><span class="o">=</span>https://s3.us-east-1.amazonaws.com
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="nv">region</span><span class="o">=</span>us-east-1
+</span></code></pre></div><p></p>
+<p><strong>For Azure Blob Storage (via S3 gateway):</strong>
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="nv">access_key_id</span><span class="o">=</span>&lt;azure-storage-account-name&gt;
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="nv">secret_access_key</span><span class="o">=</span>&lt;azure-storage-account-key&gt;
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="nv">endpoint</span><span class="o">=</span>https://&lt;account&gt;.blob.core.windows.net
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="nv">region</span><span class="o">=</span>eastus
+</span></code></pre></div><p></p>
+<ol>
+<li>Press Enter in the script terminal to continue</li>
+</ol>
+<p><strong>Best for:</strong> Production deployments, enterprise requirements</p>
+</div>
+</div>
+</div>
+<p>The script will then create the required buckets automatically.</p>
+<h3 id="4-database-configuration">4. Database Configuration<a class="headerlink" href="#4-database-configuration" title="Permanent link">¶</a></h3>
+<p>The script will prompt:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>Select whether to deploy a PostgreSQL database in cluster or use a cloud managed instance:
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>  1) Cluster-deployment (Default)
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>  2) Cloud-managed-instance
+</span></code></pre></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio"><input id="__tabbed_5_2" name="__tabbed_5" type="radio"><div class="tabbed-labels"><label for="__tabbed_5_1">Option 1: Cluster-deployment (PostgreSQL)</label><label for="__tabbed_5_2">Option 2: Cloud-managed-instance</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>Automatic configuration</strong> - The script will:</p>
+<ul>
+<li>Deploy PostgreSQL using Bitnami Helm chart</li>
+<li>Auto-configure credentials</li>
+<li>Create required databases</li>
+<li>Update workspace <code>.env</code> file automatically</li>
+</ul>
+<p><strong>Best for:</strong> Development, testing, small deployments</p>
+</div>
+<div class="tabbed-block">
+<p><strong>Manual configuration required</strong> - The script will pause:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>**********************************************************************
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>-----------  Configure PostgreSQL and update the values --------------
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>**********************************************************************
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>***********  Update workspace/${DEPLOYMENT_ENV}/env/.env *************
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>-----------  pg_username= --------------------------------------------
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>-----------  pg_password= --------------------------------------------
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>-----------  pg_uri= -------------------------------------------------
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>-----------  pg_port= ------------------------------------------------
+</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>-----------  pg_original_db_name= ------------------------------------
+</span><span id="__span-22-10"><a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>**********************************************************************
+</span></code></pre></div>
+<p><strong>Action Required:</strong></p>
+<ol>
+<li>
+<p>Edit the workspace file:
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>vi<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</span></code></pre></div><p></p>
+</li>
+<li>
+<p>Configure your database credentials:</p>
+</li>
+</ol>
+<p><strong>For IBM Cloud Databases for PostgreSQL:</strong>
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="nv">pg_username</span><span class="o">=</span>ibm_cloud_user
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="nv">pg_password</span><span class="o">=</span>your-secure-password
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="nv">pg_uri</span><span class="o">=</span>1234abcd-5678-90ef-ghij-klmnopqrstuv.databases.appdomain.cloud
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="nv">pg_port</span><span class="o">=</span><span class="m">30123</span>
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="nv">pg_original_db_name</span><span class="o">=</span>ibmclouddb
+</span></code></pre></div><p></p>
+<p><strong>For AWS RDS for PostgreSQL:</strong>
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="nv">pg_username</span><span class="o">=</span>postgres
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="nv">pg_password</span><span class="o">=</span>your-secure-password
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="nv">pg_uri</span><span class="o">=</span>mydb-instance.abc123.us-east-1.rds.amazonaws.com
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="nv">pg_port</span><span class="o">=</span><span class="m">5432</span>
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="nv">pg_original_db_name</span><span class="o">=</span>postgres
+</span></code></pre></div><p></p>
+<p><strong>For Azure Database for PostgreSQL:</strong>
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="nv">pg_username</span><span class="o">=</span>azureuser@myserver
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="nv">pg_password</span><span class="o">=</span>your-secure-password
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="nv">pg_uri</span><span class="o">=</span>myserver.postgres.database.azure.com
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="nv">pg_port</span><span class="o">=</span><span class="m">5432</span>
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="nv">pg_original_db_name</span><span class="o">=</span>postgres
+</span></code></pre></div><p></p>
+<ol>
+<li>Press Enter in the script terminal to continue</li>
+</ol>
+<p><strong>Best for:</strong> Production deployments, enterprise requirements</p>
+</div>
+</div>
+</div>
+<p>The script will then create the required databases and tables automatically.</p>
+<h3 id="5-authentication-configuration">5. Authentication Configuration<a class="headerlink" href="#5-authentication-configuration" title="Permanent link">¶</a></h3>
+<p>The script will prompt:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>Select OAuth provider type:
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>  1) Keycloak (Default)
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>  2) IBM Security Verify (ISV)
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>  3) External OAuth Provider
+</span></code></pre></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:3"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio"><input id="__tabbed_6_2" name="__tabbed_6" type="radio"><input id="__tabbed_6_3" name="__tabbed_6" type="radio"><div class="tabbed-labels"><label for="__tabbed_6_1">Option 1: Keycloak (In-Cluster)</label><label for="__tabbed_6_2">Option 2: IBM Security Verify</label><label for="__tabbed_6_3">Option 3: External OAuth Provider</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>Automatic configuration</strong> - The script will:</p>
+<ul>
+<li>Deploy Keycloak in your cluster</li>
+<li>Auto-configure realm and clients</li>
+<li>Update workspace files automatically</li>
+</ul>
+<p><strong>Best for:</strong> Development, testing, self-contained deployments</p>
+</div>
+<div class="tabbed-block">
+<p><strong>Manual configuration required</strong> - The script will pause:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>**********************************************************************
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>-----------  Configure IBM Security Verify ---------------------------
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>**********************************************************************
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>***********  Update workspace/${DEPLOYMENT_ENV}/env/env.sh ***********
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>-----------  export OAUTH_CLIENT_ID= ---------------------------------
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>-----------  export OAUTH_ISSUER_URL= --------------------------------
+</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>***********  Update workspace/${DEPLOYMENT_ENV}/env/.env *************
+</span><span id="__span-28-8"><a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>-----------  oauth_client_secret= ------------------------------------
+</span><span id="__span-28-9"><a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>-----------  oauth_cookie_secret= ------------------------------------
+</span><span id="__span-28-10"><a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a>**********************************************************************
+</span></code></pre></div>
+<p><strong>Action Required:</strong></p>
+<ol>
+<li>Edit the configuration file:
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>vi<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</span></code></pre></div></li>
+</ol>
+<p>Add:
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_TYPE</span><span class="o">=</span>isv
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_CLIENT_ID</span><span class="o">=</span>your-isv-client-id
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_ISSUER_URL</span><span class="o">=</span>https://geostudio.verify.ibm.com/v1.0/endpoint/default
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_URL</span><span class="o">=</span>https://geostudio.verify.ibm.com/v1.0/endpoint/default/authorize
+</span></code></pre></div><p></p>
+<ol>
+<li>Edit the secrets file:
+   <div class="language-bash highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>vi<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</span></code></pre></div></li>
+</ol>
+<p>Add:
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="nv">oauth_client_secret</span><span class="o">=</span>your-isv-client-secret
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="nv">oauth_cookie_secret</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="k">)</span>
+</span></code></pre></div><p></p>
+<ol>
+<li>Press Enter in the script terminal to continue</li>
+</ol>
+<p><strong>Best for:</strong> Enterprise deployments with IBM Security Verify</p>
+</div>
+<div class="tabbed-block">
+<p><strong>Manual configuration required</strong> - Similar to ISV, but configure for your provider:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="c1"># In env.sh</span>
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_TYPE</span><span class="o">=</span>keycloak<span class="w">  </span><span class="c1"># or your provider type</span>
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_CLIENT_ID</span><span class="o">=</span>your-client-id
+</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_ISSUER_URL</span><span class="o">=</span>https://your-auth-provider.com/realms/your-realm
+</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OAUTH_URL</span><span class="o">=</span>https://your-auth-provider.com/realms/your-realm/protocol/openid-connect/auth
+</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>
+</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a><span class="c1"># In .env</span>
+</span><span id="__span-33-8"><a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a><span class="nv">oauth_client_secret</span><span class="o">=</span>your-client-secret
+</span><span id="__span-33-9"><a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a><span class="nv">oauth_cookie_secret</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="k">)</span>
+</span></code></pre></div>
+<p><strong>Best for:</strong> Integration with existing OAuth infrastructure</p>
+</div>
+</div>
+</div>
+<h3 id="6-geoserver-configuration">6. GeoServer Configuration<a class="headerlink" href="#6-geoserver-configuration" title="Permanent link">¶</a></h3>
+<p>The script will automatically:</p>
+<ul>
+<li>Deploy GeoServer</li>
+<li>Configure data directories</li>
+<li>Set up authentication</li>
+<li>Create required workspaces</li>
+</ul>
+<p>No manual configuration required.</p>
+<h3 id="7-deploy-geospatial-studio-services">7. Deploy Geospatial Studio Services<a class="headerlink" href="#7-deploy-geospatial-studio-services" title="Permanent link">¶</a></h3>
+<p>After all configuration is complete, the script will:</p>
+<ol>
+<li>Deploy all Geospatial Studio services</li>
+<li>Wait for pods to become ready</li>
+<li>Configure routes/ingress</li>
+<li>Display access URLs</li>
+</ol>
+<h2 id="monitoring-deployment-progress">Monitoring Deployment Progress<a class="headerlink" href="#monitoring-deployment-progress" title="Permanent link">¶</a></h2>
+<p>Watch the deployment in real-time:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio"><input id="__tabbed_7_2" name="__tabbed_7" type="radio"><div class="tabbed-labels"><label for="__tabbed_7_1">OpenShift</label><label for="__tabbed_7_2">Kubernetes</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="c1"># Watch pods</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>&lt;your-namespace&gt;<span class="w"> </span>-w
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>
+</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="c1"># Check deployment status</span>
+</span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a>oc<span class="w"> </span>get<span class="w"> </span>deployments<span class="w"> </span>-n<span class="w"> </span>&lt;your-namespace&gt;
+</span><span id="__span-34-6"><a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a>
+</span><span id="__span-34-7"><a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a><span class="c1"># Or use k9s for a better experience</span>
+</span><span id="__span-34-8"><a id="__codelineno-34-8" name="__codelineno-34-8" href="#__codelineno-34-8"></a>k9s<span class="w"> </span>-n<span class="w"> </span>&lt;your-namespace&gt;
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="c1"># Watch pods</span>
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>&lt;your-namespace&gt;<span class="w"> </span>-w
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>
+</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="c1"># Check deployment status</span>
+</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>kubectl<span class="w"> </span>get<span class="w"> </span>deployments<span class="w"> </span>-n<span class="w"> </span>&lt;your-namespace&gt;
+</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a>
+</span><span id="__span-35-7"><a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a><span class="c1"># Or use k9s for a better experience</span>
+</span><span id="__span-35-8"><a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a>k9s<span class="w"> </span>-n<span class="w"> </span>&lt;your-namespace&gt;
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>Wait for all pods to reach "Running" status. This typically takes 10-15 minutes.</p>
+<h2 id="post-deployment-steps">Post-Deployment Steps<a class="headerlink" href="#post-deployment-steps" title="Permanent link">¶</a></h2>
+<h3 id="access-the-studio">Access the Studio<a class="headerlink" href="#access-the-studio" title="Permanent link">¶</a></h3>
+<p>After deployment completes, the script displays access URLs:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>✅ Deployment Complete!
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>
+</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>Access URLs:
+</span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a>- Studio UI: https://studio-&lt;namespace&gt;.&lt;cluster-url&gt;
+</span><span id="__span-36-5"><a id="__codelineno-36-5" name="__codelineno-36-5" href="#__codelineno-36-5"></a>- Studio API: https://api-&lt;namespace&gt;.&lt;cluster-url&gt;
+</span><span id="__span-36-6"><a id="__codelineno-36-6" name="__codelineno-36-6" href="#__codelineno-36-6"></a>- GeoServer: https://geoserver-&lt;namespace&gt;.&lt;cluster-url&gt;
+</span><span id="__span-36-7"><a id="__codelineno-36-7" name="__codelineno-36-7" href="#__codelineno-36-7"></a>- MLflow: https://mlflow-&lt;namespace&gt;.&lt;cluster-url&gt;
+</span><span id="__span-36-8"><a id="__codelineno-36-8" name="__codelineno-36-8" href="#__codelineno-36-8"></a>
+</span><span id="__span-36-9"><a id="__codelineno-36-9" name="__codelineno-36-9" href="#__codelineno-36-9"></a>Default Credentials:
+</span><span id="__span-36-10"><a id="__codelineno-36-10" name="__codelineno-36-10" href="#__codelineno-36-10"></a>- Username: testuser
+</span><span id="__span-36-11"><a id="__codelineno-36-11" name="__codelineno-36-11" href="#__codelineno-36-11"></a>- Password: testpass123
+</span></code></pre></div>
+<h3 id="create-api-key">Create API Key<a class="headerlink" href="#create-api-key" title="Permanent link">¶</a></h3>
+<ol>
+<li>Navigate to the Studio UI</li>
+<li>Login with default credentials</li>
+<li>Click "Manage your API keys"</li>
+<li>Generate a new API key</li>
+<li>Save it securely:</li>
+</ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"GEOSTUDIO_API_KEY=&lt;your-api-key&gt;"</span><span class="w"> </span>&gt;<span class="w"> </span>~/.geostudio_config_file
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"BASE_STUDIO_UI_URL=https://studio-&lt;namespace&gt;.&lt;cluster-url&gt;"</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.geostudio_config_file
+</span></code></pre></div>
+<h3 id="onboard-sandbox-models">Onboard Sandbox Models<a class="headerlink" href="#onboard-sandbox-models" title="Permanent link">¶</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">STUDIO_API_KEY</span><span class="o">=</span><span class="s2">"&lt;your-api-key&gt;"</span>
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">UI_ROUTE_URL</span><span class="o">=</span><span class="s2">"https://studio-&lt;namespace&gt;.&lt;cluster-url&gt;"</span>
+</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>
+</span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a>./deployment-scripts/add-sandbox-models.sh
+</span></code></pre></div>
+<h2 id="verify-configuration">Verify Configuration<a class="headerlink" href="#verify-configuration" title="Permanent link">¶</a></h2>
+<p>After deployment, verify your configuration:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="c1"># Load environment variables</span>
+</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="nb">source</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a>
+</span><span id="__span-39-4"><a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a><span class="c1"># Check key settings</span>
+</span><span id="__span-39-5"><a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"Deployment: </span><span class="nv">$DEPLOYMENT_ENV</span><span class="s2">"</span>
+</span><span id="__span-39-6"><a id="__codelineno-39-6" name="__codelineno-39-6" href="#__codelineno-39-6"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"Namespace: </span><span class="nv">$OC_PROJECT</span><span class="s2">"</span>
+</span><span id="__span-39-7"><a id="__codelineno-39-7" name="__codelineno-39-7" href="#__codelineno-39-7"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"Cluster: </span><span class="nv">$CLUSTER_URL</span><span class="s2">"</span>
+</span><span id="__span-39-8"><a id="__codelineno-39-8" name="__codelineno-39-8" href="#__codelineno-39-8"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"Storage Classes: COS=</span><span class="nv">$COS_STORAGE_CLASS</span><span class="s2">, Non-COS=</span><span class="nv">$NON_COS_STORAGE_CLASS</span><span class="s2">"</span>
+</span><span id="__span-39-9"><a id="__codelineno-39-9" name="__codelineno-39-9" href="#__codelineno-39-9"></a>
+</span><span id="__span-39-10"><a id="__codelineno-39-10" name="__codelineno-39-10" href="#__codelineno-39-10"></a><span class="c1"># Check secrets (without displaying values)</span>
+</span><span id="__span-39-11"><a id="__codelineno-39-11" name="__codelineno-39-11" href="#__codelineno-39-11"></a>grep<span class="w"> </span>-E<span class="w"> </span><span class="s2">"pg_uri|endpoint|oauth_client_id"</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env<span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span><span class="s1">'s/=.*/=***/'</span>
+</span></code></pre></div>
+<p><strong>Verify pods are running:</strong></p>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:2"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio"><input id="__tabbed_8_2" name="__tabbed_8" type="radio"><div class="tabbed-labels"><label for="__tabbed_8_1">OpenShift</label><label for="__tabbed_8_2">Kubernetes</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>&lt;your-namespace&gt;
+</span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a>oc<span class="w"> </span>get<span class="w"> </span>routes<span class="w"> </span>-n<span class="w"> </span>&lt;your-namespace&gt;
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>&lt;your-namespace&gt;
+</span><span id="__span-41-2"><a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>ingress<span class="w"> </span>-n<span class="w"> </span>&lt;your-namespace&gt;
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<h2 id="re-running-the-deployment">Re-running the Deployment<a class="headerlink" href="#re-running-the-deployment" title="Permanent link">¶</a></h2>
+<p>If you need to re-run the deployment script:</p>
+<h3 id="jump-to-deployment">Jump to Deployment<a class="headerlink" href="#jump-to-deployment" title="Permanent link">¶</a></h3>
+<p>If you've already configured everything and just want to redeploy:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="9:2"><input checked="checked" id="__tabbed_9_1" name="__tabbed_9" type="radio"><input id="__tabbed_9_2" name="__tabbed_9" type="radio"><div class="tabbed-labels"><label for="__tabbed_9_1">OpenShift</label><label for="__tabbed_9_2">Kubernetes</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a>./deploy_studio_ocp.sh
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a>./deploy_studio_k8s.sh
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>When prompted "Jump to Deployment?", select <strong>Yes</strong> to skip configuration and go straight to deployment.</p>
+<h3 id="update-configuration">Update Configuration<a class="headerlink" href="#update-configuration" title="Permanent link">¶</a></h3>
+<p>If you need to update configuration:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="10:2"><input checked="checked" id="__tabbed_10_1" name="__tabbed_10" type="radio"><input id="__tabbed_10_2" name="__tabbed_10" type="radio"><div class="tabbed-labels"><label for="__tabbed_10_1">OpenShift</label><label for="__tabbed_10_2">Kubernetes</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-44-1"><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a>./deploy_studio_ocp.sh
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a>./deploy_studio_k8s.sh
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>When prompted "Jump to Deployment?", select <strong>No</strong> to:</p>
+<ul>
+<li>Regenerate workspace files (with backup)</li>
+<li>Update configuration values</li>
+<li>Redeploy services</li>
+</ul>
+<h2 id="gpu-configuration">GPU Configuration<a class="headerlink" href="#gpu-configuration" title="Permanent link">¶</a></h2>
+<p>If your cluster has NVIDIA GPUs, you can configure GPU affinity for fine-tuning jobs.</p>
+<h3 id="verify-gpu-availability">Verify GPU Availability<a class="headerlink" href="#verify-gpu-availability" title="Permanent link">¶</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-46-1"><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>nodes<span class="w"> </span>-o<span class="w"> </span>json<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">'.items[].status.capacity."nvidia.com/gpu"'</span>
+</span></code></pre></div>
+<h3 id="configure-gpu-in-workspace">Configure GPU in Workspace<a class="headerlink" href="#configure-gpu-in-workspace" title="Permanent link">¶</a></h3>
+<ol>
+<li>Edit <code>workspace/${DEPLOYMENT_ENV}/env/env.sh</code>:</li>
+</ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-47-1"><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="c1"># GPU Configuration</span>
+</span><span id="__span-47-2"><a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CONFIGURE_GPU_AFFINITY_FLAG</span><span class="o">=</span><span class="nb">true</span>
+</span><span id="__span-47-3"><a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CONFIGURE_GPU_AFFINITY</span><span class="o">=</span><span class="nb">true</span>
+</span><span id="__span-47-4"><a id="__codelineno-47-4" name="__codelineno-47-4" href="#__codelineno-47-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">NODE_SELECTOR_KEY</span><span class="o">=</span>nvidia.com/gpu.product
+</span><span id="__span-47-5"><a id="__codelineno-47-5" name="__codelineno-47-5" href="#__codelineno-47-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">NODE_GPU_SPEC</span><span class="o">=</span>NVIDIA-A100-SXM4-80GB<span class="w">  </span><span class="c1"># Adjust to your GPU model</span>
+</span></code></pre></div>
+<ol>
+<li>Regenerate values.yaml to apply GPU settings:</li>
+</ol>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a>./deployment-scripts/values-file-generate.sh
+</span></code></pre></div>
+<ol>
+<li>Redeploy or update the deployment:</li>
+</ol>
+<p>=== "OpenShift"
+       </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a>./deploy_studio_ocp.sh
+</span><span id="__span-49-2"><a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a><span class="c1"># Select "Yes" when prompted "Jump to Deployment?"</span>
+</span></code></pre></div><p></p>
+<p>=== "Kubernetes"
+       </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-50-1"><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a>./deploy_studio_k8s.sh
+</span><span id="__span-50-2"><a id="__codelineno-50-2" name="__codelineno-50-2" href="#__codelineno-50-2"></a><span class="c1"># Select "Yes" when prompted "Jump to Deployment?"</span>
+</span></code></pre></div><p></p>
+<h2 id="advanced-configuration-options">Advanced Configuration Options<a class="headerlink" href="#advanced-configuration-options" title="Permanent link">¶</a></h2>
+<p>Beyond the basic configuration covered in the interactive deployment, you can customize additional settings. Configuration is split between:</p>
+<ol>
+<li><strong>Workspace environment files</strong> (<code>workspace/${DEPLOYMENT_ENV}/env/</code>) - Infrastructure and deployment settings</li>
+<li><strong>Helm values files</strong> (<code>workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml</code>) - Application runtime settings</li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">Configuration Workflow</p>
+<ol>
+<li>Edit workspace files (<code>env.sh</code> or <code>.env</code>) for infrastructure settings</li>
+<li>Run <code>./deployment-scripts/values-file-generate.sh</code> to generate values.yaml from env.sh</li>
+<li>Edit <code>workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml</code> for application settings</li>
+<li>Deploy or update using <code>./deploy_studio_ocp.sh</code></li>
+</ol>
+</div>
+<h3 id="rate-limiting">Rate Limiting<a class="headerlink" href="#rate-limiting" title="Permanent link">¶</a></h3>
+<p>Control API request rates to prevent abuse and ensure fair resource usage.</p>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml</code>:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-51-1"><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a><span class="c1"># In gfm-studio-gateway.extraEnvironment.api section</span>
+</span><span id="__span-51-2"><a id="__codelineno-51-2" name="__codelineno-51-2" href="#__codelineno-51-2"></a><span class="nt">extraEnvironment</span><span class="p">:</span>
+</span><span id="__span-51-3"><a id="__codelineno-51-3" name="__codelineno-51-3" href="#__codelineno-51-3"></a><span class="w">  </span><span class="nt">api</span><span class="p">:</span>
+</span><span id="__span-51-4"><a id="__codelineno-51-4" name="__codelineno-51-4" href="#__codelineno-51-4"></a><span class="w">    </span><span class="nt">RATELIMIT_ENABLED</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-51-5"><a id="__codelineno-51-5" name="__codelineno-51-5" href="#__codelineno-51-5"></a><span class="w">    </span><span class="nt">RATELIMIT_LIMIT</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">200</span><span class="w">                      </span><span class="c1"># Max requests per window</span>
+</span><span id="__span-51-6"><a id="__codelineno-51-6" name="__codelineno-51-6" href="#__codelineno-51-6"></a><span class="w">    </span><span class="nt">RATELIMIT_WINDOW</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span><span class="w">                      </span><span class="c1"># Time window in seconds</span>
+</span><span id="__span-51-7"><a id="__codelineno-51-7" name="__codelineno-51-7" href="#__codelineno-51-7"></a><span class="w">    </span><span class="nt">RATELIMIT_SENSITIVE_RESOURCE_LIMIT</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6</span><span class="w">     </span><span class="c1"># For training/inference</span>
+</span><span id="__span-51-8"><a id="__codelineno-51-8" name="__codelineno-51-8" href="#__codelineno-51-8"></a><span class="w">    </span><span class="nt">RATELIMIT_SENSITIVE_RESOURCE_WINDOW</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span><span class="w">  </span><span class="c1"># 5 minutes</span>
+</span></code></pre></div>
+<p><strong>Default values:</strong>
+- General: 200 requests per 60 seconds
+- Sensitive resources: 6 requests per 300 seconds (5 minutes)</p>
+<h3 id="data-advisor">Data Advisor<a class="headerlink" href="#data-advisor" title="Permanent link">¶</a></h3>
+<p>Enable automatic data quality assessment and recommendations for satellite imagery.</p>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml</code>:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-52-1"><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a><span class="c1"># In gfm-studio-gateway.extraEnvironment.api section</span>
+</span><span id="__span-52-2"><a id="__codelineno-52-2" name="__codelineno-52-2" href="#__codelineno-52-2"></a><span class="nt">extraEnvironment</span><span class="p">:</span>
+</span><span id="__span-52-3"><a id="__codelineno-52-3" name="__codelineno-52-3" href="#__codelineno-52-3"></a><span class="w">  </span><span class="nt">api</span><span class="p">:</span>
+</span><span id="__span-52-4"><a id="__codelineno-52-4" name="__codelineno-52-4" href="#__codelineno-52-4"></a><span class="w">    </span><span class="nt">DATA_ADVISOR_ENABLED</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-52-5"><a id="__codelineno-52-5" name="__codelineno-52-5" href="#__codelineno-52-5"></a><span class="w">    </span><span class="nt">DATA_ADVISOR_PRE_DAYS</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">       </span><span class="c1"># Days before target date</span>
+</span><span id="__span-52-6"><a id="__codelineno-52-6" name="__codelineno-52-6" href="#__codelineno-52-6"></a><span class="w">    </span><span class="nt">DATA_ADVISOR_POST_DAYS</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">      </span><span class="c1"># Days after target date</span>
+</span><span id="__span-52-7"><a id="__codelineno-52-7" name="__codelineno-52-7" href="#__codelineno-52-7"></a><span class="w">    </span><span class="nt">DATA_ADVISOR_MAX_CLOUD_COVER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+</span></code></pre></div>
+<p><strong>Use case:</strong> Automatically find the best available satellite imagery for a given location and time period.</p>
+<h3 id="gpu-node-affinity">GPU Node Affinity<a class="headerlink" href="#gpu-node-affinity" title="Permanent link">¶</a></h3>
+<p>Control which GPU nodes are used for model training and inference.</p>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/env/env.sh</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-53-1"><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a><span class="c1"># Enable GPU node affinity</span>
+</span><span id="__span-53-2"><a id="__codelineno-53-2" name="__codelineno-53-2" href="#__codelineno-53-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CONFIGURE_GPU_AFFINITY</span><span class="o">=</span><span class="nb">true</span>
+</span><span id="__span-53-3"><a id="__codelineno-53-3" name="__codelineno-53-3" href="#__codelineno-53-3"></a>
+</span><span id="__span-53-4"><a id="__codelineno-53-4" name="__codelineno-53-4" href="#__codelineno-53-4"></a><span class="c1"># Node selector key (Kubernetes label)</span>
+</span><span id="__span-53-5"><a id="__codelineno-53-5" name="__codelineno-53-5" href="#__codelineno-53-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">NODE_SELECTOR_KEY</span><span class="o">=</span>nvidia.com/gpu.product
+</span><span id="__span-53-6"><a id="__codelineno-53-6" name="__codelineno-53-6" href="#__codelineno-53-6"></a>
+</span><span id="__span-53-7"><a id="__codelineno-53-7" name="__codelineno-53-7" href="#__codelineno-53-7"></a><span class="c1"># Comma-separated list of acceptable GPU types</span>
+</span><span id="__span-53-8"><a id="__codelineno-53-8" name="__codelineno-53-8" href="#__codelineno-53-8"></a><span class="nb">export</span><span class="w"> </span><span class="nv">NODE_GPU_SPEC</span><span class="o">=</span>NVIDIA-A100-SXM4-80GB,NVIDIA-V100-SXM2-32GB
+</span></code></pre></div>
+<p>Then regenerate values.yaml:
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-54-1"><a id="__codelineno-54-1" name="__codelineno-54-1" href="#__codelineno-54-1"></a>./deployment-scripts/values-file-generate.sh
+</span></code></pre></div><p></p>
+<p><strong>When to use:</strong>
+- <strong>Enable</strong> (true): When you have specific GPU requirements or want to reserve certain GPUs
+- <strong>Disable</strong> (false): When any available GPU is acceptable for training</p>
+<h3 id="fine-tuning-resource-limits">Fine-Tuning Resource Limits<a class="headerlink" href="#fine-tuning-resource-limits" title="Permanent link">¶</a></h3>
+<p>Configure CPU, memory, and GPU resources for model training jobs. These settings control the resources allocated to fine-tuning jobs created by the API.</p>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml</code>:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-55-1"><a id="__codelineno-55-1" name="__codelineno-55-1" href="#__codelineno-55-1"></a><span class="c1"># In gfm-studio-gateway.extraEnvironment.api section</span>
+</span><span id="__span-55-2"><a id="__codelineno-55-2" name="__codelineno-55-2" href="#__codelineno-55-2"></a><span class="nt">extraEnvironment</span><span class="p">:</span>
+</span><span id="__span-55-3"><a id="__codelineno-55-3" name="__codelineno-55-3" href="#__codelineno-55-3"></a><span class="w">  </span><span class="nt">api</span><span class="p">:</span>
+</span><span id="__span-55-4"><a id="__codelineno-55-4" name="__codelineno-55-4" href="#__codelineno-55-4"></a><span class="w">    </span><span class="c1"># Resource limits (maximum allowed for fine-tuning jobs)</span>
+</span><span id="__span-55-5"><a id="__codelineno-55-5" name="__codelineno-55-5" href="#__codelineno-55-5"></a><span class="w">    </span><span class="nt">RESOURCE_LIMIT_CPU</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span><span class="w">        </span><span class="c1"># CPU cores</span>
+</span><span id="__span-55-6"><a id="__codelineno-55-6" name="__codelineno-55-6" href="#__codelineno-55-6"></a><span class="w">    </span><span class="nt">RESOURCE_LIMIT_Memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span><span class="w">     </span><span class="c1"># GB</span>
+</span><span id="__span-55-7"><a id="__codelineno-55-7" name="__codelineno-55-7" href="#__codelineno-55-7"></a><span class="w">    </span><span class="nt">RESOURCE_LIMIT_GPU</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">         </span><span class="c1"># Number of GPUs</span>
+</span><span id="__span-55-8"><a id="__codelineno-55-8" name="__codelineno-55-8" href="#__codelineno-55-8"></a>
+</span><span id="__span-55-9"><a id="__codelineno-55-9" name="__codelineno-55-9" href="#__codelineno-55-9"></a><span class="w">    </span><span class="c1"># Resource requests (guaranteed minimum for fine-tuning jobs)</span>
+</span><span id="__span-55-10"><a id="__codelineno-55-10" name="__codelineno-55-10" href="#__codelineno-55-10"></a><span class="w">    </span><span class="nt">RESOURCE_REQUEST_CPU</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6</span><span class="w">       </span><span class="c1"># CPU cores</span>
+</span><span id="__span-55-11"><a id="__codelineno-55-11" name="__codelineno-55-11" href="#__codelineno-55-11"></a><span class="w">    </span><span class="nt">RESOURCE_REQUEST_Memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24</span><span class="w">   </span><span class="c1"># GB</span>
+</span><span id="__span-55-12"><a id="__codelineno-55-12" name="__codelineno-55-12" href="#__codelineno-55-12"></a><span class="w">    </span><span class="nt">RESOURCE_REQUEST_GPU</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">       </span><span class="c1"># Number of GPUs</span>
+</span></code></pre></div>
+<p><strong>Recommendations:</strong>
+- <strong>Development</strong>: Lower limits (4 CPU, 16GB RAM, 1 GPU)
+- <strong>Production</strong>: Higher limits (10+ CPU, 32+ GB RAM, 1-2 GPUs)</p>
+<p><strong>Note:</strong> These settings control resources for fine-tuning jobs, not the API gateway pod itself. To configure API gateway pod resources, edit the <code>resources.api</code> section in values.yaml.</p>
+<h3 id="job-retry-and-timeout-settings">Job Retry and Timeout Settings<a class="headerlink" href="#job-retry-and-timeout-settings" title="Permanent link">¶</a></h3>
+<p>Configure how long to wait for training jobs and how many times to retry.</p>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml</code>:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-56-1"><a id="__codelineno-56-1" name="__codelineno-56-1" href="#__codelineno-56-1"></a><span class="c1"># In gfm-studio-gateway.extraEnvironment.api section</span>
+</span><span id="__span-56-2"><a id="__codelineno-56-2" name="__codelineno-56-2" href="#__codelineno-56-2"></a><span class="nt">extraEnvironment</span><span class="p">:</span>
+</span><span id="__span-56-3"><a id="__codelineno-56-3" name="__codelineno-56-3" href="#__codelineno-56-3"></a><span class="w">  </span><span class="nt">api</span><span class="p">:</span>
+</span><span id="__span-56-4"><a id="__codelineno-56-4" name="__codelineno-56-4" href="#__codelineno-56-4"></a><span class="w">    </span><span class="nt">JOB_MAX_RETRY_COUNT</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30</span>
+</span><span id="__span-56-5"><a id="__codelineno-56-5" name="__codelineno-56-5" href="#__codelineno-56-5"></a><span class="w">    </span><span class="nt">KJOB_MAX_WAIT_SECONDS</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7200</span><span class="w">  </span><span class="c1"># 2 hours</span>
+</span></code></pre></div>
+<h3 id="observability-and-monitoring">Observability and Monitoring<a class="headerlink" href="#observability-and-monitoring" title="Permanent link">¶</a></h3>
+<p>Enable OpenTelemetry tracing and metrics collection.</p>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/env/env.sh</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-57-1"><a id="__codelineno-57-1" name="__codelineno-57-1" href="#__codelineno-57-1"></a><span class="c1"># Enable observability</span>
+</span><span id="__span-57-2"><a id="__codelineno-57-2" name="__codelineno-57-2" href="#__codelineno-57-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OBSERVABILITY_ENABLED</span><span class="o">=</span><span class="nb">true</span>
+</span><span id="__span-57-3"><a id="__codelineno-57-3" name="__codelineno-57-3" href="#__codelineno-57-3"></a>
+</span><span id="__span-57-4"><a id="__codelineno-57-4" name="__codelineno-57-4" href="#__codelineno-57-4"></a><span class="c1"># OpenTelemetry endpoints</span>
+</span><span id="__span-57-5"><a id="__codelineno-57-5" name="__codelineno-57-5" href="#__codelineno-57-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OBSERVABILITY_OTLP_ENDPOINT</span><span class="o">=</span>http://otel-collector:4317
+</span><span id="__span-57-6"><a id="__codelineno-57-6" name="__codelineno-57-6" href="#__codelineno-57-6"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OBSERVABILITY_OTLP_TRACES_ENDPOINT</span><span class="o">=</span>http://otel-collector:4318
+</span></code></pre></div>
+<p>Then regenerate values.yaml:
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-58-1"><a id="__codelineno-58-1" name="__codelineno-58-1" href="#__codelineno-58-1"></a>./deployment-scripts/values-file-generate.sh
+</span></code></pre></div><p></p>
+<p><strong>Integration options:</strong>
+- Jaeger for distributed tracing
+- Prometheus for metrics
+- Grafana for visualization</p>
+<h3 id="external-service-credentials">External Service Credentials<a class="headerlink" href="#external-service-credentials" title="Permanent link">¶</a></h3>
+<p>Configure credentials for external data sources and services.</p>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/env/.env</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-59-1"><a id="__codelineno-59-1" name="__codelineno-59-1" href="#__codelineno-59-1"></a><span class="c1"># SentinelHub (satellite imagery provider)</span>
+</span><span id="__span-59-2"><a id="__codelineno-59-2" name="__codelineno-59-2" href="#__codelineno-59-2"></a><span class="nv">sh_client_id</span><span class="o">=</span>&lt;your-sentinelhub-client-id&gt;
+</span><span id="__span-59-3"><a id="__codelineno-59-3" name="__codelineno-59-3" href="#__codelineno-59-3"></a><span class="nv">sh_client_secret</span><span class="o">=</span>&lt;your-sentinelhub-client-secret&gt;
+</span><span id="__span-59-4"><a id="__codelineno-59-4" name="__codelineno-59-4" href="#__codelineno-59-4"></a>
+</span><span id="__span-59-5"><a id="__codelineno-59-5" name="__codelineno-59-5" href="#__codelineno-59-5"></a><span class="c1"># NASA EarthData</span>
+</span><span id="__span-59-6"><a id="__codelineno-59-6" name="__codelineno-59-6" href="#__codelineno-59-6"></a><span class="nv">nasa_earth_data_bearer_token</span><span class="o">=</span>&lt;your-nasa-token&gt;
+</span><span id="__span-59-7"><a id="__codelineno-59-7" name="__codelineno-59-7" href="#__codelineno-59-7"></a>
+</span><span id="__span-59-8"><a id="__codelineno-59-8" name="__codelineno-59-8" href="#__codelineno-59-8"></a><span class="c1"># Mapbox (for UI basemaps)</span>
+</span><span id="__span-59-9"><a id="__codelineno-59-9" name="__codelineno-59-9" href="#__codelineno-59-9"></a><span class="nv">mapbox_token</span><span class="o">=</span>&lt;your-mapbox-token&gt;
+</span><span id="__span-59-10"><a id="__codelineno-59-10" name="__codelineno-59-10" href="#__codelineno-59-10"></a>
+</span><span id="__span-59-11"><a id="__codelineno-59-11" name="__codelineno-59-11" href="#__codelineno-59-11"></a><span class="c1"># Cesium (for 3D visualization)</span>
+</span><span id="__span-59-12"><a id="__codelineno-59-12" name="__codelineno-59-12" href="#__codelineno-59-12"></a><span class="nv">cesium_token</span><span class="o">=</span>&lt;your-cesium-token&gt;
+</span></code></pre></div>
+<h3 id="celery-task-configuration">Celery Task Configuration<a class="headerlink" href="#celery-task-configuration" title="Permanent link">¶</a></h3>
+<p>Configure background task processing for asynchronous operations.</p>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml</code>:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-60-1"><a id="__codelineno-60-1" name="__codelineno-60-1" href="#__codelineno-60-1"></a><span class="c1"># In gfm-studio-gateway.extraEnvironment.api section</span>
+</span><span id="__span-60-2"><a id="__codelineno-60-2" name="__codelineno-60-2" href="#__codelineno-60-2"></a><span class="nt">extraEnvironment</span><span class="p">:</span>
+</span><span id="__span-60-3"><a id="__codelineno-60-3" name="__codelineno-60-3" href="#__codelineno-60-3"></a><span class="w">  </span><span class="nt">api</span><span class="p">:</span>
+</span><span id="__span-60-4"><a id="__codelineno-60-4" name="__codelineno-60-4" href="#__codelineno-60-4"></a><span class="w">    </span><span class="nt">CELERY_TASKS_ENABLED</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-60-5"><a id="__codelineno-60-5" name="__codelineno-60-5" href="#__codelineno-60-5"></a>
+</span><span id="__span-60-6"><a id="__codelineno-60-6" name="__codelineno-60-6" href="#__codelineno-60-6"></a><span class="c1"># In gfm-studio-gateway.celery section</span>
+</span><span id="__span-60-7"><a id="__codelineno-60-7" name="__codelineno-60-7" href="#__codelineno-60-7"></a><span class="nt">celery</span><span class="p">:</span>
+</span><span id="__span-60-8"><a id="__codelineno-60-8" name="__codelineno-60-8" href="#__codelineno-60-8"></a><span class="w">  </span><span class="nt">worker</span><span class="p">:</span>
+</span><span id="__span-60-9"><a id="__codelineno-60-9" name="__codelineno-60-9" href="#__codelineno-60-9"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-60-10"><a id="__codelineno-60-10" name="__codelineno-60-10" href="#__codelineno-60-10"></a><span class="w">    </span><span class="nt">replicaCount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+</span><span id="__span-60-11"><a id="__codelineno-60-11" name="__codelineno-60-11" href="#__codelineno-60-11"></a><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="s">'celery</span><span class="nv"> </span><span class="s">-A</span><span class="nv"> </span><span class="s">gfmstudio.celery_worker.celery_app</span><span class="nv"> </span><span class="s">worker</span><span class="nv"> </span><span class="s">-c</span><span class="nv"> </span><span class="s">4</span><span class="nv"> </span><span class="s">--queues=inference_gateway,geoft</span><span class="nv"> </span><span class="s">--loglevel=info'</span>
+</span></code></pre></div>
+<p><strong>Task types:</strong>
+- Model fine-tuning jobs
+- Dataset processing
+- Inference requests
+- Automated model onboarding</p>
+<h3 id="pipeline-configuration">Pipeline Configuration<a class="headerlink" href="#pipeline-configuration" title="Permanent link">¶</a></h3>
+<p>Configure inference and data processing pipelines.</p>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/env/env.sh</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-61-1"><a id="__codelineno-61-1" name="__codelineno-61-1" href="#__codelineno-61-1"></a><span class="c1"># Enable pipelines</span>
+</span><span id="__span-61-2"><a id="__codelineno-61-2" name="__codelineno-61-2" href="#__codelineno-61-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">PIPELINES_ENABLED</span><span class="o">=</span><span class="nb">true</span>
+</span><span id="__span-61-3"><a id="__codelineno-61-3" name="__codelineno-61-3" href="#__codelineno-61-3"></a>
+</span><span id="__span-61-4"><a id="__codelineno-61-4" name="__codelineno-61-4" href="#__codelineno-61-4"></a><span class="c1"># Inference pipeline root folder</span>
+</span><span id="__span-61-5"><a id="__codelineno-61-5" name="__codelineno-61-5" href="#__codelineno-61-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE</span><span class="o">=</span>/inference-data
+</span><span id="__span-61-6"><a id="__codelineno-61-6" name="__codelineno-61-6" href="#__codelineno-61-6"></a>
+</span><span id="__span-61-7"><a id="__codelineno-61-7" name="__codelineno-61-7" href="#__codelineno-61-7"></a><span class="c1"># Create tuning folders automatically</span>
+</span><span id="__span-61-8"><a id="__codelineno-61-8" name="__codelineno-61-8" href="#__codelineno-61-8"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CREATE_TUNING_FOLDERS_FLAG</span><span class="o">=</span><span class="nb">true</span>
+</span></code></pre></div>
+<p>Then regenerate values.yaml:
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-62-1"><a id="__codelineno-62-1" name="__codelineno-62-1" href="#__codelineno-62-1"></a>./deployment-scripts/values-file-generate.sh
+</span></code></pre></div><p></p>
+<h3 id="debug-and-development-settings">Debug and Development Settings<a class="headerlink" href="#debug-and-development-settings" title="Permanent link">¶</a></h3>
+<p>Enable debug mode and additional logging for troubleshooting.</p>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml</code>:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-63-1"><a id="__codelineno-63-1" name="__codelineno-63-1" href="#__codelineno-63-1"></a><span class="c1"># In gfm-studio-gateway.extraEnvironment.api section</span>
+</span><span id="__span-63-2"><a id="__codelineno-63-2" name="__codelineno-63-2" href="#__codelineno-63-2"></a><span class="nt">extraEnvironment</span><span class="p">:</span>
+</span><span id="__span-63-3"><a id="__codelineno-63-3" name="__codelineno-63-3" href="#__codelineno-63-3"></a><span class="w">  </span><span class="nt">api</span><span class="p">:</span>
+</span><span id="__span-63-4"><a id="__codelineno-63-4" name="__codelineno-63-4" href="#__codelineno-63-4"></a><span class="w">    </span><span class="nt">DEBUG</span><span class="p">:</span><span class="w"> </span><span class="s">"false"</span><span class="w">              </span><span class="c1"># Set to "true" for debug mode</span>
+</span><span id="__span-63-5"><a id="__codelineno-63-5" name="__codelineno-63-5" href="#__codelineno-63-5"></a><span class="w">    </span><span class="nt">ENVIRONMENT</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">prod</span><span class="w">           </span><span class="c1"># Options: dev, staging, prod</span>
+</span></code></pre></div>
+<p>And in <code>workspace/${DEPLOYMENT_ENV}/env/env.sh</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-64-1"><a id="__codelineno-64-1" name="__codelineno-64-1" href="#__codelineno-64-1"></a><span class="c1"># Environment type (used in values generation)</span>
+</span><span id="__span-64-2"><a id="__codelineno-64-2" name="__codelineno-64-2" href="#__codelineno-64-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">ENVIRONMENT</span><span class="o">=</span>dev<span class="w">  </span><span class="c1"># Options: dev, staging, prod</span>
+</span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Debug Mode in Production</p>
+<p>Never enable <code>DEBUG=true</code> in production environments as it:
+- Exposes sensitive information in logs
+- Increases log volume significantly
+- May impact performance</p>
+</div>
+<h3 id="custom-docker-images">Custom Docker Images<a class="headerlink" href="#custom-docker-images" title="Permanent link">¶</a></h3>
+<p>Override default container images for specific components.</p>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml</code>:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-65-1"><a id="__codelineno-65-1" name="__codelineno-65-1" href="#__codelineno-65-1"></a><span class="c1"># In gfm-studio-gateway.images section</span>
+</span><span id="__span-65-2"><a id="__codelineno-65-2" name="__codelineno-65-2" href="#__codelineno-65-2"></a><span class="nt">images</span><span class="p">:</span>
+</span><span id="__span-65-3"><a id="__codelineno-65-3" name="__codelineno-65-3" href="#__codelineno-65-3"></a><span class="w">  </span><span class="nt">api</span><span class="p">:</span>
+</span><span id="__span-65-4"><a id="__codelineno-65-4" name="__codelineno-65-4" href="#__codelineno-65-4"></a><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/geospatial-studio/geostudio-gateway</span>
+</span><span id="__span-65-5"><a id="__codelineno-65-5" name="__codelineno-65-5" href="#__codelineno-65-5"></a><span class="w">    </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">custom-tag</span>
+</span><span id="__span-65-6"><a id="__codelineno-65-6" name="__codelineno-65-6" href="#__codelineno-65-6"></a><span class="w">  </span><span class="nt">tt_caikit</span><span class="p">:</span>
+</span><span id="__span-65-7"><a id="__codelineno-65-7" name="__codelineno-65-7" href="#__codelineno-65-7"></a><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/geospatial-studio/geospatial-model-inference-service</span>
+</span><span id="__span-65-8"><a id="__codelineno-65-8" name="__codelineno-65-8" href="#__codelineno-65-8"></a><span class="w">    </span><span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">custom-tag</span>
+</span></code></pre></div>
+<h3 id="storage-configuration">Storage Configuration<a class="headerlink" href="#storage-configuration" title="Permanent link">¶</a></h3>
+<p>Configure storage classes and PVC settings.</p>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/env/env.sh</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-66-1"><a id="__codelineno-66-1" name="__codelineno-66-1" href="#__codelineno-66-1"></a><span class="c1"># Storage classes (already configured during deployment)</span>
+</span><span id="__span-66-2"><a id="__codelineno-66-2" name="__codelineno-66-2" href="#__codelineno-66-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">COS_STORAGE_CLASS</span><span class="o">=</span>&lt;your-s3-compatible-storage-class&gt;
+</span><span id="__span-66-3"><a id="__codelineno-66-3" name="__codelineno-66-3" href="#__codelineno-66-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">NON_COS_STORAGE_CLASS</span><span class="o">=</span>&lt;your-block-storage-class&gt;
+</span><span id="__span-66-4"><a id="__codelineno-66-4" name="__codelineno-66-4" href="#__codelineno-66-4"></a>
+</span><span id="__span-66-5"><a id="__codelineno-66-5" name="__codelineno-66-5" href="#__codelineno-66-5"></a><span class="c1"># Enable/disable PVC storage</span>
+</span><span id="__span-66-6"><a id="__codelineno-66-6" name="__codelineno-66-6" href="#__codelineno-66-6"></a><span class="nb">export</span><span class="w"> </span><span class="nv">STORAGE_PVC_ENABLED</span><span class="o">=</span><span class="nb">true</span>
+</span><span id="__span-66-7"><a id="__codelineno-66-7" name="__codelineno-66-7" href="#__codelineno-66-7"></a>
+</span><span id="__span-66-8"><a id="__codelineno-66-8" name="__codelineno-66-8" href="#__codelineno-66-8"></a><span class="c1"># Enable/disable filesystem storage</span>
+</span><span id="__span-66-9"><a id="__codelineno-66-9" name="__codelineno-66-9" href="#__codelineno-66-9"></a><span class="nb">export</span><span class="w"> </span><span class="nv">STORAGE_FILESYSTEM_ENABLED</span><span class="o">=</span><span class="nb">false</span>
+</span><span id="__span-66-10"><a id="__codelineno-66-10" name="__codelineno-66-10" href="#__codelineno-66-10"></a>
+</span><span id="__span-66-11"><a id="__codelineno-66-11" name="__codelineno-66-11" href="#__codelineno-66-11"></a><span class="c1"># Share pipeline PVC across pods</span>
+</span><span id="__span-66-12"><a id="__codelineno-66-12" name="__codelineno-66-12" href="#__codelineno-66-12"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SHARE_PIPELINE_PVC</span><span class="o">=</span><span class="nb">false</span>
+</span></code></pre></div>
+<h3 id="redis-configuration">Redis Configuration<a class="headerlink" href="#redis-configuration" title="Permanent link">¶</a></h3>
+<p>Configure Redis for caching and message queuing.</p>
+<p>Edit <code>workspace/${DEPLOYMENT_ENV}/env/env.sh</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-67-1"><a id="__codelineno-67-1" name="__codelineno-67-1" href="#__codelineno-67-1"></a><span class="c1"># Enable Redis</span>
+</span><span id="__span-67-2"><a id="__codelineno-67-2" name="__codelineno-67-2" href="#__codelineno-67-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">REDIS_ENABLED</span><span class="o">=</span><span class="nb">true</span>
+</span><span id="__span-67-3"><a id="__codelineno-67-3" name="__codelineno-67-3" href="#__codelineno-67-3"></a>
+</span><span id="__span-67-4"><a id="__codelineno-67-4" name="__codelineno-67-4" href="#__codelineno-67-4"></a><span class="c1"># Redis architecture</span>
+</span><span id="__span-67-5"><a id="__codelineno-67-5" name="__codelineno-67-5" href="#__codelineno-67-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">REDIS_ARCHITECTURE</span><span class="o">=</span>replication<span class="w">  </span><span class="c1"># Options: standalone, replication</span>
+</span><span id="__span-67-6"><a id="__codelineno-67-6" name="__codelineno-67-6" href="#__codelineno-67-6"></a>
+</span><span id="__span-67-7"><a id="__codelineno-67-7" name="__codelineno-67-7" href="#__codelineno-67-7"></a><span class="c1"># Redis name override</span>
+</span><span id="__span-67-8"><a id="__codelineno-67-8" name="__codelineno-67-8" href="#__codelineno-67-8"></a><span class="nb">export</span><span class="w"> </span><span class="nv">REDIS_FULL_NAME_OVERRIDE</span><span class="o">=</span>geofm-redis
+</span></code></pre></div>
+<p>And in <code>workspace/${DEPLOYMENT_ENV}/env/.env</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-68-1"><a id="__codelineno-68-1" name="__codelineno-68-1" href="#__codelineno-68-1"></a><span class="c1"># Redis password</span>
+</span><span id="__span-68-2"><a id="__codelineno-68-2" name="__codelineno-68-2" href="#__codelineno-68-2"></a><span class="nv">redis_password</span><span class="o">=</span>&lt;your-secure-redis-password&gt;
+</span></code></pre></div>
+<h3 id="applying-advanced-configuration">Applying Advanced Configuration<a class="headerlink" href="#applying-advanced-configuration" title="Permanent link">¶</a></h3>
+<p>The configuration workflow depends on which files you edited:</p>
+<h4 id="for-workspace-environment-files-envsh">For Workspace Environment Files (env.sh)<a class="headerlink" href="#for-workspace-environment-files-envsh" title="Permanent link">¶</a></h4>
+<ol>
+<li>
+<p><strong>Regenerate values.yaml:</strong>
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-69-1"><a id="__codelineno-69-1" name="__codelineno-69-1" href="#__codelineno-69-1"></a><span class="c1"># This substitutes env.sh variables into values.yaml template</span>
+</span><span id="__span-69-2"><a id="__codelineno-69-2" name="__codelineno-69-2" href="#__codelineno-69-2"></a>./deployment-scripts/values-file-generate.sh
+</span></code></pre></div><p></p>
+</li>
+<li>
+<p><strong>Verify configuration:</strong>
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-70-1"><a id="__codelineno-70-1" name="__codelineno-70-1" href="#__codelineno-70-1"></a><span class="c1"># Check syntax</span>
+</span><span id="__span-70-2"><a id="__codelineno-70-2" name="__codelineno-70-2" href="#__codelineno-70-2"></a><span class="nb">source</span><span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</span><span id="__span-70-3"><a id="__codelineno-70-3" name="__codelineno-70-3" href="#__codelineno-70-3"></a>
+</span><span id="__span-70-4"><a id="__codelineno-70-4" name="__codelineno-70-4" href="#__codelineno-70-4"></a><span class="c1"># Review generated values</span>
+</span><span id="__span-70-5"><a id="__codelineno-70-5" name="__codelineno-70-5" href="#__codelineno-70-5"></a>cat<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio/values.yaml
+</span></code></pre></div><p></p>
+</li>
+<li>
+<p><strong>Deploy or update:</strong></p>
+</li>
+</ol>
+<p>=== "OpenShift"
+       </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-71-1"><a id="__codelineno-71-1" name="__codelineno-71-1" href="#__codelineno-71-1"></a>./deploy_studio_ocp.sh
+</span><span id="__span-71-2"><a id="__codelineno-71-2" name="__codelineno-71-2" href="#__codelineno-71-2"></a><span class="c1"># Select "Yes" when prompted "Jump to Deployment?"</span>
+</span></code></pre></div><p></p>
+<p>=== "Kubernetes"
+       </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-72-1"><a id="__codelineno-72-1" name="__codelineno-72-1" href="#__codelineno-72-1"></a>./deploy_studio_k8s.sh
+</span><span id="__span-72-2"><a id="__codelineno-72-2" name="__codelineno-72-2" href="#__codelineno-72-2"></a><span class="c1"># Select "Yes" when prompted "Jump to Deployment?"</span>
+</span></code></pre></div><p></p>
+<h4 id="for-helm-values-files-valuesyaml">For Helm Values Files (values.yaml)<a class="headerlink" href="#for-helm-values-files-valuesyaml" title="Permanent link">¶</a></h4>
+<ol>
+<li>
+<p><strong>Edit values directly:</strong>
+   </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-73-1"><a id="__codelineno-73-1" name="__codelineno-73-1" href="#__codelineno-73-1"></a><span class="c1"># Edit the generated values file</span>
+</span><span id="__span-73-2"><a id="__codelineno-73-2" name="__codelineno-73-2" href="#__codelineno-73-2"></a>vi<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/values/geospatial-studio/values.yaml
+</span></code></pre></div><p></p>
+</li>
+<li>
+<p><strong>Deploy or update:</strong></p>
+</li>
+</ol>
+<p>=== "OpenShift"
+       </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-74-1"><a id="__codelineno-74-1" name="__codelineno-74-1" href="#__codelineno-74-1"></a>./deploy_studio_ocp.sh
+</span><span id="__span-74-2"><a id="__codelineno-74-2" name="__codelineno-74-2" href="#__codelineno-74-2"></a><span class="c1"># Select "Yes" when prompted "Jump to Deployment?"</span>
+</span></code></pre></div><p></p>
+<p>=== "Kubernetes"
+       </p><div class="language-bash highlight"><pre><span></span><code><span id="__span-75-1"><a id="__codelineno-75-1" name="__codelineno-75-1" href="#__codelineno-75-1"></a>./deploy_studio_k8s.sh
+</span><span id="__span-75-2"><a id="__codelineno-75-2" name="__codelineno-75-2" href="#__codelineno-75-2"></a><span class="c1"># Select "Yes" when prompted "Jump to Deployment?"</span>
+</span></code></pre></div><p></p>
+<h4 id="verification">Verification<a class="headerlink" href="#verification" title="Permanent link">¶</a></h4>
+<p>After deployment, verify changes:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="11:2"><input checked="checked" id="__tabbed_11_1" name="__tabbed_11" type="radio"><input id="__tabbed_11_2" name="__tabbed_11" type="radio"><div class="tabbed-labels"><label for="__tabbed_11_1">OpenShift</label><label for="__tabbed_11_2">Kubernetes</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-76-1"><a id="__codelineno-76-1" name="__codelineno-76-1" href="#__codelineno-76-1"></a><span class="c1"># Check pod environment variables</span>
+</span><span id="__span-76-2"><a id="__codelineno-76-2" name="__codelineno-76-2" href="#__codelineno-76-2"></a>oc<span class="w"> </span>get<span class="w"> </span>pod<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A<span class="w"> </span><span class="m">20</span><span class="w"> </span>env:
+</span><span id="__span-76-3"><a id="__codelineno-76-3" name="__codelineno-76-3" href="#__codelineno-76-3"></a>
+</span><span id="__span-76-4"><a id="__codelineno-76-4" name="__codelineno-76-4" href="#__codelineno-76-4"></a><span class="c1"># Check configmaps</span>
+</span><span id="__span-76-5"><a id="__codelineno-76-5" name="__codelineno-76-5" href="#__codelineno-76-5"></a>oc<span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-76-6"><a id="__codelineno-76-6" name="__codelineno-76-6" href="#__codelineno-76-6"></a>oc<span class="w"> </span>describe<span class="w"> </span>configmap<span class="w"> </span>&lt;configmap-name&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-76-7"><a id="__codelineno-76-7" name="__codelineno-76-7" href="#__codelineno-76-7"></a>
+</span><span id="__span-76-8"><a id="__codelineno-76-8" name="__codelineno-76-8" href="#__codelineno-76-8"></a><span class="c1"># View pod logs</span>
+</span><span id="__span-76-9"><a id="__codelineno-76-9" name="__codelineno-76-9" href="#__codelineno-76-9"></a>oc<span class="w"> </span>logs<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-77-1"><a id="__codelineno-77-1" name="__codelineno-77-1" href="#__codelineno-77-1"></a><span class="c1"># Check pod environment variables</span>
+</span><span id="__span-77-2"><a id="__codelineno-77-2" name="__codelineno-77-2" href="#__codelineno-77-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pod<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A<span class="w"> </span><span class="m">20</span><span class="w"> </span>env:
+</span><span id="__span-77-3"><a id="__codelineno-77-3" name="__codelineno-77-3" href="#__codelineno-77-3"></a>
+</span><span id="__span-77-4"><a id="__codelineno-77-4" name="__codelineno-77-4" href="#__codelineno-77-4"></a><span class="c1"># Check configmaps</span>
+</span><span id="__span-77-5"><a id="__codelineno-77-5" name="__codelineno-77-5" href="#__codelineno-77-5"></a>kubectl<span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-77-6"><a id="__codelineno-77-6" name="__codelineno-77-6" href="#__codelineno-77-6"></a>kubectl<span class="w"> </span>describe<span class="w"> </span>configmap<span class="w"> </span>&lt;configmap-name&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-77-7"><a id="__codelineno-77-7" name="__codelineno-77-7" href="#__codelineno-77-7"></a>
+</span><span id="__span-77-8"><a id="__codelineno-77-8" name="__codelineno-77-8" href="#__codelineno-77-8"></a><span class="c1"># View pod logs</span>
+</span><span id="__span-77-9"><a id="__codelineno-77-9" name="__codelineno-77-9" href="#__codelineno-77-9"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Configuration Best Practices</p>
+<ul>
+<li><strong>Understand the two-tier system</strong>: env.sh → values.yaml → Helm deployment</li>
+<li><strong>Infrastructure settings</strong> (storage, GPU, observability) go in env.sh</li>
+<li><strong>Application settings</strong> (rate limits, debug mode, celery) go in values.yaml</li>
+<li><strong>Always regenerate</strong> values.yaml after editing env.sh</li>
+<li><strong>Document changes</strong>: Keep notes on why you changed specific values</li>
+<li><strong>Test in dev first</strong>: Validate configuration changes in a development environment</li>
+<li><strong>Version control</strong>: Store workspace files in git (excluding secrets in <code>.env</code>)</li>
+<li><strong>Use secrets management</strong>: For production, use external secrets management tools</li>
+</ul>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Configuration File Precedence</p>
+<p>When you run <code>values-file-generate.sh</code>, it overwrites <code>workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml</code>. If you've made manual edits to values.yaml, they will be lost. To preserve manual changes:</p>
+<ol>
+<li>Make infrastructure changes in env.sh</li>
+<li>Run <code>values-file-generate.sh</code></li>
+<li>Make application-specific changes in the generated values.yaml</li>
+<li>Deploy</li>
+</ol>
+</div>
+<h2 id="production-considerations">Production Considerations<a class="headerlink" href="#production-considerations" title="Permanent link">¶</a></h2>
+<h3 id="high-availability">High Availability<a class="headerlink" href="#high-availability" title="Permanent link">¶</a></h3>
+<p>For production deployments, consider:</p>
+<ul>
+<li><strong>Multiple replicas</strong> for UI and API services</li>
+<li><strong>Pod disruption budgets</strong> to maintain availability during updates</li>
+<li><strong>Resource requests and limits</strong> for predictable performance</li>
+<li><strong>Horizontal pod autoscaling</strong> for dynamic scaling</li>
+</ul>
+<h3 id="backup-and-disaster-recovery">Backup and Disaster Recovery<a class="headerlink" href="#backup-and-disaster-recovery" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>Database backups</strong>: Configure automated backups for PostgreSQL</li>
+<li><strong>Object storage replication</strong>: Enable cross-region replication</li>
+<li><strong>Configuration backups</strong>: Keep workspace files in version control</li>
+</ul>
+<h3 id="security">Security<a class="headerlink" href="#security" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>TLS certificates</strong>: Use cert-manager for automatic certificate management</li>
+<li><strong>Network policies</strong>: Restrict pod-to-pod communication</li>
+<li><strong>RBAC</strong>: Configure role-based access control</li>
+<li><strong>Secrets management</strong>: Use external secrets management (e.g., HashiCorp Vault)</li>
+</ul>
+<h3 id="monitoring-and-observability">Monitoring and Observability<a class="headerlink" href="#monitoring-and-observability" title="Permanent link">¶</a></h3>
+<p>Enable monitoring in <code>workspace/${DEPLOYMENT_ENV}/env/env.sh</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-78-1"><a id="__codelineno-78-1" name="__codelineno-78-1" href="#__codelineno-78-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OBSERVABILITY_ENABLED</span><span class="o">=</span><span class="nb">true</span>
+</span><span id="__span-78-2"><a id="__codelineno-78-2" name="__codelineno-78-2" href="#__codelineno-78-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OBSERVABILITY_OTLP_ENDPOINT</span><span class="o">=</span>&lt;your-otlp-endpoint&gt;
+</span><span id="__span-78-3"><a id="__codelineno-78-3" name="__codelineno-78-3" href="#__codelineno-78-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OBSERVABILITY_OTLP_TRACES_ENDPOINT</span><span class="o">=</span>&lt;your-traces-endpoint&gt;
+</span></code></pre></div>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">¶</a></h2>
+<div class="admonition info">
+<p class="admonition-title">Comprehensive Troubleshooting Guide</p>
+<p>For detailed troubleshooting steps, see the <a href="../../resources/troubleshooting/">Troubleshooting Guide</a>.</p>
+<p>Common cluster deployment issues covered:
+- Pods not starting or crashing
+- Storage and PVC issues
+- Network and ingress problems
+- GPU not available or not detected
+- Permission and RBAC errors
+- Resource constraints and OOM errors
+- Configuration validation failures</p>
+</div>
+<h3 id="quick-troubleshooting-tips">Quick Troubleshooting Tips<a class="headerlink" href="#quick-troubleshooting-tips" title="Permanent link">¶</a></h3>
+<p><strong>Pods not starting:</strong></p>
+<div class="tabbed-set tabbed-alternate" data-tabs="12:2"><input checked="checked" id="__tabbed_12_1" name="__tabbed_12" type="radio"><input id="__tabbed_12_2" name="__tabbed_12" type="radio"><div class="tabbed-labels"><label for="__tabbed_12_1">OpenShift</label><label for="__tabbed_12_2">Kubernetes</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-79-1"><a id="__codelineno-79-1" name="__codelineno-79-1" href="#__codelineno-79-1"></a>oc<span class="w"> </span>describe<span class="w"> </span>pod<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-79-2"><a id="__codelineno-79-2" name="__codelineno-79-2" href="#__codelineno-79-2"></a>oc<span class="w"> </span>logs<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-80-1"><a id="__codelineno-80-1" name="__codelineno-80-1" href="#__codelineno-80-1"></a>kubectl<span class="w"> </span>describe<span class="w"> </span>pod<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-80-2"><a id="__codelineno-80-2" name="__codelineno-80-2" href="#__codelineno-80-2"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>Storage issues:</strong></p>
+<div class="tabbed-set tabbed-alternate" data-tabs="13:2"><input checked="checked" id="__tabbed_13_1" name="__tabbed_13" type="radio"><input id="__tabbed_13_2" name="__tabbed_13" type="radio"><div class="tabbed-labels"><label for="__tabbed_13_1">OpenShift</label><label for="__tabbed_13_2">Kubernetes</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-81-1"><a id="__codelineno-81-1" name="__codelineno-81-1" href="#__codelineno-81-1"></a>oc<span class="w"> </span>get<span class="w"> </span>pvc<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-81-2"><a id="__codelineno-81-2" name="__codelineno-81-2" href="#__codelineno-81-2"></a>oc<span class="w"> </span>describe<span class="w"> </span>pvc<span class="w"> </span>&lt;pvc-name&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-82-1"><a id="__codelineno-82-1" name="__codelineno-82-1" href="#__codelineno-82-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pvc<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-82-2"><a id="__codelineno-82-2" name="__codelineno-82-2" href="#__codelineno-82-2"></a>kubectl<span class="w"> </span>describe<span class="w"> </span>pvc<span class="w"> </span>&lt;pvc-name&gt;<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>Configuration issues:</strong>
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-83-1"><a id="__codelineno-83-1" name="__codelineno-83-1" href="#__codelineno-83-1"></a><span class="c1"># Verify environment files</span>
+</span><span id="__span-83-2"><a id="__codelineno-83-2" name="__codelineno-83-2" href="#__codelineno-83-2"></a>cat<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</span><span id="__span-83-3"><a id="__codelineno-83-3" name="__codelineno-83-3" href="#__codelineno-83-3"></a>cat<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env
+</span><span id="__span-83-4"><a id="__codelineno-83-4" name="__codelineno-83-4" href="#__codelineno-83-4"></a>
+</span><span id="__span-83-5"><a id="__codelineno-83-5" name="__codelineno-83-5" href="#__codelineno-83-5"></a><span class="c1"># Re-run validation</span>
+</span><span id="__span-83-6"><a id="__codelineno-83-6" name="__codelineno-83-6" href="#__codelineno-83-6"></a>python<span class="w"> </span>deployment-scripts/validate-env-files.py<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-83-7"><a id="__codelineno-83-7" name="__codelineno-83-7" href="#__codelineno-83-7"></a><span class="w">  </span>--env-file<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/.env<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-83-8"><a id="__codelineno-83-8" name="__codelineno-83-8" href="#__codelineno-83-8"></a><span class="w">  </span>--env-sh-file<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>/env/env.sh
+</span></code></pre></div><p></p>
+<h2 id="upgrading">Upgrading<a class="headerlink" href="#upgrading" title="Permanent link">¶</a></h2>
+<p>To upgrade an existing deployment:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="14:2"><input checked="checked" id="__tabbed_14_1" name="__tabbed_14" type="radio"><input id="__tabbed_14_2" name="__tabbed_14" type="radio"><div class="tabbed-labels"><label for="__tabbed_14_1">OpenShift</label><label for="__tabbed_14_2">Kubernetes</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-84-1"><a id="__codelineno-84-1" name="__codelineno-84-1" href="#__codelineno-84-1"></a><span class="c1"># Pull latest changes</span>
+</span><span id="__span-84-2"><a id="__codelineno-84-2" name="__codelineno-84-2" href="#__codelineno-84-2"></a>git<span class="w"> </span>pull<span class="w"> </span>origin<span class="w"> </span>main
+</span><span id="__span-84-3"><a id="__codelineno-84-3" name="__codelineno-84-3" href="#__codelineno-84-3"></a>
+</span><span id="__span-84-4"><a id="__codelineno-84-4" name="__codelineno-84-4" href="#__codelineno-84-4"></a><span class="c1"># Re-run deployment script</span>
+</span><span id="__span-84-5"><a id="__codelineno-84-5" name="__codelineno-84-5" href="#__codelineno-84-5"></a>./deploy_studio_ocp.sh
+</span><span id="__span-84-6"><a id="__codelineno-84-6" name="__codelineno-84-6" href="#__codelineno-84-6"></a>
+</span><span id="__span-84-7"><a id="__codelineno-84-7" name="__codelineno-84-7" href="#__codelineno-84-7"></a><span class="c1"># Select "Yes" when prompted "Jump to Deployment?"</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-85-1"><a id="__codelineno-85-1" name="__codelineno-85-1" href="#__codelineno-85-1"></a><span class="c1"># Pull latest changes</span>
+</span><span id="__span-85-2"><a id="__codelineno-85-2" name="__codelineno-85-2" href="#__codelineno-85-2"></a>git<span class="w"> </span>pull<span class="w"> </span>origin<span class="w"> </span>main
+</span><span id="__span-85-3"><a id="__codelineno-85-3" name="__codelineno-85-3" href="#__codelineno-85-3"></a>
+</span><span id="__span-85-4"><a id="__codelineno-85-4" name="__codelineno-85-4" href="#__codelineno-85-4"></a><span class="c1"># Re-run deployment script</span>
+</span><span id="__span-85-5"><a id="__codelineno-85-5" name="__codelineno-85-5" href="#__codelineno-85-5"></a>./deploy_studio_k8s.sh
+</span><span id="__span-85-6"><a id="__codelineno-85-6" name="__codelineno-85-6" href="#__codelineno-85-6"></a>
+</span><span id="__span-85-7"><a id="__codelineno-85-7" name="__codelineno-85-7" href="#__codelineno-85-7"></a><span class="c1"># Select "Yes" when prompted "Jump to Deployment?"</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>The script will:
+- Backup your current workspace
+- Merge your configuration into new templates
+- Upgrade services to latest versions</p>
+<h2 id="uninstalling">Uninstalling<a class="headerlink" href="#uninstalling" title="Permanent link">¶</a></h2>
+<p>To remove the deployment:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="15:2"><input checked="checked" id="__tabbed_15_1" name="__tabbed_15" type="radio"><input id="__tabbed_15_2" name="__tabbed_15" type="radio"><div class="tabbed-labels"><label for="__tabbed_15_1">OpenShift</label><label for="__tabbed_15_2">Kubernetes</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-86-1"><a id="__codelineno-86-1" name="__codelineno-86-1" href="#__codelineno-86-1"></a><span class="c1"># Delete all resources in namespace</span>
+</span><span id="__span-86-2"><a id="__codelineno-86-2" name="__codelineno-86-2" href="#__codelineno-86-2"></a>oc<span class="w"> </span>delete<span class="w"> </span>all<span class="w"> </span>--all<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-86-3"><a id="__codelineno-86-3" name="__codelineno-86-3" href="#__codelineno-86-3"></a>
+</span><span id="__span-86-4"><a id="__codelineno-86-4" name="__codelineno-86-4" href="#__codelineno-86-4"></a><span class="c1"># Delete persistent volumes (if needed)</span>
+</span><span id="__span-86-5"><a id="__codelineno-86-5" name="__codelineno-86-5" href="#__codelineno-86-5"></a>oc<span class="w"> </span>delete<span class="w"> </span>pvc<span class="w"> </span>--all<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-86-6"><a id="__codelineno-86-6" name="__codelineno-86-6" href="#__codelineno-86-6"></a>
+</span><span id="__span-86-7"><a id="__codelineno-86-7" name="__codelineno-86-7" href="#__codelineno-86-7"></a><span class="c1"># Delete project</span>
+</span><span id="__span-86-8"><a id="__codelineno-86-8" name="__codelineno-86-8" href="#__codelineno-86-8"></a>oc<span class="w"> </span>delete<span class="w"> </span>project<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-86-9"><a id="__codelineno-86-9" name="__codelineno-86-9" href="#__codelineno-86-9"></a>
+</span><span id="__span-86-10"><a id="__codelineno-86-10" name="__codelineno-86-10" href="#__codelineno-86-10"></a><span class="c1"># Clean up workspace</span>
+</span><span id="__span-86-11"><a id="__codelineno-86-11" name="__codelineno-86-11" href="#__codelineno-86-11"></a>rm<span class="w"> </span>-rf<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-87-1"><a id="__codelineno-87-1" name="__codelineno-87-1" href="#__codelineno-87-1"></a><span class="c1"># Delete all resources in namespace</span>
+</span><span id="__span-87-2"><a id="__codelineno-87-2" name="__codelineno-87-2" href="#__codelineno-87-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>all<span class="w"> </span>--all<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-87-3"><a id="__codelineno-87-3" name="__codelineno-87-3" href="#__codelineno-87-3"></a>
+</span><span id="__span-87-4"><a id="__codelineno-87-4" name="__codelineno-87-4" href="#__codelineno-87-4"></a><span class="c1"># Delete persistent volumes (if needed)</span>
+</span><span id="__span-87-5"><a id="__codelineno-87-5" name="__codelineno-87-5" href="#__codelineno-87-5"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>pvc<span class="w"> </span>--all<span class="w"> </span>-n<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-87-6"><a id="__codelineno-87-6" name="__codelineno-87-6" href="#__codelineno-87-6"></a>
+</span><span id="__span-87-7"><a id="__codelineno-87-7" name="__codelineno-87-7" href="#__codelineno-87-7"></a><span class="c1"># Delete namespace</span>
+</span><span id="__span-87-8"><a id="__codelineno-87-8" name="__codelineno-87-8" href="#__codelineno-87-8"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>namespace<span class="w"> </span>&lt;namespace&gt;
+</span><span id="__span-87-9"><a id="__codelineno-87-9" name="__codelineno-87-9" href="#__codelineno-87-9"></a>
+</span><span id="__span-87-10"><a id="__codelineno-87-10" name="__codelineno-87-10" href="#__codelineno-87-10"></a><span class="c1"># Clean up workspace</span>
+</span><span id="__span-87-11"><a id="__codelineno-87-11" name="__codelineno-87-11" href="#__codelineno-87-11"></a>rm<span class="w"> </span>-rf<span class="w"> </span>workspace/<span class="si">${</span><span class="nv">DEPLOYMENT_ENV</span><span class="si">}</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">¶</a></h2>
+<ol>
+<li>✅ <a href="../verification/">Verify Installation →</a></li>
+<li>📚 <a href="../../introduction/welcome/">Continue to Introduction →</a></li>
+<li>🚀 <a href="../../notebooks/lab1-getting-started/">Start Lab 1 →</a></li>
+</ol>
+<h2 id="additional-resources">Additional Resources<a class="headerlink" href="#additional-resources" title="Permanent link">¶</a></h2>
+<ul>
+<li><a href="https://terrastackai.github.io/geospatial-studio/detailed_deployment_cluster/">Detailed OpenShift Deployment Guide</a></li>
+<li><a href="https://terrastackai.github.io/geospatial-studio/detailed_deployment_k8s/">Detailed Kubernetes Deployment Guide</a></li>
+<li><a href="https://terrastackai.github.io/geospatial-studio/kind_cluster_deployment/">Kind Cluster Guide</a></li>
+<li><a href="https://terrastackai.github.io/geospatial-studio/nvkind_cluster_deployment/">NVKind Cluster Guide</a></li>
+<li><a href="https://terrastackai.github.io/geospatial-studio/">Geospatial Studio Documentation</a></li>
+</ul>
+<hr>
+<p><a class="md-button" href="../prerequisites/">← Back to Prerequisites</a> <a class="md-button md-button--primary" href="../verification/">Next: Verification →</a></p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 19, 2026 11:10:26 UTC"><span class="timeago" datetime="2026-02-19T11:10:26+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 19, 2026 11:10:26 UTC">2026-02-19</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 19, 2026 11:10:26 UTC"><span class="timeago" datetime="2026-02-19T11:10:26+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 19, 2026 11:10:26 UTC">2026-02-19</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer">
+        
+          
+          <a href="../local-deployment/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Local Deployment">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Local Deployment
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../verification/" class="md-footer__link md-footer__link--next" aria-label="Next: Verification">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Verification
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright © 2024-2026 IBM Research
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/terrastackai" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/geostudio/" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 444.7a20.4 20.4 0 1 1 0-40.7 20.4 20.4 0 1 1 0 40.7M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.6-183.4a20.4 20.4 0 1 1 0 40.8 20.4 20.4 0 1 1 0-40.8"></path></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../js/timeago.min.js"></script>
+      
+        <script src="../../js/timeago_mkdocs_material.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

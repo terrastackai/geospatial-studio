@@ -1,0 +1,2432 @@
+<!DOCTYPE html><html lang="en" class="no-js"><head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A hands-on workshop for learning IBM Geospatial Studio - from deployment to running geospatial AI models">
+      
+      
+        <meta name="author" content="IBM Research">
+      
+      
+        <link rel="canonical" href="https://terrastackai.github.io/geospatial-studio/workshop/resources/faq/">
+      
+      
+        <link rel="prev" href="../troubleshooting/">
+      
+      
+        <link rel="next" href="../next-steps/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>FAQ - IBM Geospatial Studio Workshop</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,300i,400,400i,700,700i%7CIBM+Plex+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"IBM Plex Sans";--md-code-font:"IBM Plex Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../css/timeago.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+            html.glightbox-open { overflow: initial; height: 100%; }
+            .gslide-title { margin-top: 0px; user-select: text; }
+            .gslide-desc { color: #666; user-select: text; }
+            .gslide-image img { background: white; }
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
+        </style></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#frequently-asked-questions-faq" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="IBM Geospatial Studio Workshop" class="md-header__button md-logo" aria-label="IBM Geospatial Studio Workshop" data-md-component="logo">
+      
+  <img src="../../assets/geospatial-studio-logo-white.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"></path></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IBM Geospatial Studio Workshop
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              FAQ
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo" aria-label="Switch to dark mode" type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo" aria-label="Switch to light mode" type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"></path></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"></path></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"></path></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/terrastackai/geospatial-studio" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    terrastackai/geospatial-studio
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../prework/" class="md-tabs__link">
+          
+  
+  
+  Pre-work
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../introduction/welcome/" class="md-tabs__link">
+          
+  
+  
+  Introduction
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../notebooks/lab1-getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Lab 1
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../notebooks/lab2-onboarding-examples/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Lab 2
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../notebooks/lab3-running-inference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Lab 3
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../notebooks/lab4-burnscars-workflow/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Lab 4
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../additional-resources/" class="md-tabs__link">
+          
+  
+  
+  Resources
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="IBM Geospatial Studio Workshop" class="md-nav__button md-logo" aria-label="IBM Geospatial Studio Workshop" data-md-component="logo">
+      
+  <img src="../../assets/geospatial-studio-logo-white.svg" alt="logo">
+
+    </a>
+    IBM Geospatial Studio Workshop
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/terrastackai/geospatial-studio" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"></path></svg>
+  </div>
+  <div class="md-source__repository">
+    terrastackai/geospatial-studio
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2">
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pre-work
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pre-work
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prework/prerequisites/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prerequisites
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prework/deployment-options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment Options
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prework/local-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prework/cluster-deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cluster Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prework/verification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Verification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3">
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Introduction
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../introduction/welcome/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Welcome
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../introduction/what-is-geospatial-studio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What is Geospatial Studio
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../introduction/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../introduction/key-concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Key Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/lab1-getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/lab2-onboarding-examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/lab3-running-inference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 3
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/lab4-burnscars-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 4
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resources
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Resources
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../additional-resources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Additional Resources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#general-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 General Questions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎯 General Questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-ibm-geospatial-studio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is IBM Geospatial Studio?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#who-is-this-workshop-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Who is this workshop for?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-will-i-learn-in-this-workshop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What will I learn in this workshop?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-long-does-the-workshop-take" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How long does the workshop take?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technical-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💻 Technical Questions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💻 Technical Questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-are-the-system-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What are the system requirements?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#do-i-need-a-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Do I need a GPU?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-programming-languages-are-supported" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What programming languages are supported?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#can-i-use-my-own-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I use my own data?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-satellite-data-sources-are-supported" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What satellite data sources are supported?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🤖 Model Questions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🤖 Model Questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-foundation-models-are-available" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What foundation models are available?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#can-i-use-my-own-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I use my own models?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-long-does-model-training-take" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How long does model training take?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-tasks-can-i-train-models-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What tasks can I train models for?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 Data Questions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📊 Data Questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-format-should-my-training-data-be-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What format should my training data be in?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-many-training-samples-do-i-need" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How many training samples do I need?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-image-resolution-is-supported" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What image resolution is supported?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#can-i-use-multi-temporal-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I use multi-temporal data?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workflow-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 Workflow Questions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔄 Workflow Questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-the-typical-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's the typical workflow?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#can-i-skip-model-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I skip model training?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-do-i-choose-hyperparameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How do I choose hyperparameters?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#can-i-pause-and-resume-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I pause and resume training?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🌐 Deployment Questions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🌐 Deployment Questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#can-i-deploy-in-the-cloud" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I deploy in the cloud?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#is-it-production-ready" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Is it production-ready?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-do-i-scale-for-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How do I scale for production?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-about-data-privacy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What about data privacy?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Integration Questions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 Integration Questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#can-i-integrate-with-existing-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I integrate with existing tools?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#does-it-work-with-jupyter-notebooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Does it work with Jupyter notebooks?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#can-i-export-trained-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I export trained models?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#is-there-a-rest-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Is there a REST API?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💰 Cost Questions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💰 Cost Questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#is-geospatial-studio-free" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Is Geospatial Studio free?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-about-infrastructure-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What about infrastructure costs?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#are-there-any-usage-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Are there any usage limits?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Learning Questions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📚 Learning Questions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#im-new-to-geospatial-ai-where-do-i-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        I'm new to geospatial AI. Where do I start?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-if-i-get-stuck" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What if I get stuck?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#can-i-contribute-to-the-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I contribute to the project?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎓 Next Steps
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🎓 Next Steps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-should-i-do-after-the-workshop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What should I do after the workshop?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-can-i-find-more-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where can I find more examples?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-do-i-stay-updated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How do I stay updated?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../next-steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Next Steps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation">
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../additional-resources/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Resources
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="frequently-asked-questions-faq">Frequently Asked Questions (FAQ)<a class="headerlink" href="#frequently-asked-questions-faq" title="Permanent link">¶</a></h1>
+<p>Common questions about IBM Geospatial Studio and this workshop.</p>
+<h2 id="general-questions">🎯 General Questions<a class="headerlink" href="#general-questions" title="Permanent link">¶</a></h2>
+<h3 id="what-is-ibm-geospatial-studio">What is IBM Geospatial Studio?<a class="headerlink" href="#what-is-ibm-geospatial-studio" title="Permanent link">¶</a></h3>
+<p>IBM Geospatial Studio is an open-source platform for training, fine-tuning, and deploying geospatial AI models. It provides:</p>
+<ul>
+<li>Pre-trained foundation models (Prithvi, Clay, etc.) as starting points</li>
+<li>Tools for dataset onboarding and management</li>
+<li>Model fine-tuning capabilities</li>
+<li>Inference pipeline for running models at scale</li>
+<li>Web UI and Python SDK for easy interaction</li>
+</ul>
+<h3 id="who-is-this-workshop-for">Who is this workshop for?<a class="headerlink" href="#who-is-this-workshop-for" title="Permanent link">¶</a></h3>
+<p>This workshop is designed for:</p>
+<ul>
+<li><strong>Data scientists</strong> interested in geospatial AI</li>
+<li><strong>Remote sensing professionals</strong> wanting to apply ML</li>
+<li><strong>Developers</strong> building geospatial applications</li>
+<li><strong>Researchers</strong> working with satellite imagery</li>
+<li><strong>Anyone</strong> curious about geospatial foundation models</li>
+</ul>
+<p>No prior geospatial experience required, but basic Python knowledge is helpful.</p>
+<h3 id="what-will-i-learn-in-this-workshop">What will I learn in this workshop?<a class="headerlink" href="#what-will-i-learn-in-this-workshop" title="Permanent link">¶</a></h3>
+<p>By completing this workshop, you will:</p>
+<ul>
+<li>Deploy Geospatial Studio locally or on a cluster</li>
+<li>Understand geospatial AI concepts and workflows</li>
+<li>Use the Python SDK to interact with the platform</li>
+<li>Onboard and manage geospatial datasets</li>
+<li>Run inference with fine-tuned models</li>
+<li>Fine-tune foundation models for custom tasks</li>
+<li>Visualize and analyze results</li>
+</ul>
+<h3 id="how-long-does-the-workshop-take">How long does the workshop take?<a class="headerlink" href="#how-long-does-the-workshop-take" title="Permanent link">¶</a></h3>
+<p><strong>Total time:</strong> 3-4 hours</p>
+<ul>
+<li><strong>Pre-work (deployment):</strong> 1-1.5 hours</li>
+<li><strong>Introduction:</strong> 15 minutes</li>
+<li><strong>Lab 1 (Getting Started with IBM Geospatial Studio):</strong> 10 minutes</li>
+<li><strong>Lab 2 (Onboarding Pre-computed Examples):</strong> 20 minutes</li>
+<li><strong>Lab 3 (Upload Model Checkpoints and Run Inference):</strong> 30 minutes</li>
+<li><strong>Lab 4 (Training a Custom Model for Wildfire Burn Scar Detection):</strong> 60-90 minutes</li>
+</ul>
+<p>You can complete labs at your own pace and take breaks as needed.</p>
+<h2 id="technical-questions">💻 Technical Questions<a class="headerlink" href="#technical-questions" title="Permanent link">¶</a></h2>
+<h3 id="what-are-the-system-requirements">What are the system requirements?<a class="headerlink" href="#what-are-the-system-requirements" title="Permanent link">¶</a></h3>
+<p><strong>Minimum requirements:</strong>
+- <strong>CPU:</strong> 8 cores
+- <strong>RAM:</strong> 16GB
+- <strong>Storage:</strong> 100GB free space
+- <strong>GPU:</strong> Optional but recommended (8GB+ VRAM)
+- <strong>OS:</strong> Linux, macOS, or Windows with WSL2</p>
+<p><strong>Recommended for production:</strong>
+- <strong>CPU:</strong> 16+ cores
+- <strong>RAM:</strong> 32GB+
+- <strong>Storage:</strong> 100GB+ SSD
+- <strong>GPU:</strong> NVIDIA GPU with 16GB+ VRAM
+- <strong>OS:</strong> Linux (Ubuntu 20.04+)</p>
+<h3 id="do-i-need-a-gpu">Do I need a GPU?<a class="headerlink" href="#do-i-need-a-gpu" title="Permanent link">¶</a></h3>
+<p><strong>For this workshop:</strong> No, GPU is optional. You can complete all labs using CPU-only mode.</p>
+<p><strong>For production use:</strong> Yes, GPU is highly recommended for:
+- Model training (fine-tuning)
+- Large-scale inference
+- Faster processing times</p>
+<p>CPU-only mode works but is significantly slower for training and inference.</p>
+<h3 id="what-programming-languages-are-supported">What programming languages are supported?<a class="headerlink" href="#what-programming-languages-are-supported" title="Permanent link">¶</a></h3>
+<p><strong>Primary:</strong> Python 3.9+</p>
+<p>The Geospatial Studio SDK is Python-based. You can also interact with the platform via:
+- REST API (any language)
+- Web UI (no coding required)</p>
+<h3 id="can-i-use-my-own-data">Can I use my own data?<a class="headerlink" href="#can-i-use-my-own-data" title="Permanent link">¶</a></h3>
+<p><strong>Yes!</strong> You can onboard your own datasets in several ways:</p>
+<ol>
+<li><strong>Upload ZIP files</strong> containing imagery and labels</li>
+<li><strong>Provide URLs</strong> to cloud-stored data</li>
+<li><strong>Use Sentinel Hub</strong> for on-demand data access</li>
+<li><strong>Connect to S3</strong> or other object storage</li>
+</ol>
+<p>Supported formats:
+- GeoTIFF (.tif, .tiff)
+- Cloud Optimized GeoTIFF (COG)
+- HDF5 (.h5, .hdf5)</p>
+<h3 id="what-satellite-data-sources-are-supported">What satellite data sources are supported?<a class="headerlink" href="#what-satellite-data-sources-are-supported" title="Permanent link">¶</a></h3>
+<p><strong>Built-in support:</strong>
+- NASA Harmonized Landsat Sentinel-2 (HLS)
+- Sentinel-2 (via Sentinel Hub)
+- Landsat 8/9 (via Sentinel Hub)
+- Custom data sources via URL</p>
+<p><strong>Data connectors:</strong>
+- Sentinel Hub API
+- Direct file URLs
+- S3-compatible storage
+- Local file system</p>
+<h2 id="model-questions">🤖 Model Questions<a class="headerlink" href="#model-questions" title="Permanent link">¶</a></h2>
+<h3 id="what-foundation-models-are-available">What foundation models are available?<a class="headerlink" href="#what-foundation-models-are-available" title="Permanent link">¶</a></h3>
+<p><strong>Pre-loaded models:</strong>
+- <strong>Prithvi EO V1 (100M)</strong> - NASA/IBM geospatial foundation model
+- <strong>Prithvi EO V2 (300M)</strong> - Larger, more capable version
+- <strong>Clay V1</strong> - Self-supervised geospatial model
+- <strong>Custom models</strong> - You can add your own</p>
+<p><strong>Model capabilities:</strong>
+- Segmentation (pixel-level classification)
+- Regression (continuous value prediction)
+- Classification (image-level labels)</p>
+<h3 id="can-i-use-my-own-models">Can I use my own models?<a class="headerlink" href="#can-i-use-my-own-models" title="Permanent link">¶</a></h3>
+<p><strong>Yes!</strong> You can:</p>
+<ol>
+<li><strong>Upload custom base models</strong> to use as foundation models</li>
+<li><strong>Import fine-tuned checkpoints</strong> from external training</li>
+<li><strong>Export trained models</strong> for use elsewhere</li>
+<li><strong>Register models</strong> with the inference service</li>
+</ol>
+<p>Models must be compatible with the Terratorch framework (PyTorch-based).</p>
+<h3 id="how-long-does-model-training-take">How long does model training take?<a class="headerlink" href="#how-long-does-model-training-take" title="Permanent link">¶</a></h3>
+<p><strong>Training time depends on:</strong>
+- Dataset size (number of samples)
+- Model size (100M vs 300M parameters)
+- Hardware (GPU vs CPU)
+- Training parameters (epochs, batch size)</p>
+<p><strong>Typical times:</strong>
+- <strong>Small dataset (100 samples):</strong> 10-30 minutes (GPU)
+- <strong>Medium dataset (1000 samples):</strong> 1-3 hours (GPU)
+- <strong>Large dataset (10000 samples):</strong> 6-12 hours (GPU)</p>
+<p>CPU training is 10-50x slower than GPU.</p>
+<h3 id="what-tasks-can-i-train-models-for">What tasks can I train models for?<a class="headerlink" href="#what-tasks-can-i-train-models-for" title="Permanent link">¶</a></h3>
+<p><strong>Supported tasks:</strong>
+- <strong>Segmentation:</strong> Flood mapping, burn scar detection, land cover classification
+- <strong>Regression:</strong> Biomass estimation, crop yield prediction, temperature mapping
+- <strong>Classification:</strong> Land use type, cloud detection, change detection</p>
+<p><strong>Custom tasks:</strong> You can create custom task templates for specialized applications.</p>
+<h2 id="data-questions">📊 Data Questions<a class="headerlink" href="#data-questions" title="Permanent link">¶</a></h2>
+<h3 id="what-format-should-my-training-data-be-in">What format should my training data be in?<a class="headerlink" href="#what-format-should-my-training-data-be-in" title="Permanent link">¶</a></h3>
+<p><strong>Required structure:</strong>
+</p><div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>dataset.zip
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── image_001_merged.tif    # Input imagery (multi-band)
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── image_001_mask.tif      # Labels/ground truth
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── image_002_merged.tif
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>├── image_002_mask.tif
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>└── ...
+</span></code></pre></div><p></p>
+<p><strong>Requirements:</strong>
+- Matching pairs of data and labels
+- Same spatial extent and resolution
+- Consistent band configuration
+- GeoTIFF format with proper georeferencing</p>
+<h3 id="how-many-training-samples-do-i-need">How many training samples do I need?<a class="headerlink" href="#how-many-training-samples-do-i-need" title="Permanent link">¶</a></h3>
+<p><strong>Minimum:</strong> 50-100 samples for basic fine-tuning</p>
+<p><strong>Recommended:</strong>
+- <strong>Simple tasks:</strong> 200-500 samples
+- <strong>Complex tasks:</strong> 1000+ samples
+- <strong>Production models:</strong> 5000+ samples</p>
+<p>Foundation models require less data than training from scratch due to transfer learning.</p>
+<h3 id="what-image-resolution-is-supported">What image resolution is supported?<a class="headerlink" href="#what-image-resolution-is-supported" title="Permanent link">¶</a></h3>
+<p><strong>Flexible resolution support:</strong>
+- Models work with various resolutions (10m, 30m, etc.)
+- Input images are automatically tiled if too large
+- Recommended: 224x224 to 512x512 pixel tiles</p>
+<p><strong>HLS data:</strong> 30m resolution (Landsat) or 10m (Sentinel-2)</p>
+<h3 id="can-i-use-multi-temporal-data">Can I use multi-temporal data?<a class="headerlink" href="#can-i-use-multi-temporal-data" title="Permanent link">¶</a></h3>
+<p><strong>Yes!</strong> The platform supports:
+- Single-date imagery
+- Multi-date time series
+- Before/after comparisons
+- Seasonal analysis</p>
+<p>Specify multiple dates in the temporal domain:
+</p><div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="s2">"temporal_domain"</span><span class="p">:</span> <span class="p">[</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="s2">"2024-01-01_2024-01-15"</span><span class="p">,</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="s2">"2024-06-01_2024-06-15"</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">]</span>
+</span></code></pre></div><p></p>
+<h2 id="workflow-questions">🔄 Workflow Questions<a class="headerlink" href="#workflow-questions" title="Permanent link">¶</a></h2>
+<h3 id="whats-the-typical-workflow">What's the typical workflow?<a class="headerlink" href="#whats-the-typical-workflow" title="Permanent link">¶</a></h3>
+<p><strong>Standard workflow:</strong></p>
+<ol>
+<li><strong>Deploy Studio</strong> - Set up the platform</li>
+<li><strong>Onboard data</strong> - Upload or connect to datasets</li>
+<li><strong>Explore data</strong> - Visualize in UI or SDK</li>
+<li><strong>Select model</strong> - Choose foundation model</li>
+<li><strong>Configure training</strong> - Set hyperparameters</li>
+<li><strong>Fine-tune</strong> - Train model on your data</li>
+<li><strong>Validate</strong> - Check metrics and visualizations</li>
+<li><strong>Deploy</strong> - Register model for inference</li>
+<li><strong>Run inference</strong> - Process new imagery</li>
+<li><strong>Analyze results</strong> - Visualize and export outputs</li>
+</ol>
+<h3 id="can-i-skip-model-training">Can I skip model training?<a class="headerlink" href="#can-i-skip-model-training" title="Permanent link">¶</a></h3>
+<p><strong>Yes!</strong> You can use existing fine-tuned models directly:</p>
+<ul>
+<li>Use models already in the catalog</li>
+<li>Run inference without additional training</li>
+<li>Test models on your area of interest</li>
+<li>Evaluate if further fine-tuning is needed</li>
+</ul>
+<p>Fine-tuned models in the catalog work well for common tasks (floods, fires, etc.) but may need additional fine-tuning for specialized applications.</p>
+<h3 id="how-do-i-choose-hyperparameters">How do I choose hyperparameters?<a class="headerlink" href="#how-do-i-choose-hyperparameters" title="Permanent link">¶</a></h3>
+<p><strong>Start with defaults:</strong>
+- The platform provides sensible defaults
+- Works well for most use cases</p>
+<p><strong>Tune if needed:</strong>
+- Learning rate: 1e-5 to 1e-4
+- Batch size: 2-8 (depends on GPU memory)
+- Epochs: 10-50 (monitor validation loss)</p>
+<p><strong>Use HPO (Hyperparameter Optimization):</strong>
+- Automated tuning with Ray Tune
+- Finds optimal parameters
+- Requires more compute time</p>
+<h3 id="can-i-pause-and-resume-training">Can I pause and resume training?<a class="headerlink" href="#can-i-pause-and-resume-training" title="Permanent link">¶</a></h3>
+<p><strong>Yes!</strong> Training can be:
+- Paused and resumed from checkpoints
+- Stopped early if validation loss plateaus
+- Restarted with different parameters</p>
+<p>Checkpoints are saved automatically during training.</p>
+<h2 id="deployment-questions">🌐 Deployment Questions<a class="headerlink" href="#deployment-questions" title="Permanent link">¶</a></h2>
+<h3 id="can-i-deploy-in-the-cloud">Can I deploy in the cloud?<a class="headerlink" href="#can-i-deploy-in-the-cloud" title="Permanent link">¶</a></h3>
+<p><strong>Yes!</strong> Deployment options:</p>
+<ol>
+<li><strong>Local development</strong> - Docker Compose on laptop</li>
+<li><strong>Single server</strong> - VM or bare metal</li>
+<li><strong>Kubernetes cluster</strong> - Scalable cloud deployment</li>
+<li><strong>IBM Cloud</strong> - Managed deployment (coming soon)</li>
+</ol>
+<p>See <a href="../../prework/deployment-options/">Deployment Options</a> for details.</p>
+<h3 id="is-it-production-ready">Is it production-ready?<a class="headerlink" href="#is-it-production-ready" title="Permanent link">¶</a></h3>
+<p><strong>Current status:</strong> Beta/Research preview</p>
+<p><strong>Production considerations:</strong>
+- Core functionality is stable
+- Active development and improvements
+- Community support available
+- Enterprise support coming soon</p>
+<p><strong>Recommended for:</strong>
+- Research projects
+- Proof of concepts
+- Development environments
+- Small-scale production (with testing)</p>
+<h3 id="how-do-i-scale-for-production">How do I scale for production?<a class="headerlink" href="#how-do-i-scale-for-production" title="Permanent link">¶</a></h3>
+<p><strong>Scaling strategies:</strong></p>
+<ol>
+<li><strong>Horizontal scaling</strong> - Add more inference workers</li>
+<li><strong>GPU acceleration</strong> - Use multiple GPUs</li>
+<li><strong>Distributed training</strong> - Multi-node training</li>
+<li><strong>Caching</strong> - Cache frequently accessed data</li>
+<li><strong>Load balancing</strong> - Distribute requests</li>
+</ol>
+<p>Kubernetes deployment supports auto-scaling.</p>
+<h3 id="what-about-data-privacy">What about data privacy?<a class="headerlink" href="#what-about-data-privacy" title="Permanent link">¶</a></h3>
+<p><strong>Data handling:</strong>
+- All data stays in your environment
+- No data sent to external services (except Sentinel Hub if used)
+- You control storage and access
+- Can run fully air-gapped</p>
+<p><strong>Security features:</strong>
+- OAuth2 authentication
+- API key management
+- Role-based access control (RBAC)
+- SSL/TLS encryption</p>
+<h2 id="integration-questions">🔧 Integration Questions<a class="headerlink" href="#integration-questions" title="Permanent link">¶</a></h2>
+<h3 id="can-i-integrate-with-existing-tools">Can I integrate with existing tools?<a class="headerlink" href="#can-i-integrate-with-existing-tools" title="Permanent link">¶</a></h3>
+<p><strong>Yes!</strong> Integration options:</p>
+<p><strong>APIs:</strong>
+- REST API for all operations
+- Python SDK for programmatic access
+- OpenAPI/Swagger documentation</p>
+<p><strong>Data formats:</strong>
+- GeoTIFF output (standard format)
+- GeoJSON for vector data
+- COG (Cloud Optimized GeoTIFF)</p>
+<p><strong>Visualization:</strong>
+- GeoServer for map services
+- WMS/WFS standards
+- Compatible with QGIS, ArcGIS, etc.</p>
+<h3 id="does-it-work-with-jupyter-notebooks">Does it work with Jupyter notebooks?<a class="headerlink" href="#does-it-work-with-jupyter-notebooks" title="Permanent link">¶</a></h3>
+<p><strong>Yes!</strong> Full Jupyter support:</p>
+<ul>
+<li>SDK designed for notebooks</li>
+<li>Interactive widgets for visualization</li>
+<li>Example notebooks provided</li>
+<li>Works with JupyterLab and Jupyter Notebook</li>
+</ul>
+<h3 id="can-i-export-trained-models">Can I export trained models?<a class="headerlink" href="#can-i-export-trained-models" title="Permanent link">¶</a></h3>
+<p><strong>Yes!</strong> Export options:</p>
+<ul>
+<li>PyTorch checkpoints (.ckpt)</li>
+<li>ONNX format (for deployment)</li>
+<li>TorchScript (for production)</li>
+<li>MLflow model registry</li>
+</ul>
+<p>Models can be used outside Geospatial Studio.</p>
+<h3 id="is-there-a-rest-api">Is there a REST API?<a class="headerlink" href="#is-there-a-rest-api" title="Permanent link">¶</a></h3>
+<p><strong>Yes!</strong> Full REST API available:</p>
+<ul>
+<li>All UI features accessible via API</li>
+<li>OpenAPI/Swagger documentation</li>
+<li>Authentication via API keys</li>
+<li>Rate limiting and quotas</li>
+</ul>
+<p>API docs: <code>https://your-studio-url/api/docs</code></p>
+<h2 id="cost-questions">💰 Cost Questions<a class="headerlink" href="#cost-questions" title="Permanent link">¶</a></h2>
+<h3 id="is-geospatial-studio-free">Is Geospatial Studio free?<a class="headerlink" href="#is-geospatial-studio-free" title="Permanent link">¶</a></h3>
+<p><strong>Yes!</strong> Geospatial Studio is:
+- Open source (Apache 2.0 license)
+- Free to use
+- Free to modify
+- Free to distribute</p>
+<h3 id="what-about-infrastructure-costs">What about infrastructure costs?<a class="headerlink" href="#what-about-infrastructure-costs" title="Permanent link">¶</a></h3>
+<p><strong>You pay for:</strong>
+- Compute resources (VMs, GPUs)
+- Storage (disk space, object storage)
+- Network bandwidth
+- Satellite data access (if using commercial sources)</p>
+<p><strong>Cost optimization:</strong>
+- Use spot instances for training
+- Scale down when not in use
+- Use CPU for development, GPU for production
+- Cache frequently accessed data</p>
+<h3 id="are-there-any-usage-limits">Are there any usage limits?<a class="headerlink" href="#are-there-any-usage-limits" title="Permanent link">¶</a></h3>
+<p><strong>No built-in limits</strong> in the open-source version.</p>
+<p><strong>Practical limits:</strong>
+- Hardware capacity
+- Storage space
+- Network bandwidth
+- Satellite data quotas (Sentinel Hub)</p>
+<p>You control all resources and limits.</p>
+<h2 id="learning-questions">📚 Learning Questions<a class="headerlink" href="#learning-questions" title="Permanent link">¶</a></h2>
+<h3 id="im-new-to-geospatial-ai-where-do-i-start">I'm new to geospatial AI. Where do I start?<a class="headerlink" href="#im-new-to-geospatial-ai-where-do-i-start" title="Permanent link">¶</a></h3>
+<p><strong>Recommended path:</strong></p>
+<ol>
+<li><strong>Complete this workshop</strong> - Hands-on introduction</li>
+<li><strong>Read Key Concepts</strong> - Understand terminology</li>
+<li><strong>Explore examples</strong> - Pre-computed datasets</li>
+<li><strong>Try simple tasks</strong> - Flood or fire detection</li>
+<li><strong>Read documentation</strong> - Deep dive into features</li>
+</ol>
+<p><strong>Additional resources:</strong>
+- <a href="https://terrastackai.github.io/geospatial-studio/">Geospatial Studio Docs</a>
+- <a href="https://ibm.github.io/terratorch/tutorials/">Terratorch Tutorials</a>
+- <a href="../additional-resources/">Additional Resources</a></p>
+<h3 id="what-if-i-get-stuck">What if I get stuck?<a class="headerlink" href="#what-if-i-get-stuck" title="Permanent link">¶</a></h3>
+<p><strong>Help resources:</strong></p>
+<ol>
+<li><strong>Troubleshooting Guide</strong> - Common issues and solutions</li>
+<li><strong>Documentation</strong> - Comprehensive guides</li>
+<li><strong>GitHub Issues</strong> - Search existing problems</li>
+<li><strong>Community</strong> - Ask questions, share experiences</li>
+</ol>
+<p>See <a href="../troubleshooting/">Troubleshooting</a> for detailed help.</p>
+<h3 id="can-i-contribute-to-the-project">Can I contribute to the project?<a class="headerlink" href="#can-i-contribute-to-the-project" title="Permanent link">¶</a></h3>
+<p><strong>Yes! Contributions welcome:</strong></p>
+<ul>
+<li>Report bugs and issues</li>
+<li>Suggest new features</li>
+<li>Submit pull requests</li>
+<li>Improve documentation</li>
+<li>Share use cases and examples</li>
+</ul>
+<p>See <a href="https://github.com/terrastackai/geospatial-studio/blob/main/CONTRIBUTING.md">Contributing Guidelines</a></p>
+<h2 id="next-steps">🎓 Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">¶</a></h2>
+<h3 id="what-should-i-do-after-the-workshop">What should I do after the workshop?<a class="headerlink" href="#what-should-i-do-after-the-workshop" title="Permanent link">¶</a></h3>
+<p><strong>Immediate next steps:</strong>
+1. Try with your own data
+2. Experiment with different models
+3. Fine-tune for your use case
+4. Share results with community</p>
+<p><strong>Long-term:</strong>
+1. Deploy in production
+2. Integrate with existing workflows
+3. Contribute improvements
+4. Build custom applications</p>
+<p>See <a href="../next-steps/">Next Steps</a> for detailed guidance.</p>
+<h3 id="where-can-i-find-more-examples">Where can I find more examples?<a class="headerlink" href="#where-can-i-find-more-examples" title="Permanent link">¶</a></h3>
+<p><strong>Example sources:</strong>
+- Workshop notebooks (this repository)
+- <a href="https://github.com/terrastackai/geospatial-studio/tree/main/examples">Geospatial Studio Examples</a>
+- <a href="https://github.com/IBM/terratorch/tree/main/examples">Terratorch Examples</a>
+- <a href="https://huggingface.co/ibm-nasa-geospatial">Hugging Face Models</a></p>
+<h3 id="how-do-i-stay-updated">How do I stay updated?<a class="headerlink" href="#how-do-i-stay-updated" title="Permanent link">¶</a></h3>
+<p><strong>Stay informed:</strong>
+- Watch GitHub repositories
+- Follow IBM Research blog
+- Join community discussions
+- Subscribe to release notes</p>
+<p><strong>Key repositories:</strong>
+- <a href="https://github.com/terrastackai/geospatial-studio">Geospatial Studio</a>
+- <a href="https://github.com/terrastackai/geospatial-studio-toolkit">Geospatial Studio Toolkit</a>
+- <a href="https://github.com/IBM/terratorch">Terratorch</a></p>
+<hr>
+<p><strong>Still have questions?</strong> </p>
+<ul>
+<li>Check <a href="../troubleshooting/">Troubleshooting</a> for technical issues</li>
+<li>Review <a href="../additional-resources/">Additional Resources</a> for more documentation</li>
+<li>Open an issue on <a href="https://github.com/terrastackai/geospatial-studio/issues">GitHub</a></li>
+</ul>
+<hr>
+<p><a class="md-button" href="../troubleshooting/">← Back: Troubleshooting</a> <a class="md-button md-button--primary" href="../next-steps/">Next: Next Steps →</a></p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 19, 2026 11:10:26 UTC"><span class="timeago" datetime="2026-02-19T11:10:26+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 19, 2026 11:10:26 UTC">2026-02-19</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"></path></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 19, 2026 11:10:26 UTC"><span class="timeago" datetime="2026-02-19T11:10:26+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 19, 2026 11:10:26 UTC">2026-02-19</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"></path></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer">
+        
+          
+          <a href="../troubleshooting/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Troubleshooting">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Troubleshooting
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../next-steps/" class="md-footer__link md-footer__link--next" aria-label="Next: Next Steps">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Next Steps
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"></path></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright © 2024-2026 IBM Research
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/terrastackai" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"></path></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://pypi.org/project/geostudio/" target="_blank" rel="noopener" title="pypi.org" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 444.7a20.4 20.4 0 1 1 0-40.7 20.4 20.4 0 1 1 0 40.7M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.6-183.4a20.4 20.4 0 1 1 0 40.8 20.4 20.4 0 1 1 0-40.8"></path></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "navigation.footer", "toc.follow", "toc.integrate", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../js/timeago.min.js"></script>
+      
+        <script src="../../js/timeago_mkdocs_material.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10/dist/mermaid.min.js"></script>
+      
+    
+  
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(()=>{ lightbox.reload(); });
+</script></body></html>

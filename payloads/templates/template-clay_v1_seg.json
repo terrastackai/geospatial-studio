@@ -13,7 +13,8 @@
             "default": {
                 "batch_size": 4,
                 "constant_multiply": 1,
-                "workers_per_gpu": 2
+                "workers_per_gpu": 2,
+                "check_stackability": false
             },
             "properties": {
                 "batch_size": {
@@ -33,6 +34,12 @@
                 "description": "Workers per GPU",
                 "type": "int",
                 "default": 2
+            },
+                "check_stackability": {
+                "studio_name": "Check Stackability",
+                "description": "Check Stackability",
+                "type": "bool",
+                "default": false
                 }
             },
             "studio_name": "Data loading"
@@ -40,6 +47,7 @@
             "model": {
             "type": "object",
             "default": {
+                "backbone_img_size": 224,
                 "decode_head": {
                 "channels": 256,
                 "num_convs": 4,
@@ -48,18 +56,23 @@
                     "type": "CrossEntropyLoss",
                     "avg_non_ignore": true
                 }
-                },
+            },
                 "frozen_backbone": false,
                 "tiled_inference_parameters": {
-                "h_crop": 512,
-                "h_stride": 448,
-                "w_crop": 512,
-                "w_stride": 448,
+                "h_crop": 224,
+                "h_stride": 196,
+                "w_crop": 224,
+                "w_stride": 196,
                 "average_patches": true
-                },
-                "backbone_img_size": 512
+                }
             },
             "properties": {
+                "backbone_img_size": {
+                "type": "int",
+                "default": 224,
+                "description": "Backbone image size for specific models i.e Clay",
+                "studio_name": "Backbone image size"
+                },
                 "decode_head": {
                 "type": "object",
                 "default": {
@@ -192,10 +205,10 @@
                 "tiled_inference_parameters": {
                 "type": "object",
                 "default": {
-                    "h_crop": 512,
-                    "h_stride": 448,
-                    "w_crop": 512,
-                    "w_stride": 448,
+                    "h_crop": 224,
+                    "h_stride": 196,
+                    "w_crop": 224,
+                    "w_stride": 196,
                     "average_patches": true
                 },
                 "properties": {
@@ -230,12 +243,6 @@
                     "studio_name": "average_patches"
                     }
                 }
-                },
-                "backbone_img_size": {
-                "type": "int",
-                "default": 512,
-                "description": "Backbone image size for specific models i.e Clay",
-                "studio_name": "Backbone image size"
                 }
             },
             "description": "Model architecture definition",
