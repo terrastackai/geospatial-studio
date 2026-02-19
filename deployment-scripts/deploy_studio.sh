@@ -10,6 +10,7 @@ source workspace/$DEPLOYMENT_ENV/env/.env
 helm upgrade -f workspace/$DEPLOYMENT_ENV/values/geospatial-studio/values-deploy.yaml studio \
             ./geospatial-studio/ \
             --install \
+            --namespace ${OC_PROJECT} \
             --wait \
             --timeout 30m \
             --history-max 5 \
