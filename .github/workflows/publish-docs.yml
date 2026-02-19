@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - geostudio-workshop
     paths:
       - 'docs/**'
       - 'workshop/**'
@@ -11,6 +12,7 @@ on:
   pull_request:
     branches:
       - main
+      - geostudio-workshop
     paths:
       - 'docs/**'
       - 'workshop/**'
@@ -55,7 +57,7 @@ jobs:
           cp -r workshop/site/* combined_site/workshop/
 
       - name: Deploy to GitHub Pages
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/geostudio-workshop')
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
