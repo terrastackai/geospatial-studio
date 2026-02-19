@@ -76,9 +76,9 @@ Complete an end-to-end workflow:
 
 ### Getting the Notebooks
 
-#### Option 1: Clone the Repository (Recommended)
+**Clone the Repository** (Required)
 
-This is the recommended approach as it includes all notebooks and required JSON configuration files:
+The notebooks require the full repository structure as they reference shared configuration files:
 
 ```bash
 # Clone the repository
@@ -91,24 +91,12 @@ cd geospatial-studio/workshop/docs/notebooks
 jupyter notebook
 ```
 
-**Why clone the repository?**
+**Why the full repository is required:**
 
-- ✅ Get all notebooks in one step
-- ✅ Includes all JSON configuration files (templates, datasets, model configs)
-- ✅ Proper directory structure for file paths
+- ✅ Notebooks reference JSON configs from `populate-studio/payloads/`
+- ✅ Proper directory structure for all file paths
 - ✅ Easy to update with `git pull`
-- ✅ Access to all workshop materials
-
-#### Option 2: Download Individual Notebooks
-
-If you prefer to download notebooks individually:
-
-1. Download the notebook file for your current lab
-2. **Important:** Some labs require additional JSON files:
-   - **Lab 3:** Also download `template-seg.json` and `tune-prithvi-eo-flood.json`
-   - **Lab 4:** Also download `backbone-Prithvi_EO_V2_300M.json`, `dataset-burn_scars.json`, and `template-seg.json`
-3. Place all files in the same directory
-4. Start Jupyter in that directory
+- ✅ Access to all workshop materials and shared resources
 
 ### Running the Notebooks
 
