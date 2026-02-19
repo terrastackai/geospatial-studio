@@ -71,3 +71,13 @@ helm uninstall postgresql
 kubectl delete -f workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml -n $OC_PROJECT
 
 kubectl delete -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n $OC_PROJECT
+
+oc delete rb api-gateway-sa-rb -n $OC_PROJECT
+
+oc delete role api-gateway-sa-role -n $OC_PROJECT
+
+oc delete sa api-gateway-sa -n $OC_PROJECT
+
+oc delete configmap geofm-gateway-cm geofm-gateway-seed-data geofm-mlflow-run-trigger -n $OC_PROJECT
+
+oc delete secret geofm-gateway-secrets studio-cos-secret us-icr-pull-secret -n $OC_PROJECT

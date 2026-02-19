@@ -35,7 +35,7 @@ dependencies:
     condition: gfm-mlflow.enabled
   - name: gfm-studio-gateway
     repository: "file://charts/gfm-studio-gateway"
-    version: 0.1.5
+    version: 0.1.6
     alias: gfm-studio-gateway
     condition: gfm-studio-gateway.enabled
   - name: geofm-ui
