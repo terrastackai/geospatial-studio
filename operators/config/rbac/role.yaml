@@ -85,6 +85,7 @@ rules:
   - ""
   resources:
   - "persistentvolumeclaims"
+  - "persistentvolumes"
   - "configmaps"
   - "pods"
 - verbs:

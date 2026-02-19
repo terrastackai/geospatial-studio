@@ -527,6 +527,8 @@ infrastructure:
     enabled: false
   keycloak:
     enabled: false
+  geoserver:
+    enabled: false
 
 # PostgreSQL Configuration
 # Only used when infrastructure.postgresql.enabled=true
@@ -610,3 +612,27 @@ minio:
     limits:
       memory: 4Gi
       cpu: 4000m
+
+# GeoServer Configuration
+# Only used when infrastructure.geoserver.enabled=true
+# Deployed via pre-install Helm hook jobs (templates/geoserver-install-job.yaml)
+# Jobs run with hook-weight -55 and -50
+# Three components are created:
+#   1. Secret with server.xml (weight: -60): PostgreSQL JNDI datasource configuration
+#   2. geoserver-installer (weight: -55): Deploys GeoServer with configured resources
+#   3. geoserver-configurator (weight: -50): Creates workspace and configures WMS settings
+# Note: Requires PostgreSQL to be running (depends on postgresql-installer job)
+geoserver:
+  image: "docker.osgeo.org/geoserver:2.28.1"
+  adminUsername: admin
+  adminPassword: geoserver
+  javaOpts: "-Xms4g -Xmx8g"
+  storage: "60Gi"
+  storageClass: "local-path"
+  resources:
+    requests:
+      memory: 4Gi
+      cpu: 1000m
+    limits:
+      memory: 8Gi
+      cpu: 2000m

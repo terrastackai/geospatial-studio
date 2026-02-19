@@ -1,0 +1,278 @@
+{{- if .Values.infrastructure.geoserver.enabled }}
+
+# 1. ConfigMap for server.xml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: geoserver-server-xml
+  namespace: {{ .Values.global.namespace }}
+data:
+  server.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Server port="8005" shutdown="SHUTDOWN">
+        <Listener className="org.apache.catalina.startup.VersionLoggerListener" />
+        <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+        <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+        <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+        <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+
+        <GlobalNamingResources>
+            <Resource name="UserDatabase" auth="Container"
+                      type="org.apache.catalina.UserDatabase"
+                      description="User database"
+                      factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+                      pathname="conf/tomcat-users.xml" />
+        </GlobalNamingResources>
+
+        <Service name="Catalina">
+            <Connector maxHttpHeaderSize="65536"
+                port="8080"
+                protocol="HTTP/1.1"
+                connectionTimeout="20000"
+                redirectPort="8443"
+                maxParameterCount="1000" />
+
+            <Engine name="Catalina" defaultHost="localhost">
+                <Realm className="org.apache.catalina.realm.LockOutRealm">
+                    <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+                          resourceName="UserDatabase"/>
+                </Realm>
+
+                <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false">
+                    <Context docBase="geoserver" path="/geoserver">
+                        <Resource name="jdbc/postgres" 
+                                auth="Container" 
+                                type="javax.sql.DataSource"
+                                driverClassName="org.postgresql.Driver"
+                                url="jdbc:postgresql://{{ .Values.global.postgres.postgres_host }}:{{ .Values.global.postgres.postgres_port }}/{{ .Values.global.postgres.dbs.geoserver | default "geoserver" }}"
+                                username="{{ .Values.global.postgres.postgres_username }}"
+                                password="{{ .Values.global.postgres.postgres_password }}"
+                                maxTotal="25" 
+                                validationQuery="SELECT 1"
+                                testWhileIdle="true" />
+                    </Context>
+                </Host>
+            </Engine>
+        </Service>
+    </Server>
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: geofm-geoserver-cm
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: geoserver
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  CORS_ALLOWED_HEADERS: "Origin,Host,Cache-Control,Content-Security-Policy,X-Content-Type-Options,Access-Control-Allow-Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers"
+  CORS_ENABLED: "true"
+  EXTRA_JAVA_OPTS: {{ .Values.geoserver.javaOpts | default "-Xms4g -Xmx8g" | quote }}
+  GEOSERVER_CSRF_WHITELIST: ".local"
+  INSTALL_EXTENSIONS: "true"
+  PROXY_BASE_URL: "http://geofm-geoserver.{{ .Values.global.namespace }}.svc.cluster.local:3000/geoserver"
+  RUN_UNPRIVILEGED: "true"
+  SKIP_DEMO_DATA: "true"
+  STABLE_EXTENSIONS: "wmts-multi-dimensional,netcdf-out,netcdf"
+
+---
+# PersistentVolumeClaim for GeoServer data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gfm-geoserver-pvc
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: geoserver
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-60"
+    "helm.sh/hook-delete-policy": before-hook-creation
+    helm.sh/resource-policy: keep
+spec:
+  storageClassName: {{ .Values.geoserver.storageClass | default "local-path" }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.geoserver.storage | default "60Gi" }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: geofm-geoserver
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: gfm-geoserver
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: gfm-geoserver
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: gfm-geoserver
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      {{- if and .Values.global.imagePullSecret .Values.global.imagePullSecret.name }}
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecret.name }}
+      {{- end }}
+      securityContext:
+        {}
+      containers:
+        - name: gfm-geoserver
+          securityContext:
+            {}
+          image: {{ .Values.geoserver.image | default "docker.osgeo.org/geoserver:2.28.1" }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: geofm-geoserver-cm
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          {{- if .Values.geoserver.resources }}
+          resources:
+            {{- toYaml .Values.geoserver.resources | nindent 22 }}
+          {{- end }}
+          volumeMounts:
+            - mountPath: /opt/geoserver_data
+              name: gfm-geoserver-pv-storage
+            - mountPath: /usr/local/tomcat/conf/server.xml
+              name: server-xml-config
+              subPath: server.xml
+      volumes:
+        - name: gfm-geoserver-pv-storage
+          persistentVolumeClaim:
+            claimName: gfm-geoserver-pvc
+        - name: server-xml-config
+          configMap:
+            name: geoserver-server-xml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: geofm-geoserver
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: gfm-geoserver
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: gfm-geoserver
+    app.kubernetes.io/instance: {{ .Release.Name }}
+
+---
+# Job to configure GeoServer after it's running
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-geoserver-configurator
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: geoserver-configurator
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-50"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 5
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: geostudio
+        app.kubernetes.io/component: geoserver-configurator
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ .Values.global.serviceAccount.name }}
+      containers:
+      - name: geoserver-configurator
+        image: curlimages/curl:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: GEOSERVER_USERNAME
+          value: {{ .Values.geoserver.adminUsername | default "admin" | quote }}
+        - name: GEOSERVER_PASSWORD
+          value: {{ .Values.geoserver.adminPassword | default "geoserver" | quote }}
+        - name: GEOSERVER_URL
+          value: "http://geofm-geoserver.{{ .Values.global.namespace }}.svc.cluster.local:3000/geoserver"
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          
+          echo "=================================================="
+          echo "GeoServer Configuration Job"
+          echo "=================================================="
+          echo "GeoServer URL: $GEOSERVER_URL"
+          echo "=================================================="
+          
+          # Wait for GeoServer to be ready
+          echo "Waiting for GeoServer to accept connections..."
+          MAX_RETRIES=60
+          RETRY_COUNT=0
+          
+          until curl --silent --show-error -u $GEOSERVER_USERNAME:$GEOSERVER_PASSWORD -f $GEOSERVER_URL/rest/workspaces > /dev/null 2>&1; do
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+              echo "ERROR: GeoServer did not become ready after $MAX_RETRIES attempts"
+              exit 1
+            fi
+            echo "Attempt $RETRY_COUNT/$MAX_RETRIES: GeoServer not ready yet, waiting..."
+            sleep 10
+          done
+          
+          echo "✓ GeoServer is ready!"
+          
+          # Create workspace
+          echo ""
+          echo "Creating 'geofm' workspace..."
+          curl --silent --show-error -u $GEOSERVER_USERNAME:$GEOSERVER_PASSWORD -L -X POST $GEOSERVER_URL/rest/workspaces \
+            --header "Content-type: text/xml" \
+            --data '<workspace><name>geofm</name></workspace>' || echo "Workspace might already exist"
+          echo "✓ Workspace created"
+          
+          # Update WMS Settings
+          echo ""
+          echo "Updating WMS settings..."
+          curl --silent --show-error -u $GEOSERVER_USERNAME:$GEOSERVER_PASSWORD -L -X PUT $GEOSERVER_URL/rest/services/wms/settings \
+            --header "Content-type: application/json" \
+            --data '{"wms": {"maxBuffer": 25, "maxRequestMemory": 65536, "maxRenderingTime": 60, "maxRenderingErrors": 1000, "metadata": {"entry": [{"@key": "svgRenderer", "$": "Batik"},{"@key":"svgAntiAlias","$":"true"}]}}}'
+          echo "✓ WMS settings updated"
+          
+          # Allow services
+          echo ""
+          echo "Configuring service ACLs..."
+          curl --silent --show-error -u $GEOSERVER_USERNAME:$GEOSERVER_PASSWORD -L -X POST $GEOSERVER_URL/rest/security/acl/services \
+            --header "Content-type: application/json" \
+            --data '{"gwc.*":"*","wcs.*":"*","wfs.*":"*","wms.*":"*"}' || echo "ACLs might already be configured"
+          echo "✓ Service ACLs configured"
+          
+          echo ""
+          echo "=================================================="
+          echo "GeoServer configuration completed successfully!"
+          echo "=================================================="
+{{- end }}
