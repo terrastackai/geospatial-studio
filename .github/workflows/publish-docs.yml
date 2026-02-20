@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - workshop-docs-update
     paths:
       - 'docs/**'
       - 'workshop/**'
@@ -55,7 +56,7 @@ jobs:
           cp -r workshop/site/* combined_site/workshop/
 
       - name: Deploy to GitHub Pages
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/workshop-docs-update')
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
