@@ -6,7 +6,7 @@ The Dataset Factory allows users to bring their curated geospatial datasets to t
 ## Where?
 We recommend that users utilize the Geospatial Studio UI instead for the more user-friendly and appealing interface.
 
-![plot](./assets/dataset-factory-service/api-page.png)
+![plot](../../assets/dataset-factory-service/api-page.png)
 
 ## How?
 To onboard a dataset to the Dataset Factory, the user needs to provide the following:

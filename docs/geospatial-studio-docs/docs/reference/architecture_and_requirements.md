@@ -4,7 +4,7 @@
 ## Platform architecture
 The IBM Geospatial Exploration and Orchestration Studio is a platform formed of an core backend API and services, pipelines, UIs and catalogues deployed on top of Red Hat OpenShift or Kubernetes.
 
-![Diagram showing the architecture of the Geospatial Studio](./assets/architecture.png)
+![Diagram showing the architecture of the Geospatial Studio](../assets/architecture.png)
 
 ## Dependencies
 

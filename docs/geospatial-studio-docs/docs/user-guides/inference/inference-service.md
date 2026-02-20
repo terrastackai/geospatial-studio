@@ -4,14 +4,14 @@ The Geospatial Studio Inference service is designed to allow users to easily per
 
 There are a variety of endpoints the user can access and they are grouped below:
 
-![plot](./assets/inference-service/inference-endpoint-models.png)
-![plot](./assets/inference-service/inference-endpoint-inference.png)
-![plot](./assets/inference-service/inference-endpoint-data-sources.png)
+![plot](../../assets/inference-service/inference-endpoint-models.png)
+![plot](../../assets/inference-service/inference-endpoint-inference.png)
+![plot](../../assets/inference-service/inference-endpoint-data-sources.png)
 
 
 ## Authentication
 
-For authentication to the API, can use an API key ([created and managed in the UI](getting-started-SDK.md#authentication) or through the API swagger page).  To authenticate pass the API key in the header as below:
+For authentication to the API, can use an API key ([created and managed in the UI](../../getting-started/getting-started-SDK.md#authentication) or through the API swagger page).  To authenticate pass the API key in the header as below:
 
 ```bash
 {
@@ -24,10 +24,10 @@ For authentication to the API, can use an API key ([created and managed in the U
 ## Inference workflow
 
 ### Submitting an inference
-When a user wishes to perform inference, they can either use a permanently onboarded model or onboard their own fine-tuned model. Check the [fine-tuning APIs page](fine-tuning-service.md) for how to run inference on a fine-tuned model.
+When a user wishes to perform inference, they can either use a permanently onboarded model or onboard their own fine-tuned model. Check the [fine-tuning APIs page](../fine-tuning/fine-tuning-service.md) for how to run inference on a fine-tuned model.
 
 Run inference using a permanently onboarded model  (HTTP POST request): `/v2/inference/`
-![plot](./assets/inference-service/create-inference-intro.png)
+![plot](../../assets/inference-service/create-inference-intro.png)
 
 
 In this endpoint they will need to specify the following through either the UI, SDK or API:
@@ -130,7 +130,7 @@ Sample request:
 
 #### Sequence Diagram
 
-![Structure](./assets/inference-service/architecture-sequence-async-Inference.png)
+![Structure](../../assets/inference-service/architecture-sequence-async-Inference.png)
 
 #### Initial Inference Request
 

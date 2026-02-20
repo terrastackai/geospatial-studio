@@ -1,3 +1,3 @@
 # Geospatial Studio API - specification
 
-<swagger-ui src="./openapi.json"/>
+<swagger-ui src="../openapi.json"/>

@@ -29,10 +29,10 @@ You can view the SDK documentation [here](https://terrastackai.github.io/geospat
 Authentication to the Geospatial Studio is handled by a redirect in the UI, but for programmatic access (form the SDK, for example), the user will need to create an API key.  This is can be easily done through the UI.
 
 1. Go to the Geospatial Studio UI page and navigate to the `Manage your API keys` link.
-![Location of API key link](./assets/main-screen-api-key-link.png){style="display: block; margin: 0 auto" }
+![Location of API key link](../assets/main-screen-api-key-link.png){style="display: block; margin: 0 auto" }
 
 1. This should pop-up a window where you can generate, access and delete your api keys.  NB: every user is limited to a maximum of two activate api keys at any one time.
-![Window for managing user API keys](./assets/api-key-modal.png){style="display: block; margin: 0 auto" }
+![Window for managing user API keys](../assets/api-key-modal.png){style="display: block; margin: 0 auto" }
 
 1. When you have generated an api key and you intend to use it for authentication through the python SDK, the best practice would be to store the API key and geostudio ui base url in a credentials file locally, for example in /User/bob/.geostudio_config_file. You can do this by:
     ```bash

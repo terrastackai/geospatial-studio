@@ -82,7 +82,7 @@ Before you can use the Studio API or SDK, you need to generate an API key. This 
    - View existing keys
    - Delete old keys
 
-![Location of API key link](../../images/sdk-auth.png)
+![Location of API key link](../assets/api-key-modal.png)
 
 3. Click **"Generate New Key"** (or similar button)
 4. **Copy the generated API key immediately** - you won't be able to see it again!

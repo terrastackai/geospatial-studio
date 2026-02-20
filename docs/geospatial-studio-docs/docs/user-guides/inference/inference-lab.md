@@ -16,19 +16,19 @@ We have defined two modalities of running a new inference depending on the sourc
 
 You can set-up a new inference by sourcing the input data from existing IBM datasets. In this case you supply the location name and the tool will zoom to the selected location, you can further refine the zoom to focus on the particular area you want. You also provide the fine-tuned model you want to run inference against. Lastly you select the start data and end date within which the input data is to be bound.
 
-![plot](./assets/inference-service/ui/query-inference.png)
+![plot](../../assets/inference-service/ui/query-inference.png)
 
 #### Use pre-signed url(s)
 
 Lastly, you can also provide comma separated pre-signed urls pointing to input tif files for running the inference. You also provide the fine-tuned model you want to run inference against as well as the name of the location.
 
-![plot](./assets/inference-service/ui/pre-signed-inference.png)
+![plot](../../assets/inference-service/ui/pre-signed-inference.png)
 
 ### Check data availability
 
 Before running an inference, you can check if data is available for the dates you selected by clocking on the **Check date availability** button on the inference panel. This will return a message notification on the screen if data was found for the dates you selected, and if not, give a list of alternative dates where data is available.
 
-![plot](./assets/inference-service/ui/data-availability.png)
+![plot](../../assets/inference-service/ui/data-availability.png)
 
 ### Interacting with map layers
 
@@ -42,25 +42,25 @@ In general the following layers are presented:
 
 The layers may also include information on assets, impacts, change etc, it will depend on the particular model and inference pipeline which has been run.
 
-![plot](./assets/inference-service/ui/layer-panel.png)
+![plot](../../assets/inference-service/ui/layer-panel.png)
 
 ### Interacting with timeline
 
 When an inference is loaded on the map view, an interactive graphic showing the timeline is presented at the bottom (if there is a time dimension to the layer). You can load the layers for each timestamp by clicking on it. You can play the timeline to animate the timesteps available for the visible layers (NB: currently the rate is fixed, but this will be updated in future). You can additionally, click/drag along the timeline to select the timestep to visualise.
 
-![plot](./assets/inference-service/ui/time-line.png)
+![plot](../../assets/inference-service/ui/time-line.png)
 
 ### Interacting using the two-panel split screen slider
 
 When an inference is loaded on the map view, two images can be loaded with a slider to swap between the layer. To activate the slider, click on the slider button next to the layer name. This will then toggle between left panel, right panel, or off. If a layer does not have it selected it will remain visible in the background.
 
-![plot](./assets/inference-service/ui/inference_split-screen.png)
+![plot](../../assets/inference-service/ui/inference_split-screen.png)
 
 ### History
 
 You can as well view your latest 25 inferences in the history section and can load them by clicking on them.
 
-![plot](./assets/inference-service/ui/history-panel.png)
+![plot](../../assets/inference-service/ui/history-panel.png)
 
 ## Inference tips {% #tips %}
 

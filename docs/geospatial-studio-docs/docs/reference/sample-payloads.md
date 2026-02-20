@@ -17,7 +17,7 @@ Click below to see example configurations for onboarding a new dataset to the st
 
 Click below for sample configs for each of the tune templates we have in the studio:
 
-- [Download HPO config](sample_files/burnscars-iterate-hpo.yaml) for terratorch-iterate fine-tuning | [View details](/sample-files/#burnscars-iterate-hpo)
+- [Download HPO config](../sample_files/burnscars-iterate-hpo.yaml) for terratorch-iterate fine-tuning | [View details](/sample-files/#burnscars-iterate-hpo)
 - [View ConvNeXT template](/sample-files/#convnext-template) for user-defined tuning
 <div class=tuning-templates>
     <button onclick="showExample('regression')" class="button">Regression</button>
@@ -35,7 +35,7 @@ Click below for sample configs for each of the tune templates we have in the stu
 Click below for example payloads for running a fine-tuning job and for uploading a complete tune through the studio:
 
 - To upload a complete tune a `config_url` and a `checkpoint_url`.
-  - `config_url`: URL to tuning configuration YAML file (see [sample config](/sample-files/#floods-finetuning-config-file) for reference) | [Download the config file](sample_files/prithvi-eo-flood-config.yaml)
+  - `config_url`: URL to tuning configuration YAML file (see [sample config](/sample-files/#floods-finetuning-config-file) for reference) | [Download the config file](../sample_files/prithvi-eo-flood-config.yaml)
   - `checkpoint_url`: URL to your trained model checkpoint file(.ckpt).[Download sample checkpoint file](https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-flood/prithvi-eo-flood-bestEpoch_Fixed_updated.ckpt)
 <div class=tunes>
     <button onclick="showExample('floodTuning')" class="button">Flooding tuning</button>

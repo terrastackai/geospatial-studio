@@ -17,7 +17,7 @@ The fine-tuning process involves the following key steps:
 
 To fine-tune a model for a downstream task, you need a labeled fine-tuning dataset. The Geospatial Tuning Studio provides multiple ways to acquire or upload a dataset through the dataset-factory.
 
-[Dataset Factory Docs :fontawesome-solid-book:](dataset-factory-service.md){ .md-button }
+[Dataset Factory Docs :fontawesome-solid-book:](../dataset-factory/dataset-factory-service.md){ .md-button }
 
 ## Fine-Tuning Components
 
@@ -35,8 +35,8 @@ The fine-tuning process involves four essential components:
 
 These APIs allow users to programmatically interact with the Geospatial Tuning Studio for a variety of tasks.
 
-![plot](./assets/fine-tuning-service/api-page.png)
-![plot](./assets/fine-tuning-service/api-page2.png)
+![plot](../../assets/fine-tuning-service/api-page.png)
+![plot](../../assets/fine-tuning-service/api-page2.png)
 
 
 ### Tunes

@@ -5,30 +5,42 @@ hooks:
   - my_hooks.py
 nav:
   - Home: index.md
-  - Getting started:
-    - Getting started with the UI: getting-started-UI.md
-    - Getting started with the SDK: getting-started-SDK.md
   
-  - User guides:
-    - Intro: intro.md
-    - Sample payloads: sample-payloads.md
-    - Sample files: sample-files.md
-    - Studio UI user guide:
-      - Inferencing:  inference-lab.md
-      - Fine-tuning dataset factory: dataset-factory.md
-      - Fine-tuning studio: tuning-studio.md
-      - UI walkthroughs: walkthroughs.md
-  - API Reference:
-    - API specification: api-reference.md
-    - Inference Service: inference-service.md
-    - Fine-tuning Dataset Factory: dataset-factory-service.md
-    - Fine-tuning Service: fine-tuning-service.md
-  - Deployment and architecture :
-    - Architechture and Dependencies: architecture_and_requirements.md
-    - Cluster Deployment: detailed_deployment_cluster.md
-    - Local Deployment: detailed_deployment_local.md
-    - Kind Cluster Deployment: kind_cluster_deployment.md
-    - NVkind cluster deployment: nvkind_cluster_deployment.md
+  - Getting Started:
+    - Overview: getting-started/overview.md
+    - Installation: getting-started/installation.md
+    - First Steps: getting-started/first-steps.md
+    - UI Guide: getting-started/getting-started-UI.md
+    - SDK Guide: getting-started/getting-started-SDK.md
+  
+  - Deployment:
+    - Overview: deployment/overview.md
+    - Local Deployment: deployment/detailed_deployment_local.md
+    - Kubernetes: deployment/detailed_deployment_k8s.md
+    - OpenShift: deployment/detailed_deployment_cluster.md
+    - Kind Cluster: deployment/kind_cluster_deployment.md
+    - NVKind Cluster: deployment/nvkind_cluster_deployment.md
+  
+  - User Guides:
+    - Dataset Factory:
+      - Overview: user-guides/dataset-factory/dataset-factory.md
+      - API Reference: user-guides/dataset-factory/dataset-factory-service.md
+    - Fine-Tuning:
+      - Overview: user-guides/fine-tuning/tuning-studio.md
+      - API Reference: user-guides/fine-tuning/fine-tuning-service.md
+    - Inference:
+      - Overview: user-guides/inference/inference-lab.md
+      - API Reference: user-guides/inference/inference-service.md
+  
+  - Tutorials:
+    - Flooding Detection: tutorials/flooding/GeospatialStudio-Walkthrough-Flooding-instructions.md
+    - Wildfire Burn Scars: tutorials/wildfire-burnscars/BurnScars-instructions.md
+  
+  - Reference:
+    - API Specification: reference/api-reference.md
+    - Architecture: reference/architecture_and_requirements.md
+    - Sample Payloads: reference/sample-payloads.md
+    - Sample Files: reference/sample-files.md
 # theme: material
 theme:
   name: material
@@ -55,6 +67,9 @@ theme:
   features:
     - content.code.copy
 plugins:
+  - search:
+      lang: en
+      separator: '[\s\-\.]+'
   - mkdocs-video
   - glightbox
   - mkdocs-jupyter:
