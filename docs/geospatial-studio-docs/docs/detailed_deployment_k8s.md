@@ -8,7 +8,7 @@ This guide provides detailed step-by-step instructions for deploying Geospatial 
 
 - Kubernetes cluster (v1.24+)
 - kubectl CLI configured to access your cluster
-- [Helm](https://helm.sh/docs/v3/) v3.19 (currently incompatible with v4)
+- [Helm](https://helm.sh/docs/v3/) v3.19+
 - [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html) (includes kubectl)
 - [jq](https://github.com/jqlang/jq) - JSON command-line processor
 - [yq](https://github.com/mikefarah/yq) - YAML command-line processor

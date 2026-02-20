@@ -14,8 +14,8 @@ Here you need to follow either the Lima VM *or* the Minikube instructions.
 
 **Prerequisites**
 
-* [Lima VM](https://lima-vm.io/docs/installation/) - v1.2.1 (*currently incompatible with v2*)
-* [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
+* [Lima VM](https://lima-vm.io/docs/installation/) - v1.2.1 or later
+* [Helm](https://helm.sh/docs/v3/) - v3.19 or later
 * [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html)
 * Kubectl (bundled with above) 
 * [jq](https://github.com/jqlang/jq) - json command-line processor
@@ -64,7 +64,7 @@ limactl delete studio --force
 **Prerequisites**
 
 * Docker / Podman installed and running
-* [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
+* [Helm](https://helm.sh/docs/v3/) - v3.19 or later
 * [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html)
 * Kubectl (bundled with above) 
 * [jq](https://github.com/jqlang/jq) - json command-line processor
