@@ -66,6 +66,22 @@ spec:
         app: cos-s3-csi-controller
     spec:
       serviceAccountName: cos-s3-csi-controller
+      initContainers:
+        - name: setup-ca-cert
+          image: cos-driver-image
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              mkdir -p /ca-certs
+              cp /tmp/minio-ca/ca.crt /ca-certs/minio-ca.crt
+              cat /etc/ssl/certs/ca-certificates.crt >> /ca-certs/ca-bundle.crt 2>/dev/null || cat /etc/ssl/certs/ca-bundle.crt >> /ca-certs/ca-bundle.crt 2>/dev/null || true
+              cat /ca-certs/minio-ca.crt >> /ca-certs/ca-bundle.crt
+              echo "CA certificate added to bundle"
+          volumeMounts:
+            - name: trusted-ca-certs
+              mountPath: /tmp/minio-ca
+            - name: ca-certificates
+              mountPath: /ca-certs
       containers:
         - name: csi-provisioner
           image: csi-provisioner-image
@@ -81,6 +97,9 @@ spec:
           volumeMounts:
             - mountPath: /csi
               name: socket-dir
+            - name: ca-certificates
+              mountPath: /ca-certs
+              readOnly: true
         - name: cos-csi-provisioner
           securityContext:
             capabilities:
@@ -104,13 +123,15 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: SSL_CERT_FILE
+              value: /ca-certs/ca-bundle.crt
           imagePullPolicy: "Always"
           volumeMounts:
             - mountPath: /csi
               name: socket-dir
-            - name: trusted-ca-certs
-              mountPath: /etc/ssl/certs/minio-ca-certificates.crt
-              subPath: minio-public.crt
+            - name: ca-certificates
+              mountPath: /ca-certs
+              readOnly: true
         - name: liveness-probe
           image: liveness-probe-image
           args:
@@ -128,4 +149,6 @@ spec:
           name: socket-dir
         - name: trusted-ca-certs
           configMap:
-            name: minio-public-config
+            name: minio-ca-cert
+        - name: ca-certificates
+          emptyDir: {}
