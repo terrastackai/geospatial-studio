@@ -456,6 +456,9 @@ if [ "$KEEP_PVCS" = false ]; then
   log_info "Step 10/10: Deleting PersistentVolumeClaims..."
   log_warning "This will DELETE all persistent data!"
   
+  # Wait a bit for other resources to be terminated before removing PVCs
+  sleep 10
+
   if confirm "Are you sure you want to delete PVCs and lose all data?"; then
     PVCS=$(kubectl get pvc -n "$NAMESPACE" -o name 2>/dev/null || echo "")
     if [ -n "$PVCS" ]; then

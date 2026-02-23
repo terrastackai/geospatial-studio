@@ -140,19 +140,99 @@ if ! command -v envsubst &> /dev/null; then
 fi
 
 # Step 1: Setup workspace environment
-echo "Step 1/6: Setting up workspace..."
+echo "Step 1/7: Setting up workspace..."
 if [ ! -f "$PROJECT_ROOT/deployment-scripts/setup-workspace-env.sh" ]; then
   echo "❌ Error: setup-workspace-env.sh not found"
   exit 1
 fi
 
+# Set Lima-specific defaults before running setup
+export ROUTE_ENABLED=false
+
 # Run the existing workspace setup script
 cd "$PROJECT_ROOT"
 ./deployment-scripts/setup-workspace-env.sh
 
-# Step 2: Merge .studio-api-key if it exists
+# Step 2: Apply Lima-specific configuration overrides
 echo ""
-echo "Step 2/6: Checking for .studio-api-key..."
+echo "Step 2/7: Applying Lima-specific configuration..."
+
+# Generate OAuth cookie secret if not already set
+export cookie_secret=$(cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
+
+# Apply OS-specific sed commands
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # macOS sed requires '' after -i
+  
+  # Environment and routing
+  sed -i '' 's|export ROUTE_ENABLED=.*|export ROUTE_ENABLED=false|g' "$ENV_SH_FILE"
+  sed -i '' "s/export ENVIRONMENT=.*/export ENVIRONMENT=local/g" "$ENV_SH_FILE"
+  sed -i '' "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" "$ENV_SH_FILE"
+  
+  # Storage configuration
+  sed -i '' "s/export SHARE_PIPELINE_PVC=.*/export SHARE_PIPELINE_PVC=true/g" "$ENV_SH_FILE"
+  sed -i '' "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g" "$ENV_SH_FILE"
+  sed -i '' "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=local-path/g" "$ENV_SH_FILE"
+  sed -i '' "s/export STORAGE_PVC_ENABLED=.*/export STORAGE_PVC_ENABLED=true/g" "$ENV_SH_FILE"
+  sed -i '' "s/export STORAGE_FILESYSTEM_ENABLED=.*/export STORAGE_FILESYSTEM_ENABLED=false/g" "$ENV_SH_FILE"
+  sed -i '' "s/export CREATE_TUNING_FOLDERS_FLAG=.*/export CREATE_TUNING_FOLDERS_FLAG=false/g" "$ENV_SH_FILE"
+  sed -i '' "s|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=.*|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/data|g" "$ENV_SH_FILE"
+  
+  # OAuth configuration for Keycloak
+  sed -i '' "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" "$ENV_SH_FILE"
+  sed -i '' "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" "$ENV_SH_FILE"
+  sed -i '' "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio|g" "$ENV_SH_FILE"
+  sed -i '' "s|export OAUTH_URL=.*|export OAUTH_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth|g" "$ENV_SH_FILE"
+  sed -i '' "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g" "$ENV_SH_FILE"
+  
+  # .env file updates
+  sed -i '' "s/oauth_cookie_secret=.*/oauth_cookie_secret=$cookie_secret/g" "$ENV_FILE"
+  sed -i '' "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" "$ENV_FILE"
+  sed -i '' "s/region=.*/region=us-east-1/g" "$ENV_FILE"
+  sed -i '' "s/pg_uri=.*/pg_uri=postgresql.$OC_PROJECT.svc.cluster.local/g" "$ENV_FILE"
+  
+else
+  # Linux sed doesn't need '' after -i
+  
+  # Environment and routing
+  sed -i 's|export ROUTE_ENABLED=.*|export ROUTE_ENABLED=false|g' "$ENV_SH_FILE"
+  sed -i "s/export ENVIRONMENT=.*/export ENVIRONMENT=local/g" "$ENV_SH_FILE"
+  sed -i "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" "$ENV_SH_FILE"
+  
+  # Storage configuration
+  sed -i "s/export SHARE_PIPELINE_PVC=.*/export SHARE_PIPELINE_PVC=true/g" "$ENV_SH_FILE"
+  sed -i "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g" "$ENV_SH_FILE"
+  sed -i "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=local-path/g" "$ENV_SH_FILE"
+  sed -i "s/export STORAGE_PVC_ENABLED=.*/export STORAGE_PVC_ENABLED=true/g" "$ENV_SH_FILE"
+  sed -i "s/export STORAGE_FILESYSTEM_ENABLED=.*/export STORAGE_FILESYSTEM_ENABLED=false/g" "$ENV_SH_FILE"
+  sed -i "s/export CREATE_TUNING_FOLDERS_FLAG=.*/export CREATE_TUNING_FOLDERS_FLAG=false/g" "$ENV_SH_FILE"
+  sed -i "s|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=.*|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/data|g" "$ENV_SH_FILE"
+  
+  # OAuth configuration for Keycloak
+  sed -i "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" "$ENV_SH_FILE"
+  sed -i "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" "$ENV_SH_FILE"
+  sed -i "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio|g" "$ENV_SH_FILE"
+  sed -i "s|export OAUTH_URL=.*|export OAUTH_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth|g" "$ENV_SH_FILE"
+  sed -i "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g" "$ENV_SH_FILE"
+  
+  # .env file updates
+  sed -i "s/oauth_cookie_secret=.*/oauth_cookie_secret=$cookie_secret/g" "$ENV_FILE"
+  sed -i "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" "$ENV_FILE"
+  sed -i "s/region=.*/region=us-east-1/g" "$ENV_FILE"
+  sed -i "s/pg_uri=.*/pg_uri=postgresql.$OC_PROJECT.svc.cluster.local/g" "$ENV_FILE"
+fi
+
+echo "✓ Set ROUTE_ENABLED=false (Lima uses standard Kubernetes, not OpenShift)"
+echo "✓ Set ENVIRONMENT=local and CLUSTER_URL=localhost"
+echo "✓ Configured storage classes (COS: cos-s3-csi-s3fs-sc, Local: local-path)"
+echo "✓ Configured OAuth for Keycloak integration"
+echo "✓ Set OAuth proxy port to 4180"
+echo "✓ Configured MinIO endpoint and region"
+echo "✓ Configured PostgreSQL URI"
+
+# Step 3: Merge .studio-api-key if it exists
+echo ""
+echo "Step 3/7: Checking for .studio-api-key..."
 if [ -f "$STUDIO_API_KEY_FILE" ]; then
   echo "✓ Found $STUDIO_API_KEY_FILE"
   
@@ -181,9 +261,9 @@ else
   echo "  (not found - will use values from .env)"
 fi
 
-# Step 3: Source environment files
+# Step 4: Source environment files
 echo ""
-echo "Step 3/6: Loading environment configuration..."
+echo "Step 4/7: Loading environment configuration..."
 if [ ! -f "$ENV_FILE" ]; then
   echo "❌ Error: Environment file not found: $ENV_FILE"
   echo ""
@@ -206,9 +286,9 @@ set +a
 echo "✓ Sourcing $ENV_SH_FILE"
 source "$ENV_SH_FILE"
 
-# Step 4: Validate required variables
+# Step 5: Validate required variables
 echo ""
-echo "Step 4/6: Validating required variables..."
+echo "Step 5/7: Validating required variables..."
 
 REQUIRED_VARS=(
   "ocp_project"
@@ -313,7 +393,7 @@ fi
 
 # Step 5: Generate operator CR from template
 echo ""
-echo "Step 5/6: Generating GEOStudio operator CR..."
+echo "Step 6/7: Generating GEOStudio operator CR..."
 
 # Create output directory
 mkdir -p "$(dirname "$OUTPUT_FILE")"
@@ -359,7 +439,7 @@ fi
 
 # Apply to cluster
 echo ""
-echo "Step 6/6: Applying to Kubernetes cluster..."
+echo "Step 7/7: Applying to Kubernetes cluster..."
 
 # Check cluster connectivity
 if ! kubectl cluster-info &> /dev/null; then

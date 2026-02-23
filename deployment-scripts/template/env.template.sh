@@ -9,7 +9,7 @@
 export DEPLOYMENT_ENV=${DEPLOYMENT_ENV}
 export OC_PROJECT=${OC_PROJECT}
 export ENVIRONMENT=
-export ROUTE_ENABLED=true
+export ROUTE_ENABLED=${ROUTE_ENABLED:-true}
 export CONTAINER_IMAGE_REPOSITORY=geospatial-studio
 
 # POSTGRESQL version for cluster DB
@@ -36,6 +36,12 @@ export LAND_POLYGON_PATH=https://osmdata.openstreetmap.de/download/land-polygons
 export REDIS_ENABLED=true
 export REDIS_FULL_NAME_OVERRIDE=geofm-redis
 export REDIS_ARCHITECTURE=replication
+
+# MinIO configuration
+export MINIO_IMAGE=quay.io/minio/minio
+export MINIO_TAG=latest
+export MINIO_PERSISTENCE_ENABLED=true
+export MINIO_STORAGE_SIZE=100Gi
 
 # Pipelines configuration
 export PIPELINES_ENABLED=true

@@ -357,14 +357,14 @@ fi
 log_success "Operator installation complete!"
 echo ""
 echo "=========================================="
-echo "Next Steps:"
+echo "🏁 🏁 Next Steps:"
 echo "=========================================="
 echo ""
 
 if [ "$APPLY_MANIFEST" = "false" ]; then
   echo "The GEOStudio operator is now installed and ready."
   echo ""
-  echo "To deploy a GEOStudio application instance:"
+  echo "👀 To deploy a GEOStudio application instance: 👀"
   echo "  ./deploy-geostudio-lima.sh"
   echo ""
   echo "This will:"
@@ -391,6 +391,6 @@ if [ "$DEPLOYMENT_MODE" = "local" ]; then
   echo ""
 fi
 
-echo "To uninstall:"
+echo "🗑️🚮 To uninstall:"
 echo "  ./operators/uninstall-geostudio.sh"
 echo ""

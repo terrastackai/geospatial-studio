@@ -115,13 +115,6 @@ spec:
                     readOnly: true
                   - name: data
                     mountPath: /data
-                  resources:
-                    requests:
-                      cpu: {{ .Values.minio.resources.requests.cpu }}
-                      memory: {{ .Values.minio.resources.requests.memory }}
-                    limits:
-                      cpu: {{ .Values.minio.resources.limits.cpu }}
-                      memory: {{ .Values.minio.resources.limits.memory }}
                   livenessProbe:
                     httpGet:
                       path: /minio/health/live

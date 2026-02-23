@@ -1,0 +1,477 @@
+# ==============================================================================
+# GEOStudio Operator CR Template
+# ==============================================================================
+# This template uses environment variable substitution for configuration.
+#
+# Usage:
+#   1. Ensure workspace/<env>/env/.env is configured with secrets
+#   2. Run: operators/deploy-geostudio-operator-lima.sh
+#
+# Or manually:
+#   source workspace/lima/env/.env
+#   source workspace/lima/env/env.sh
+#   envsubst < operators/examples/geostudio-operator-template.yaml | kubectl apply -f -
+#
+# Variables are loaded from:
+#   - workspace/<env>/env/.env  (secrets and configuration)
+#   - workspace/<env>/env/env.sh (environment-specific settings)
+#
+# See operators/examples/README.md for detailed documentation
+# ==============================================================================
+
+apiVersion: geostudio.geostudio.ibm.com/v1alpha1
+kind: GEOStudio
+metadata:
+  name: studio
+  namespace: ${ocp_project}
+spec:
+  # ==========================================================================
+  # UI Component
+  # ==========================================================================
+  geofm-ui:
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/geostudio-ui
+      tag: latest
+    route:
+      enabled: ${ROUTE_ENABLED}
+
+  # ==========================================================================
+  # Pipelines - ML Processing Workflows
+  # ==========================================================================
+  geospatial-studio-pipelines:
+    cluster_url: ${CLUSTER_URL}
+    default_replicas: 1
+    enabled: ${PIPELINES_ENABLED}
+    environment: ${ENVIRONMENT}
+    
+    gateway:
+      api_key: ${studio_api_key}
+      appName: geofm-gateway
+      oauthProxyEnabled: ${OAUTH_PROXY_ENABLED}
+      oauthProxyPort: "${OAUTH_PROXY_PORT}"
+    
+    geoserver:
+      appName: geofm-geoserver
+      password: ${geoserver_password}
+      username: ${geoserver_username}
+    
+    gpuConfig:
+      enabled: ${CONFIGURE_GPU_AFFINITY_FLAG}
+    
+    image:
+      pullPolicy: ${image_pull_policy}
+    
+    imagePullSecret:
+      b64secret: ${image_pull_secret_b64}
+      create: true
+      name: us-icr-pull-secret
+    
+    inference_volume:
+      pvc_name: inference-shared-pvc
+    
+    log_level: DEBUG
+    namePrefix: pipelines
+    namespace: ${ocp_project}
+    nasaEarthBearerToken: ${nasa_earth_data_bearer_token}
+    
+    objectStorage:
+      access_key: ${access_key_id}
+      buckets:
+        amo: ${BUCKET_AMO_INPUT_BUCKET}
+        datasetFactory: ${BUCKET_DATASET_FACTORY}
+        fineTuning: ${BUCKET_FINE_TUNING}
+        fineTuningModels: ${BUCKET_FINE_TUNING_MODELS}
+        geoserver: ${BUCKET_GEOSERVER}
+        inference: ${BUCKET_INFERENCE}
+        inference_auxdata: ${BUCKET_INFERENCE_AUXDATA}
+        mlflow: ${BUCKET_GFM_MLFLOW}
+        temporaryUploads: ${BUCKET_TEMP_UPLOAD}
+      cos_storage_class: ${COS_STORAGE_CLASS}
+      create_bucket: false
+      createCosSecret: false
+      delete_bucket: false
+      endpoint: ${endpoint}
+      region: ${region}
+      secret_key: ${secret_access_key}
+    
+    observability:
+      enabled: ${OBSERVABILITY_ENABLED}
+      otlp: {}
+    
+    orchestrate_db:
+      inference_task_table: inf_task
+      pg_password: ${pg_password}
+      pg_port: ${pg_port}
+      pg_studio_db_name: ${pg_studio_db_name}
+      pg_uri: ${pg_uri}
+      pg_username: ${pg_username}
+      secret_name: pipelines-orchestration-db
+    
+    # Pipeline Processors
+    # Note: SentinelHub and NASA credentials are inline values from .env
+    # If not using these services, leave sh_client_id, sh_client_secret, 
+    # and nasa_earth_data_bearer_token empty in your .env file
+    processors:
+      # Inference Planner - Plans inference tasks
+      - enabled: true
+        extra_envs:
+          - name: bbox_to_tile_threshold_area
+            value: "1000000000000000000000000"
+          - name: SH_CLIENT_ID
+            value: "${sh_client_id}"
+          - name: SH_CLIENT_SECRET
+            value: "${sh_client_secret}"
+          - name: NASA_EARTH_BEARER_TOKEN
+            value: "${nasa_earth_data_bearer_token}"
+        image:
+          name: quay.io/geospatial-studio/geostudio-pipelines
+          tag: latest
+        name: inference-planner
+        process_exec: python inference_planner.py
+        process_id: inference-planner
+      
+      # Terrakit Data Fetch - Fetches geospatial data
+      - enabled: true
+        extra_envs:
+          - name: SH_CLIENT_ID
+            value: "${sh_client_id}"
+          - name: SH_CLIENT_SECRET
+            value: "${sh_client_secret}"
+          - name: NASA_EARTH_BEARER_TOKEN
+            value: "${nasa_earth_data_bearer_token}"
+        image:
+          name: quay.io/geospatial-studio/geostudio-pipelines
+          tag: latest
+        name: terrakit-data-fetch
+        process_exec: python terrakit_data_fetch.py
+        process_id: terrakit-data-fetch
+      
+      # Push to GeoServer - Publishes results to GeoServer
+      - enabled: true
+        extra_envs:
+          - name: geoserver_username
+            value: "${geoserver_username}"
+          - name: geoserver_password
+            value: "${geoserver_password}"
+        image:
+          name: quay.io/geospatial-studio/geostudio-pipelines
+          tag: latest
+        name: push-to-geoserver
+        process_exec: python push_to_geoserver.py
+        process_id: push-to-geoserver
+      
+      # URL Connector - Connects to external data sources
+      - enabled: true
+        extra_envs:
+          - name: CHECK_DISK_FREE_SPACE
+            value: "FALSE"
+        image:
+          name: quay.io/geospatial-studio/geostudio-pipelines
+          tag: latest
+        name: url-connector
+        process_exec: python url_connector_single.py
+        process_id: url-connector
+      
+      # Run Inference - Executes ML inference
+      - enabled: true
+        extra_envs:
+          - name: push_model_input
+            value: "True"
+          - name: mounted_pvc
+            value: "True"
+        image:
+          name: quay.io/geospatial-studio/geostudio-pipelines
+          tag: latest
+        name: run-inference
+        process_exec: python run-inference.py
+        process_id: run-inference
+      
+      # Post-process Generic - Post-processes inference results
+      - enabled: true
+        extra_envs:
+          - name: LULC_TILE_ROOT
+            value: /auxdata/lulc/lc2021/
+          - name: LULC_TILE_SHAPEFILE
+            value: /auxdata/lulc/tiles.shp
+          - name: LAND_POLYGON_PATH
+            value: /auxdata/general/land_polygons.shp
+        extra_volumes:
+          - bucket_name: ${BUCKET_INFERENCE_AUXDATA}
+            claimName: inference-auxdata-pvc
+            create: true
+            mountPath: /auxdata
+            name: test-inference-auxdata-pvc
+        image:
+          name: quay.io/geospatial-studio/geostudio-pipelines
+          tag: latest
+        name: postprocess-generic
+        process_exec: python postprocess-generic-single.py
+        process_id: postprocess-generic
+        replicas: 1
+      
+      # Terratorch Inference - Advanced geospatial ML inference
+      - enabled: true
+        extra_envs:
+          - name: PYTORCH_CUDA_ALLOC_CONF
+            value: expandable_segments:True
+        extra_volumes:
+          - bucket_name: ${BUCKET_FINE_TUNING}
+            claimName: gfm-ft-files-pvc
+            create: ${PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC}
+            mountPath: /tunes
+            name: tunes-pvc
+        image:
+          name: quay.io/geospatial-studio/terratorch
+          tag: latest
+        name: terratorch-inference
+        process_exec: python terratorch_inference.py
+        process_id: terratorch-inference
+        resources:
+          limits: {}
+          requests: {}
+          shm: "true"
+    
+    route:
+      enabled: ${ROUTE_ENABLED}
+    
+    sentinelhub:
+      client_id: ${sh_client_id}
+      client_secret: ${sh_client_secret}
+    
+    serviceAccount:
+      name: geostudio-sa
+    
+    storage:
+      filesystem:
+        dir: ${PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE}
+        enabled: ${STORAGE_FILESYSTEM_ENABLED}
+    
+    waitForGateway:
+      enabled: true
+      image: busybox:1.36
+      port: ${OAUTH_PROXY_PORT}
+      sleepTime: 5
+  
+  # ==========================================================================
+  # GeoServer - Geospatial Data Server (Optional)
+  # ==========================================================================
+  gfm-geoserver:
+    enabled: true
+    image:
+      repository: docker.osgeo.org/geoserver
+      tag: 2.28.1
+    persistence:
+      enabled: true
+      size: 20Gi
+    route:
+      enabled: ${ROUTE_ENABLED}
+    service:
+      port: 3000
+      targetPort: 8080
+  
+  # ==========================================================================
+  # MLflow - Model Tracking
+  # ==========================================================================
+  gfm-mlflow:
+    enabled: true
+    route:
+      enabled: ${ROUTE_ENABLED}
+  
+  # ==========================================================================
+  # Gateway - API Server
+  # ==========================================================================
+  gfm-studio-gateway:
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/geostudio-gateway
+      tag: latest
+    route:
+      enabled: ${ROUTE_ENABLED}
+  
+  # ==========================================================================
+  # Global Configuration
+  # ==========================================================================
+  global:
+    redis:
+      password: ${redis_password}
+      fullnameOverride: ${REDIS_FULL_NAME_OVERRIDE}
+    
+    backends:
+      cluster_url: ${CLUSTER_URL}
+      namespace: ${ocp_project}
+    
+    cluster_url: ${CLUSTER_URL}
+    environment: ${ENVIRONMENT}
+    
+    frontend:
+      cluster_url: ${CLUSTER_URL}
+      namespace: ${ocp_project}
+    
+    imagePullPolicy: ${image_pull_policy}
+    
+    imagePullSecret:
+      create: false
+    
+    label: geofm-studio
+    namespace: ${ocp_project}
+    non_cos_storage_class: ${NON_COS_STORAGE_CLASS}
+    
+    oauth:
+      clientId: ${OAUTH_CLIENT_ID}
+      clientSecret: ${oauth_client_secret}
+      cookieSecret: ${oauth_cookie_secret}
+      createTLSSecret: ${CREATE_TLS_SECRET}
+      extraOauthProxyArgs:
+        - --upstream-timeout=900s
+      issuerUrl: ${OAUTH_ISSUER_URL}
+      oauthProxyEnabled: ${OAUTH_PROXY_ENABLED}
+      oauthProxyPort: "${OAUTH_PROXY_PORT}"
+      oauthUrl: ${OAUTH_URL}
+      type: ${OAUTH_TYPE}
+    
+    objectStorage:
+      access_key: ${access_key_id}
+      buckets:
+        amo: ${BUCKET_AMO_INPUT_BUCKET}
+        datasetFactory: ${BUCKET_DATASET_FACTORY}
+        fineTuning: ${BUCKET_FINE_TUNING}
+        fineTuningModels: ${BUCKET_FINE_TUNING_MODELS}
+        geoserver: ${BUCKET_GEOSERVER}
+        inference: ${BUCKET_INFERENCE}
+        inference_auxdata: ${BUCKET_INFERENCE_AUXDATA}
+        mlflow: ${BUCKET_GFM_MLFLOW}
+        temporaryUploads: ${BUCKET_TEMP_UPLOAD}
+      cos_storage_class: ${COS_STORAGE_CLASS}
+      create_bucket: true
+      createCosSecret: false
+      endpoint: ${endpoint}
+      region: ${region}
+      secret_key: ${secret_access_key}
+    
+    postgres:
+      backend_uri_base: postgresql+pg8000://${pg_username}:${pg_password}@${pg_uri}:${pg_port}
+      dbs:
+        auth: geostudio_auth
+        gateway: ${pg_studio_db_name}
+        geoserver: geoserver
+        mlflow: mlflow
+      postgres_db: postgres
+      postgres_host: ${pg_uri}
+      postgres_password: ${pg_password}
+      postgres_port: ${pg_port}
+      postgres_username: ${pg_username}
+    
+    serviceAccount:
+      create: true
+      name: geostudio-sa
+    
+    storage:
+      filesystem:
+        enabled: ${STORAGE_FILESYSTEM_ENABLED}
+      pvc:
+        enabled: ${STORAGE_PVC_ENABLED}
+  
+  # ==========================================================================
+  # Infrastructure - Auto-Deploy Services
+  # ==========================================================================
+  infrastructure:
+    csiDriver:
+      enabled: true
+    
+    geoserver:
+      adminPassword: ${geoserver_password}
+      adminUsername: ${geoserver_username}
+      enabled: true
+      image: docker.osgeo.org/geoserver:2.28.1
+      javaOpts: ${GEOSERVER_CM_PROXYBASEURL}
+      resources: {}
+      storage: 60Gi
+      storageClass: ${NON_COS_STORAGE_CLASS}
+    
+    keycloak:
+      enabled: true
+    
+    minio:
+      enabled: true
+    
+    postgresql:
+      enabled: true
+  
+  # ==========================================================================
+  # Keycloak - Authentication Service
+  # ==========================================================================
+  keycloak:
+    adminPassword: ${keycloak_admin_password}
+    adminUser: ${keycloak_admin_user}
+    database: keycloak
+    image: quay.io/keycloak/keycloak
+    tag: "26.4.5"
+    realm: geostudio
+    clientSecret: oauth_client_secret
+    auth:
+      adminUser: keycloak_admin_user
+      adminPassword: keycloak_admin_password
+    testUser:
+      username: testuser
+      password: testpass123
+      email: test@example.com
+      firstName: Test
+      lastName: User
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+      limits:
+        memory: 1Gi
+        cpu: 500m
+
+  # ==========================================================================
+  # Redis - Cache and Message Broker
+  # ==========================================================================
+  redis:
+    architecture: ${REDIS_ARCHITECTURE}
+    auth:
+      enabled: ${REDIS_ENABLED}
+      password: ${redis_password}
+    enabled: ${REDIS_ENABLED}
+    fullnameOverride: ${REDIS_FULL_NAME_OVERRIDE}
+    password: ${redis_password}
+
+  # ==========================================================================
+  # MinIO - Object Storage
+  # ==========================================================================
+  minio:
+    image: ${MINIO_IMAGE}
+    tag: ${MINIO_TAG}
+    auth:
+      rootUser: ${access_key_id}
+      rootPassword: ${secret_access_key}
+    persistence:
+      enabled: ${MINIO_PERSISTENCE_ENABLED}
+      size: ${MINIO_STORAGE_SIZE}
+      storageClass: ${NON_COS_STORAGE_CLASS}
+    resources: {}
+
+  # ==========================================================================
+  # Postgres
+  # ==========================================================================
+  postgresql:
+    chartVersion: "${PG_VERSION}"
+    fullnameOverride: "postgresql"
+    auth:
+      username: ${pg_username}
+      password: ${pg_password}
+      database: postgres    
+    primary:
+      persistence:
+        enabled: true
+        size: 10Gi
+        storageClass: ""
+      resources:
+        requests:
+          memory: 256Mi
+          cpu: 250m
+        limits:
+          memory: 1Gi
+          cpu: 1000m
