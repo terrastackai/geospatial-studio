@@ -58,11 +58,15 @@ OPERATOR_SDK_VERSION ?= v1.42.0
 CONTAINER_TOOL ?= docker
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+# Examples:
+#   Local development:  make install IMG=geostudio-operator:local
+#   Production:         make install IMG=quay.io/geospatial-studio/geostudio-operator:v0.0.1
+#   Latest from quay:   make install IMG=quay.io/geospatial-studio/geostudio-operator:latest
+IMG ?= quay.io/geospatial-studio/geostudio-operator:v$(VERSION)
 
 # NAMESPACE defines the namespace for operator deployment
 # Override this for custom namespace isolation (e.g make deploy NAMESPACE=geostudio-operator-system)
-NAMESPACE ?= operators-system
+NAMESPACE ?= geostudio-operators-system
 
 .PHONY: all
 all: docker-build

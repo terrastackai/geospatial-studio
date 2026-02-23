@@ -184,7 +184,7 @@ echo ""
 
 # Apply GEOStudio manifest
 log_info "Applying GEOStudio manifest..."
-kubectl apply -f my-geostudio-midpoint.yaml
+kubectl apply -f examples/my-geostudio-midpoint.yaml
 
 log_success "GEOStudio manifest applied"
 echo ""

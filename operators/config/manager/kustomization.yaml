@@ -1,8 +1,26 @@
-resources:
-- manager.yaml
+# Kustomization Configuration for Operator Manager
+# 
+# This file is dynamically updated by the Makefile during installation.
+# The 'make install' target uses 'kustomize edit set image' to update
+# the controller image based on the IMG variable.
+#
+# Usage:
+#   Local:      make install IMG=geostudio-operator:local
+#   Production: make install IMG=quay.io/geospatial-studio/geostudio-operator:v0.0.1
+#
+# The default values below are placeholders and will be overwritten.
+
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
+resources:
+- manager.yaml
+
+# Default namespace (updated by Makefile)
+namespace: geostudio-operators-system
+
+# Default image configuration (updated by Makefile via 'kustomize edit')
 images:
 - name: controller
-  newName: quay.io/geospatial-studio/geostudio-operator
-namespace: geostudio-operator-system
+  newName: geostudio-operator
+  newTag: local
