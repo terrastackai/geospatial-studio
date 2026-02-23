@@ -18,7 +18,7 @@ metadata:
     "helm.sh/hook-weight": "-75"
 data:
   ca.crt: |
-{{ .Values.global.objectStorage.tlsCertPem | nindent 4 }}
+{{ .Values.global.objectStorage.tlsCertPem | toString | nindent 4 }}
 ---
 # ConfigMap with MinIO CA certificate for application namespace
 # Uses manually provided certificate from values
@@ -36,7 +36,7 @@ metadata:
     "helm.sh/hook-weight": "-75"
 data:
   ca.crt: |
-{{ .Values.global.objectStorage.tlsCertPem | nindent 4 }}
+{{ .Values.global.objectStorage.tlsCertPem | toString | nindent 4 }}
 {{- else if .Values.infrastructure.minio.enabled }}
 ---
 # Job to create ConfigMaps from auto-generated minio-tls-secret

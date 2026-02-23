@@ -88,11 +88,6 @@ metadata:
     app.kubernetes.io/name: geostudio
     app.kubernetes.io/component: geoserver
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-  annotations:
-    "helm.sh/hook": pre-install,pre-upgrade
-    "helm.sh/hook-weight": "-60"
-    "helm.sh/hook-delete-policy": before-hook-creation
-    helm.sh/resource-policy: keep
 spec:
   storageClassName: {{ .Values.geoserver.storageClass | default "local-path" }}
   accessModes:
@@ -194,8 +189,8 @@ metadata:
     app.kubernetes.io/component: geoserver-configurator
     app.kubernetes.io/managed-by: {{ .Release.Service }}
   annotations:
-    "helm.sh/hook": pre-install,pre-upgrade
-    "helm.sh/hook-weight": "-50"
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "10"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   backoffLimit: 5

@@ -27,6 +27,8 @@ rules:
   - events
   verbs:
   - create
+  - patch
+  - update
 
 ##
 ## Rules for geostudio.geostudio.ibm.com/v1alpha1, Kind: GEOStudio

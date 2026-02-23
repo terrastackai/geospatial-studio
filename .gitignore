@@ -95,6 +95,7 @@ minio-public.crt
 *.dll
 *.so
 *.dylib
+*.tar
 bin
 
 # editor and IDE paraphernalia

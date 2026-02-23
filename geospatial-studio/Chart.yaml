@@ -19,7 +19,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.1.5
+version: 0.1.20
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -48,11 +48,6 @@ dependencies:
     version: 0.1.4
     alias: geospatial-studio-pipelines
     condition: geospatial-studio-pipelines.enabled
-  # Infrastructure components deployed via Kubernetes jobs instead of subcharts:
-  # - PostgreSQL: templates/postgresql-install-job.yaml (deploys via Helm inside job)
-  # - Keycloak: templates/keycloak-install-job.yaml (deploys Keycloak with config)
-  # - MinIO: templates/minio-install-job.yaml (deploys MinIO with TLS and buckets)
-  # This approach avoids embedding large Bitnami charts and reduces Helm release size
   - name: redis
     condition: 'redis.enabled'
     repository: https://charts.bitnami.com/bitnami

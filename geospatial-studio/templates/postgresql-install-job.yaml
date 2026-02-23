@@ -60,9 +60,17 @@ spec:
           helm repo add bitnami https://charts.bitnami.com/bitnami
           helm repo update
           
-          # Check if PostgreSQL is already installed
+          # Check if PostgreSQL pod is already running
+          if kubectl get pod -n {{ .Values.global.namespace }} -l app.kubernetes.io/name=postgresql,app.kubernetes.io/instance={{ .Values.postgresql.fullnameOverride }} 2>/dev/null | grep -q Running; then
+            echo "✓ PostgreSQL pod is already running"
+            kubectl get pod -n {{ .Values.global.namespace }} -l app.kubernetes.io/name=postgresql,app.kubernetes.io/instance={{ .Values.postgresql.fullnameOverride }}
+            echo "Skipping installation"
+            exit 0
+          fi
+          
+          # Check if PostgreSQL Helm release exists
           if helm list -n {{ .Values.global.namespace }} | grep -q "^{{ .Values.postgresql.fullnameOverride }}\s"; then
-            echo "PostgreSQL release '{{ .Values.postgresql.fullnameOverride }}' already exists"
+            echo "PostgreSQL release '{{ .Values.postgresql.fullnameOverride }}' exists but pod not running"
             echo "Upgrading PostgreSQL..."
             helm upgrade {{ .Values.postgresql.fullnameOverride }} bitnami/postgresql \
               --namespace {{ .Values.global.namespace }} \
@@ -174,7 +182,7 @@ spec:
       {{- end }}
       containers:
       - name: db-creator
-        image: postgres:16
+        image: postgres:latest
         command:
         - /bin/bash
         - -c

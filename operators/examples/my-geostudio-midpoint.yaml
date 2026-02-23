@@ -1,0 +1,347 @@
+apiVersion: geostudio.geostudio.ibm.com/v1alpha1
+kind: GEOStudio
+metadata:
+  name: studio
+  namespace: default
+spec:
+  geofm-ui:
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/geostudio-ui
+      tag: latest
+    route:
+      enabled: false
+
+  geospatial-studio-pipelines:
+    cluster_url: localhost
+    default_replicas: 1
+    enabled: true
+    environment: local
+    gateway:
+      api_key: pak-V7p76wqCUyT12Ak6l2qzwdo3HsJif
+      appName: geofm-gateway
+      oauthProxyEnabled: true
+      oauthProxyPort: "4180"
+    geoserver:
+      appName: geofm-geoserver
+      password: admin
+      username: geoserver
+    gpuConfig:
+      enabled: false
+    image:
+      pullPolicy: ""
+    imagePullSecret:
+      b64secret: eyJhdXRocyI6eyJleGFtcGxlLmlvIjp7InVzZXJuYW1lIjoiZXhhbXBsZSIsInBhc3N3b3JkIjoiZXhhbXBsZSIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImF1dGgiOiJaWGhoYlhCc1pUcGxlR0Z0Y0d4bCJ9fX0=
+      create: false
+      name: us-icr-pull-secret
+    inference_volume:
+      pvc_name: inference-shared-pvc
+    log_level: DEBUG
+    namePrefix: pipelines
+    namespace: default
+    nasaEarthBearerToken: nasa_earth_data_bearer_token
+    objectStorage:
+      access_key: minioadmin
+      buckets:
+        amo: lima-amo-input-bucket
+        datasetFactory: lima-dataset-factory
+        fineTuning: lima-fine-tuning
+        fineTuningModels: lima-fine-tuning-models
+        geoserver: lima-geoserver
+        inference: lima-inference
+        inference_auxdata: lima-inference-auxdata
+        mlflow: lima-gfm-mlflow
+        temporaryUploads: lima-temp-upload
+      cos_storage_class: cos-s3-csi-s3fs-sc
+      create_bucket: false
+      createCosSecret: false
+      delete_bucket: false
+      endpoint: endpoint
+      region: region
+      secret_key: minioadmin
+    observability:
+      enabled: false
+      otlp: {}
+    orchestrate_db:
+      inference_task_table: inf_task
+      pg_password: devPostgresql123
+      pg_port: 5432
+      pg_studio_db_name: geostudio
+      pg_uri: postgresql.default.svc.cluster.local
+      pg_username: postgres
+      secret_name: pipelines-orchestration-db
+    processors:
+      - enabled: true
+        extra_envs:
+          - name: bbox_to_tile_threshold_area
+            value: "1000000000000000000000000"
+          - name: SH_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                key: SH_CLIENT_ID
+                name: sentinelhub-creds
+          - name: SH_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                key: SH_CLIENT_SECRET
+                name: sentinelhub-creds
+          - name: NASA_EARTH_BEARER_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: NASA_EARTH_BEARER_TOKEN
+                name: nasa-earth-data-secret
+        image:
+          name: quay.io/geospatial-studio/geostudio-pipelines
+          tag: latest
+        name: inference-planner
+        process_exec: python inference_planner.py
+        process_id: inference-planner
+      - enabled: true
+        extra_envs:
+          - name: SH_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                key: SH_CLIENT_ID
+                name: sentinelhub-creds
+          - name: SH_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                key: SH_CLIENT_SECRET
+                name: sentinelhub-creds
+          - name: NASA_EARTH_BEARER_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: NASA_EARTH_BEARER_TOKEN
+                name: nasa-earth-data-secret
+        image:
+          name: quay.io/geospatial-studio/geostudio-pipelines
+          tag: latest
+        name: terrakit-data-fetch
+        process_exec: python terrakit_data_fetch.py
+        process_id: terrakit-data-fetch
+      - enabled: true
+        extra_envs:
+          - name: geoserver_username
+            valueFrom:
+              secretKeyRef:
+                key: geoserver_username
+                name: pipeline-gateway-creds
+          - name: geoserver_password
+            valueFrom:
+              secretKeyRef:
+                key: geoserver_password
+                name: pipeline-gateway-creds
+        image:
+          name: quay.io/geospatial-studio/geostudio-pipelines
+          tag: latest
+        name: push-to-geoserver
+        process_exec: python push_to_geoserver.py
+        process_id: push-to-geoserver
+      - enabled: true
+        extra_envs:
+          - name: CHECK_DISK_FREE_SPACE
+            value: "FALSE"
+        image:
+          name: quay.io/geospatial-studio/geostudio-pipelines
+          tag: latest
+        name: url-connector
+        process_exec: python url_connector_single.py
+        process_id: url-connector
+      - enabled: true
+        extra_envs:
+          - name: push_model_input
+            value: "True"
+          - name: mounted_pvc
+            value: "True"
+        image:
+          name: quay.io/geospatial-studio/geostudio-pipelines
+          tag: latest
+        name: run-inference
+        process_exec: python run-inference.py
+        process_id: run-inference
+      - enabled: true
+        extra_envs:
+          - name: LULC_TILE_ROOT
+            value: /auxdata/lulc/lc2021/
+          - name: LULC_TILE_SHAPEFILE
+            value: /auxdata/lulc/tiles.shp
+          - name: LAND_POLYGON_PATH
+            value: /auxdata/general/land_polygons.shp
+        extra_volumes:
+          - bucket_name: lima-inference-auxdata
+            claimName: inference-auxdata-pvc
+            create: true
+            mountPath: /auxdata
+            name: test-inference-auxdata-pvc
+        image:
+          name: quay.io/geospatial-studio/geostudio-pipelines
+          tag: latest
+        name: postprocess-generic
+        process_exec: python postprocess-generic-single.py
+        process_id: postprocess-generic
+        replicas: 1
+      - enabled: true
+        extra_envs:
+          - name: PYTORCH_CUDA_ALLOC_CONF
+            value: expandable_segments:True
+        extra_volumes:
+          - bucket_name: lima-fine-tuning
+            claimName: gfm-ft-files-pvc
+            create: true
+            mountPath: /tunes
+            name: tunes-pvc
+        image:
+          name: quay.io/geospatial-studio/terratorch
+          tag: latest
+        name: terratorch-inference
+        process_exec: python terratorch_inference.py
+        process_id: terratorch-inference
+        resources:
+          limits: {}
+          requests: {}
+          shm: "true"
+    route:
+      enabled: false
+    sentinelhub:
+      client_id: sh_client_id
+      client_secret: sh_client_secret
+    serviceAccount:
+      name: geostudio-sa
+    storage:
+      filesystem:
+        dir: /data/
+        enabled: false
+    waitForGateway:
+      enabled: true
+      image: busybox:1.36
+      port: 4180
+      sleepTime: 5
+  
+  gfm-geoserver:
+    enabled: true
+    image:
+      repository: docker.osgeo.org/geoserver
+      tag: 2.28.1
+    persistence:
+      enabled: true
+      size: 20Gi
+    route:
+      enabled: false
+    service:
+      port: 3000
+      targetPort: 8080
+  gfm-mlflow:
+    enabled: true
+    route:
+      enabled: false
+  gfm-studio-gateway:
+    enabled: true
+    image:
+      name: quay.io/geospatial-studio/geostudio-gateway
+      tag: latest
+    route:
+      enabled: false
+  global:
+    redis:
+      password: devPassword
+      fullnameOverride: geostudio-redis
+    backends:
+      cluster_url: localhost
+      namespace: default
+    cluster_url: localhost
+    environment: local
+    frontend:
+      cluster_url: localhost
+      namespace: default
+    imagePullPolicy: IfNotPresent
+    imagePullSecret:
+      create: false
+    label: geofm-studio
+    namespace: default
+    non_cos_storage_class: local-path
+    oauth:
+      clientId: geostudio-client
+      clientSecret: AUwQ0WG5N9TRIlWPW1hAJLGyaKcfP0PB
+      cookieSecret: NybYeFswIAR5YH4skHzB7vvSUWLIWzOL
+      createTLSSecret: false
+      extraOauthProxyArgs:
+        - --upstream-timeout=900s
+      issuerUrl: http://keycloak.default.svc.cluster.local:8080/realms/geostudio
+      oauthProxyEnabled: true
+      oauthProxyPort: "4180"
+      oauthUrl: http://keycloak.default.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth
+      type: keycloak
+    objectStorage:
+      access_key: minioadmin
+      buckets:
+        amo: lima-amo
+        datasetFactory: lima-dataset-factory
+        fineTuning: lima-fine-tuning
+        fineTuningModels: lima-fine-tuning-models
+        geoserver: lima-geoserver
+        inference: lima-inference
+        inference_auxdata: lima-inference-auxdata
+        mlflow: lima-mlflow
+        temporaryUploads: lima-temp-uploads
+      cos_storage_class: cos-s3-csi-s3fs-sc
+      create_bucket: true
+      createCosSecret: false
+      endpoint: https://minio.default.svc.cluster.local:9000
+      region: us-east-1
+      secret_key: minioadmin
+    postgres:
+      backend_uri_base: postgresql+pg8000://postgres:devPostgresql123@postgresql.default.svc.cluster.local:5432
+      dbs:
+        auth: geostudio_auth
+        gateway: geostudio
+        geoserver: geoserver
+        mlflow: mlflow
+      postgres_db: postgres
+      postgres_host: postgresql.default.svc.cluster.local
+      postgres_password: devPostgresql123
+      postgres_port: 5432
+      postgres_username: postgres
+    serviceAccount:
+      create: true
+      name: geostudio-sa
+    storage:
+      filesystem:
+        enabled: false
+      pvc:
+        enabled: true
+  infrastructure:
+    csiDriver:
+      enabled: true
+    geoserver:
+      adminPassword: geoserver
+      adminUsername: admin
+      enabled: true
+      image: docker.osgeo.org/geoserver:2.28.1
+      javaOpts: -Xms4g -Xmx8g
+      resources:
+        limits:
+          cpu: 2000m
+          memory: 8Gi
+        requests:
+          cpu: 1000m
+          memory: 4Gi
+      storage: 60Gi
+      storageClass: local-path
+    keycloak:
+      enabled: true
+    minio:
+      enabled: true
+    postgresql:
+      enabled: true
+  keycloak:
+    adminPassword: admin
+    adminUser: admin
+    database: keycloak
+  redis:
+    architecture: standalone
+    auth:
+      enabled: true
+      password: devPassword
+    enabled: true
+    fullnameOverride: geostudio-redis
+    password: devPassword
