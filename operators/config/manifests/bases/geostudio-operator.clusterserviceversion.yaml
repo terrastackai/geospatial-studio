@@ -1,0 +1,289 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+    categories: "Developer Tools, Integration & Delivery"
+    description: Kubernetes Operator for deploying and managing GeoStudio
+    repository: https://github.com/terrastackai/geospatial-studio
+    containerImage: quay.io/geospatial-studio/geostudio-operator:v0.0.1
+    createdAt: "2026-02-23T00:00:00Z"
+    support: IBM
+  name: geostudio-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - kind: GEOStudio
+      name: geostudios.geostudio.geostudio.ibm.com
+      version: v1alpha1
+      displayName: GeoStudio
+      description: Represents a GeoStudio deployment with integrated geospatial AI capabilities
+      resources:
+      - kind: Deployment
+        name: ""
+        version: apps/v1
+      - kind: StatefulSet
+        name: ""
+        version: apps/v1
+      - kind: Service
+        name: ""
+        version: v1
+      - kind: ConfigMap
+        name: ""
+        version: v1
+      - kind: Secret
+        name: ""
+        version: v1
+      - kind: PersistentVolumeClaim
+        name: ""
+        version: v1
+      - kind: Job
+        name: ""
+        version: batch/v1
+      specDescriptors:
+      - description: Enable PostgreSQL infrastructure component
+        displayName: PostgreSQL Enabled
+        path: infrastructure.postgresql.enabled
+        x-descriptors:
+        - 'urn:alm:descriptor:com.tectonic.ui:booleanSwitch'
+      - description: Enable MinIO (S3-compatible) object storage infrastructure
+        displayName: MinIO Enabled
+        path: infrastructure.minio.enabled
+        x-descriptors:
+        - 'urn:alm:descriptor:com.tectonic.ui:booleanSwitch'
+      - description: Enable Keycloak authentication infrastructure
+        displayName: Keycloak Enabled
+        path: infrastructure.keycloak.enabled
+        x-descriptors:
+        - 'urn:alm:descriptor:com.tectonic.ui:booleanSwitch'
+      - description: Enable GeoServer for geospatial data serving
+        displayName: GeoServer Enabled
+        path: infrastructure.geoserver.enabled
+        x-descriptors:
+        - 'urn:alm:descriptor:com.tectonic.ui:booleanSwitch'
+      - description: Enable CSI driver for S3 bucket mounting
+        displayName: CSI Driver Enabled
+        path: infrastructure.csiDriver.enabled
+        x-descriptors:
+        - 'urn:alm:descriptor:com.tectonic.ui:booleanSwitch'
+      - description: Target namespace for GeoStudio deployment
+        displayName: Namespace
+        path: global.namespace
+        x-descriptors:
+        - 'urn:alm:descriptor:io.kubernetes:Namespace'
+      - description: Deployment environment (dev, staging, production)
+        displayName: Environment
+        path: global.environment
+        x-descriptors:
+        - 'urn:alm:descriptor:com.tectonic.ui:text'
+      - description: Image pull policy for all containers
+        displayName: Image Pull Policy
+        path: global.imagePullPolicy
+        x-descriptors:
+        - 'urn:alm:descriptor:com.tectonic.ui:imagePullPolicy'
+      statusDescriptors:
+      - description: Current deployment status
+        displayName: Status
+        path: status
+        x-descriptors:
+        - 'urn:alm:descriptor:io.kubernetes.phase'
+  description: |
+    ## GeoStudio Kubernetes Operator
+    
+    The **GeoStudio Operator** is a Kubernetes operator that automates the deployment, configuration, 
+    and lifecycle management of the Geospatial Exploration and Orchestration Studio on Kubernetes 
+    and OpenShift platforms.
+    
+    GeoStudio is an integrated platform for **fine-tuning, inference, and orchestration of geospatial 
+    AI models**. It combines a no-code UI, low-code SDK, and APIs to make working with geospatial data 
+    and AI accessible to researchers, data scientists, and developers.
+    
+    ### Key Features
+    
+    - 🚀 **One-command deployment** - Deploy the entire GeoStudio stack with a single YAML manifest
+    - 🔄 **Automated lifecycle management** - Handles upgrades, rollbacks, and configuration changes automatically
+    - 🏗️ **Infrastructure provisioning** - Optionally deploys PostgreSQL, MinIO, Keycloak, and GeoServer
+    - 🔐 **Secure by default** - Manages secrets, TLS certificates, and RBAC automatically
+    - 📦 **Helm-based** - Leverages proven Helm charts for reliable, reproducible deployments
+    - 🌍 **Geospatial AI ready** - Pre-configured for TerraTorch, TerraKit, and IBM geospatial models
+    
+    ### What Gets Deployed
+    
+    A complete GeoStudio installation includes:
+    
+    **Core Components:**
+    - **Gateway API** - RESTful API server with OAuth2 authentication
+    - **UI** - React-based web interface for model management and inference
+    - **MLflow** - Experiment tracking and model registry
+    - **Pipelines** - Distributed geospatial data processing and inference orchestration
+    
+    **Optional Infrastructure** (can be enabled/disabled):
+    - **PostgreSQL** - Relational database for metadata and state
+    - **MinIO** - S3-compatible object storage for geospatial data and models
+    - **Keycloak** - Identity and access management (OAuth2/OIDC)
+    - **GeoServer** - OGC-compliant geospatial data server (WMS, WFS)
+    - **Redis** - In-memory cache for session management and job queuing
+    - **CSI Driver** - IBM Object Storage S3 CSI driver for bucket mounting
+    
+    ### Prerequisites
+    
+    - Kubernetes 1.24+ or OpenShift 4.12+
+    - Storage class available for PersistentVolumes (at least 100GB recommended)
+    - (Optional) LoadBalancer or Ingress controller for external access
+    - (Optional) GPU nodes for model inference (if using GPU-accelerated pipelines)
+    
+    ### Quick Start
+    
+    After installing the operator, create a GeoStudio instance with default settings:
+    
+    ```yaml
+    apiVersion: geostudio.geostudio.ibm.com/v1alpha1
+    kind: GEOStudio
+    metadata:
+      name: studio
+      namespace: default
+    spec:
+      infrastructure:
+        postgresql:
+          enabled: true
+        minio:
+          enabled: true
+        keycloak:
+          enabled: true
+        csiDriver:
+          enabled: true
+      global:
+        environment: production
+        namespace: default
+    ```
+    
+    Apply the manifest:
+    ```bash
+    kubectl apply -f geostudio.yaml
+    ```
+    
+    Monitor the deployment:
+    ```bash
+    kubectl get geostudio studio -n default
+    kubectl get pods -n default -w
+    ```
+    
+    ### Access the Application
+    
+    Once deployed, access the UI:
+    ```bash
+    # Port-forward to access locally
+    kubectl port-forward svc/geofm-ui 8080:80 -n default
+    
+    # Open browser to http://localhost:8080
+    ```
+    
+    For production, configure Ingress/Route for external access.
+    
+    ### Configuration
+    
+    GeoStudio is highly configurable. Common customizations:
+    
+    **External Object Storage** (instead of in-cluster MinIO):
+    ```yaml
+    spec:
+      infrastructure:
+        minio:
+          enabled: false
+      global:
+        objectStorage:
+          endpoint: https://s3.amazonaws.com
+          access_key: YOUR_ACCESS_KEY
+          secret_key: YOUR_SECRET_KEY
+          region: us-east-1
+          buckets:
+            inference: my-inference-bucket
+            mlflow: my-mlflow-bucket
+    ```
+    
+    **External Database** (instead of in-cluster PostgreSQL):
+    ```yaml
+    spec:
+      infrastructure:
+        postgresql:
+          enabled: false
+      global:
+        postgres:
+          backend_uri_base: postgresql://user:pass@external-db:5432
+          dbs:
+            gateway: geostudio
+            mlflow: mlflow
+            auth: geostudio_auth
+    ```
+    
+    **Resource Limits**:
+    ```yaml
+    spec:
+      gfm-studio-gateway:
+        resources:
+          api:
+            limits:
+              cpu: "2"
+              memory: 4Gi
+            requests:
+              cpu: "1"
+              memory: 2Gi
+    ```
+    
+    ### Support & Documentation
+    
+    - **Documentation**: https://github.com/terrastackai/geospatial-studio/tree/main/operators
+    - **Issues**: https://github.com/terrastackai/geospatial-studio/issues
+    - **Email**: geostudio@ibm.com
+    
+    ### License
+    
+    Apache License 2.0
+  displayName: GeoStudio Operator
+  icon:
+  - base64data: "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"
+    mediatype: image/png
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - geospatial
+  - geostudio
+  - ai
+  - machine-learning
+  - terratorch
+  - terrakit
+  - satellite-imagery
+  - kubernetes
+  - operator
+  - ibm
+  links:
+  - name: GeoStudio Documentation
+    url: https://terrastackai.github.io/geospatial-studio
+  - name: Operator Documentation
+    url: https://github.com/terrastackai/geospatial-studio/tree/main/operators
+  - name: Source Repository
+    url: https://github.com/terrastackai/geospatial-studio
+  - name: IBM Geospatial AI
+    url: https://github.com/IBM/terratorch
+  maintainers:
+  - email: geostudio@ibm.com
+    name: IBM GeoStudio Team
+  maturity: alpha
+  minKubeVersion: 1.24.0
+  provider:
+    name: IBM
+  version: 0.0.0
