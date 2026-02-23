@@ -78,3 +78,9 @@ export NODE_GPU_SPEC=NVIDIA-A100-SXM4-80GB
 # Geoserver config
 export GEOSERVER_CM_PROXYBASEURL=
 export GEOSERVER_CM_WHITELIST=
+
+# Operator configuration (for operator-based deployments)
+export GEOSTUDIO_OPERATOR_IMAGE=${GEOSTUDIO_OPERATOR_IMAGE:-quay.io/geospatial-studio/geostudio-operator:latest}
+export INSTALL_IBM_CSI_DRIVER=${INSTALL_IBM_CSI_DRIVER:-true}
+export USER_NAMESPACE=${OC_PROJECT}
+export OPERATOR_NAMESPACE=${OPERATOR_NAMESPACE:-geostudio-operator-system}

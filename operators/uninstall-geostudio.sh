@@ -268,57 +268,9 @@ log_success "ConfigMaps and Secrets deleted"
 echo ""
 
 # ==============================================================================
-# Step 6: Delete PersistentVolumeClaims and PersistentVolumes
+# Step 6: Delete CSI Driver Components (if deployed)
 # ==============================================================================
-if [ "$KEEP_PVCS" = false ]; then
-  log_info "Step 6/10: Deleting PersistentVolumeClaims..."
-  log_warning "This will DELETE all persistent data!"
-  
-  if confirm "Are you sure you want to delete PVCs and lose all data?"; then
-    PVCS=$(kubectl get pvc -n "$NAMESPACE" -o name 2>/dev/null || echo "")
-    if [ -n "$PVCS" ]; then
-      # Store PV names before deleting PVCs
-      PV_NAMES=""
-      for pvc in $PVCS; do
-        PV=$(kubectl get "$pvc" -n "$NAMESPACE" -o jsonpath='{.spec.volumeName}' 2>/dev/null || echo "")
-        if [ -n "$PV" ]; then
-          PV_NAMES="$PV_NAMES $PV"
-        fi
-        log_info "Deleting $pvc..."
-        execute kubectl delete "$pvc" -n "$NAMESPACE" --wait=false
-      done
-      
-      # Wait a bit for PVCs to be deleted
-      sleep 5
-      
-      # Delete orphaned PVs (with Retain policy)
-      if [ -n "$PV_NAMES" ]; then
-        log_info "Checking for orphaned PersistentVolumes..."
-        for pv in $PV_NAMES; do
-          if kubectl get pv "$pv" &> /dev/null; then
-            log_info "Deleting orphaned PV: $pv..."
-            execute kubectl delete pv "$pv" --wait=false
-          fi
-        done
-      fi
-      
-      log_success "PersistentVolumeClaims and PersistentVolumes deleted"
-    else
-      log_info "No PersistentVolumeClaims found"
-    fi
-  else
-    log_warning "Skipped PVC deletion"
-  fi
-else
-  log_info "Step 6/10: Skipping PersistentVolumeClaims (--keep-pvcs flag set)"
-fi
-
-echo ""
-
-# ==============================================================================
-# Step 7: Delete CSI Driver Components (if deployed)
-# ==============================================================================
-log_info "Step 7/10: Deleting CSI Driver components..."
+log_info "Step 6/10: Deleting CSI Driver components..."
 
 # Delete CSI Driver resources in kube-system namespace
 if kubectl get deployment cos-s3-csi-controller -n kube-system &> /dev/null; then
@@ -350,9 +302,9 @@ log_success "CSI Driver components deleted"
 echo ""
 
 # ==============================================================================
-# Step 8: Delete Cluster-Wide Resources
+# Step 7: Delete Cluster-Wide Resources
 # ==============================================================================
-log_info "Step 8/10: Deleting cluster-wide resources..."
+log_info "Step 7/10: Deleting cluster-wide resources..."
 
 # Delete StorageClasses
 STORAGE_CLASSES=$(kubectl get storageclass -o name 2>/dev/null | grep "cos-s3-csi" || echo "")
@@ -391,9 +343,9 @@ log_success "Cluster-wide resources deleted"
 echo ""
 
 # ==============================================================================
-# Step 9: Delete Service Accounts and RoleBindings
+# Step 8: Delete Service Accounts and RoleBindings
 # ==============================================================================
-log_info "Step 9/10: Deleting ServiceAccounts and RoleBindings..."
+log_info "Step 8/10: Deleting ServiceAccounts and RoleBindings..."
 
 SERVICE_ACCOUNTS=$(kubectl get sa -n "$NAMESPACE" -o name 2>/dev/null | grep -v "serviceaccount/default" || echo "")
 if [ -n "$SERVICE_ACCOUNTS" ]; then
@@ -423,10 +375,10 @@ log_success "ServiceAccounts, Roles, and RoleBindings deleted"
 echo ""
 
 # ==============================================================================
-# Step 10: Uninstall Operator and CRDs
+# Step 9: Uninstall Operator and CRDs
 # ==============================================================================
 if [ "$KEEP_OPERATOR" = false ]; then
-  log_info "Step 10/10: Uninstalling operator and CRDs..."
+  log_info "Step 9/10: Uninstalling operator and CRDs..."
   
   # Find operator namespaces (check multiple possible names)
   OPERATOR_NAMESPACES=$(kubectl get namespaces -o name 2>/dev/null | grep -E "operators-system|geostudio-operators" | sed 's|namespace/||' || echo "")
@@ -492,7 +444,55 @@ if [ "$KEEP_OPERATOR" = false ]; then
   
   log_success "Operator and CRDs uninstalled"
 else
-  log_info "Step 10/10: Skipping operator uninstall (--keep-operator flag set)"
+  log_info "Step 9/10: Skipping operator uninstall (--keep-operator flag set)"
+fi
+
+echo ""
+
+# ==============================================================================
+# Step 10: Delete PersistentVolumeClaims and PersistentVolumes (LAST)
+# ==============================================================================
+if [ "$KEEP_PVCS" = false ]; then
+  log_info "Step 10/10: Deleting PersistentVolumeClaims..."
+  log_warning "This will DELETE all persistent data!"
+  
+  if confirm "Are you sure you want to delete PVCs and lose all data?"; then
+    PVCS=$(kubectl get pvc -n "$NAMESPACE" -o name 2>/dev/null || echo "")
+    if [ -n "$PVCS" ]; then
+      # Store PV names before deleting PVCs
+      PV_NAMES=""
+      for pvc in $PVCS; do
+        PV=$(kubectl get "$pvc" -n "$NAMESPACE" -o jsonpath='{.spec.volumeName}' 2>/dev/null || echo "")
+        if [ -n "$PV" ]; then
+          PV_NAMES="$PV_NAMES $PV"
+        fi
+        log_info "Deleting $pvc..."
+        execute kubectl delete "$pvc" -n "$NAMESPACE" --wait=false
+      done
+      
+      # Wait a bit for PVCs to be deleted
+      sleep 5
+      
+      # Delete orphaned PVs (with Retain policy)
+      if [ -n "$PV_NAMES" ]; then
+        log_info "Checking for orphaned PersistentVolumes..."
+        for pv in $PV_NAMES; do
+          if kubectl get pv "$pv" &> /dev/null; then
+            log_info "Deleting orphaned PV: $pv..."
+            execute kubectl delete pv "$pv" --wait=false
+          fi
+        done
+      fi
+      
+      log_success "PersistentVolumeClaims and PersistentVolumes deleted"
+    else
+      log_info "No PersistentVolumeClaims found"
+    fi
+  else
+    log_warning "Skipped PVC deletion"
+  fi
+else
+  log_info "Step 10/10: Skipping PersistentVolumeClaims (--keep-pvcs flag set)"
 fi
 
 echo ""

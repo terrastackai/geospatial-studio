@@ -26,7 +26,7 @@ global:
   imagePullSecret:
     name: us-icr-pull-secret
     b64secret: image_pull_secret_b64
-    create: true
+    create: false
 
   jira:
     api_key: ''
@@ -529,6 +529,8 @@ infrastructure:
     enabled: false
   geoserver:
     enabled: false
+  csiDriver:
+    enabled: false  # Deploy IBM Object S3 CSI driver for S3 bucket mounting
 
 # PostgreSQL Configuration
 # Only used when infrastructure.postgresql.enabled=true
@@ -538,11 +540,11 @@ infrastructure:
 #   1. postgresql-installer (weight: -100): Deploys PostgreSQL using Bitnami Helm chart
 #   2. postgresql-db-creator (weight: -90): Creates required databases (geostudio, geostudio_auth, mlflow)
 postgresql:
-  chartVersion: "16.2.1"
+  chartVersion: "latest"
   fullnameOverride: "postgresql"
   auth:
-    username: postgres
-    password: "devPostgresql123"
+    username: pg_username
+    password: pg_password
     database: postgres
   primary:
     persistence:
@@ -569,10 +571,10 @@ keycloak:
   tag: "26.4.5"
   database: keycloak
   realm: geostudio
-  clientSecret: "AUwQ0WG5N9TRIlWPW1hAJLGyaKcfP0PB"
+  clientSecret: oauth_client_secret
   auth:
-    adminUser: admin
-    adminPassword: admin
+    adminUser: keycloak_admin_user
+    adminPassword: keycloak_admin_password
   testUser:
     username: testuser
     password: testpass123
@@ -599,8 +601,8 @@ minio:
   image: quay.io/minio/minio
   tag: "latest"
   auth:
-    rootUser: minioadmin
-    rootPassword: minioadmin
+    rootUser: access_key_id
+    rootPassword: secret_access_key
   persistence:
     enabled: true
     size: 100Gi
@@ -624,8 +626,8 @@ minio:
 # Note: Requires PostgreSQL to be running (depends on postgresql-installer job)
 geoserver:
   image: "docker.osgeo.org/geoserver:2.28.1"
-  adminUsername: admin
-  adminPassword: geoserver
+  adminUsername: geoserver_username
+  adminPassword: geoserver_password
   javaOpts: "-Xms4g -Xmx8g"
   storage: "60Gi"
   storageClass: "local-path"
@@ -636,3 +638,17 @@ geoserver:
     limits:
       memory: 8Gi
       cpu: 2000m
+
+# CSI Driver Configuration
+# Only used when infrastructure.csiDriver.enabled=true
+# Deployed via pre-install Helm hook job (templates/csi/install-job.yaml)
+# The job runs with hook-weight -75 (after TLS cert creation, before restart)
+# Installs IBM Object S3 CSI driver for MinIO bucket mounting as PersistentVolumes
+# Creates storage classes: cos-s3-csi-sc and cos-s3-csi-s3fs-sc
+csiDriver:
+  type: "ibm-object-s3-csi"
+  images:
+    provisioner: "k8s.gcr.io/sig-storage/csi-provisioner:v5.2.0"
+    driver: "quay.io/containerstorage/ibm-object-csi-driver:v0.1.19"
+    nodeDriverRegistrar: "k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.13.0"
+    livenessProbe: "registry.k8s.io/sig-storage/livenessprobe:v2.16.0"

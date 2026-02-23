@@ -4,7 +4,7 @@ This directory contains the GeoStudio Kubernetes Operator implementation.
 
 ## Documentation
 
-📚 **[Complete Operator Documentation](./GEOSTUDIO_OPERATORS.md)**
+📚 **[Complete Operator Documentation](./operator.md)**
 
 The main documentation covers:
 - Overview and architecture
@@ -49,6 +49,6 @@ operators/
 
 ## Get Started
 
-1. Read the [complete documentation](./GEOSTUDIO_OPERATORS.md)
+1. Read the [complete documentation](./operator.md)
 2. Follow the Quick Start guide for your environment
 3. Deploy GeoStudio with a single command!
