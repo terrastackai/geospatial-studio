@@ -289,6 +289,13 @@ spec:
       tag: latest
     route:
       enabled: ${ROUTE_ENABLED}
+    extraEnvironment:
+      api:
+        OBJECT_STORAGE_SIGNATURE_VERSION: s3v4
+        CREATE_TUNING_FOLDERS: ${CREATE_TUNING_FOLDERS_FLAG}
+        PIPELINES_V2_INFERENCE_ROOT_FOLDER: ${PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE}
+        ENVIRONMENT: ${ENVIRONMENT}
+        CONFIGURE_GPU_AFFINITY: false
   
   # ==========================================================================
   # Global Configuration
@@ -317,6 +324,10 @@ spec:
     label: geofm-studio
     namespace: ${ocp_project}
     non_cos_storage_class: ${NON_COS_STORAGE_CLASS}
+    
+    gfmStudioGateway:
+      api_key: ${studio_api_key}
+      api_encryption_key: ${studio_api_encryption_key}
     
     oauth:
       clientId: ${OAUTH_CLIENT_ID}
@@ -363,6 +374,12 @@ spec:
       postgres_password: ${pg_password}
       postgres_port: ${pg_port}
       postgres_username: ${pg_username}
+    
+    cesium:
+      token: ${cesium_token}
+    
+    mapbox:
+      token: ${mapbox_token}
     
     serviceAccount:
       create: true

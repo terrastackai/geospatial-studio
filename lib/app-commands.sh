@@ -180,6 +180,11 @@ app_deploy() {
   sed_inplace "$env_sh_file" "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g"
   sed_inplace "$env_sh_file" "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g"
   sed_inplace "$env_sh_file" "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=local-path/g"
+  sed_inplace "$env_sh_file" "s/export SHARE_PIPELINE_PVC=.*/export SHARE_PIPELINE_PVC=true/g"
+  sed_inplace "$env_sh_file" "s/export STORAGE_PVC_ENABLED=.*/export STORAGE_PVC_ENABLED=true/g"
+  sed_inplace "$env_sh_file" "s/export STORAGE_FILESYSTEM_ENABLED=.*/export STORAGE_FILESYSTEM_ENABLED=false/g"
+  sed_inplace "$env_sh_file" "s/export CREATE_TUNING_FOLDERS_FLAG=.*/export CREATE_TUNING_FOLDERS_FLAG=false/g"
+  sed_inplace "$env_sh_file" "s|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=.*|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/data|g"
   sed_inplace "$env_sh_file" "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g"
   sed_inplace "$env_sh_file" "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g"
   sed_inplace "$env_sh_file" "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio|g"
@@ -199,8 +204,14 @@ app_deploy() {
     log_success "Found $studio_api_key_file"
     source "$studio_api_key_file"
     
-    if grep -q "studio_api_key=$" "$env_file" 2>/dev/null; then
+    # Update studio_api_key if it exists in .env
+    if grep -q "studio_api_key=" "$env_file" 2>/dev/null; then
       sed_inplace "$env_file" "s|studio_api_key=.*|studio_api_key=${STUDIO_API_KEY}|g"
+    fi
+    
+    # Update studio_api_encryption_key if it exists in .env
+    if grep -q "studio_api_encryption_key=" "$env_file" 2>/dev/null; then
+      sed_inplace "$env_file" "s|studio_api_encryption_key=.*|studio_api_encryption_key=${API_ENCRYPTION_KEY}|g"
     fi
   else
     log_info "(not found - will use values from .env)"

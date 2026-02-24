@@ -107,10 +107,10 @@ global:
       auth: geostudio_auth
 
   cesium:
-    token: token
+    token: cesium_token
 
   mapbox:
-    token: token
+    token: mapbox_token
 
   appNames:
     gateway: geofm-gateway
