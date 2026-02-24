@@ -1,8 +1,13 @@
-#!/bin/zsh
+#!/bin/bash
 
 # © Copyright IBM Corporation 2025
 # SPDX-License-Identifier: Apache-2.0
 
+# Source (import) common_functions.sh
+source ./common_functions.sh
+
+export KUBECTL_WAIT_RETRY_ATTEMPTS=5
+export KUBECTL_WAIT_RETRY_DELAY=5
 
 # Paste your image pull secret below
 ## This is a dummy image pull secret
@@ -61,7 +66,7 @@ kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.ya
 python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
-kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
 sleep 5
 kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 >> studio-pf.log 2>&1 &
@@ -72,8 +77,8 @@ sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.
 sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
 kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
 
-kubectl wait --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s
-kubectl wait --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=300s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=300s
 
 
 # # # Update .env with the MinIO details for local connection
@@ -108,7 +113,7 @@ export POSTGRES_PASSWORD=devPostgresql123
 
 ./deployment-scripts/install-postgres.sh
 
-kubectl wait --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
 
 # export POSTGRES_PASSWORD=$(kubectl get secret --namespace ${OC_PROJECT} postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
 
@@ -135,7 +140,7 @@ echo "----------------------------------------------------------------------"
 python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 
-kubectl wait --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
 
 kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
 sleep 5
@@ -186,7 +191,7 @@ echo "----------------------------------------------------------------------"
 python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
 
-kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
 
 kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
 sleep 5
@@ -275,7 +280,7 @@ echo "----------------------------------------------------------------------"
 echo "---------  Set up Port Forwarding for UI and API  --------------------"
 echo "----------------------------------------------------------------------"
 
-kubectl wait --for=condition=ready pod -l app=geofm-gateway -n ${OC_PROJECT} --timeout=300s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=geofm-gateway -n ${OC_PROJECT} --timeout=300s
 
 kubectl port-forward deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
 kubectl port-forward deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &

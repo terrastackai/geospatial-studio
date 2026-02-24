@@ -1,0 +1,24 @@
+/* Custom styles for Geospatial Studio Workshop */
+
+:root {
+  --md-primary-fg-color: #000000;
+  --md-accent-fg-color: #0f62fe;
+}
+
+/* IBM Plex Sans font */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+
+/* Improve code block styling */
+.highlight {
+  border-radius: 4px;
+}
+
+/* Button styling */
+.md-button {
+  border-radius: 4px;
+}
+
+/* Admonition styling */
+.admonition {
+  border-radius: 4px;
+}

@@ -43,8 +43,10 @@ dependencies = [
 ]
 [tool.hatch.envs.default.scripts]
 serve = "cd docs/geospatial-studio-docs && mkdocs serve {args}"
+serve-workshop = "cd workshop && mkdocs serve -a 127.0.0.1:8001 {args}"
 gh-deploy = "cd docs/geospatial-studio-docs && mkdocs gh-deploy {args}"
 build = "cd docs/geospatial-studio-docs && mkdocs build {args}"
+build-workshop = "cd workshop && mkdocs build {args}"
 
 [[tool.hatch.envs.all.matrix]]
 python = ["3.8", "3.9", "3.10", "3.11", "3.12"]

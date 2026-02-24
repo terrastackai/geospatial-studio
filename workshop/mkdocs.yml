@@ -1,0 +1,161 @@
+site_name: IBM Geospatial Studio Workshop
+site_description: A hands-on workshop for learning IBM Geospatial Studio - from deployment to running geospatial AI models
+site_author: IBM Research
+site_url: https://terrastackai.github.io/geospatial-studio/workshop/
+use_directory_urls: true
+
+repo_name: terrastackai/geospatial-studio
+repo_url: https://github.com/terrastackai/geospatial-studio
+edit_uri: edit/main/workshop/docs/
+
+docs_dir: docs
+
+# Custom hooks for copying notebooks
+hooks:
+  - hooks.py
+
+nav:
+  - Home: index.md
+  - Pre-work:
+      - Overview: prework/index.md
+      - Prerequisites: prework/prerequisites.md
+      - Deployment Options: prework/deployment-options.md
+      - Local Deployment: prework/local-deployment.md
+      - Cluster Deployment: prework/cluster-deployment.md
+      - Verification: prework/verification.md
+  - Introduction:
+      - Welcome: introduction/welcome.md
+      - What is Geospatial Studio: introduction/what-is-geospatial-studio.md
+      - Architecture Overview: introduction/architecture.md
+      - Key Concepts: introduction/key-concepts.md
+  - Lab 1: notebooks/lab1-getting-started.ipynb
+  - Lab 2: notebooks/lab2-onboarding-examples.ipynb
+  - Lab 3: notebooks/lab3-running-inference.ipynb
+  - Lab 4: notebooks/lab4-burnscars-workflow.ipynb
+  - Resources:
+      - Additional Resources: resources/additional-resources.md
+      - Troubleshooting: resources/troubleshooting.md
+      - FAQ: resources/faq.md
+      - Next Steps: resources/next-steps.md
+
+theme:
+  name: material
+  logo: assets/geospatial-studio-logo-white.svg
+  favicon: assets/favicon.ico
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: black
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      primary: black
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: IBM Plex Sans
+    code: IBM Plex Mono
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+
+plugins:
+  - search
+  - mkdocs-jupyter:
+      include_source: True
+      include_requirejs: True
+      execute: false
+      allow_errors: false
+      theme: dark
+      show_input: True
+      no_input: False
+  - git-revision-date-localized:
+      enable_creation_date: true
+      fallback_to_build_date: true
+      type: timeago
+  - glightbox:
+      touchNavigation: true
+      loop: false
+      effect: zoom
+      slide_effect: slide
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: true
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/terrastackai
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/geostudio/
+  version:
+    provider: mike
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - https://unpkg.com/mermaid@10/dist/mermaid.min.js
+
+copyright: Copyright &copy; 2024-2026 IBM Research
