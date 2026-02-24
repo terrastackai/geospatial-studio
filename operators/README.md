@@ -5,22 +5,27 @@ The GeoStudio Operator is a Kubernetes operator built using the [Operator Framew
 ## Directory Structure
 
 ```
-operators/
-├── geostudio-cli.sh                 # 🆕 Unified CLI (use this!)
-├── lib/                             # Shared libraries
+geospatial-studio/
+├── geostudio                        # 🆕 Unified CLI at project root
+├── lib/                             # Shared CLI libraries
 │   ├── common.sh                    # Logging, colors, utilities
 │   ├── k8s-utils.sh                 # Kubernetes helpers
 │   ├── operator-commands.sh         # Operator management
-│   └── app-commands.sh              # Application management
-├── config/                          # Operator configuration
-│   ├── crd/                         # Custom Resource Definitions
-│   ├── rbac/                        # RBAC roles and bindings
-│   ├── manager/                     # Operator deployment manifests
-│   └── default/                     # Kustomize overlay
-├── examples/                        # Example GeoStudio CRs
-│   └── geostudio-operator-template.yaml
-├── watches.yaml                     # Operator watch configuration
-└── Makefile                         # Build and deploy targets
+│   ├── app-commands.sh              # Application management
+│   └── build-commands.sh            # Build functionality
+├── operators/                       # Operator configuration
+│   ├── config/                      # CRDs, RBAC, manifests
+│   │   ├── crd/                     # Custom Resource Definitions
+│   │   ├── rbac/                    # RBAC roles and bindings
+│   │   ├── manager/                 # Operator deployment manifests
+│   │   └── default/                 # Kustomize overlay
+│   ├── examples/                    # Example GeoStudio CRs
+│   │   └── geostudio-operator-template.yaml
+│   ├── watches.yaml                 # Operator watch configuration
+│   └── Makefile                     # Build and deploy targets
+├── geospatial-studio/               # Helm chart
+├── Dockerfile.operator              # Production operator build
+└── Dockerfile.operator.local        # Local operator build
 ```
 
 ## Architecture
@@ -102,7 +107,7 @@ kubectl cluster-info
 Build the operator image and import it into Lima's containerd:
 
 ```bash
-./build-studio-operators.sh
+./geostudio build --local
 ```
 
 ### Step 3: Install Operator
@@ -110,8 +115,7 @@ Build the operator image and import it into Lima's containerd:
 Install the operator using the local image:
 
 ```bash
-cd operators
-./geostudio-cli.sh operator install --local
+./geostudio operator install --local
 ```
 
 ### Step 4: Deploy Application
@@ -119,7 +123,7 @@ cd operators
 Deploy a GEOStudio application instance:
 
 ```bash
-./geostudio-cli.sh app deploy
+./geostudio app deploy
 ```
 
 ### Step 5: Verify Deployment
@@ -128,16 +132,16 @@ Monitor the deployment progress:
 
 ```bash
 # Check operator status
-./geostudio-cli.sh operator status
+./geostudio operator status
 
 # Check application status
-./geostudio-cli.sh app status
+./geostudio app status
 
 # Watch application pods
 kubectl get pods -n default -w
 
 # View operator logs
-./geostudio-cli.sh operator logs --follow
+./geostudio operator logs --follow
 ```
 
 ### Step 6: Access the Application
@@ -165,54 +169,64 @@ Access in your browser:
 
 ## CLI Reference
 
+### Build Commands
+
+```bash
+# Build for local development
+./geostudio build --local
+
+# Build for production
+./geostudio build --prod --version v1.0.0
+```
+
 ### Operator Commands
 
 ```bash
 # Install operator (local development)
-./geostudio-cli.sh operator install --local
+./geostudio operator install --local
 
 # Install operator (production)
-./geostudio-cli.sh operator install --prod --version v0.1.0
+./geostudio operator install --prod --version v0.1.0
 
 # Check operator status
-./geostudio-cli.sh operator status
+./geostudio operator status
 
 # View operator logs
-./geostudio-cli.sh operator logs --follow
+./geostudio operator logs --follow
 
 # Restart operator
-./geostudio-cli.sh operator restart
+./geostudio operator restart
 
 # Uninstall operator
-./geostudio-cli.sh operator uninstall
+./geostudio operator uninstall
 ```
 
 ### Application Commands
 
 ```bash
 # Deploy application (default: lima/default)
-./geostudio-cli.sh app deploy
+./geostudio app deploy
 
 # Deploy to different environment/namespace
-./geostudio-cli.sh app deploy --env production --namespace prod
+./geostudio app deploy --env production --namespace prod
 
 # Generate manifest without deploying
-./geostudio-cli.sh app deploy --dry-run
+./geostudio app deploy --dry-run
 
 # List all deployed instances
-./geostudio-cli.sh app list
+./geostudio app list
 
 # Check application status
-./geostudio-cli.sh app status --namespace prod
+./geostudio app status --namespace prod
 
 # View application logs
-./geostudio-cli.sh app logs --component gateway --follow
+./geostudio app logs --component gateway --follow
 
 # Restart application
-./geostudio-cli.sh app restart --namespace prod
+./geostudio app restart --namespace prod
 
 # Delete application
-./geostudio-cli.sh app delete --namespace staging
+./geostudio app delete --namespace staging
 ```
 
 ## Complete Workflows
@@ -225,44 +239,58 @@ After making changes to the Helm chart or operator:
 
 ```bash
 # 1. Rebuild operator
-./build-studio-operators.sh
+./geostudio build --local
 
 # 2. [OPTIONAL: If you have installed it previously] Delete current deployment
-./geostudio-cli.sh app delete
+./geostudio app delete
 
 # 3. [OPTIONAL: If you have installed it previously] Uninstall operator
-./geostudio-cli.sh operator uninstall
+./geostudio operator uninstall
 
 # 4. Reinstall operator
-./geostudio-cli.sh operator install --local
+./geostudio operator install --local
 
 # 5. Deploy fresh instance
-./geostudio-cli.sh app deploy
+./geostudio app deploy
 
-# 4. Check status
-./geostudio-cli.sh operator status
-./geostudio-cli.sh app status
+# 6. Check status
+./geostudio operator status
+./geostudio app status
 ```
 
 ### Production Deployment
 
-For production deployments, use the `--prod` flag and specify a version:
+For production deployments, build and push the image, then install:
 
 ```bash
-./geostudio-cli.sh operator install --prod --version v1.0.0
-```
+# 1. Build and push to registry
+./geostudio build --prod --version v1.0.0
 
-This will pull the operator image from the production registry (quay.io/geospatial-studio).
+# 2. Install operator from registry
+./geostudio operator install --prod --version v1.0.0
+
+# 3. Deploy application
+./geostudio app deploy --env production --namespace prod
+```
 
 ### Clean Up
 
 ```bash
 # Delete application only
-./geostudio-cli.sh app delete --namespace default
+./geostudio app delete --namespace default
 
-# Delete everything (app + operator)
-./geostudio-cli.sh app delete
-./geostudio-cli.sh operator uninstall
+# Complete cleanup (apps + operator + CSI driver)
+./geostudio app delete
+./geostudio operator uninstall
+```
+
+./geostudio app delete --namespace default
+
+#### Delete everything (app + operator)
+
+```bash
+./geostudio app delete
+./geostudio operator uninstall
 ```
 
 ## After Deployment
@@ -281,6 +309,7 @@ This will pull the operator image from the production registry (quay.io/geospati
 | Authenticate Minio | username: `minioadmin` password: `minioadmin` |
 
 If you need to restart any of the port-forwards you can use the following commands:
+
 ```shell
 kubectl port-forward -n $OC_PROJECT svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
 kubectl port-forward -n $OC_PROJECT svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &

@@ -1,5 +1,5 @@
-{{- if .Values.infrastructure.csiDriver.enabled }}
-{{- if and .Values.infrastructure.minio.enabled (eq .Values.global.objectStorage.cos_storage_class "cos-s3-csi-s3fs-sc") }}
+{{- if .Values.global.csiDriver.enabled }}
+{{- if and .Values.global.minio.enabled (eq .Values.global.objectStorage.cos_storage_class "cos-s3-csi-s3fs-sc") }}
 
 ---
 # Job to install IBM Object S3 CSI Driver

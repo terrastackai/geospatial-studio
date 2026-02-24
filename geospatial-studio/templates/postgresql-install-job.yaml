@@ -1,4 +1,4 @@
-{{- if .Values.infrastructure.postgresql.enabled }}
+{{- if .Values.global.postgresql.enabled }}
 ---
 # Job to deploy PostgreSQL using Helm before other components
 apiVersion: batch/v1
@@ -52,7 +52,7 @@ spec:
           echo "=================================================="
           echo "Release Name: {{ .Release.Name }}"
           echo "Namespace: {{ .Values.global.namespace }}"
-          echo "Chart Version: {{ .Values.postgresql.chartVersion }}"
+          echo "Chart Version: {{ .Values.global.postgresql.chartVersion }}"
           echo "=================================================="
           
           # Add Bitnami Helm repository
@@ -61,55 +61,55 @@ spec:
           helm repo update
           
           # Check if PostgreSQL pod is already running
-          if kubectl get pod -n {{ .Values.global.namespace }} -l app.kubernetes.io/name=postgresql,app.kubernetes.io/instance={{ .Values.postgresql.fullnameOverride }} 2>/dev/null | grep -q Running; then
+          if kubectl get pod -n {{ .Values.global.namespace }} -l app.kubernetes.io/name=postgresql,app.kubernetes.io/instance={{ .Values.global.postgresql.fullnameOverride }} 2>/dev/null | grep -q Running; then
             echo "✓ PostgreSQL pod is already running"
-            kubectl get pod -n {{ .Values.global.namespace }} -l app.kubernetes.io/name=postgresql,app.kubernetes.io/instance={{ .Values.postgresql.fullnameOverride }}
+            kubectl get pod -n {{ .Values.global.namespace }} -l app.kubernetes.io/name=postgresql,app.kubernetes.io/instance={{ .Values.global.postgresql.fullnameOverride }}
             echo "Skipping installation"
             exit 0
           fi
           
           # Check if PostgreSQL Helm release exists
-          if helm list -n {{ .Values.global.namespace }} | grep -q "^{{ .Values.postgresql.fullnameOverride }}\s"; then
-            echo "PostgreSQL release '{{ .Values.postgresql.fullnameOverride }}' exists but pod not running"
+          if helm list -n {{ .Values.global.namespace }} | grep -q "^{{ .Values.global.postgresql.fullnameOverride }}\s"; then
+            echo "PostgreSQL release '{{ .Values.global.postgresql.fullnameOverride }}' exists but pod not running"
             echo "Upgrading PostgreSQL..."
-            helm upgrade {{ .Values.postgresql.fullnameOverride }} bitnami/postgresql \
+            helm upgrade {{ .Values.global.postgresql.fullnameOverride }} bitnami/postgresql \
               --namespace {{ .Values.global.namespace }} \
-              --version {{ .Values.postgresql.chartVersion }} \
+              --version {{ .Values.global.postgresql.chartVersion }} \
               --set image.tag=latest \
-              --set fullnameOverride={{ .Values.postgresql.fullnameOverride }} \
-              --set auth.username={{ .Values.postgresql.auth.username }} \
-              --set auth.password={{ .Values.postgresql.auth.password }} \
-              --set auth.database={{ .Values.postgresql.auth.database }} \
-              --set primary.persistence.enabled={{ .Values.postgresql.primary.persistence.enabled }} \
-              --set primary.persistence.size={{ .Values.postgresql.primary.persistence.size }} \
-              {{- if .Values.postgresql.primary.persistence.storageClass }}
-              --set primary.persistence.storageClass={{ .Values.postgresql.primary.persistence.storageClass }} \
+              --set fullnameOverride={{ .Values.global.postgresql.fullnameOverride }} \
+              --set auth.username={{ .Values.global.postgresql.auth.username }} \
+              --set auth.password={{ .Values.global.postgresql.auth.password }} \
+              --set auth.database={{ .Values.global.postgresql.auth.database }} \
+              --set primary.persistence.enabled={{ .Values.global.postgresql.primary.persistence.enabled }} \
+              --set primary.persistence.size={{ .Values.global.postgresql.primary.persistence.size }} \
+              {{- if .Values.global.postgresql.primary.persistence.storageClass }}
+              --set primary.persistence.storageClass={{ .Values.global.postgresql.primary.persistence.storageClass }} \
               {{- end }}
-              --set primary.resources.requests.memory={{ .Values.postgresql.primary.resources.requests.memory }} \
-              --set primary.resources.requests.cpu={{ .Values.postgresql.primary.resources.requests.cpu }} \
-              --set primary.resources.limits.memory={{ .Values.postgresql.primary.resources.limits.memory }} \
-              --set primary.resources.limits.cpu={{ .Values.postgresql.primary.resources.limits.cpu }} \
+              --set primary.resources.requests.memory={{ .Values.global.postgresql.primary.resources.requests.memory }} \
+              --set primary.resources.requests.cpu={{ .Values.global.postgresql.primary.resources.requests.cpu }} \
+              --set primary.resources.limits.memory={{ .Values.global.postgresql.primary.resources.limits.memory }} \
+              --set primary.resources.limits.cpu={{ .Values.global.postgresql.primary.resources.limits.cpu }} \
               --wait \
               --timeout 10m
           else
             echo "Installing PostgreSQL chart..."
-            helm install {{ .Values.postgresql.fullnameOverride }} bitnami/postgresql \
+            helm install {{ .Values.global.postgresql.fullnameOverride }} bitnami/postgresql \
               --namespace {{ .Values.global.namespace }} \
-              --version {{ .Values.postgresql.chartVersion }} \
+              --version {{ .Values.global.postgresql.chartVersion }} \
               --set image.tag=latest \
-              --set fullnameOverride={{ .Values.postgresql.fullnameOverride }} \
-              --set auth.username={{ .Values.postgresql.auth.username }} \
-              --set auth.password={{ .Values.postgresql.auth.password }} \
-              --set auth.database={{ .Values.postgresql.auth.database }} \
-              --set primary.persistence.enabled={{ .Values.postgresql.primary.persistence.enabled }} \
-              --set primary.persistence.size={{ .Values.postgresql.primary.persistence.size }} \
-              {{- if .Values.postgresql.primary.persistence.storageClass }}
-              --set primary.persistence.storageClass={{ .Values.postgresql.primary.persistence.storageClass }} \
+              --set fullnameOverride={{ .Values.global.postgresql.fullnameOverride }} \
+              --set auth.username={{ .Values.global.postgresql.auth.username }} \
+              --set auth.password={{ .Values.global.postgresql.auth.password }} \
+              --set auth.database={{ .Values.global.postgresql.auth.database }} \
+              --set primary.persistence.enabled={{ .Values.global.postgresql.primary.persistence.enabled }} \
+              --set primary.persistence.size={{ .Values.global.postgresql.primary.persistence.size }} \
+              {{- if .Values.global.postgresql.primary.persistence.storageClass }}
+              --set primary.persistence.storageClass={{ .Values.global.postgresql.primary.persistence.storageClass }} \
               {{- end }}
-              --set primary.resources.requests.memory={{ .Values.postgresql.primary.resources.requests.memory }} \
-              --set primary.resources.requests.cpu={{ .Values.postgresql.primary.resources.requests.cpu }} \
-              --set primary.resources.limits.memory={{ .Values.postgresql.primary.resources.limits.memory }} \
-              --set primary.resources.limits.cpu={{ .Values.postgresql.primary.resources.limits.cpu }} \
+              --set primary.resources.requests.memory={{ .Values.global.postgresql.primary.resources.requests.memory }} \
+              --set primary.resources.requests.cpu={{ .Values.global.postgresql.primary.resources.requests.cpu }} \
+              --set primary.resources.limits.memory={{ .Values.global.postgresql.primary.resources.limits.memory }} \
+              --set primary.resources.limits.cpu={{ .Values.global.postgresql.primary.resources.limits.cpu }} \
               --wait \
               --timeout 10m
           fi
@@ -128,10 +128,10 @@ spec:
           # Display PostgreSQL connection info
           echo "=================================================="
           echo "PostgreSQL Connection Information:"
-          echo "Host: {{ .Values.postgresql.fullnameOverride }}.{{ .Values.global.namespace }}.svc.cluster.local"
+          echo "Host: {{ .Values.global.postgresql.fullnameOverride }}.{{ .Values.global.namespace }}.svc.cluster.local"
           echo "Port: 5432"
-          echo "Username: {{ .Values.postgresql.auth.username }}"
-          echo "Default Database: {{ .Values.postgresql.auth.database }}"
+          echo "Username: {{ .Values.global.postgresql.auth.username }}"
+          echo "Default Database: {{ .Values.global.postgresql.auth.database }}"
           echo "=================================================="
           
           echo "Installation job completed successfully"
@@ -192,13 +192,13 @@ spec:
           echo "=================================================="
           echo "PostgreSQL Database Creation Job"
           echo "=================================================="
-          echo "PostgreSQL Host: {{ .Values.postgresql.fullnameOverride }}.{{ .Values.global.namespace }}.svc.cluster.local"
+          echo "PostgreSQL Host: {{ .Values.global.postgresql.fullnameOverride }}.{{ .Values.global.namespace }}.svc.cluster.local"
           echo "=================================================="
           
-          export PGPASSWORD="{{ .Values.postgresql.auth.password }}"
-          export PGHOST="{{ .Values.postgresql.fullnameOverride }}.{{ .Values.global.namespace }}.svc.cluster.local"
+          export PGPASSWORD="{{ .Values.global.postgresql.auth.password }}"
+          export PGHOST="{{ .Values.global.postgresql.fullnameOverride }}.{{ .Values.global.namespace }}.svc.cluster.local"
           export PGPORT="5432"
-          export PGUSER="{{ .Values.postgresql.auth.username }}"
+          export PGUSER="{{ .Values.global.postgresql.auth.username }}"
           
           # Wait for PostgreSQL to be ready
           echo "Waiting for PostgreSQL to accept connections..."
@@ -229,8 +229,8 @@ spec:
           create_database "geostudio"
           create_database "geostudio_auth"
           create_database "mlflow"
-          {{- if .Values.infrastructure.keycloak.enabled }}
-          create_database "{{ .Values.keycloak.database }}"
+          {{- if .Values.global.keycloak.enabled }}
+          create_database "{{ .Values.global.keycloak.database }}"
           {{- end }}
           
           echo ""
@@ -241,8 +241,8 @@ spec:
           echo "  - geostudio"
           echo "  - geostudio_auth"
           echo "  - mlflow"
-          {{- if .Values.infrastructure.keycloak.enabled }}
-          echo "  - {{ .Values.keycloak.database }}"
+          {{- if .Values.global.keycloak.enabled }}
+          echo "  - {{ .Values.global.keycloak.database }}"
           {{- end }}
           echo "=================================================="
           

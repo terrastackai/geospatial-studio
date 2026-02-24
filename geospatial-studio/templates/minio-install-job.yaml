@@ -1,4 +1,4 @@
-{{- if .Values.infrastructure.minio.enabled }}
+{{- if .Values.global.minio.enabled }}
 ---
 # Job to deploy MinIO
 apiVersion: batch/v1
@@ -45,7 +45,7 @@ spec:
           echo "=================================================="
           echo "Release Name: {{ .Release.Name }}"
           echo "Namespace: {{ .Values.global.namespace }}"
-          echo "MinIO Image: {{ .Values.minio.image }}:{{ .Values.minio.tag }}"
+          echo "MinIO Image: {{ .Values.global.minio.image }}:{{ .Values.global.minio.tag }}"
           echo "=================================================="
           
           # Create MinIO PVC
@@ -60,12 +60,12 @@ spec:
               app.kubernetes.io/name: minio
               app.kubernetes.io/managed-by: {{ .Release.Service }}
           spec:
-            storageClassName: {{ .Values.minio.persistence.storageClass }}
+            storageClassName: {{ .Values.global.minio.persistence.storageClass }}
             accessModes:
               - ReadWriteOnce
             resources:
               requests:
-                storage: {{ .Values.minio.persistence.size }}
+                storage: {{ .Values.global.minio.persistence.size }}
           EOF
           
           echo "MinIO PVC created"
@@ -93,7 +93,7 @@ spec:
               spec:
                 containers:
                 - name: minio
-                  image: {{ .Values.minio.image }}:{{ .Values.minio.tag }}
+                  image: {{ .Values.global.minio.image }}:{{ .Values.global.minio.tag }}
                   args:
                   - server
                   - /data
@@ -101,9 +101,9 @@ spec:
                   - ":9001"
                   env:
                   - name: MINIO_ROOT_USER
-                    value: "{{ .Values.minio.auth.rootUser }}"
+                    value: "{{ .Values.global.minio.auth.rootUser }}"
                   - name: MINIO_ROOT_PASSWORD
-                    value: "{{ .Values.minio.auth.rootPassword }}"
+                    value: "{{ .Values.global.minio.auth.rootPassword }}"
                   ports:
                   - containerPort: 9000
                     name: api
@@ -191,7 +191,7 @@ spec:
           echo "MinIO Connection Information:"
           echo "API URL: https://minio.{{ .Values.global.namespace }}.svc.cluster.local:9000"
           echo "Console URL: http://minio.{{ .Values.global.namespace }}.svc.cluster.local:9001"
-          echo "Root User: {{ .Values.minio.auth.rootUser }}"
+          echo "Root User: {{ .Values.global.minio.auth.rootUser }}"
           echo "=================================================="
           
           echo "Installation job completed successfully"
@@ -243,7 +243,7 @@ spec:
           
           # Wait for MinIO to be ready
           echo "Waiting for MinIO to accept connections..."
-          until mc alias set myminio https://minio.{{ .Values.global.namespace }}.svc.cluster.local:9000 {{ .Values.minio.auth.rootUser }} {{ .Values.minio.auth.rootPassword }} --insecure 2>/dev/null; do
+          until mc alias set myminio https://minio.{{ .Values.global.namespace }}.svc.cluster.local:9000 {{ .Values.global.minio.auth.rootUser }} {{ .Values.global.minio.auth.rootPassword }} --insecure 2>/dev/null; do
             echo "MinIO not ready yet, retrying in 5 seconds..."
             sleep 5
           done

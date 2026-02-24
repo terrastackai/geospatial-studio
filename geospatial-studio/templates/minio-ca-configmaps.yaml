@@ -1,5 +1,5 @@
 {{- if and (eq .Values.global.objectStorage.cos_storage_class "cos-s3-csi-s3fs-sc") (.Values.global.objectStorage.createCosSecret) }}
-{{- if or (.Values.infrastructure.minio.enabled) (contains "minio" .Values.global.objectStorage.endpoint) }}
+{{- if or (.Values.global.minio.enabled) (contains "minio" .Values.global.objectStorage.endpoint) }}
 {{- if .Values.global.objectStorage.tlsCertPem }}
 ---
 # ConfigMap with MinIO CA certificate for CSI driver in kube-system namespace
@@ -37,7 +37,7 @@ metadata:
 data:
   ca.crt: |
 {{ .Values.global.objectStorage.tlsCertPem | toString | nindent 4 }}
-{{- else if .Values.infrastructure.minio.enabled }}
+{{- else if .Values.global.minio.enabled }}
 ---
 # Job to create ConfigMaps from auto-generated minio-tls-secret
 # Runs after certificate generation job completes

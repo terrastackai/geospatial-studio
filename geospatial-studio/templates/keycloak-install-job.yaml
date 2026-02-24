@@ -1,4 +1,4 @@
-{{- if .Values.infrastructure.keycloak.enabled }}
+{{- if .Values.global.keycloak.enabled }}
 ---
 # Job to deploy Keycloak before other components
 apiVersion: batch/v1
@@ -45,7 +45,7 @@ spec:
           echo "=================================================="
           echo "Release Name: {{ .Release.Name }}"
           echo "Namespace: {{ .Values.global.namespace }}"
-          echo "Keycloak Image: {{ .Values.keycloak.image }}:{{ .Values.keycloak.tag }}"
+          echo "Keycloak Image: {{ .Values.global.keycloak.image }}:{{ .Values.global.keycloak.tag }}"
           echo "=================================================="
           
           # Create Keycloak Deployment
@@ -71,14 +71,14 @@ spec:
               spec:
                 containers:
                 - name: keycloak
-                  image: {{ .Values.keycloak.image }}:{{ .Values.keycloak.tag }}
+                  image: {{ .Values.global.keycloak.image }}:{{ .Values.global.keycloak.tag }}
                   args:
                   - "start"
                   env:
                   - name: KEYCLOAK_ADMIN
-                    value: "{{ .Values.keycloak.auth.adminUser }}"
+                    value: "{{ .Values.global.keycloak.auth.adminUser }}"
                   - name: KEYCLOAK_ADMIN_PASSWORD
-                    value: "{{ .Values.keycloak.auth.adminPassword }}"
+                    value: "{{ .Values.global.keycloak.auth.adminPassword }}"
                   - name: KC_HOSTNAME_STRICT
                     value: "false"
                   - name: KC_HOSTNAME_STRICT_HTTPS
@@ -92,15 +92,15 @@ spec:
                   - name: KC_METRICS_ENABLED
                     value: "true"
                   - name: KC_DB_USERNAME
-                    value: "{{ .Values.postgresql.auth.username }}"
+                    value: "{{ .Values.global.postgresql.auth.username }}"
                   - name: KC_DB_PASSWORD
-                    value: "{{ .Values.postgresql.auth.password }}"
+                    value: "{{ .Values.global.postgresql.auth.password }}"
                   - name: KC_DB
                     value: "postgres"
                   - name: KC_DB_URL_HOST
-                    value: "{{ .Values.postgresql.fullnameOverride }}.{{ .Values.global.namespace }}.svc.cluster.local"
+                    value: "{{ .Values.global.postgresql.fullnameOverride }}.{{ .Values.global.namespace }}.svc.cluster.local"
                   - name: KC_DB_URL_DATABASE
-                    value: "{{ .Values.keycloak.database }}"
+                    value: "{{ .Values.global.keycloak.database }}"
                   - name: KC_PROXY_HEADERS
                     value: "xforwarded"
                   ports:
@@ -128,11 +128,11 @@ spec:
                     failureThreshold: 3
                   resources:
                     requests:
-                      cpu: {{ .Values.keycloak.resources.requests.cpu }}
-                      memory: {{ .Values.keycloak.resources.requests.memory }}
+                      cpu: {{ .Values.global.keycloak.resources.requests.cpu }}
+                      memory: {{ .Values.global.keycloak.resources.requests.memory }}
                     limits:
-                      cpu: {{ .Values.keycloak.resources.limits.cpu }}
-                      memory: {{ .Values.keycloak.resources.limits.memory }}
+                      cpu: {{ .Values.global.keycloak.resources.limits.cpu }}
+                      memory: {{ .Values.global.keycloak.resources.limits.memory }}
           EOF
           
           echo "Keycloak deployment created"
@@ -174,7 +174,7 @@ spec:
           echo "=================================================="
           echo "Keycloak Connection Information:"
           echo "Internal URL: http://keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080"
-          echo "Admin User: {{ .Values.keycloak.auth.adminUser }}"
+          echo "Admin User: {{ .Values.global.keycloak.auth.adminUser }}"
           echo "Admin Console: http://keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080/admin"
           echo "=================================================="
           
@@ -223,14 +223,14 @@ spec:
           echo "Keycloak Configuration Job"
           echo "=================================================="
           echo "Keycloak Host: keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080"
-          echo "Realm: {{ .Values.keycloak.realm }}"
+          echo "Realm: {{ .Values.global.keycloak.realm }}"
           echo "=================================================="
           
           # Install jq for JSON parsing
           apk add --no-cache jq bash
           
           export KEYCLOAK_URL="http://keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080"
-          export CLIENT_SECRET="{{ .Values.keycloak.clientSecret }}"
+          export CLIENT_SECRET="{{ .Values.global.keycloak.clientSecret }}"
           
           # Wait for Keycloak to be ready
           echo "Waiting for Keycloak to accept connections..."
@@ -246,8 +246,8 @@ spec:
             --header 'content-type: application/x-www-form-urlencoded' \
             --data client_id=admin-cli \
             --data grant_type=password \
-            --data username={{ .Values.keycloak.auth.adminUser }} \
-            --data password={{ .Values.keycloak.auth.adminPassword }} | jq -r '.access_token')
+            --data username={{ .Values.global.keycloak.auth.adminUser }} \
+            --data password={{ .Values.global.keycloak.auth.adminPassword }} | jq -r '.access_token')
           
           if [ -z "$KC_TOKEN" ] || [ "$KC_TOKEN" = "null" ]; then
             echo "ERROR: Failed to get admin access token"
@@ -256,18 +256,18 @@ spec:
           echo "Access token obtained successfully"
           
           # Create realm
-          echo "Creating realm '{{ .Values.keycloak.realm }}'..."
+          echo "Creating realm '{{ .Values.global.keycloak.realm }}'..."
           curl -s -L -X POST "$KEYCLOAK_URL/admin/realms" \
             --header "Content-Type: application/json" \
             --header "Authorization: Bearer $KC_TOKEN" \
-            --data '{"realm": "{{ .Values.keycloak.realm }}", "enabled": true}' || echo "Realm may already exist"
+            --data '{"realm": "{{ .Values.global.keycloak.realm }}", "enabled": true}' || echo "Realm may already exist"
           
           # Create client
           echo "Creating client 'geostudio-client'..."
           CLUSTER_URL="{{ .Values.global.cluster_url }}"
           NAMESPACE="{{ .Values.global.namespace }}"
           
-          curl -s -L -X POST "$KEYCLOAK_URL/admin/realms/{{ .Values.keycloak.realm }}/clients" \
+          curl -s -L -X POST "$KEYCLOAK_URL/admin/realms/{{ .Values.global.keycloak.realm }}/clients" \
             --header "Content-Type: application/json" \
             --header "Authorization: Bearer $KC_TOKEN" \
             --data '{
@@ -305,36 +305,36 @@ spec:
           
           # Get client UUID
           echo "Getting client UUID..."
-          CLIENT_UUID=$(curl -s -X GET "$KEYCLOAK_URL/admin/realms/{{ .Values.keycloak.realm }}/clients?clientId=geostudio-client" \
+          CLIENT_UUID=$(curl -s -X GET "$KEYCLOAK_URL/admin/realms/{{ .Values.global.keycloak.realm }}/clients?clientId=geostudio-client" \
             --header "Content-Type: application/json" \
             --header "Authorization: Bearer $KC_TOKEN" | jq -r '.[0].id')
           
           echo "Client UUID: $CLIENT_UUID"
           
           # Verify client secret
-          ACTUAL_SECRET=$(curl -s -X GET "$KEYCLOAK_URL/admin/realms/{{ .Values.keycloak.realm }}/clients/$CLIENT_UUID/client-secret" \
+          ACTUAL_SECRET=$(curl -s -X GET "$KEYCLOAK_URL/admin/realms/{{ .Values.global.keycloak.realm }}/clients/$CLIENT_UUID/client-secret" \
             --header "Content-Type: application/json" \
             --header "Authorization: Bearer $KC_TOKEN" | jq -r '.value')
           
           echo "Client Secret configured: $ACTUAL_SECRET"
           
           # Create test user
-          echo "Creating test user '{{ .Values.keycloak.testUser.username }}'..."
-          curl -s -L -X POST "$KEYCLOAK_URL/admin/realms/{{ .Values.keycloak.realm }}/users" \
+          echo "Creating test user '{{ .Values.global.keycloak.testUser.username }}'..."
+          curl -s -L -X POST "$KEYCLOAK_URL/admin/realms/{{ .Values.global.keycloak.realm }}/users" \
             --header "Content-Type: application/json" \
             --header "Authorization: Bearer $KC_TOKEN" \
             --data '{
-              "username": "{{ .Values.keycloak.testUser.username }}",
-              "email": "{{ .Values.keycloak.testUser.email }}",
+              "username": "{{ .Values.global.keycloak.testUser.username }}",
+              "email": "{{ .Values.global.keycloak.testUser.email }}",
               "enabled": true,
-              "firstName": "{{ .Values.keycloak.testUser.firstName }}",
-              "lastName": "{{ .Values.keycloak.testUser.lastName }}",
+              "firstName": "{{ .Values.global.keycloak.testUser.firstName }}",
+              "lastName": "{{ .Values.global.keycloak.testUser.lastName }}",
               "emailVerified": true
             }' || echo "User may already exist"
           
           # Get user ID
           echo "Getting user ID..."
-          USER_ID=$(curl -s -X GET "$KEYCLOAK_URL/admin/realms/{{ .Values.keycloak.realm }}/users?username={{ .Values.keycloak.testUser.username }}" \
+          USER_ID=$(curl -s -X GET "$KEYCLOAK_URL/admin/realms/{{ .Values.global.keycloak.realm }}/users?username={{ .Values.global.keycloak.testUser.username }}" \
             --header "Content-Type: application/json" \
             --header "Authorization: Bearer $KC_TOKEN" | jq -r '.[0].id')
           
@@ -342,12 +342,12 @@ spec:
           
           # Set user password
           echo "Setting user password..."
-          curl -s -L -X PUT "$KEYCLOAK_URL/admin/realms/{{ .Values.keycloak.realm }}/users/$USER_ID/reset-password" \
+          curl -s -L -X PUT "$KEYCLOAK_URL/admin/realms/{{ .Values.global.keycloak.realm }}/users/$USER_ID/reset-password" \
             --header "Content-Type: application/json" \
             --header "Authorization: Bearer $KC_TOKEN" \
             --data '{
               "type": "password",
-              "value": "{{ .Values.keycloak.testUser.password }}",
+              "value": "{{ .Values.global.keycloak.testUser.password }}",
               "temporary": false
             }'
           
@@ -355,13 +355,13 @@ spec:
           echo "=================================================="
           echo "Keycloak configuration completed successfully!"
           echo "=================================================="
-          echo "Realm: {{ .Values.keycloak.realm }}"
+          echo "Realm: {{ .Values.global.keycloak.realm }}"
           echo "Client ID: geostudio-client"
           echo "Client Secret: $CLIENT_SECRET"
-          echo "Test User: {{ .Values.keycloak.testUser.username }}"
-          echo "Test Password: {{ .Values.keycloak.testUser.password }}"
+          echo "Test User: {{ .Values.global.keycloak.testUser.username }}"
+          echo "Test Password: {{ .Values.global.keycloak.testUser.password }}"
           echo "=================================================="
-          echo "Issuer URL: http://keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080/realms/{{ .Values.keycloak.realm }}"
-          echo "Auth URL: http://keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080/realms/{{ .Values.keycloak.realm }}/protocol/openid-connect/auth"
+          echo "Issuer URL: http://keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080/realms/{{ .Values.global.keycloak.realm }}"
+          echo "Auth URL: http://keycloak.{{ .Values.global.namespace }}.svc.cluster.local:8080/realms/{{ .Values.global.keycloak.realm }}/protocol/openid-connect/auth"
           echo "=================================================="
 {{- end }}

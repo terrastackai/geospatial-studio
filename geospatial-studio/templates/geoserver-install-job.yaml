@@ -1,4 +1,4 @@
-{{- if .Values.infrastructure.geoserver.enabled }}
+{{- if .Values.global.geoserver.enabled }}
 
 # 1. ConfigMap for server.xml
 apiVersion: v1
@@ -69,7 +69,7 @@ metadata:
 data:
   CORS_ALLOWED_HEADERS: "Origin,Host,Cache-Control,Content-Security-Policy,X-Content-Type-Options,Access-Control-Allow-Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers"
   CORS_ENABLED: "true"
-  EXTRA_JAVA_OPTS: {{ .Values.geoserver.javaOpts | default "-Xms4g -Xmx8g" | quote }}
+  EXTRA_JAVA_OPTS: {{ .Values.global.geoserver.javaOpts | default "-Xms4g -Xmx8g" | quote }}
   GEOSERVER_CSRF_WHITELIST: ".local"
   INSTALL_EXTENSIONS: "true"
   PROXY_BASE_URL: "http://geofm-geoserver.{{ .Values.global.namespace }}.svc.cluster.local:3000/geoserver"
@@ -89,12 +89,12 @@ metadata:
     app.kubernetes.io/component: geoserver
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  storageClassName: {{ .Values.geoserver.storageClass | default "local-path" }}
+  storageClassName: {{ .Values.global.geoserver.storageClass | default "local-path" }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.geoserver.storage | default "60Gi" }}
+      storage: {{ .Values.global.geoserver.storage | default "60Gi" }}
 
 ---
 apiVersion: apps/v1
@@ -130,7 +130,7 @@ spec:
         - name: gfm-geoserver
           securityContext:
             {}
-          image: {{ .Values.geoserver.image | default "docker.osgeo.org/geoserver:2.28.1" }}
+          image: {{ .Values.global.geoserver.image | default "docker.osgeo.org/geoserver:2.28.1" }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           envFrom:
             - configMapRef:
@@ -139,9 +139,9 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
-          {{- if .Values.geoserver.resources }}
+          {{- if .Values.global.geoserver.resources }}
           resources:
-            {{- toYaml .Values.geoserver.resources | nindent 22 }}
+            {{- toYaml .Values.global.geoserver.resources | nindent 22 }}
           {{- end }}
           volumeMounts:
             - mountPath: /opt/geoserver_data
@@ -208,9 +208,9 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: GEOSERVER_USERNAME
-          value: {{ .Values.infrastructure.geoserver.adminUsername | default "admin" | quote }}
+          value: {{ .Values.global.geoserver.adminUsername | default "admin" | quote }}
         - name: GEOSERVER_PASSWORD
-          value: {{ .Values.infrastructure.geoserver.adminPassword | default "geoserver" | quote }}
+          value: {{ .Values.global.geoserver.adminPassword | default "geoserver" | quote }}
         - name: GEOSERVER_URL
           value: "http://geofm-geoserver.{{ .Values.global.namespace }}.svc.cluster.local:3000/geoserver"
         command:

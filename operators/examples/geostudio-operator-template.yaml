@@ -373,61 +373,88 @@ spec:
         enabled: ${STORAGE_FILESYSTEM_ENABLED}
       pvc:
         enabled: ${STORAGE_PVC_ENABLED}
-  
-  # ==========================================================================
-  # Infrastructure - Auto-Deploy Services
-  # ==========================================================================
-  infrastructure:
-    csiDriver:
-      enabled: true
     
-    geoserver:
-      adminPassword: ${geoserver_password}
-      adminUsername: ${geoserver_username}
-      enabled: true
-      image: docker.osgeo.org/geoserver:2.28.1
-      javaOpts: ${GEOSERVER_CM_PROXYBASEURL}
-      resources: {}
-      storage: 60Gi
-      storageClass: ${NON_COS_STORAGE_CLASS}
+    # ==========================================================================
+    # Infrastructure Resources - Auto-Deploy Services
+    # ==========================================================================
     
-    keycloak:
-      enabled: true
-    
-    minio:
-      enabled: true
-    
+    # PostgreSQL Configuration
     postgresql:
       enabled: true
+      chartVersion: "${PG_VERSION}"
+      fullnameOverride: "postgresql"
+      auth:
+        username: ${pg_username}
+        password: ${pg_password}
+        database: postgres
+      primary:
+        persistence:
+          enabled: true
+          size: 10Gi
+          storageClass: ""
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 250m
+          limits:
+            memory: 1Gi
+            cpu: 1000m
+    
+    # MinIO Configuration
+    minio:
+      enabled: true
+      image: ${MINIO_IMAGE}
+      tag: ${MINIO_TAG}
+      auth:
+        rootUser: ${access_key_id}
+        rootPassword: ${secret_access_key}
+      persistence:
+        enabled: ${MINIO_PERSISTENCE_ENABLED}
+        size: ${MINIO_STORAGE_SIZE}
+        storageClass: ${NON_COS_STORAGE_CLASS}
+      resources: {}
+    
+    # Keycloak Configuration
+    keycloak:
+      enabled: true
+      image: quay.io/keycloak/keycloak
+      tag: "26.4.5"
+      database: keycloak
+      realm: geostudio
+      clientSecret: oauth_client_secret
+      auth:
+        adminUser: ${keycloak_admin_user}
+        adminPassword: ${keycloak_admin_password}
+      testUser:
+        username: testuser
+        password: testpass123
+        email: test@example.com
+        firstName: Test
+        lastName: User
+      resources:
+        requests:
+          memory: 256Mi
+          cpu: 250m
+        limits:
+          memory: 1Gi
+          cpu: 500m
+    
+    # GeoServer Configuration
+    geoserver:
+      enabled: true
+      image: docker.osgeo.org/geoserver:2.28.1
+      adminUsername: ${geoserver_username}
+      adminPassword: ${geoserver_password}
+      javaOpts: ${GEOSERVER_CM_PROXYBASEURL}
+      storage: 60Gi
+      storageClass: ${NON_COS_STORAGE_CLASS}
+      resources: {}
+    
+    # CSI Driver Configuration
+    csiDriver:
+      enabled: true
+      type: "ibm-object-s3-csi"
   
-  # ==========================================================================
-  # Keycloak - Authentication Service
-  # ==========================================================================
-  keycloak:
-    adminPassword: ${keycloak_admin_password}
-    adminUser: ${keycloak_admin_user}
-    database: keycloak
-    image: quay.io/keycloak/keycloak
-    tag: "26.4.5"
-    realm: geostudio
-    clientSecret: oauth_client_secret
-    auth:
-      adminUser: keycloak_admin_user
-      adminPassword: keycloak_admin_password
-    testUser:
-      username: testuser
-      password: testpass123
-      email: test@example.com
-      firstName: Test
-      lastName: User
-    resources:
-      requests:
-        memory: 256Mi
-        cpu: 250m
-      limits:
-        memory: 1Gi
-        cpu: 500m
-
   # ==========================================================================
   # Redis - Cache and Message Broker
   # ==========================================================================
@@ -440,40 +467,3 @@ spec:
     fullnameOverride: ${REDIS_FULL_NAME_OVERRIDE}
     password: ${redis_password}
 
-  # ==========================================================================
-  # MinIO - Object Storage
-  # ==========================================================================
-  minio:
-    image: ${MINIO_IMAGE}
-    tag: ${MINIO_TAG}
-    auth:
-      rootUser: ${access_key_id}
-      rootPassword: ${secret_access_key}
-    persistence:
-      enabled: ${MINIO_PERSISTENCE_ENABLED}
-      size: ${MINIO_STORAGE_SIZE}
-      storageClass: ${NON_COS_STORAGE_CLASS}
-    resources: {}
-
-  # ==========================================================================
-  # Postgres
-  # ==========================================================================
-  postgresql:
-    chartVersion: "${PG_VERSION}"
-    fullnameOverride: "postgresql"
-    auth:
-      username: ${pg_username}
-      password: ${pg_password}
-      database: postgres    
-    primary:
-      persistence:
-        enabled: true
-        size: 10Gi
-        storageClass: ""
-      resources:
-        requests:
-          memory: 256Mi
-          cpu: 250m
-        limits:
-          memory: 1Gi
-          cpu: 1000m
