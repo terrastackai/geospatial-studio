@@ -208,9 +208,9 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
         - name: GEOSERVER_USERNAME
-          value: {{ .Values.geoserver.adminUsername | default "admin" | quote }}
+          value: {{ .Values.infrastructure.geoserver.adminUsername | default "admin" | quote }}
         - name: GEOSERVER_PASSWORD
-          value: {{ .Values.geoserver.adminPassword | default "geoserver" | quote }}
+          value: {{ .Values.infrastructure.geoserver.adminPassword | default "geoserver" | quote }}
         - name: GEOSERVER_URL
           value: "http://geofm-geoserver.{{ .Values.global.namespace }}.svc.cluster.local:3000/geoserver"
         command:

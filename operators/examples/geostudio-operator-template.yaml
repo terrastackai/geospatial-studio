@@ -87,6 +87,7 @@ spec:
         inference_auxdata: ${BUCKET_INFERENCE_AUXDATA}
         mlflow: ${BUCKET_GFM_MLFLOW}
         temporaryUploads: ${BUCKET_TEMP_UPLOAD}
+        generic_python_processor: ${BUCKET_GENERIC_PYTHON_PROCESSOR}
       cos_storage_class: ${COS_STORAGE_CLASS}
       create_bucket: false
       createCosSecret: false
@@ -342,6 +343,7 @@ spec:
         inference_auxdata: ${BUCKET_INFERENCE_AUXDATA}
         mlflow: ${BUCKET_GFM_MLFLOW}
         temporaryUploads: ${BUCKET_TEMP_UPLOAD}
+        generic_python_processor: ${BUCKET_GENERIC_PYTHON_PROCESSOR}
       cos_storage_class: ${COS_STORAGE_CLASS}
       create_bucket: true
       createCosSecret: false
