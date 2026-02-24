@@ -38,7 +38,7 @@ The studio deployment includes several services that work together to provide ge
 ### Studio Authentication
 
 Access the Studio UI at [https://localhost:4180](https://localhost:4180)
-```
+```text
 Username: testuser
 Password: testpass123
 ```
@@ -46,7 +46,7 @@ Password: testpass123
 ### GeoServer Authentication
 
 Access GeoServer at [https://localhost:3000/geoserver](https://localhost:3000/geoserver)
-```
+```text
 Username: admin
 Password: geoserver
 ```
@@ -54,7 +54,7 @@ Password: geoserver
 ### MinIO Authentication
 
 Access MinIO Console at [https://localhost:9001](https://localhost:9001)
-```
+```text
 Username: minioadmin
 Password: minioadmin
 ```
@@ -111,7 +111,7 @@ export UI_ROUTE_URL="https://localhost:4180"
 
 !!! tip "Make It Permanent"
     To avoid setting these variables every time, add them to your shell profile:
-```bash
+    ```bash
     # For bash
     echo 'export STUDIO_API_KEY="your-key-here"' >> ~/.bashrc
     echo 'export UI_ROUTE_URL="https://localhost:4180"' >> ~/.bashrc
@@ -121,7 +121,7 @@ export UI_ROUTE_URL="https://localhost:4180"
     echo 'export STUDIO_API_KEY="your-key-here"' >> ~/.zshrc
     echo 'export UI_ROUTE_URL="https://localhost:4180"' >> ~/.zshrc
     source ~/.zshrc
-```
+    ```
 
 ---
 
@@ -196,9 +196,9 @@ kubectl port-forward -n default svc/minio 9000:9000 >> studio-pf.log 2>&1 &
 ```
 
 ??? info "Understanding the Port Forward Command"
-```bash
+    ```bash
     kubectl port-forward -n default svc/minio 9001:9001 >> studio-pf.log 2>&1 &
-```
+    ```
     
     - `kubectl port-forward` - Creates the port forward
     - `-n default` - Uses the 'default' namespace
@@ -332,7 +332,7 @@ Onboard the tuning task `templates`.  These are the outline configurations to ma
 1. Now we can trigger a fine tuning job, using the payload and script below. First replace the values of keys `dataset_id`, `base_model_id`, and `tune_template_id` with the ids generated after onboarding 1, 2, and 3 above respectively. After submission, you can monitor the training in [MLflow ui](https://localhost:5000).
 
 ??? note "Click to view fine-tuning payload"
-    ```shell
+    ```bash
     payload='{
       "name": "burn-scars-demo",
       "description": "Segmentation",

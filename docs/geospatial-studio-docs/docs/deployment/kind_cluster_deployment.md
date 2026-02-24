@@ -142,6 +142,6 @@ Run the automated deployment script.
 ### Access the Application
 
 !!! success "Deployment Complete"
-    Once all services are running, proceed to [First Steps](first-steps.md) to start using the Geospatial Studio.
+    Once all services are running, proceed to [First Steps](../getting-started/first-steps.md) to start using the Geospatial Studio.
 
 ---

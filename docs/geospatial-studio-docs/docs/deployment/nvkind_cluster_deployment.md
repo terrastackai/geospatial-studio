@@ -148,7 +148,7 @@ k9s
 !!! success "Deployment Complete!"
     Your GPU-enabled Geospatial Studio is ready.
 
-**Continue to [First Steps](first-steps.md)** to access services and start using the studio.
+**Continue to [First Steps](../getting-started/first-steps.md)** to access services and start using the studio.
 
 ---
 

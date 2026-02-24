@@ -1,57 +1,109 @@
 # Sample Payloads
 
-Here are a few example payloads you can use when testing out the studio and as a guide when Onboarding your own datasets to the studio, fine-tuning and running inference.
+Example payloads for testing and integrating with the Geospatial Studio API.
 
-## Dataset onboarding
+---
 
-Click below to see example configurations for onboarding a new dataset to the studio:
+##  Datasets
 
-<div class=datasets>
-    <button onclick="showExample('burnScarsDataset')" class="button">Burn scars dataset</button>
-    <button onclick="showExample('floodDatasetMultimodal')" class="button">Multimodal flooding dataset</button>
+<div class="payload-grid">
+    <button onclick="showExample('burnScarsDataset')" class="payload-card">
+        <span class="card-title">Burn Scars Dataset</span>
+        <span class="card-desc">Wildfire detection training data</span>
+    </button>
+    <button onclick="showExample('floodDatasetMultimodal')" class="payload-card">
+        <span class="card-title">Multimodal Flood Dataset</span>
+        <span class="card-desc">Multi-sensor flood mapping data</span>
+    </button>
 </div>
 
-## Fine-tuning
+---
 
-### Tuning templates
+##  Fine-Tuning Templates
 
-Click below for sample configs for each of the tune templates we have in the studio:
-
-- [Download HPO config](../sample_files/burnscars-iterate-hpo.yaml) for terratorch-iterate fine-tuning | [View details](/sample-files/#burnscars-iterate-hpo)
-- [View ConvNeXT template](/sample-files/#convnext-template) for user-defined tuning
-<div class=tuning-templates>
-    <button onclick="showExample('regression')" class="button">Regression</button>
-    <button onclick="showExample('segmentation')" class="button">Segmentation</button>
-    <button onclick="showExample('terramingSegmentation')" class="button">terramind: Segmentation</button>
-    <button onclick="showExample('claySegmentation')" class="button">clay_v1 : Segmentation</button>
-    <button onclick="showExample('resnetSegmentation')" class="button">timm_resnet : Segmentation</button>
-    <button onclick="showExample('convnextSegmentation')" class="button">timm_convnext : Segmentation</button>
-    <button onclick="showExample('terratorchIterate')" class="button">HPO With Terratorch Iterate</button>
-    <button onclick="showExample('userDefinedtuneTemplate')" class="button">User Defined tune Template task</button>
+<div class="payload-grid">
+    <button onclick="showExample('segmentation')" class="payload-card">
+        <span class="card-title">Segmentation</span>
+        <span class="card-desc">Generic segmentation template</span>
+    </button>
+    <button onclick="showExample('regression')" class="payload-card">
+        <span class="card-title">Regression</span>
+        <span class="card-desc">Regression task template</span>
+    </button>
+    <button onclick="showExample('terramingSegmentation')" class="payload-card">
+        <span class="card-title">Terramind</span>
+        <span class="card-desc">Terramind segmentation</span>
+    </button>
+    <button onclick="showExample('claySegmentation')" class="payload-card">
+        <span class="card-title">Clay v1</span>
+        <span class="card-desc">Clay backbone segmentation</span>
+    </button>
+    <button onclick="showExample('resnetSegmentation')" class="payload-card">
+        <span class="card-title">ResNet</span>
+        <span class="card-desc">ResNet backbone segmentation</span>
+    </button>
+    <button onclick="showExample('convnextSegmentation')" class="payload-card">
+        <span class="card-title">ConvNeXt</span>
+        <span class="card-desc">ConvNeXt backbone segmentation</span>
+    </button>
+    <button onclick="showExample('terratorchIterate')" class="payload-card">
+        <span class="card-title">HPO Iterate</span>
+        <span class="card-desc">Hyperparameter optimization</span>
+    </button>
+    <button onclick="showExample('userDefinedtuneTemplate')" class="payload-card">
+        <span class="card-title">Custom Template</span>
+        <span class="card-desc">User-defined tune template</span>
+    </button>
 </div>
 
-### Tunes
+**Additional Resources:**
+- [Download HPO config](../sample_files/burnscars-iterate-hpo.yaml) - Terratorch-iterate fine-tuning
+- [View ConvNeXT template](../reference/sample-files.md#convnext-template) - User-defined tuning
 
-Click below for example payloads for running a fine-tuning job and for uploading a complete tune through the studio:
+---
 
-- To upload a complete tune a `config_url` and a `checkpoint_url`.
-  - `config_url`: URL to tuning configuration YAML file (see [sample config](/sample-files/#floods-finetuning-config-file) for reference) | [Download the config file](../sample_files/prithvi-eo-flood-config.yaml)
-  - `checkpoint_url`: URL to your trained model checkpoint file(.ckpt).[Download sample checkpoint file](https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-flood/prithvi-eo-flood-bestEpoch_Fixed_updated.ckpt)
-<div class=tunes>
-    <button onclick="showExample('floodTuning')" class="button">Flooding tuning</button>
-    <button onclick="showExample('burnScarsTuning')" class="button">Burn scars tuning</button>
-    <button onclick="showExample('completeTune')" class="button">Upload a complete tune</button>
+##  Training Jobs
+
+<div class="payload-grid">
+    <button onclick="showExample('floodTuning')" class="payload-card">
+        <span class="card-title">Flood Detection</span>
+        <span class="card-desc">Fine-tune flood detection model</span>
+    </button>
+    <button onclick="showExample('burnScarsTuning')" class="payload-card">
+        <span class="card-title">Burn Scars</span>
+        <span class="card-desc">Fine-tune wildfire model</span>
+    </button>
+    <button onclick="showExample('completeTune')" class="payload-card">
+        <span class="card-title">Upload Complete Tune</span>
+        <span class="card-desc">Register existing trained model</span>
+    </button>
 </div>
 
-## Inference
+**For complete tune upload:**
+- `config_url`: [Sample config](../sample_files/prithvi-eo-flood-config.yaml) | [View details](../reference/sample-files.md#floods-finetuning-config-file)
+- `checkpoint_url`: [Sample checkpoint](https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-flood/prithvi-eo-flood-bestEpoch_Fixed_updated.ckpt)
 
-Click below for example payloads for submitting an inference request through the studio:
+---
 
-<div class=inference>
-    <button onclick="showExample('karenInference')" class="button">Inference agb Karen</button>
-    <button onclick="showExample('tryInInference')" class="button">Try tune in lab</button>
-    <button onclick="showExample('addLayer')" class="button">Add layer example</button> 
-    <button onclick="showExample('californiaInference')" class="button">Inference california wildfire</button> 
+##  Inference
+
+<div class="payload-grid">
+    <button onclick="showExample('tryInInference')" class="payload-card">
+        <span class="card-title">Try Tune</span>
+        <span class="card-desc">Test your trained model</span>
+    </button>
+    <button onclick="showExample('karenInference')" class="payload-card">
+        <span class="card-title">AGB Karen</span>
+        <span class="card-desc">Above-ground biomass inference</span>
+    </button>
+    <button onclick="showExample('californiaInference')" class="payload-card">
+        <span class="card-title">California Wildfire</span>
+        <span class="card-desc">Park Fire detection example</span>
+    </button>
+    <button onclick="showExample('addLayer')" class="payload-card">
+        <span class="card-title">Add Layer</span>
+        <span class="card-desc">Import pre-computed results</span>
+    </button>
 </div>
 
 
@@ -91,51 +143,168 @@ Click below for example payloads for submitting an inference request through the
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap');
 
-.tuning-templates, .datasets, .inference, .tunes {
+.payload-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.payload-card {
+  font-family: 'IBM Plex Sans', sans-serif;
   display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-  margin: 30px 0;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  min-height: 100px;
 }
 
-.button {
-    font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
-    font-size: 0.875rem;
-    font-weight: 400;
-    line-height: 1.125rem;
-    letter-spacing: 0.16px;
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.875rem 3.9375rem 0.875rem 1rem;
-    border: none;
-    cursor: pointer;
-    text-align: left;
-    text-decoration: none;
-    transition: background 70ms cubic-bezier(0, 0, 0.38, 0.9),
-                box-shadow 70ms cubic-bezier(0, 0, 0.38, 0.9),
-                border-color 70ms cubic-bezier(0, 0, 0.38, 0.9),
-                outline 70ms cubic-bezier(0, 0, 0.38, 0.9);
-    min-height: 3rem;
-    max-width: 20rem;
-    background-color: #0f62fe;
-    color: #ffffff;
-    border: 1px solid transparent;
+.payload-card:hover {
+  border-color: #0f62fe;
+  box-shadow: 0 2px 8px rgba(15, 98, 254, 0.1);
+  transform: translateY(-2px);
 }
 
-.button:focus {
-    outline: 2px solid #0f62fe;
-    outline-offset: -2px;
+.payload-card:active {
+  transform: translateY(0);
 }
 
-.button:hover {
-  background-color: #0353e9;
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #161616;
+  margin-bottom: 8px;
+  display: block;
 }
 
-.button:active {
-    background-color: #002d9c;
-  }
+.card-desc {
+  font-size: 14px;
+  color: #525252;
+  line-height: 1.4;
+  display: block;
+}
+
+.popup {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.popup-content {
+  background-color: #fefefe;
+  margin: 5% auto;
+  padding: 30px;
+  border: 1px solid #888;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 800px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  line-height: 20px;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+  border-bottom: 2px solid #ddd;
+}
+
+.tab-btn {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s;
+}
+
+.tab-btn.active {
+  color: #4CAF50;
+  border-bottom-color: #4CAF50;
+}
+
+.tab-btn:hover {
+  color: #4CAF50;
+}
+
+.tab-content {
+  display: none;
+  position: relative;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.copy-btn {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  padding: 8px 16px;
+  background-color: #0f62fe;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  z-index: 10;
+}
+
+#envCopy {
+    position: absolute;
+    right: 10px;
+    top: 50px;
+}
+#curlCopy {
+    position: absolute;
+    right: 10px;
+    top: 130px;
+}
+
+.copy-btn:hover {
+  background-color: #0b7dda;
+}
+
+.tab-content pre {
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin-top: 10px;
+  position: relative;
+}
+
+.tab-content code {
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+}
 
 .popup {
   display: none;
@@ -258,103 +427,103 @@ Click below for example payloads for submitting an inference request through the
 const exampleConfigs = {
   burnScarsDataset: {
     title: "Burn scars Dataset",
-    jsonFile: "../payloads/datasets/dataset-burn_scars.json",
+    jsonFile: "/payloads/datasets/dataset-burn_scars.json",
     endpoint: "/v2/datasets/onboard",
     method: "POST"
   },
   floodDatasetMultimodal: {
     title: "Multi-modal flood dataset",
-    jsonFile: "../payloads/datasets/dataset-flooding_multimodal.json",
+    jsonFile: "/payloads/datasets/dataset-flooding_multimodal.json",
     endpoint: "/v2/datasets/onboard",
     method: "POST"
   },
   regression: {
     title: "Regression template",
-    jsonFile: "../payloads/templates/template-reg.json",
+    jsonFile: "/payloads/templates/template-reg.json",
     endpoint: "/v2/tune-templates",
     method: "POST"
   },
   segmentation: {
     title: "Generic segmentation template",
-    jsonFile: "../payloads/templates/template-seg.json",
+    jsonFile: "/payloads/templates/template-seg.json",
     endpoint: "/v2/tune-templates",
     method: "POST"
   },
   terramingSegmentation: {
     title: "Terramind segmentation template",
-    jsonFile: "../payloads/templates/template-terramind_seg.json",
+    jsonFile: "/payloads/templates/template-terramind_seg.json",
     endpoint: "/v2/tune-templates",
     method: "POST"
   },
   claySegmentation: {
     title: "Clay backbone models segmentation template",
-    jsonFile: "../payloads/templates/template-clay_v1_seg.json",
+    jsonFile: "/payloads/templates/template-clay_v1_seg.json",
     endpoint: "/v2/tune-templates",
     method: "POST"
   },
   resnetSegmentation: {
     title: "Resnet backbone models segmentation template",
-    jsonFile: "../payloads/templates/template-timm_resnet_seg.json",
+    jsonFile: "/payloads/templates/template-timm_resnet_seg.json",
     endpoint: "/v2/tune-templates",
     method: "POST"
   },
   convnextSegmentation: {
     title: "Convnext backbone models segmentation template",
-    jsonFile: "../payloads/templates/template-timm_convnext_seg.json",
+    jsonFile: "/payloads/templates/template-timm_convnext_seg.json",
     endpoint: "/v2/tune-templates",
     method: "POST"
   },
   terratorchIterate:{
     title:"terratorch-iterate",
-    jsonFile:"../payloads/finetuning/terratorch-iterate-hpo.json",
+    jsonFile:"/payloads/finetuning/terratorch-iterate-hpo.json",
     endpoint:"/v2/submit-hpo-tune",
     method:"POST"
   },
   userDefinedtuneTemplate:{
     title:"terratorch-iterate",
-    jsonFile:"../payloads/finetuning/create-user-defined-template.json",
+    jsonFile:"/payloads/finetuning/create-user-defined-template.json",
     endpoint:"/v2/tune-templates",
     method:"POST"
   },
   floodTuning: {
     title: "Example configs for fine-tuning a flood model",
-    jsonFile: "../payloads/tunes/tune-prithvi-eo-flood.json",
+    jsonFile: "/payloads/tunes/tune-prithvi-eo-flood.json",
     endpoint: "/v2/tune-templates",
     method: "POST"
   },
   burnScarsTuning: {
     title: "Example configs for fine-tuning a burn-scars model",
-    jsonFile: "../payloads/tunes/tune-test-fire.json",
+    jsonFile: "/payloads/tunes/tune-test-fire.json",
     endpoint: "/v2/tune-templates",
     method: "POST"
   },
   completeTune:{
     title: "Register your tune to the studio platform ",
-    jsonFile: "../payloads/finetuning/complete-tune.json",
+    jsonFile: "/payloads/finetuning/complete-tune.json",
     endpoint:"/v2/submit-hpo-tune",
     method:"POST",
   },
   karenInference: {
     title: "Example config for inference run",
-    jsonFile: "../payloads/inferences/inference-agb-karen.json",
+    jsonFile: "/payloads/inferences/inference-agb-karen.json",
     endpoint: "/v2/inference",
     method: "POST"
   },
   tryInInference: {
     title: "Example config for trying out a tune",
-    jsonFile: "../payloads/sandbox-models/model-try-in-lab.json",
+    jsonFile: "/payloads/sandbox-models/model-try-in-lab.json",
     endpoint: "/v2/tunes/{tune-id}/try-out",
     method: "POST"
   },
    californiaInference: {
     title: "Example config for trying out a tune",
-    jsonFile: "../payloads/inferences/california-fire-park.json",
+    jsonFile: "/payloads/inferences/california-fire-park.json",
     endpoint: "/v2/tunes/{tune-id}/try-out",
     method: "POST"
   },
   addLayer: {
     title: "Example config for adding pre-computed examples to the studio",
-    jsonFile: "../payloads/sandbox-models/model-add-layer.json",
+    jsonFile: "/payloads/sandbox-models/model-add-layer.json",
     endpoint: "/v2/inference",
     method: "POST"
   }
