@@ -84,7 +84,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=sha,prefix={{branch}}-
+            type=sha,prefix=sha-
             type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -93,8 +93,8 @@ jobs:
         id: build
         uses: docker/build-push-action@v5
         with:
-          context: ./operators
-          file: ./operators/Dockerfile
+          context: .
+          file: ./Dockerfile.operator
           build-args: |
             CHART_VERSION=${{ env.CHART_VERSION }}
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
