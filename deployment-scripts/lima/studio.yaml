@@ -1,7 +1,10 @@
 # © Copyright IBM Corporation 2025
 # SPDX-License-Identifier: Apache-2.0
 
-
+images:
+  - location: "~/.lima/_images/ubuntu-24.04-server-cloudimg-arm64.img"
+    arch: "aarch64"
+    url: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-arm64.img"
 vmType: "vz"
 rosetta:
   # Enable Rosetta for Linux.
