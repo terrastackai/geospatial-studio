@@ -1,6 +1,6 @@
 # IBM Geospatial Studio Workshop
 
-![Geospatial Studio Banner](../../docs/images/banner.png)
+![Geospatial Studio Banner](assets/banner.png)
 
 Welcome to the **IBM Geospatial Studio Workshop**! This hands-on workshop will guide you through deploying and using the Geospatial Exploration and Orchestration Studio - an integrated platform for fine-tuning, inference, and orchestration of geospatial AI models.
 
