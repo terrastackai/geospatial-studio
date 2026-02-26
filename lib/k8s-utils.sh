@@ -27,7 +27,14 @@ POD_READY_TIMEOUT="${POD_READY_TIMEOUT:-600}"
 # ==============================================================================
 
 detect_cluster_type() {
-  # Check for kind cluster
+  # Check current kubectl context for kind
+  local current_context=$(kubectl config current-context 2>/dev/null || echo "")
+  if [[ "$current_context" == kind-* ]]; then
+    echo "kind"
+    return 0
+  fi
+  
+  # Check for kind cluster via cluster-info
   if kubectl cluster-info 2>/dev/null | grep -q "kind"; then
     echo "kind"
     return 0
@@ -175,12 +182,32 @@ verify_kind_image() {
   
   log_info "Verifying local image exists in kind cluster..."
   
+  # Get the actual cluster name from kubectl context if not set
+  if [ -z "${KIND_CLUSTER_NAME:-}" ]; then
+    local current_context=$(kubectl config current-context 2>/dev/null || echo "")
+    if [[ "$current_context" == kind-* ]]; then
+      kind_cluster_name="${current_context#kind-}"
+    else
+      # Try to get first available cluster
+      local first_cluster=$(kind get clusters 2>/dev/null | head -1)
+      if [ -n "$first_cluster" ]; then
+        kind_cluster_name="$first_cluster"
+      fi
+    fi
+  fi
+  
+  # Determine container runtime (docker or podman)
+  local container_runtime="docker"
+  if command -v podman &> /dev/null && [ -n "${KIND_EXPERIMENTAL_PROVIDER:-}" ]; then
+    container_runtime="podman"
+  fi
+  
   # Extract image name and tag
   local image_name=$(echo "$image" | cut -d':' -f1)
   local image_tag=$(echo "$image" | cut -d':' -f2)
   
   # Check for the image in kind cluster
-  if docker exec "${kind_cluster_name}-control-plane" crictl images | grep -E "${image_name}\s+${image_tag}"; then
+  if ${container_runtime} exec "${kind_cluster_name}-control-plane" crictl images 2>/dev/null | grep -E "${image_name}\s+${image_tag}"; then
     log_success "Local image '$image' found in kind"
     return 0
   else

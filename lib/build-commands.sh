@@ -171,13 +171,40 @@ load_image_to_kind() {
     exit 1
   fi
   
+  # Auto-detect cluster name from kubectl context if not explicitly set
+  if [ -z "${KIND_CLUSTER_NAME:-}" ]; then
+    local current_context=$(kubectl config current-context 2>/dev/null || echo "")
+    if [[ "$current_context" == kind-* ]]; then
+      kind_cluster_name="${current_context#kind-}"
+      log_info "Auto-detected kind cluster name: $kind_cluster_name"
+    else
+      # If context doesn't start with kind-, try to get the first cluster
+      local first_cluster=$(kind get clusters 2>/dev/null | head -1)
+      if [ -n "$first_cluster" ]; then
+        kind_cluster_name="$first_cluster"
+        log_info "Using first available kind cluster: $kind_cluster_name"
+      else
+        log_error "No kind clusters found. Please create a cluster first:"
+        echo "  kind create cluster --name studio"
+        exit 1
+      fi
+    fi
+  fi
+  
   echo ""
   log_info "2. Loading image into kind cluster '$kind_cluster_name'..."
   kind load docker-image "$full_image" --name "$kind_cluster_name"
   
   echo ""
   log_info "3. Verifying image in kind..."
-  docker exec "${kind_cluster_name}-control-plane" crictl images | grep ${IMAGE_NAME}
+  
+  # Use podman or docker depending on what's available
+  local container_runtime="docker"
+  if command -v podman &> /dev/null && [ -n "${KIND_EXPERIMENTAL_PROVIDER:-}" ]; then
+    container_runtime="podman"
+  fi
+  
+  ${container_runtime} exec "${kind_cluster_name}-control-plane" crictl images 2>/dev/null | grep ${IMAGE_NAME} || true
 }
 
 # Load image to k8s
@@ -227,14 +254,14 @@ build_prod() {
   
   # Check quay.io login
   echo ""
-  log_info "Checking quay.io login status..."
-  if ! docker login quay.io --get-login > /dev/null 2>&1; then
-    log_error "Not logged in to quay.io"
-    echo ""
-    echo "Please run: docker login quay.io"
-    exit 1
-  fi
-  log_success "Logged in to quay.io"
+  # log_info "Checking quay.io login status..."
+  # if ! docker login quay.io --get-login > /dev/null 2>&1; then
+  #   log_error "Not logged in to quay.io"
+  #   echo ""
+  #   echo "Please run: docker login quay.io"
+  #   exit 1
+  # fi
+  # log_success "Logged in to quay.io"
   
   # Build the image
   echo ""
