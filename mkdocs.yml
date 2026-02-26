@@ -7,16 +7,14 @@ nav:
   - Home: index.md
   
   - Getting Started:
-    - Overview: getting-started/overview.md
     - Installation: getting-started/installation.md
     - First Steps: getting-started/first-steps.md
-    - UI Guide: getting-started/getting-started-UI.md
-    - SDK Guide: getting-started/getting-started-SDK.md
+    - UI Getting Started : getting-started/getting-started-UI.md
+    - SDK Getting Started: getting-started/getting-started-SDK.md
   
   - Deployment:
-    - Overview: deployment/overview.md
     - Local Deployment: deployment/detailed_deployment_local.md
-    - Kubernetes: deployment/detailed_deployment_k8s.md
+    - Kubernetes cluster: deployment/detailed_deployment_k8s.md
     - OpenShift: deployment/detailed_deployment_cluster.md
     - Kind Cluster: deployment/kind_cluster_deployment.md
     - NVKind Cluster: deployment/nvkind_cluster_deployment.md

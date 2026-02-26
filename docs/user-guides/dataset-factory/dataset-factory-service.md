@@ -1,4 +1,4 @@
-# # Geospatial Studio Dataset Factory APIs
+# Geospatial Studio Dataset Factory APIs
 
 ## What?
 The Dataset Factory allows users to bring their curated geospatial datasets to the Studio to fine-tune their models.  The dataset-factory endpoints allow users to onboard and delete datasets.  In addition, some endpoints allow users to view their datasets' metadata.  The front-end also uses the dataset-factory API to provide users with a preview of their datasets.

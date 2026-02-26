@@ -109,15 +109,7 @@ minikube dashboard
 
 
 ## Geospatial Studio - Deployment instructions (automated)
-<!-- Alternatively, you can install using an automated script.  This will deploy the dependencies (MinIO, Keycloak, Postgres) and set them up, before deploying the studio and pipelines.
 
-NB: you need to be in a python environment with the requirements installed (from `requirements.txt`). -->
-<!-- 
-```bash
-./run_deploy_steps_lima.sh
-``` -->
-
-<!-- Once the deployment is complete, it should report the URL for accessing the UI and the gateway API.  It will also provide the inital dev apikey and database password.  (For production deployment, these should be changed). -->
 If you want to use the automated deployment script, run the following command:
 
 ```shell
@@ -687,7 +679,7 @@ terratorch-inference:
 run-inference:
   enabled: false
   # ... more configurations
-``` -->
+
 
 Now you need to pull dependecies for dependent charts. Also, in some instances you might need to delete `geospatial-studio/Chart.lock` file when there are conflicts.
 
