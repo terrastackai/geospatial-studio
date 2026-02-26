@@ -22,68 +22,8 @@ printf "\n\n--- Is this cluster openshift? $IS_OPENSHIFT ---\n"
 # Source (import) common_functions.sh
 source ./common_functions.sh
 
-# get_menu_selection
-get_menu_selection() {
-    local prompt_msg="$1"
-    local result_var_name="$2"
-    local string_to_split="$3"
-    local options=()
-    IFS=' ' read -r -a options <<< "$string_to_split"
-    local num_options=${#options[@]}
-    local user_selection=1 # Start with default index 1
-    local input=""
-
-    printf "\n\n--- Selection Menu ---\n"
-
-    # Display the numbered menu options
-    for ((i = 0; i < num_options; i++)); do
-        local option="${options[i]}"
-        local display_index=$((i + 1))
-        if [[ $i -eq 0 ]]; then
-            echo "  $display_index) $option (Default)"
-        else
-            echo "  $display_index) $option"
-        fi
-    done
-    echo "----------------------"
-
-    # Loop until a valid selection is made
-    while true; do
-        printf "%s (1-%s, Default: 1): " "$prompt_msg" "$num_options"
-        read -r input
-        local READ_STATUS=$?
-        if [[ $READ_STATUS -ne 0 ]]; then
-            printf "\nError: Input reading failed (Status: $READ_STATUS). Exiting."
-            return 1 
-        fi
-        
-        if [[ -z "$input" ]]; then
-            user_selection=1 # Default choice is 1
-            break # Exit the loop
-        fi
-
-        if [[ $input =~ ^[0-9]+$ ]]; then
-            # Check if the number is within the valid range
-            if [[ $input -ge 1 && $input -le $num_options ]]; then
-                user_selection=$input
-                break # Exit the loop with a valid selection
-            else
-                echo "Error: Selection '$input' is out of range (1 to $num_options). Please try again."
-            fi
-        else
-            echo "Error: Invalid input. Please enter a number between 1 and $num_options."
-        fi
-    done
-
-    local selected_index=$((user_selection - 1))
-
-    local final_result="${options[selected_index]}"
-    eval "$result_var_name='$final_result'"
-    export "$result_var_name"
-    
-    echo "Selected option: **$final_result** (Index $user_selection)"
-}
-
+export KUBECTL_WAIT_RETRY_ATTEMPTS=5
+export KUBECTL_WAIT_RETRY_DELAY=5
 
 # get cluster
 set_cluster_url() {
@@ -207,13 +147,27 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     echo "---------- You should already have setup the cloud object storage drivers ---------"
     echo "-- See: https://cloud.ibm.com/docs/openshift?topic=openshift-storage_cos_install --"
     echo "***********************************************************************************"
-    echo "******************  Update workspace/${DEPLOYMENT_ENV}/env/env.sh *****************"
-    echo "------------------------  export COS_STORAGE_CLASS= -------------------------------"
-    echo "------------------------  export NON_COS_STORAGE_CLASS= ---------------------------"
+    echo "************************  You will enter the following  ***************************"
+    echo "--------------------------  COS_STORAGE_CLASS -------------------------------------"
+    echo "------------------------  NON_COS_STORAGE_CLASS ---------------------------------"
     echo "***********************************************************************************"
+
     while true; do
-        printf "%s " "Press enter to continue after entering the variables"
+        printf "%s " "Press enter to continue"
         read ans
+
+        typeset user_cos_storage_class
+        get_user_input "Enter COS_STORAGE_CLASS: " user_cos_storage_class
+        echo "COS_STORAGE_CLASS accepted: **$user_cos_storage_class**"
+        export COS_STORAGE_CLASS=$user_cos_storage_class
+
+        typeset user_non_cos_storage_class
+        get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
+        echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
+        export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
+
+        sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
         python deployment-scripts/validate-env-files.py \
         --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
@@ -244,7 +198,7 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
-        kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
         MINIO_API_URL="https://minio-api-$OC_PROJECT.$CLUSTER_URL"
 
@@ -317,7 +271,7 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
         ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV DO_NOT_SET_SCC
 
-        kubectl wait --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
 
         kubectl port-forward --namespace ${OC_PROJECT} svc/postgresql 54320:5432 &
         sleep 5
@@ -386,7 +340,7 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         python ./deployment-scripts/update-keycloak-deployment.py --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 
-        kubectl wait --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
 
         kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 &
         sleep 5
@@ -538,7 +492,7 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         fi
     fi
 
-    kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
+    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
 
     kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 &
     sleep 5

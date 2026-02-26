@@ -49,6 +49,7 @@ buckets = [
     "geoserver",
     "temp-upload",
     "inference-auxdata",
+    "generic-python-processor"
 ]
 
 
@@ -62,6 +63,5 @@ for b in buckets:
             print(f"Bucket {deployment_name}-{b} created successfully \u2714")
         else:
             print(f"Potential error creating bucket {deployment_name}-{b} please check")
-    except:
-        print(f"Bucket {deployment_name}-{b} already exists or could not be created")
-        raise
+    except Exception as e:
+        print(f"Creating bucket {deployment_name}-{b} failed with {e}")

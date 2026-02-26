@@ -1,23 +1,88 @@
 # © Copyright IBM Corporation 2025
 # SPDX-License-Identifier: Apache-2.0
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# MkDocs documentation
+**/site/
+.cache/
+docs/.buildinfo
+docs/_build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Logs
+*.log
+studio-pf.log
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+~*
+
+# Credentials and secrets
+.geostudio_config_file
+*.env
+.env.local
+secrets.yml
+credentials.json
+.studio-api-key
+
+# Project specific
 *.tgz
 *.lock
 stfc_keycloak.yaml
 tasks
 dryrun.yaml
-*.env
 *filtered_kubernetes_resources.json
 values-*.yaml
-venv
 workspace/
 *tls*
-.studio-api-key
-studio-pf.log
 minio-private.key
 minio-public.crt
 
-# mkdocs documentation
-**/site/
