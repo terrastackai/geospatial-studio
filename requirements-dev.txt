@@ -1,0 +1,18 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+
+# For Python 3.11
+-r requirements.txt
+
+black
+flake8
+hunter==3.7.0
+IPython>=8.18,<9.0.0
+rich>=14.0.0
+
+
+# Test
+pytest
+pytest-cov
+pre-commit
