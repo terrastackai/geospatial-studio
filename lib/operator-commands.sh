@@ -118,8 +118,10 @@ operator_install() {
   fi
   
   # Display configuration
+  local cluster_type=$(get_cluster_type)
   log_step "Installing GeoStudio Operator"
   echo "Mode:               ${deployment_mode}"
+  echo "Cluster Type:       ${cluster_type}"
   echo "Image:              ${operator_image}"
   echo "ImagePullPolicy:    ${image_pull_policy}"
   echo "Namespace:          ${namespace}"
@@ -132,8 +134,20 @@ operator_install() {
   require_command make || exit 1
   require_command kustomize "Install kustomize from https://kubectl.docs.kubernetes.io/installation/kustomize/" || exit 1
   
+  # Check cluster-specific prerequisites
+  local cluster_type=$(get_cluster_type)
   if [ "$deployment_mode" = "local" ]; then
-    require_command limactl "Install Lima from https://github.com/lima-vm/lima" || exit 1
+    case "$cluster_type" in
+      lima)
+        require_command limactl "Install Lima from https://github.com/lima-vm/lima" || exit 1
+        ;;
+      kind)
+        require_command kind "Install kind from https://kind.sigs.k8s.io/" || exit 1
+        ;;
+      k8s)
+        log_info "Native k8s cluster detected"
+        ;;
+    esac
   fi
   
   log_success "All prerequisites met"
@@ -147,18 +161,18 @@ operator_install() {
   
   # Verify local image for local mode
   if [ "$deployment_mode" = "local" ]; then
-    log_info "Verifying local image in Lima containerd..."
-    local image_output=$(limactl shell studio sudo ctr -n k8s.io images ls 2>/dev/null)
+    log_info "Verifying local image availability..."
     
-    if ! echo "$image_output" | grep -q "geostudio-operator.*${operator_version}"; then
-      log_error "Local image '${operator_image}' not found in Lima containerd!"
+    if ! verify_local_image "${operator_image}"; then
+      log_error "Local image '${operator_image}' not found!"
       echo ""
       log_error "Please build and import the image first by running:"
-      log_error "  ./build-studio-operators.sh"
+      log_error "  ./geostudio build --local"
       echo ""
       exit 1
     fi
-    log_success "Local image '${operator_image}' found in Lima"
+    
+    log_success "Local image '${operator_image}' verified"
     echo ""
   fi
   
@@ -221,7 +235,7 @@ operator_install() {
   log_success "Operator installed successfully"
   echo ""
   log_info "Next steps:"
-  echo "  geostudio app deploy"
+  echo "./geostudio app deploy"
 }
 
 # ==============================================================================

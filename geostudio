@@ -61,7 +61,7 @@ COMMANDS:
   version     Show CLI version
 
 BUILD OPTIONS:
-  --local     Build for local Lima development
+  --local     Build for local development (Lima, kind, or k8s)
   --prod      Build and push to quay.io registry
   --version   Specify version tag (for production builds)
 
@@ -128,7 +128,7 @@ SUBCOMMANDS:
   restart     Restart the operator deployment
 
 INSTALL OPTIONS:
-  --local              Use locally built image (Lima development)
+  --local              Use locally built image (Lima, kind, or k8s)
   --prod               Use production image from quay.io
   --version VERSION    Specify operator version (default: latest for prod, local for local)
   --namespace NS       Operator namespace (default: geostudio-operators-system)
@@ -149,8 +149,11 @@ RESTART OPTIONS:
   --namespace NS       Operator namespace (default: geostudio-operators-system)
 
 EXAMPLES:
-  # Install for local development
+  # Install for local development (auto-detects Lima, kind, or k8s)
   geostudio operator install --local
+  
+  # Install for specific cluster type
+  CLUSTER_TYPE=kind geostudio operator install --local
   
   # Install for production
   geostudio operator install --prod --version v0.1.0
@@ -169,6 +172,15 @@ EXAMPLES:
   
   # Force uninstall (advanced - may leave orphaned resources)
   geostudio operator uninstall --force
+
+ENVIRONMENT VARIABLES:
+  CLUSTER_TYPE         Override cluster type detection (lima|kind|k8s)
+  KIND_CLUSTER_NAME    Name of kind cluster (default: kind)
+
+SUPPORTED CLUSTERS:
+  Lima    Local Lima VM with k3s (https://github.com/lima-vm/lima)
+  kind    Kubernetes in Docker (https://kind.sigs.k8s.io/)
+  k8s     Native Kubernetes cluster
 EOF
 }
 
@@ -213,25 +225,25 @@ RESTART OPTIONS:
 
 EXAMPLES:
   # Deploy to lima/default
-  geostudio app deploy
+  ./geostudio app deploy
   
   # Deploy to production
-  geostudio app deploy --env production --namespace prod
+  ./geostudio app deploy --env production --namespace prod
   
   # List all instances
-  geostudio app list
+  ./geostudio app list
   
   # Check app status
-  geostudio app status --namespace prod
+  ./geostudio app status --namespace prod
   
   # View gateway logs
-  geostudio app logs --namespace prod --component gateway --follow
+  ./geostudio app logs --namespace prod --component gateway --follow
   
   # Restart UI component
-  geostudio app restart --namespace prod --component ui
+  ./geostudio app restart --namespace prod --component ui
   
   # Delete instance
-  geostudio app delete --namespace staging
+  ./geostudio app delete --namespace staging
 EOF
 }
 

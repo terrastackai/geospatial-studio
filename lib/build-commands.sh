@@ -11,6 +11,7 @@
 # Source dependencies
 if [ -z "$GREEN" ]; then
   source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+  source "$(dirname "${BASH_SOURCE[0]}")/k8s-utils.sh"
 fi
 
 # ==============================================================================
@@ -84,17 +85,54 @@ build_local() {
   local image_tag="local"
   local full_image="${IMAGE_NAME}:${image_tag}"
   local dockerfile="$PROJECT_ROOT/Dockerfile.operator.local"
+  local cluster_type=$(get_cluster_type)
   
-  log_step "Building Operator Image for Lima"
-  echo "Mode:       local"
-  echo "Image:      $full_image"
-  echo "Dockerfile: $(basename $dockerfile)"
+  log_step "Building Operator Image for Local Development"
+  echo "Cluster type: $cluster_type"
+  echo "Image:        $full_image"
+  echo "Dockerfile:   $(basename $dockerfile)"
   echo ""
   
   # Step 1: Build Docker image
-  log_info "1. Building Docker image on host..."
+  log_info "1. Building Docker image..."
   cd "$PROJECT_ROOT"
   docker build --load -f "$dockerfile" -t "$full_image" .
+  
+  # Step 2: Load image into cluster based on type
+  case "$cluster_type" in
+    lima)
+      load_image_to_lima "$full_image" "$image_tag"
+      ;;
+    kind)
+      load_image_to_kind "$full_image"
+      ;;
+    k8s)
+      load_image_to_k8s "$full_image"
+      ;;
+    *)
+      log_error "Unknown cluster type: $cluster_type"
+      exit 1
+      ;;
+  esac
+  
+  echo ""
+  log_success "Image ready in $cluster_type cluster!"
+  echo ""
+  echo "Image: $full_image"
+  echo ""
+  log_info "Next steps:"
+  echo "  ./geostudio operator install --local"
+}
+
+# Load image to Lima
+load_image_to_lima() {
+  local full_image=$1
+  local image_tag=$2
+  
+  if ! command -v limactl &> /dev/null; then
+    log_error "limactl not found. Install Lima from https://github.com/lima-vm/lima"
+    exit 1
+  fi
   
   # Step 2: Save image to tar
   echo ""
@@ -121,14 +159,45 @@ build_local() {
   log_info "6. Cleaning up temporary files..."
   rm -f /tmp/${IMAGE_NAME}-${image_tag}.tar
   limactl shell studio rm -f /tmp/${IMAGE_NAME}-${image_tag}.tar
+}
+
+# Load image to kind
+load_image_to_kind() {
+  local full_image=$1
+  local kind_cluster_name=${KIND_CLUSTER_NAME:-kind}
+  
+  if ! command -v kind &> /dev/null; then
+    log_error "kind not found. Install kind from https://kind.sigs.k8s.io/"
+    exit 1
+  fi
   
   echo ""
-  log_success "Image ready in Lima!"
+  log_info "2. Loading image into kind cluster '$kind_cluster_name'..."
+  kind load docker-image "$full_image" --name "$kind_cluster_name"
+  
   echo ""
-  echo "Image: $full_image"
+  log_info "3. Verifying image in kind..."
+  docker exec "${kind_cluster_name}-control-plane" crictl images | grep ${IMAGE_NAME}
+}
+
+# Load image to k8s
+load_image_to_k8s() {
+  local full_image=$1
+  
+  log_warning "For native k8s clusters, you have the following options:"
   echo ""
-  log_info "Next steps:"
-  echo "  ./geostudio operator install --local"
+  echo "1. Push to a registry and configure image pull:"
+  echo "   docker tag $full_image <your-registry>/$full_image"
+  echo "   docker push <your-registry>/$full_image"
+  echo ""
+  echo "2. Manually load on all nodes:"
+  echo "   docker save $full_image | ssh node1 'docker load'"
+  echo ""
+  echo "3. Use production build instead:"
+  echo "   ./geostudio build --prod --version <version>"
+  echo ""
+  log_info "Image built locally: $full_image"
+  log_info "You'll need to make it available to your cluster nodes."
 }
 
 # ==============================================================================
@@ -199,16 +268,23 @@ USAGE:
   geostudio build <mode> [options]
 
 MODES:
-  --local              Build for local Lima development
+  --local              Build for local development (Lima, kind, or k8s)
   --prod               Build and push to quay.io registry
 
 OPTIONS:
   --version VERSION    Specify version tag for production builds (default: latest)
   --help, -h           Show this help message
 
+ENVIRONMENT VARIABLES:
+  CLUSTER_TYPE         Override cluster type detection (lima|kind|k8s)
+  KIND_CLUSTER_NAME    Name of kind cluster (default: kind)
+
 EXAMPLES:
-  # Build for local development
+  # Build for local development (auto-detects cluster type)
   geostudio build --local
+  
+  # Build for specific cluster type
+  CLUSTER_TYPE=kind geostudio build --local
   
   # Build for production with version tag
   geostudio build --prod --version v1.0.0
@@ -216,13 +292,22 @@ EXAMPLES:
   # Build for production (latest tag)
   geostudio build --prod
 
-LOCAL BUILD WORKFLOW:
+LOCAL BUILD WORKFLOW (Lima):
   1. Builds Docker image using Dockerfile.operator.local
   2. Saves image to tar file
   3. Copies tar to Lima VM
   4. Imports into Lima containerd
   5. Verifies image availability
   6. Cleans up temporary files
+
+LOCAL BUILD WORKFLOW (kind):
+  1. Builds Docker image using Dockerfile.operator.local
+  2. Loads image directly into kind cluster
+  3. Verifies image availability
+
+LOCAL BUILD WORKFLOW (k8s):
+  1. Builds Docker image using Dockerfile.operator.local
+  2. Provides instructions for manual deployment
 
 PRODUCTION BUILD WORKFLOW:
   1. Confirms you want to push to production
@@ -231,8 +316,10 @@ PRODUCTION BUILD WORKFLOW:
   4. Pushes to quay.io registry
 
 PREREQUISITES:
-  Local:  Docker, Lima (limactl), Lima VM named 'studio'
-  Prod:   Docker, authenticated to quay.io (docker login quay.io)
+  Lima:  Docker, Lima (limactl), Lima VM named 'studio'
+  kind:  Docker, kind CLI
+  k8s:   Docker, access to cluster nodes or registry
+  Prod:  Docker, authenticated to quay.io (docker login quay.io)
 
 EOF
 }

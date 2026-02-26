@@ -23,6 +23,39 @@ RESOURCE_DELETE_TIMEOUT="${RESOURCE_DELETE_TIMEOUT:-60}"
 POD_READY_TIMEOUT="${POD_READY_TIMEOUT:-600}"
 
 # ==============================================================================
+# Cluster Detection
+# ==============================================================================
+
+detect_cluster_type() {
+  # Check for kind cluster
+  if kubectl cluster-info 2>/dev/null | grep -q "kind"; then
+    echo "kind"
+    return 0
+  fi
+  
+  # Check if nodes have lima labels (for Lima/k3s)
+  if kubectl get nodes -o json 2>/dev/null | grep -q "lima"; then
+    echo "lima"
+    return 0
+  fi
+  
+  # Check if limactl is available and lima VM 'studio' is running
+  if command -v limactl &> /dev/null && limactl list 2>/dev/null | grep -q "studio.*Running"; then
+    echo "lima"
+    return 0
+  fi
+  
+  # Default to k8s for any other cluster
+  echo "k8s"
+  return 0
+}
+
+get_cluster_type() {
+  local cluster_type=${CLUSTER_TYPE:-$(detect_cluster_type)}
+  echo "$cluster_type"
+}
+
+# ==============================================================================
 # Operator Checks
 # ==============================================================================
 
@@ -82,6 +115,29 @@ delete_geostudio_instance() {
 # Image Verification
 # ==============================================================================
 
+verify_local_image() {
+  local image=$1
+  local cluster_type=$(get_cluster_type)
+  
+  case "$cluster_type" in
+    lima)
+      verify_lima_image "$image"
+      ;;
+    kind)
+      verify_kind_image "$image"
+      ;;
+    k8s)
+      # For k8s, we assume images are pulled from registry or locally available
+      log_info "Skipping image verification for k8s cluster (assuming registry or local availability)"
+      return 0
+      ;;
+    *)
+      log_warning "Unknown cluster type: $cluster_type, skipping image verification"
+      return 0
+      ;;
+  esac
+}
+
 verify_lima_image() {
   local image=$1
   
@@ -91,12 +147,45 @@ verify_lima_image() {
   fi
   
   log_info "Verifying local image exists in Lima containerd..."
-  if limactl shell studio sudo nerdctl image ls | grep -q "$image"; then
+  
+  # Extract image name and tag
+  local image_name=$(echo "$image" | cut -d':' -f1)
+  local image_tag=$(echo "$image" | cut -d':' -f2)
+  
+  # Check for the image in Lima containerd
+  # The image might be stored with different prefixes (docker.io/library/, etc.)
+  if limactl shell studio sudo ctr -n k8s.io images ls | grep -E "(^|/)${image_name}:${image_tag}\s"; then
     log_success "Local image '$image' found in Lima"
     return 0
   else
     log_error "Local image '$image' not found in Lima"
-    log_error "Please run: ./build-studio-operators.sh"
+    log_error "Please run: ./geostudio build --local"
+    return 1
+  fi
+}
+
+verify_kind_image() {
+  local image=$1
+  local kind_cluster_name=${KIND_CLUSTER_NAME:-kind}
+  
+  if ! command -v kind &> /dev/null; then
+    log_warning "kind not found, skipping image verification"
+    return 0
+  fi
+  
+  log_info "Verifying local image exists in kind cluster..."
+  
+  # Extract image name and tag
+  local image_name=$(echo "$image" | cut -d':' -f1)
+  local image_tag=$(echo "$image" | cut -d':' -f2)
+  
+  # Check for the image in kind cluster
+  if docker exec "${kind_cluster_name}-control-plane" crictl images | grep -E "${image_name}\s+${image_tag}"; then
+    log_success "Local image '$image' found in kind"
+    return 0
+  else
+    log_error "Local image '$image' not found in kind"
+    log_error "Please run: ./geostudio build --local"
     return 1
   fi
 }

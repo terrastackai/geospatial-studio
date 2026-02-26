@@ -96,7 +96,7 @@ Hook Weight    Component                 Purpose
 
 ```bash
 # Point kubectl to your Lima cluster
-export KUBECONFIG="/Users/brianglar/.lima/studio/copied-from-guest/kubeconfig.yaml"
+export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 
 # Verify connection
 kubectl cluster-info
@@ -150,7 +150,7 @@ Once deployed, port-forward to access services:
 
 ```bash
 # Auth Server
-kubectl port-forward svc/geofm-ui 8080:8080 -n default
+kubectl port-forward svc/keycloak 8080:8080 -n default
 
 # UI
 kubectl port-forward svc/geofm-ui 4180:4180 -n default

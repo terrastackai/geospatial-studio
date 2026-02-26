@@ -164,8 +164,9 @@ app_deploy() {
   cd "$PROJECT_ROOT"
   ./deployment-scripts/setup-workspace-env.sh
   
-  # Step 2: Apply Lima-specific configuration overrides
-  log_step "Applying Lima-specific configuration"
+  # Step 2: Apply cluster-specific configuration overrides
+  local cluster_type=$(get_cluster_type)
+  log_step "Applying configuration for $cluster_type cluster"
   
   # Generate OAuth cookie secret
   export cookie_secret=$(cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
@@ -173,6 +174,24 @@ app_deploy() {
   # Use consistent OAuth client secret that matches Keycloak configuration
   # This must match the value in geospatial-studio/values.yaml (global.keycloak.clientSecret)
   export oauth_client_secret="oauth_client_secret"
+  
+  # Generate TLS certificates for local development
+  log_info "Generating TLS certificates for local development..."
+  local tls_dir="$workspace_dir/tls"
+  mkdir -p "$tls_dir"
+  
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout "$tls_dir/tls.key" \
+    -out "$tls_dir/tls.crt" \
+    -subj "/CN=$OC_PROJECT.svc.cluster.local" 2>/dev/null
+  
+  # Extract the cert and key into base64 env vars
+  export TLS_CRT_B64=$(openssl base64 -in "$tls_dir/tls.crt" -A)
+  export TLS_KEY_B64=$(openssl base64 -in "$tls_dir/tls.key" -A)
+  
+  # Generate dummy image pull secret (for local development)
+  # This is a valid base64 encoded dockerconfigjson with dummy credentials
+  export IMAGE_PULL_SECRET_B64="eyJhdXRocyI6eyJleGFtcGxlLmlvIjp7InVzZXJuYW1lIjoiZXhhbXBsZSIsInBhc3N3b3JkIjoiZXhhbXBsZSIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImF1dGgiOiJaWGhoYlhCc1pUcGxlR0Z0Y0d4bCJ9fX0="
   
   # Apply configuration using cross-platform sed
   sed_inplace "$env_sh_file" 's|export ROUTE_ENABLED=.*|export ROUTE_ENABLED=false|g'
@@ -189,14 +208,39 @@ app_deploy() {
   sed_inplace "$env_sh_file" "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g"
   sed_inplace "$env_sh_file" "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio|g"
   sed_inplace "$env_sh_file" "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g"
+  sed_inplace "$env_sh_file" "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=false/g"
   
+  # Set default credentials for local development (MinIO, PostgreSQL, Keycloak)
+  sed_inplace "$env_file" "s/access_key_id=.*/access_key_id=minioadmin/g"
+  sed_inplace "$env_file" "s/secret_access_key=.*/secret_access_key=minioadmin/g"
   sed_inplace "$env_file" "s/oauth_client_secret=.*/oauth_client_secret=$oauth_client_secret/g"
   sed_inplace "$env_file" "s/oauth_cookie_secret=.*/oauth_cookie_secret=$cookie_secret/g"
   sed_inplace "$env_file" "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g"
   sed_inplace "$env_file" "s/region=.*/region=us-east-1/g"
+  sed_inplace "$env_file" "s/pg_username=.*/pg_username=postgres/g"
+  sed_inplace "$env_file" "s/pg_password=.*/pg_password=devPostgresql123/g"
   sed_inplace "$env_file" "s/pg_uri=.*/pg_uri=postgresql.$OC_PROJECT.svc.cluster.local/g"
+  sed_inplace "$env_file" "s/pg_port=.*/pg_port=5432/g"
+  sed_inplace "$env_file" "s/pg_studio_db_name=.*/pg_studio_db_name=geostudio/g"
+  sed_inplace "$env_file" "s/geoserver_username=.*/geoserver_username=admin/g"
+  sed_inplace "$env_file" "s/geoserver_password=.*/geoserver_password=geoserver/g"
+  sed_inplace "$env_file" "s/image_pull_policy=.*/image_pull_policy=IfNotPresent/g"
+  sed_inplace "$env_file" "s|tls_crt_b64=.*|tls_crt_b64=$TLS_CRT_B64|g"
+  sed_inplace "$env_file" "s|tls_key_b64=.*|tls_key_b64=$TLS_KEY_B64|g"
+  sed_inplace "$env_file" "s|image_pull_secret_b64=.*|image_pull_secret_b64=$IMAGE_PULL_SECRET_B64|g"
   
-  log_success "Lima configuration applied"
+  # Set dummy tokens for Mapbox and Cesium (required for secret creation, even if not used)
+  # Using "none" as placeholder - these will be base64 encoded by Helm
+  sed_inplace "$env_file" "s/mapbox_token=.*/mapbox_token=none/g"
+  sed_inplace "$env_file" "s/cesium_token=.*/cesium_token=none/g"
+  
+  # Set dummy values for optional API keys (SentinelHub, NASA, Jira)
+  sed_inplace "$env_file" "s/sh_client_id=.*/sh_client_id=none/g"
+  sed_inplace "$env_file" "s/sh_client_secret=.*/sh_client_secret=none/g"
+  sed_inplace "$env_file" "s/nasa_earth_data_bearer_token=.*/nasa_earth_data_bearer_token=none/g"
+  sed_inplace "$env_file" "s/jira_api_key=.*/jira_api_key=none/g"
+  
+  log_success "Configuration applied for $cluster_type"
   
   # Step 3: Merge .studio-api-key if it exists
   log_step "Checking for .studio-api-key"
@@ -232,6 +276,37 @@ app_deploy() {
   
   log_success "Sourcing $env_sh_file"
   source "$env_sh_file"
+  
+  # Validate critical variables are set
+  log_info "Validating required environment variables..."
+  local missing_vars=()
+  
+  # Check for critical variables
+  [ -z "${pg_username:-}" ] && missing_vars+=("pg_username")
+  [ -z "${pg_password:-}" ] && missing_vars+=("pg_password")
+  [ -z "${pg_uri:-}" ] && missing_vars+=("pg_uri")
+  [ -z "${pg_port:-}" ] && missing_vars+=("pg_port")
+  [ -z "${access_key_id:-}" ] && missing_vars+=("access_key_id")
+  [ -z "${secret_access_key:-}" ] && missing_vars+=("secret_access_key")
+  [ -z "${endpoint:-}" ] && missing_vars+=("endpoint")
+  [ -z "${region:-}" ] && missing_vars+=("region")
+  [ -z "${tls_crt_b64:-}" ] && missing_vars+=("tls_crt_b64")
+  [ -z "${tls_key_b64:-}" ] && missing_vars+=("tls_key_b64")
+  [ -z "${image_pull_secret_b64:-}" ] && missing_vars+=("image_pull_secret_b64")
+  
+  if [ ${#missing_vars[@]} -gt 0 ]; then
+    log_error "Missing required environment variables:"
+    for var in "${missing_vars[@]}"; do
+      echo "  - $var"
+    done
+    echo ""
+    log_error "Please check your environment files:"
+    echo "  - $env_file"
+    echo "  - $env_sh_file"
+    exit 1
+  fi
+  
+  log_success "All required variables validated"
   
   # Step 5: Generate operator CR from template
   log_step "Generating GEOStudio operator CR"

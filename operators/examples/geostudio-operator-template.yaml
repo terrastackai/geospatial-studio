@@ -329,6 +329,9 @@ spec:
       api_key: ${studio_api_key}
       api_encryption_key: ${studio_api_encryption_key}
     
+    jira:
+      api_key: ${jira_api_key}
+    
     oauth:
       clientId: ${OAUTH_CLIENT_ID}
       clientSecret: ${oauth_client_secret}
@@ -340,6 +343,8 @@ spec:
       oauthProxyEnabled: ${OAUTH_PROXY_ENABLED}
       oauthProxyPort: "${OAUTH_PROXY_PORT}"
       oauthUrl: ${OAUTH_URL}
+      tlsCrtB64: ${tls_crt_b64}
+      tlsKeyB64: ${tls_key_b64}
       type: ${OAUTH_TYPE}
     
     objectStorage:
