@@ -92,6 +92,10 @@ kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml 
 kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
 
+# Also create minio-ca-cert configmap for CSI driver compatibility
+kubectl create configmap minio-ca-cert --from-file=ca.crt=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-ca-cert.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-ca-cert.yaml -n kube-system
+
 python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
@@ -291,8 +295,10 @@ echo "-----------  Make any changes to deployment values yaml --------------"
 echo "**********************************************************************"
 echo "**********************************************************************"
 
-printf "%s " "Press enter to continue"
-read ans
+if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+    printf "%s " "Press enter to continue"
+    read ans
+fi
 
 
 echo "----------------------------------------------------------------------"

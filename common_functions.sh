@@ -10,6 +10,21 @@ get_user_input() {
     local result_var_name="$2"
     local input=""
 
+    # Check if NON_INTERACTIVE mode is enabled and variable is already set
+    if [[ "${NON_INTERACTIVE:-false}" == "true" ]]; then
+        # Get the current value of the variable
+        input="${!result_var_name}"
+        if [[ -n "$input" ]]; then
+            echo "Non-interactive mode: Using $result_var_name=$input"
+            eval "$result_var_name='$input'"
+            return 0
+        else
+            echo "Error: NON_INTERACTIVE mode enabled but $result_var_name is not set"
+            exit 1
+        fi
+    fi
+
+    # Interactive mode
     while [[ -z "$input" ]]; do
         printf "%s\n" "$prompt_msg"
 
@@ -34,6 +49,24 @@ get_menu_selection() {
     local user_selection=1 # Start with default index 1
     local input=""
 
+    # Check if NON_INTERACTIVE mode is enabled and variable is already set
+    if [[ "${NON_INTERACTIVE:-false}" == "true" ]]; then
+        local preset_value="${!result_var_name}"
+        if [[ -n "$preset_value" ]]; then
+            echo "Non-interactive mode: Using $result_var_name=$preset_value"
+            eval "$result_var_name='$preset_value'"
+            export "$result_var_name"
+            return 0
+        else
+            # Use default (first option) if not set
+            echo "Non-interactive mode: Using default option for $result_var_name: ${options[0]}"
+            eval "$result_var_name='${options[0]}'"
+            export "$result_var_name"
+            return 0
+        fi
+    fi
+
+    # Interactive mode
     printf "\n\n--- Selection Menu ---\n"
 
     # Display the numbered menu options
@@ -109,6 +142,48 @@ kubectl_wait_with_retry() {
 
         if [ $attempt -lt $max_attempts ]; then
             echo "kubectl wait failed. Waiting ${delay}s before retry..."
+            
+            # Extract pod/resource info from kubectl_args for debugging
+            echo ""
+            echo "=== Debugging Information ==="
+            
+            # Try to extract namespace and label selector from args
+            local namespace=$(echo "$kubectl_args" | grep -oP '(?<=-n |--namespace[= ])\S+' || echo "default")
+            local label_selector=$(echo "$kubectl_args" | grep -oP '(?<=-l )\S+' || echo "")
+            local pod_name=$(echo "$kubectl_args" | grep -oP 'pod/\S+' | cut -d'/' -f2 || echo "")
+            
+            if [[ -n "$label_selector" ]]; then
+                echo "Pods matching label '$label_selector' in namespace '$namespace':"
+                kubectl get pods -l "$label_selector" -n "$namespace" 2>/dev/null || true
+                echo ""
+                
+                # Get detailed info for pods that are not ready
+                local not_ready_pods=$(kubectl get pods -l "$label_selector" -n "$namespace" --no-headers 2>/dev/null | grep -v "Running\|Completed" | awk '{print $1}' || echo "")
+                if [[ -n "$not_ready_pods" ]]; then
+                    for pod in $not_ready_pods; do
+                        echo "--- Describe pod: $pod ---"
+                        kubectl describe pod "$pod" -n "$namespace" 2>/dev/null || true
+                        echo ""
+                        echo "--- Recent events for pod: $pod ---"
+                        kubectl get events -n "$namespace" --field-selector involvedObject.name="$pod" --sort-by='.lastTimestamp' | tail -10 || true
+                        echo ""
+                    done
+                fi
+            elif [[ -n "$pod_name" ]]; then
+                echo "Pod status for '$pod_name' in namespace '$namespace':"
+                kubectl get pod "$pod_name" -n "$namespace" 2>/dev/null || true
+                echo ""
+                echo "--- Describe pod: $pod_name ---"
+                kubectl describe pod "$pod_name" -n "$namespace" 2>/dev/null || true
+                echo ""
+                echo "--- Recent events for pod: $pod_name ---"
+                kubectl get events -n "$namespace" --field-selector involvedObject.name="$pod_name" --sort-by='.lastTimestamp' | tail -10 || true
+                echo ""
+            fi
+            
+            echo "=== End Debugging Information ==="
+            echo ""
+            
             sleep $delay
             # Exponential backoff: double the delay for next attempt
             delay=$((delay * 2))
