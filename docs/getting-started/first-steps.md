@@ -1,6 +1,10 @@
 
 # First Steps After Deployment
 
+!!! note "About the URLs on this page"
+    Service URLs below use `localhost` and apply to **Kind, NVKind, and Lima/Minikube** deployments.
+    For cloud Kubernetes or OpenShift, replace `localhost` with your cluster's ingress URL or hostname.
+
 ## Overview
 
 Congratulations! 🎉 Your Geospatial Studio is now running locally. This guide will help you access and explore the various components of the platform.
@@ -146,6 +150,10 @@ curl -X GET "${UI_ROUTE_URL}/api/v1/health" \
 ---
 
 ## Port Forwarding Management
+
+!!! info "Local deployments only"
+    Port forwarding is only needed for **Kind, NVKind, and Lima/Minikube** deployments.
+    Cloud cluster users can skip this section — services are accessible via ingress or LoadBalancer.
 
 ### What is Port Forwarding?
 
@@ -634,3 +642,26 @@ Onboard the tuning task `templates`.  These are the outline configurations to ma
 [View Notebook](https://github.com/terrastackai/geospatial-studio/blob/main/populate-studio/getting-started-notebook.ipynb){ .md-button .md-button--primary }
 [Download Notebook](https://raw.githubusercontent.com/terrastackai/geospatial-studio/main/populate-studio/getting-started-notebook.ipynb){ .md-button download }
 
+---
+
+## Exploring the Studio UI
+
+### Pre-computed examples
+
+You can start getting familiar with the studio by exploring pre-computed inference examples for different locations and tasks.
+
+1. On the Geospatial Studio main page, select the **Open Inference Lab** button from the "Use models for prediction" box.
+
+    ![Geospatial Studio home page](../assets/updated_home_page.png)
+
+2. Navigate to the **Examples** button on the left panel and select an example to view.
+
+    ![Pre-computed example selection](../assets/inference-service/ui/pre-computed-example.png)
+
+    Once you select an example, explore its layers by toggling the view buttons on the left panel on and off:
+
+    ![Layer toggling](../assets/pre-computed_example.png)
+
+### Run inference with a deployed model
+
+To run inference using a model of your own, see the [Inference Lab guide](../user-guides/inference/inference-lab.md).
