@@ -28,6 +28,7 @@ pip install -r requirements.txt
 ```
 =======
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 ## VM cluster initialisation
@@ -51,6 +52,8 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 ```
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 
 ## VM cluster initialisation
 Here you need to follow the Lima VM *or* the Minikube  *or* the Openshift local(CRC) instructions.
@@ -74,6 +77,9 @@ Here you need to follow the Lima VM *or* the Minikube  *or* the Openshift local(
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 2. Start the Lima VM cluster:
 =======
 2. Install Python dependencies:
@@ -83,9 +89,12 @@ pip install -r requirements.txt
 
 3. Start the Lima VM cluster:
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
+<<<<<<< HEAD
 =======
 2. Start the Lima VM cluster:
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 ```shell
 limactl start --name=studio deployment-scripts/lima/studio.yaml
 ```
@@ -163,6 +172,9 @@ minikube dashboard
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 ### [Option 3] OpenShift Local setup (formerly CodeReady Containers)
 
 **Prerequisites**
@@ -199,6 +211,7 @@ crc setup
 crc start --cpus 8 --memory 32768 --disk-size 100
 =======
 ### OpenShift Local setup (formerly CodeReady Containers)
+<<<<<<< HEAD
 =======
 ### [Option 3] OpenShift Local setup (formerly CodeReady Containers)
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
@@ -241,14 +254,41 @@ crc start --cpus 8 --memory 16384 --disk-size 100
 =======
 crc start --cpus 8 --memory 32768 --disk-size 100
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
+=======
+
+**Prerequisites**
+* A [RedHat OpenShift account](https://console.redhat.com/openshift/create/local)
+* [OpenShift Local(crc)](https://console.redhat.com/openshift/create/local) installed and running
+* [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
+* [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html)
+* Kubectl (bundled with above) 
+* [jq](https://github.com/jqlang/jq) - json command-line processor
+* [yq](https://github.com/mikefarah/yq) - yaml command-line processor
+* Minimum 8GB RAM and 4 CPUs available for the VM (more recommended)
+
+**VM cluster initialization**
+1. Follow the [Getting started](https://console.redhat.com/openshift/create/local) guide to install your local OpenShift instance.
+
+2. [Start the local OpenShift cluster instance](https://crc.dev/docs/using/). Ensure your container machine configuration has resource allocation for memory > 8g and cpu > 4 and disk-size 100
+```bash
+# Set up your host machine for CRC:
+crc setup
+
+# Start with recommended resources for geospatial workloads
+crc start --cpus 8 --memory 16384 --disk-size 100
+>>>>>>> 31c028f (feat: Test Openshift local deployment)
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 
 # Verify cluster is running
 crc status
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 # Login to CRC
 # Use the credentials from crc start output
 eval $(crc oc-env)
@@ -264,10 +304,15 @@ k9s
 
 # Useful commands:
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
 =======
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
+=======
+=======
+>>>>>>> 31c028f (feat: Test Openshift local deployment)
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 # stop the instance
 crc stop
 
@@ -275,6 +320,9 @@ crc stop
 crc delete
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 
 # view the password for the developer and kubeadmin users
 crc console --credentials
@@ -301,11 +349,14 @@ oc login -u kubeadmin -p <admin password> https://api.crc.testing:6443
 ```sh
 k9s
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
+<<<<<<< HEAD
 =======
 
 # view the password for the developer and kubeadmin users
 crc console --credentials
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 ```
 
 
@@ -396,6 +447,7 @@ export DEPLOYMENT_ENV=crc
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 Use the `default` namespace
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
@@ -404,8 +456,16 @@ Use the `default` namespace for *Lima VM* and *Minikube:*
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
 =======
 >>>>>>> c15dba1 (Update crc instructions)
+=======
+=======
+Use the `default` namespace
+>>>>>>> 31c028f (feat: Test Openshift local deployment)
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 ```bash
 export OC_PROJECT=default
+```
+```bash
+export IMAGE_REGISTRY=geospatial-studio
 ```
 
 
@@ -440,13 +500,19 @@ OC_PROJECT=default
 # For OpenShift local:
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 export CLUSTER_URL='apps-crc.testing'
 =======
 export CLUSTER_URL='https://api.crc.testing:6443'
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
+<<<<<<< HEAD
 =======
 export CLUSTER_URL='apps-crc.testing'
 >>>>>>> c15dba1 (Update crc instructions)
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 
 # Otherwise use:
 export CLUSTER_URL=localhost
@@ -767,8 +833,13 @@ kubectl create configmap minio-public-config --from-file=minio-public.crt -n kub
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
 
 # Install MinIO
+# For Openshift local:
+python ./deployment-scripts/update-deployment-template.py --storageclass crc-csi-hostpath-provisioner --disable-route --filename deployment-scripts/minio-deployment.yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+
+# Otherwise use:
 python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 # Apply MinIO deployment
@@ -809,19 +880,43 @@ kubectl label node $NODE topology.kubernetes.io/region=us-east-1 topology.kubern
 =======
 # Wait for MinIO to be ready:
 =======
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 # Apply MinIO deployment
+=======
+
+>>>>>>> 31c028f (feat: Test Openshift local deployment)
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
 # Wait for MinIO to be ready
 >>>>>>> c15dba1 (Update crc instructions)
 kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
+<<<<<<< HEAD
 # Access MinIO Console:
 # Port forward to access MinIO console at https://localhost:9001
+=======
+#### Access MinIO Console
+To access the MinIO console:
+```bash
+# Port forward to access MinIO console at https://localhost:9001
+# For Openshift local:
+kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 &
+
+# Otherwise use:
+>>>>>>> 31c028f (feat: Test Openshift local deployment)
 kubectl port-forward -n ${OC_PROJECT} svc/minio-console 9001:9001 &
 kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 &
 
+<<<<<<< HEAD
 # Login with username: `minioadmin`, password: `minioadmin`
+=======
+#### Install cloud object storage drivers in the cluster
+```bash
+# Ensure node has labels required by drivers
+NODE=$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
+kubectl label node $NODE topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
+>>>>>>> 31c028f (feat: Test Openshift local deployment)
 
 <<<<<<< HEAD
 ### Install cloud object storage drivers in the cluster
@@ -841,12 +936,18 @@ export NON_COS_STORAGE_CLASS=local-path
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
 =======
 
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
+=======
+
+=======
+>>>>>>> 31c028f (feat: Test Openshift local deployment)
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 * Once the S3 instance has been created, you can add the credentials and endpoint to the `workspace/${DEPLOYMENT_ENV}/env/.env` file as shown below.
 
   ```
@@ -858,17 +959,29 @@ export NON_COS_STORAGE_CLASS=local-path
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 =======
 * Also at this point update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with...
   ```bash
   # Storage classes
   export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc
+<<<<<<< HEAD
+=======
+  # For Openshift local:
+  export NON_COS_STORAGE_CLASS=crc-csi-hostpath-provisioner
+  # Otherwise use:
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
   export NON_COS_STORAGE_CLASS=local-path
   ```
 
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
+<<<<<<< HEAD
 =======
 >>>>>>> c15dba1 (Update crc instructions)
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 ### Create the required buckets
 Source the environment variables:
 <<<<<<< HEAD
@@ -929,6 +1042,9 @@ Install postgres:
 ```bash
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 # Export postgres password
 export POSTGRES_PASSWORD=devPostgresql123
 
@@ -938,6 +1054,7 @@ export POSTGRES_PASSWORD=devPostgresql123
 # For Lima/Minikube:
 =======
 # For openshift local(crc):
+<<<<<<< HEAD
 ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV DO_NOT_SET_SCC
 
 # Otherwise use:
@@ -951,6 +1068,12 @@ export POSTGRES_PASSWORD=devPostgresql123
 
 # For Lima/Minikube:
 >>>>>>> c15dba1 (Update crc instructions)
+=======
+./deployment-scripts/install-postgres.sh UPDATE_STORAGE
+
+# Otherwise use:
+>>>>>>> 31c028f (feat: Test Openshift local deployment)
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 ./deployment-scripts/install-postgres.sh
 ```
 
@@ -962,14 +1085,20 @@ kubectl wait --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=3
 Once completed, in terminal you will find some notes on the created postgres database. To prepare for the [create databases](#create-databases) section below, follow these steps..
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 =======
 * Export postgres password:
 ```bash
 export POSTGRES_PASSWORD=devPostgresql123
 ```
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
+<<<<<<< HEAD
 =======
 >>>>>>> c15dba1 (Update crc instructions)
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 
 * To connect to your database from outside the cluster for [create databases](#create-databases) section below execute the following commands:
 
@@ -990,14 +1119,20 @@ export POSTGRES_PASSWORD=devPostgresql123
   ```
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 =======
   > Note: after completing [create databases](#create-databases) section below update   `pg_uri` in `workspace/${DEPLOYMENT_ENV}/env/.env` with...
   ```bash
   pg_uri=postgresql.default.svc.cluster.local
   ```
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
+<<<<<<< HEAD
 =======
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 
 ### Create databases
 
@@ -1014,14 +1149,20 @@ Once you create the databases update the pg_uri in `workspace/${DEPLOYMENT_ENV}/
 ```
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 pg_uri=postgresql.${OC_PROJECT}.svc.cluster.local
 =======
 pg_uri=postgresql.default.svc.cluster.local
 #pg_uri=127.0.0.1
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
+<<<<<<< HEAD
 =======
 pg_uri=postgresql.${OC_PROJECT}.svc.cluster.local
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 ```
 
 ## 4. Authenticator setup
@@ -1037,6 +1178,7 @@ source workspace/$DEPLOYMENT_ENV/env/env.sh
 #### 1. Keycloak
 
 Deploy Keycloak for authentication:
+# TODO: Will --disable-route work with openshift local??
 ```bash
 # For Openshift local(CRC):
 python ./deployment-scripts/update-keycloak-deployment.py --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
@@ -1219,6 +1361,7 @@ export GEOSERVER_URL=http://localhost:3000/geoserver
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
 =======
 # For openshift local(crc):
@@ -1228,7 +1371,19 @@ python ./deployment-scripts/update-deployment-template.py --storageclass ${NON_C
 # Otherwise use:
 =======
 >>>>>>> c15dba1 (Update crc instructions)
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+=======
+# For openshift local(crc):
+python ./deployment-scripts/update-deployment-template.py --storageclass ${NON_COS_STORAGE_CLASS} --filename deployment-scripts/geoserver-deployment.yaml --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+
+
+# Otherwise use:
+python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
+>>>>>>> 31c028f (feat: Test Openshift local deployment)
 
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
@@ -1313,6 +1468,9 @@ export SHARE_PIPELINE_PVC=true # set to false for Openshift Local(CRC)
 export STORAGE_PVC_ENABLED=true
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 export STORAGE_FILESYSTEM_ENABLED=true # set to false for Openshift Local(CRC)
 export CREATE_TUNING_FOLDERS_FLAG=false # set to true for Openshift Local(CRC)
 export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=
@@ -1322,12 +1480,15 @@ export STORAGE_FILESYSTEM_ENABLED=true
 export CREATE_TUNING_FOLDERS_FLAG=false
 export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/data
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
+<<<<<<< HEAD
 =======
 export STORAGE_FILESYSTEM_ENABLED=true # set to false for Openshift Local(CRC)
 export CREATE_TUNING_FOLDERS_FLAG=false # set to true for Openshift Local(CRC)
 export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=
 export PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC=false
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
+=======
+>>>>>>> 9018b46 (feat: Test Openshift local deployment)
 
 # switch off oauth config (optional)
 export OAUTH_PROXY_ENABLED=false # set to true for Openshift Local(CRC)
