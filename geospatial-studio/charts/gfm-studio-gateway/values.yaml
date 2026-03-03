@@ -109,55 +109,42 @@ hooks:
           psql "$DB_URI" -f /tmp/trigger.sql
   sandbox-models-seed:
       enable: true
-      # Using postgres image opportunistically to execute CLI curl
-      image: curlimages/curl # --> ✅ use a small enough community image for curl 
+      image: alpine/curl
       when:
         - post-install
         - post-upgrade
-      weight: -5
-      
+      weight: -10
       # Mount JSON payloads
       volumeMounts:
         - name: sandbox-models-payloads
           mountPath: /payloads
-
       volumes:
         - name: sandbox-models-payloads
-          configMapName: "{{ .Values.global.appNames.gateway }}-sandbox-models-payloads"
-
+          configMapName: "{{ .Values.global.appNames.gateway }}-sandbox-models"
       env:
-        - name: STUDIO_API_KEY
-          valueFromSecretKeyRef:
-          name: "{{ .Values.global.appNames.gateway }}-api-keys"
-          key: STUDIO_API_KEY
-
+        - name: BASE_URL
+          value: "https://{{ .Values.global.appNames.ui }}.{{ .Values.global.namespace }}.svc.cluster.local:{{ .Values.global.oauth.oauthProxyPort }}"
       command:
         - "sh"
         - "-c"
         - |
           set -euo pipefail
-
-          # In-cluster URL [TODO] get BASE_URL
-          UI_ROUTE_URL="http://{{ .Values.global.appNames.gateway }}:8000"
-
-          MODELS_URI="$UI_ROUTE_URL/studio-gateway/v2/models"
-
+          MODELS_URI="$BASE_URL"/studio-gateway/v2/models
+          
           echo "Seeding sandbox models -> $MODELS_URI"
-
-          f=${MODEL_URI}
-
+          
           curl -X POST "$MODELS_URI" \
             --header 'Content-Type: application/json' \
-            --header "X-API-Key: $STUDIO_API_KEY" \
+            --header "X-API-Key: $FT_API_KEY" \
             --insecure \
-            --data @populate-studio/payloads/sandbox-models/model-try-in-lab.json
-
-          curl -X POST "$UI_ROUTE_URL/studio-gateway/v2/models" \
+            --data @/payloads/try-in-lab.json
+          
+          curl -X POST "$MODELS_URI" \
             --header 'Content-Type: application/json' \
-            --header "X-API-Key: $STUDIO_API_KEY" \
+            --header "X-API-Key: $FT_API_KEY" \
             --insecure \
-            --data @populate-studio/payloads/sandbox-models/model-add-layer.json
-
+            --data @/payloads/add-layer.json
+          
           echo "✅ Sandbox model seed complete"
 
 extraEnvironment:
@@ -270,8 +257,10 @@ mountLocations:
   models_pvc_name: gfm-ft-models-pvc
   pipelines_pvc_name: inference-shared-pvc
   inference_auxdata_pvc_name: inference-auxdata-pvc
+  generic_python_processor_pvc_name: generic-python-processor-pvc
   data_mount: /ft-data/
   files_mount: /geotunes/
+  generic_python-processor_mount: /generic_data/
 
 services:
   # baseName: gfm-studio-gateway
