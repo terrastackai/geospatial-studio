@@ -139,27 +139,6 @@ Expected response: JSON array of models (may be empty initially)
    - Password: `minioadmin`
 3. You should see the MinIO console
 
-## Step 5: Onboard Sandbox Models
-
-Onboard placeholder models for testing:
-
-```bash
-export STUDIO_API_KEY="<your-api-key>"
-export UI_ROUTE_URL="https://localhost:4180"
-
-./deployment-scripts/add-sandbox-models.sh
-```
-
-Expected output:
-```
-✅ Onboarding sandbox model: geofm-sandbox-models
-✅ Model onboarded successfully
-```
-
-Verify in UI:
-1. Navigate to "Models" page
-2. You should see "geofm-sandbox-models" listed
-
 ## Step 6: Test Python SDK
 
 Create a test script:
