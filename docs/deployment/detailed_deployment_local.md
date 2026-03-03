@@ -612,7 +612,7 @@ cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${
 
 Now review the `values-deploy.yaml` files above. Explanation of each can be found in the file comments.  Once you have completed this you can use `helm` to deploy.  
 
-<!-- Update `workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml`
+Update `workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml`
 
 ```yaml
 # Essential services for local development
@@ -706,7 +706,7 @@ helm uninstall studio
 <!-- To restart all pods, run
 ```bash
 ./deployment-scripts/restart-all-studio-pods.sh
-``` -->
+
 
 
 
