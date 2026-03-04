@@ -3,7 +3,10 @@
 
 
 ibm-cos-sdk
+boto3
 python-dotenv
 pg8000>=1.31.5
 pyyaml
 pre-commit
+urllib3
+geostudio
