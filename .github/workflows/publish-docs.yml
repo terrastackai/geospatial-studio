@@ -50,7 +50,7 @@ jobs:
       - name: Prepare combined site
         run: |
           mkdir -p combined_site
-          cp -r docs/geospatial-studio-docs/site/* combined_site/
+          cp -r site/* combined_site/
           mkdir -p combined_site/workshop
           cp -r workshop/site/* combined_site/workshop/
 
