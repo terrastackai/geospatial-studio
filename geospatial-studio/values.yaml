@@ -215,7 +215,7 @@ gfm-studio-gateway:
       RESOURCE_REQUEST_CPU: 2     
 
       RESOURCE_LIMIT_Memory: 10     # Memory in GB
-      RESOURCE_REQUEST_Memory: 8   # Memory in GB
+      RESOURCE_REQUEST_Memory: 6   # Memory in GB
 
 
 # geofm-ui
