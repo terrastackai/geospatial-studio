@@ -1,7 +1,3 @@
-# © Copyright IBM Corporation 2025
-# SPDX-License-Identifier: Apache-2.0
-
-
 """
 Example payloads for integration tests.
 Each payload is a Python dict, instead of JSON files.

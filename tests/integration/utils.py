@@ -1,7 +1,3 @@
-# © Copyright IBM Corporation 2025
-# SPDX-License-Identifier: Apache-2.0
-
-
 import json
 import re
 from datetime import datetime, timezone
