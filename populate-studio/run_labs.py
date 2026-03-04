@@ -595,7 +595,7 @@ def run_lab3(client, studio_url: str, notebooks_dir: str) -> dict:
             lambda: client.poll_finetuning_until_finished(tune_id=tune_id, poll_frequency=15),
             label="Lab 3 model ready",
             job_hint=str(tune_id),
-            timeout_s=POLL_TIMEOUT_FINETUNE_S,
+            timeout_s=POLL_TIMEOUT_INFERENCE_S,
         )
         ok("Model is ready for inference!")
     except Exception as exc:
