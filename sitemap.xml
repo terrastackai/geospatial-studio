@@ -5,91 +5,87 @@
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/api-reference/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/deployment/detailed_deployment_cluster/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/architecture_and_requirements/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/deployment/detailed_deployment_k8s/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/dataset-factory-service/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/deployment/detailed_deployment_local/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/dataset-factory/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/deployment/kind_cluster_deployment/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/detailed_deployment_cluster/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/deployment/nvkind_cluster_deployment/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/detailed_deployment_k8s/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/getting-started/first-steps/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/detailed_deployment_local/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/getting-started/getting-started-SDK/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/fine-tuning-service/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/getting-started/getting-started-UI/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/first-steps/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/getting-started/installation/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/getting-started-SDK/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/reference/api-reference/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/getting-started-UI/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/reference/architecture_and_requirements/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/inference-lab/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/reference/sample-files/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/inference-service/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/reference/sample-payloads/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/intro/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/tutorials/flooding/GeospatialStudio-Walkthrough-Flooding-instructions/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/kind_cluster_deployment/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/tutorials/wildfire-burnscars/BurnScars-instructions/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/nvkind_cluster_deployment/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/user-guides/dataset-factory/dataset-factory-service/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/sample-files/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/user-guides/dataset-factory/dataset-factory/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/sample-payloads/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/user-guides/fine-tuning/fine-tuning-service/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/tuning-studio/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/user-guides/fine-tuning/tuning-studio/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/walkthroughs/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/user-guides/inference/inference-lab/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
     <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/walkthroughs/Flooding/GeospatialStudio-Walkthrough-Flooding-instructions/</loc>
-         <lastmod>2026-03-04</lastmod>
-    </url>
-    <url>
-         <loc>https://terrastackai.github.io/geospatial-studio/walkthroughs/Wildfire-BurnScars/BurnScars-instructions/</loc>
+         <loc>https://terrastackai.github.io/geospatial-studio/user-guides/inference/inference-service/</loc>
          <lastmod>2026-03-04</lastmod>
     </url>
 </urlset>

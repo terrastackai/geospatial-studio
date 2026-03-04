@@ -44,8 +44,8 @@
       ],
       "model_input_data_spec": [],
       "postprocessing_options": {
-        "cloud_masking": "False",
-        "ocean_masking": "False"
+        "cloud_masking": "True",
+        "ocean_masking": "True"
       },
       "sharable": true,
       "model_onboarding_config": {

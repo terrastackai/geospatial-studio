@@ -5,29 +5,31 @@
       
       
       
-        <link rel="canonical" href="https://terrastackai.github.io/geospatial-studio/">
+        <link rel="canonical" href="https://terrastackai.github.io/geospatial-studio/deployment/nvkind_cluster_deployment/">
       
       
+        <link rel="prev" href="../kind_cluster_deployment/">
       
-        <link rel="next" href="getting-started/installation/">
+      
+        <link rel="next" href="../../user-guides/dataset-factory/dataset-factory/">
       
       
         
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
     
     
       
-        <title>IBM Geospatial Exploration and Orchestration Studio</title>
+        <title>NVKind Cluster - IBM Geospatial Exploration and Orchestration Studio</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -46,13 +48,13 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
     
     
-  <link href="assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
             html.glightbox-open { overflow: initial; height: 100%; }
             .gslide-title { margin-top: 0px; user-select: text; }
             .gslide-desc { color: #666; user-select: text; }
@@ -81,7 +83,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#ibm-geospatial-exploration-and-orchestration-studio" class="md-skip">
+        <a href="#nvkind-cluster-deployment-with-gpus" class="md-skip">
           Skip to content
         </a>
       
@@ -97,9 +99,9 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="IBM Geospatial Exploration and Orchestration Studio" class="md-header__button md-logo" aria-label="IBM Geospatial Exploration and Orchestration Studio" data-md-component="logo">
+    <a href="../.." title="IBM Geospatial Exploration and Orchestration Studio" class="md-header__button md-logo" aria-label="IBM Geospatial Exploration and Orchestration Studio" data-md-component="logo">
       
-  <img src="assets/geospatial-studio-logo-white.svg" alt="logo">
+  <img src="../../assets/geospatial-studio-logo-white.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -116,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              NVKind Cluster
             
           </span>
         </div>
@@ -220,9 +222,9 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="IBM Geospatial Exploration and Orchestration Studio" class="md-nav__button md-logo" aria-label="IBM Geospatial Exploration and Orchestration Studio" data-md-component="logo">
+    <a href="../.." title="IBM Geospatial Exploration and Orchestration Studio" class="md-nav__button md-logo" aria-label="IBM Geospatial Exploration and Orchestration Studio" data-md-component="logo">
       
-  <img src="assets/geospatial-studio-logo-white.svg" alt="logo">
+  <img src="../../assets/geospatial-studio-logo-white.svg" alt="logo">
 
     </a>
     IBM Geospatial Exploration and Orchestration Studio
@@ -234,37 +236,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Home
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -280,126 +255,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#geospatial-studio-capabilities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Geospatial Studio Capabilities
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Geospatial Studio Capabilities">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#creating-a-new-model-aka-fine-tuning" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Creating a new model (aka Fine-tuning)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-a-trained-model-aka-inference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Using a trained model (aka Inference)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#use-case-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Use-case examples
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Use-case examples">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#environmental-monitoring" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Environmental monitoring
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#disaster-monitoring" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Disaster monitoring
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#climate-model-downscaling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Climate model downscaling
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#provide-feedback" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Provide feedback
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -458,7 +313,7 @@
   
   
     <li class="md-nav__item">
-      <a href="getting-started/installation/" class="md-nav__link">
+      <a href="../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -486,7 +341,7 @@
   
   
     <li class="md-nav__item">
-      <a href="getting-started/first-steps/" class="md-nav__link">
+      <a href="../../getting-started/first-steps/" class="md-nav__link">
         
   
   
@@ -514,7 +369,7 @@
   
   
     <li class="md-nav__item">
-      <a href="getting-started/getting-started-UI/" class="md-nav__link">
+      <a href="../../getting-started/getting-started-UI/" class="md-nav__link">
         
   
   
@@ -542,7 +397,7 @@
   
   
     <li class="md-nav__item">
-      <a href="getting-started/getting-started-SDK/" class="md-nav__link">
+      <a href="../../getting-started/getting-started-SDK/" class="md-nav__link">
         
   
   
@@ -574,18 +429,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3">
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -606,7 +463,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -624,7 +481,7 @@
   
   
     <li class="md-nav__item">
-      <a href="deployment/detailed_deployment_local/" class="md-nav__link">
+      <a href="../detailed_deployment_local/" class="md-nav__link">
         
   
   
@@ -652,7 +509,7 @@
   
   
     <li class="md-nav__item">
-      <a href="deployment/detailed_deployment_k8s/" class="md-nav__link">
+      <a href="../detailed_deployment_k8s/" class="md-nav__link">
         
   
   
@@ -680,7 +537,7 @@
   
   
     <li class="md-nav__item">
-      <a href="deployment/detailed_deployment_cluster/" class="md-nav__link">
+      <a href="../detailed_deployment_cluster/" class="md-nav__link">
         
   
   
@@ -708,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="deployment/kind_cluster_deployment/" class="md-nav__link">
+      <a href="../kind_cluster_deployment/" class="md-nav__link">
         
   
   
@@ -733,10 +590,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="deployment/nvkind_cluster_deployment/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NVKind Cluster
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -752,6 +636,209 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment Steps
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deployment Steps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-configure-nvkind-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Configure nvkind Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-run-nvkind-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Run nvkind Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-install-nvkind" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Install nvkind
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-create-nvkind-cluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Create nvkind Cluster
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-set-up-the-kubectl-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Set up the kubectl context
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-install-nvidia-gpu-operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Install NVIDIA GPU Operator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-7-install-python-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 7: Install Python Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-8-deploy-geospatial-studio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 8: Deploy Geospatial Studio
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitor-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitor Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitor Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-k9s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using k9s
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -865,7 +952,7 @@
   
   
     <li class="md-nav__item">
-      <a href="user-guides/dataset-factory/dataset-factory/" class="md-nav__link">
+      <a href="../../user-guides/dataset-factory/dataset-factory/" class="md-nav__link">
         
   
   
@@ -893,7 +980,7 @@
   
   
     <li class="md-nav__item">
-      <a href="user-guides/dataset-factory/dataset-factory-service/" class="md-nav__link">
+      <a href="../../user-guides/dataset-factory/dataset-factory-service/" class="md-nav__link">
         
   
   
@@ -976,7 +1063,7 @@
   
   
     <li class="md-nav__item">
-      <a href="user-guides/fine-tuning/tuning-studio/" class="md-nav__link">
+      <a href="../../user-guides/fine-tuning/tuning-studio/" class="md-nav__link">
         
   
   
@@ -1004,7 +1091,7 @@
   
   
     <li class="md-nav__item">
-      <a href="user-guides/fine-tuning/fine-tuning-service/" class="md-nav__link">
+      <a href="../../user-guides/fine-tuning/fine-tuning-service/" class="md-nav__link">
         
   
   
@@ -1087,7 +1174,7 @@
   
   
     <li class="md-nav__item">
-      <a href="user-guides/inference/inference-lab/" class="md-nav__link">
+      <a href="../../user-guides/inference/inference-lab/" class="md-nav__link">
         
   
   
@@ -1115,7 +1202,7 @@
   
   
     <li class="md-nav__item">
-      <a href="user-guides/inference/inference-service/" class="md-nav__link">
+      <a href="../../user-guides/inference/inference-service/" class="md-nav__link">
         
   
   
@@ -1205,7 +1292,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorials/flooding/GeospatialStudio-Walkthrough-Flooding-instructions/" class="md-nav__link">
+      <a href="../../tutorials/flooding/GeospatialStudio-Walkthrough-Flooding-instructions/" class="md-nav__link">
         
   
   
@@ -1233,7 +1320,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorials/wildfire-burnscars/BurnScars-instructions/" class="md-nav__link">
+      <a href="../../tutorials/wildfire-burnscars/BurnScars-instructions/" class="md-nav__link">
         
   
   
@@ -1315,7 +1402,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/api-reference/" class="md-nav__link">
+      <a href="../../reference/api-reference/" class="md-nav__link">
         
   
   
@@ -1343,7 +1430,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/architecture_and_requirements/" class="md-nav__link">
+      <a href="../../reference/architecture_and_requirements/" class="md-nav__link">
         
   
   
@@ -1371,7 +1458,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/sample-payloads/" class="md-nav__link">
+      <a href="../../reference/sample-payloads/" class="md-nav__link">
         
   
   
@@ -1399,7 +1486,7 @@
   
   
     <li class="md-nav__item">
-      <a href="reference/sample-files/" class="md-nav__link">
+      <a href="../../reference/sample-files/" class="md-nav__link">
         
   
   
@@ -1454,33 +1541,33 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#geospatial-studio-capabilities" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Geospatial Studio Capabilities
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Geospatial Studio Capabilities">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#creating-a-new-model-aka-fine-tuning" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Creating a new model (aka Fine-tuning)
+        Overview
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#using-a-trained-model-aka-inference" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Using a trained model (aka Inference)
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Tools
       
     </span>
   </a>
@@ -1493,22 +1580,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#use-case-examples" class="md-nav__link">
+  <a href="#deployment-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Use-case examples
+        Deployment Steps
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Use-case examples">
+    <nav class="md-nav" aria-label="Deployment Steps">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#environmental-monitoring" class="md-nav__link">
+  <a href="#step-1-configure-nvkind-prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Environmental monitoring
+        Step 1: Configure nvkind Prerequisites
       
     </span>
   </a>
@@ -1516,10 +1603,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#disaster-monitoring" class="md-nav__link">
+  <a href="#step-2-run-nvkind-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Disaster monitoring
+        Step 2: Run nvkind Setup
       
     </span>
   </a>
@@ -1527,10 +1614,65 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#climate-model-downscaling" class="md-nav__link">
+  <a href="#step-3-install-nvkind" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Climate model downscaling
+        Step 3: Install nvkind
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-create-nvkind-cluster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Create nvkind Cluster
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-set-up-the-kubectl-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Set up the kubectl context
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-install-nvidia-gpu-operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Install NVIDIA GPU Operator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-7-install-python-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 7: Install Python Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-8-deploy-geospatial-studio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 8: Deploy Geospatial Studio
       
     </span>
   </a>
@@ -1543,10 +1685,38 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#provide-feedback" class="md-nav__link">
+  <a href="#monitor-deployment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Provide feedback
+        Monitor Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitor Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-k9s" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using k9s
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
       
     </span>
   </a>
@@ -1570,50 +1740,145 @@
 
 
 
-<div><h1 id="ibm-geospatial-exploration-and-orchestration-studio">IBM Geospatial Exploration and Orchestration Studio</h1>
-<p>The <strong>Geospatial Exploration and Orchestration Studio</strong> is an integrated platform for <strong>fine-tuning, inference, and orchestration of geospatial AI models</strong>.  It combines a <strong>no-code UI</strong>, <strong>low-code SDK</strong>, and APIs to make working with geospatial data and AI accessible to everyone, from researchers to developers.  </p>
-<p>The platform supports <strong>on-prem or cloud deployment</strong> using <strong>Red Hat OpenShift</strong> or <strong>Kubernetes</strong>, enabling scalable pipelines for data preparation, model training, and inference.</p>
-<p>By leveraging tools like <strong>TerraTorch</strong>, <strong>TerraKit</strong>, and <strong>Iterate</strong>, the Geospatial Studio accelerates insights from complex geospatial datasets for a diverse range of applications. 🌱</p>
-<p>The studio is builds upon the broader ecosystem utilising <a href="https://github.com/terrastackai/terratorch">TerraTorch</a> for model fine-tuning and inference, and leveraging <a href="https://github.com/terrastackai/terrakit">TerraKit</a> for geospatial data search, query and processing.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="assets/ui-screenshots.png" data-desc-position="bottom"><img alt="Geospatial Studio UI Screenshots" src="assets/ui-screenshots.png"></a></p>
-<h2 id="geospatial-studio-capabilities">Geospatial Studio Capabilities</h2>
-<p>The Geospatial Studio supports users in creating new models and using trained models (either pre-loaded, shared or user-tuned).  Below explain the steps involved for each, with explanation of how the Studio enables users with current and future functionality.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="assets/gfm-block-diagram.png" data-desc-position="bottom"><img alt="Geospatial Foundation Model workflow" src="assets/gfm-block-diagram.png"></a></p>
-<h3 id="creating-a-new-model-aka-fine-tuning">Creating a new model (aka Fine-tuning)</h3>
-<p>As a user, when you want to train a new model for a specific application, there are a number of steps you need to go through to prepare for the training, then train and monitor, before assessment and deployment of any new model.  The main stages in that process are described in the chevron diagram below.  The Studio provides support at each step.  </p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="assets/fine-tuning-chevrons.png" data-desc-position="bottom"><img alt="Fine-tuning steps chevron diagram" src="assets/fine-tuning-chevrons.png"></a></p>
-<ol>
-<li>(Optional) <strong>Dataset onboarding or creation</strong></li>
-<li><strong>Choosing a training dataset</strong></li>
-<li><strong>Configuring a tuning task</strong></li>
-<li><strong>Running model training</strong></li>
-<li><strong>Validating model performance</strong></li>
-<li><strong>Model deployment</strong></li>
-</ol>
-<p>If an appropriate tuning dataset does not already exist in the platform, a user can onboard one with the dataset factory.  This allows a user to onboard a training dataset (data+labels) they have prepared, and in future will provide tools to support creation of a dataset with support for data discovery and annotation.</p>
-<h3 id="using-a-trained-model-aka-inference">Using a trained model (aka Inference)</h3>
-<p>If a model already exists for the given application (either one which was pre-existing, or one you have tuned and deployed), we can drive the model using the inference service.  This handles data preparation and passing, as well as post-processing of model outputs and visualization.  As with fine-tuning, there are a few steps involved and the Studio is designed to support users and simplify access to such models.</p>
-<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="assets/inference-chevrons.png" data-desc-position="bottom"><img alt="Inference steps chevron diagram" src="assets/inference-chevrons.png"></a></p>
-<ol>
-<li><strong>Inference configuration</strong></li>
-<li><strong>Inference execution</strong></li>
-<li><strong>Insight extraction</strong></li>
-</ol>
-<h2 id="use-case-examples">Use-case examples</h2>
-<h3 id="environmental-monitoring">Environmental monitoring</h3>
-<p>Monitoring Kenya’s Water Towers and government efforts to protect and reforest large areas.  Including potential for carbon sequestration and carbon markets.</p>
-<p align="center"><iframe width="560" height="315" src="https://www.youtube.com/embed/CTv2sOYOQyc?si=6k9v0UEWlZ8NPAcv" title="YouTube video player" frameborder="0" allow="autoplay; encrypted-media;" allowfullscreen></iframe></p>
-
-<h3 id="disaster-monitoring">Disaster monitoring</h3>
-<p>AI automation for monitoring floods and translation into affected assets, shown here for the floods in Kenya earlier this year.</p>
-<p align="center"><iframe width="560" height="315" src="https://www.youtube.com/embed/P01VIRJ7n_k?si=4TXMQqqywl2Wggi_" title="YouTube video player" frameborder="0" allow="autoplay; encrypted-media;" allowfullscreen></iframe></p>
-
-<h3 id="climate-model-downscaling">Climate model downscaling</h3>
-<p>Improving the spatial resolution of outputs from computationally intensive weather and climate simulation models to provide the required detail for carrying out climate risk assessment.  Similar can be used to improve short term renewables forecasting.</p>
-<p align="center"><iframe width="560" height="315" src="https://www.youtube.com/embed/K6jhFWwBqfo?si=J1ESfgpWrpFdBmf3" title="YouTube video player" frameborder="0" allow="autoplay; encrypted-media;" allowfullscreen></iframe></p>
-
-<h2 id="provide-feedback">Provide feedback</h2>
-<p>If you’d like to provide feedback, <a href="https://github.com/terrastackai/geospatial-studio">submit a new feature request here or report an issue</a>.</p></div>
+<div><h1 id="nvkind-cluster-deployment-with-gpus">NVKind Cluster Deployment with GPUs</h1>
+<h2 id="overview">Overview</h2>
+<p>This section targets cases where you have a host machine (local or remote) that has access to <strong>NVIDIA GPUs</strong> and leverage <a href="https://github.com/NVIDIA/nvkind/blob/f1a690fa3f4b0dcb41eb8d6acdda05accf045187/README.md"><code>nvkind</code></a> to create and manage <code>kind</code> kubernetes clusters with access to GPUs.</p>
+<p>The automated shell script will deploy dependencies (Minio, Keycloak and Postgresql), before generating the deployment configuration for the studio and then deploying the main studio services + pipelines.</p>
+<hr>
+<h2 id="prerequisites">Prerequisites</h2>
+<h3 id="required-tools">Required Tools</h3>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Version</th>
+<th>Installation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>nvkind</strong></td>
+<td>Latest</td>
+<td><a href="https://github.com/NVIDIA/nvkind#install-nvkind">Install Guide</a></td>
+</tr>
+<tr>
+<td><strong>Helm</strong></td>
+<td>v3.19+</td>
+<td><a href="https://helm.sh/docs/intro/install/">Install Helm</a></td>
+</tr>
+<tr>
+<td><strong>OpenShift CLI</strong></td>
+<td>Latest</td>
+<td><a href="https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html">Install oc</a></td>
+</tr>
+<tr>
+<td><strong>kubectl</strong></td>
+<td>Latest</td>
+<td>Bundled with oc</td>
+</tr>
+<tr>
+<td><strong>jq</strong></td>
+<td>Latest</td>
+<td><a href="https://jqlang.github.io/jq/download/">Install jq</a></td>
+</tr>
+<tr>
+<td><strong>yq</strong></td>
+<td>Latest</td>
+<td><a href="https://github.com/mikefarah/yq#install">Install yq</a></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Helm Version</p>
+<p><strong>v3.19+ required</strong> Eaarlier versions of Helm may not work with the studio deployment.</p>
+</div>
+<h2 id="deployment-steps">Deployment Steps</h2>
+<h3 id="step-1-configure-nvkind-prerequisites">Step 1: Configure nvkind Prerequisites</h3>
+<p>Follow the <a href="https://github.com/NVIDIA/nvkind#prerequisites">nvkind prerequisites</a> for your OS.</p>
+<p><strong>Verify GPU detection:</strong>
+</p><div class="highlight"><pre><span></span><code>$<span class="w"> </span>nvidia-smi<span class="w"> </span>-L
+</code></pre></div>
+<strong>Expected output:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># GPU 0: NVIDIA L4 (UUID: GPU-3e71c48d-90c0-f46f-195b-4150320f9910)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>docker<span class="w"> </span>run<span class="w"> </span>--runtime<span class="o">=</span>nvidia<span class="w"> </span>-e<span class="w"> </span><span class="nv">NVIDIA_VISIBLE_DEVICES</span><span class="o">=</span>all<span class="w"> </span>ubuntu:20.04<span class="w"> </span>nvidia-smi<span class="w"> </span>-L
+</code></pre></div>
+<p><strong>Expected output:</strong>
+</p><div class="highlight"><pre><span></span><code><span class="c1"># GPU 0: NVIDIA L4 (UUID: GPU-3e71c48d-90c0-f46f-195b-4150320f9910)</span>
+</code></pre></div>
+<hr>
+<h3 id="step-2-run-nvkind-setup">Step 2: Run nvkind Setup</h3>
+<p>Complete the <a href="https://github.com/NVIDIA/nvkind#setup">setup steps</a> from nvkind documentation.</p>
+<p><strong>Verify configuration:</strong>
+</p><div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>-v<span class="w"> </span>/dev/null:/var/run/nvidia-container-devices/all<span class="w"> </span>ubuntu:20.04<span class="w"> </span>nvidia-smi<span class="w"> </span>-L
+</code></pre></div>
+<p><strong>Expected output:</strong>
+</p><div class="highlight"><pre><span></span><code><span class="c1"># GPU 0: NVIDIA L4 (UUID: GPU-3e71c48d-90c0-f46f-195b-4150320f9910)</span>
+</code></pre></div>
+<hr>
+<h3 id="step-3-install-nvkind">Step 3: Install nvkind</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Install nvkind</span>
+go<span class="w"> </span>install<span class="w"> </span>github.com/NVIDIA/nvkind/cmd/nvkind@latest
+<span class="nb">cd</span><span class="w"> </span>nvkind
+make
+</code></pre></div>
+<hr>
+<h3 id="step-4-create-nvkind-cluster">Step 4: Create nvkind Cluster</h3>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="s">&lt;&lt; EOF | nvkind cluster create --name=studio --config-template= -</span>
+<span class="s">kind: Cluster</span>
+<span class="s">apiVersion: kind.x-k8s.io/v1alpha4</span>
+<span class="s">nodes:</span>
+<span class="s">- role: control-plane</span>
+<span class="s">- role: worker</span>
+<span class="s">  extraMounts:</span>
+<span class="s">    - hostPath: /dev/null</span>
+<span class="s">      containerPath: /var/run/nvidia-container-devices/all</span>
+<span class="s">EOF</span>
+</code></pre></div>
+<hr>
+<h3 id="step-5-set-up-the-kubectl-context">Step 5: Set up the kubectl context</h3>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>cluster-info<span class="w"> </span>--context<span class="w"> </span>kind-studio
+</code></pre></div>
+<hr>
+<p><strong>Optional:</strong> If you have limited network bandwidth, you can pre-pull the container images. See <a href="https://github.com/terrastackai/geospatial-studio/blob/main/deployment-scripts/images-pre-puller/README-image-prepuller.md">image pre-puller details</a>.
+</p><div class="highlight"><pre><span></span><code><span class="nv">NAMESPACE</span><span class="o">=</span>default<span class="w"> </span>./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
+</code></pre></div>
+<h3 id="step-6-install-nvidia-gpu-operator">Step 6: Install NVIDIA GPU Operator</h3>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>nvidia<span class="w"> </span>https://helm.ngc.nvidia.com/nvidia<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+helm<span class="w"> </span>repo<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+helm<span class="w"> </span>install<span class="w"> </span>--wait<span class="w"> </span>--generate-name<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-n<span class="w"> </span>gpu-operator<span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>nvidia/gpu-operator<span class="w"> </span>--version<span class="o">=</span>v25.10.0
+</code></pre></div>
+<div class="admonition info">
+<p class="admonition-title">GPU Operator</p>
+<p>This may take several minutes. It manages NVIDIA drivers and device plugins in the cluster.</p>
+</div>
+<hr>
+<h3 id="step-7-install-python-dependencies">Step 7: Install Python Dependencies</h3>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</code></pre></div>
+<hr>
+<h3 id="step-8-deploy-geospatial-studio">Step 8: Deploy Geospatial Studio</h3>
+<div class="highlight"><pre><span></span><code>./deploy_studio_k8s.sh
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Deployment Time</p>
+<p>~10-15 minutes depending on download speed and GPU operator initialization.</p>
+</div>
+<hr>
+<h2 id="monitor-deployment">Monitor Deployment</h2>
+<h3 id="using-k9s">Using k9s</h3>
+<div class="highlight"><pre><span></span><code>k9s
+</code></pre></div>
+<hr>
+<h2 id="next-steps">Next Steps</h2>
+<div class="admonition success">
+<p class="admonition-title">Deployment Complete!</p>
+<p>Your GPU-enabled Geospatial Studio is ready.</p>
+</div>
+<p><strong>Continue to <a href="../../getting-started/first-steps/">First Steps</a></strong> to access services and start using the studio.</p>
+<hr></div>
 
 
 
@@ -1634,7 +1899,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="January 8, 2026 08:42:38 UTC">January 8, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="February 24, 2026 11:53:41 UTC">February 24, 2026</span>
   </span>
 
     
@@ -1684,10 +1949,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["content.code.copy"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   
