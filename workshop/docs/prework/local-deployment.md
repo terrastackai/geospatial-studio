@@ -255,17 +255,6 @@ echo "GEOSTUDIO_API_KEY=<your-api-key>" > ~/.geostudio_config_file
 echo "BASE_STUDIO_UI_URL=https://localhost:4180" >> ~/.geostudio_config_file
 ```
 
-### Onboard Sandbox Models
-
-Onboard placeholder models for testing:
-
-```bash
-export STUDIO_API_KEY="<your-api-key>"
-export UI_ROUTE_URL="https://localhost:4180"
-
-./deployment-scripts/add-sandbox-models.sh
-```
-
 ## Troubleshooting
 
 !!! info "Comprehensive Troubleshooting Guide"

@@ -372,22 +372,11 @@ jobs:
           echo "Waiting 30 seconds for services to stabilize..."
           sleep 30
 
-          # Step 1: Add sandbox models (prerequisite for the labs)
-          echo ""
-          echo "--- Step 1: Adding sandbox models ---"
-          chmod +x "${GS_DIR}/deployment-scripts/add-sandbox-models.sh"
-          "${GS_DIR}/deployment-scripts/add-sandbox-models.sh"
-          if [[ $? -eq 0 ]]; then
-            echo "✅ Sandbox models added successfully"
-          else
-            echo "⚠️  Warning: Failed to add sandbox models"
-          fi
-
-          # Steps 2-6: Run all 4 workshop labs via run_labs.py
+          # Steps 1-6: Run all 4 workshop labs via run_labs.py
           # (covers inference examples, templates, tunes, datasets, and backbone)
           # --notebooks-dir defaults to populate-studio/payloads/ inside the repo
           echo ""
-          echo "--- Steps 2-6: Executing workshop labs (run_labs.py) ---"
+          echo "--- Steps 1-6: Executing workshop labs (run_labs.py) ---"
           python -u "${GS_DIR}/populate-studio/run_labs.py" \
             --api-key "${STUDIO_API_KEY}" \
             --studio-url "${BASE_STUDIO_UI_URL}" \
