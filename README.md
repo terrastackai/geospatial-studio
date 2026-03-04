@@ -126,7 +126,7 @@ When deployed the studio will consist of the gateway api (which can trigger onbo
 
 #### Prerequisites:
 * Provisioned ocp cluster
-* [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
+* [Helm](https://helm.sh/docs/v3/) - v3.19 or later
 * [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html)
 * Kubectl (bundled with above) 
 * [jq](https://github.com/jqlang/jq) - json command-line processor
@@ -173,8 +173,8 @@ After deployment the UI will pop up on the screen and you can jump to [First ste
 ## 💻⚙️ Getting Started (Local Deployment)
 
 #### Prerequisites:
-* [Lima VM](https://lima-vm.io/docs/installation/) - v1.2.1 (*currently incompatible with v2*)
-* [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
+* [Lima VM](https://lima-vm.io/docs/installation/) - v1.2.1 or later
+* [Helm](https://helm.sh/docs/v3/) - v3.19 or later
 * [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html)
 * Kubectl (bundled with above)
 * [jq](https://github.com/jqlang/jq) - json command-line processor
@@ -245,7 +245,7 @@ After successful deployment you can jump to [First steps](#first-steps).
 
 #### Prerequisites:
 * Provisioned k8s cluster - kind cluster, nvkind cluster, minikube, or any other k8s cluster.
-* [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
+* [Helm](https://helm.sh/docs/v3/) - v3.19 or later
 * [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html)
 * Kubectl (bundled with above) 
 * [jq](https://github.com/jqlang/jq) - json command-line processor

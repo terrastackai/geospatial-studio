@@ -15,14 +15,14 @@ The automated shell script will deploy dependencies (Minio, Keycloak and Postgre
 | Tool | Version | Installation |
 |------|---------|--------------|
 | **nvkind** | Latest | [Install Guide](https://github.com/NVIDIA/nvkind#install-nvkind) |
-| **Helm** | v3.19 | [Install Helm](https://helm.sh/docs/intro/install/) |
+| **Helm** | v3.19+ | [Install Helm](https://helm.sh/docs/intro/install/) |
 | **OpenShift CLI** | Latest | [Install oc](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html) |
 | **kubectl** | Latest | Bundled with oc |
 | **jq** | Latest | [Install jq](https://jqlang.github.io/jq/download/) |
 | **yq** | Latest | [Install yq](https://github.com/mikefarah/yq#install) |
 
 !!! warning "Helm Version"
-    **v3.19 required** - incompatible with v4
+    **v3.19+ required** Eaarlier versions of Helm may not work with the studio deployment.
 
 ## Deployment Steps
 

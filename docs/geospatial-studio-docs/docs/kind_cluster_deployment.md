@@ -17,7 +17,7 @@ Before you begin, ensure you have the following tools installed on your system:
 | Tool | Version | Purpose | Installation Link |
 |------|---------|---------|-------------------|
 | **kind** | Latest | Runs Kubernetes clusters in Docker containers | [Install Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) |
-| **Helm** | v3.19 | Kubernetes package manager | [Install Helm](https://helm.sh/docs/intro/install/) |
+| **Helm** | v3.19+ | Kubernetes package manager | [Install Helm](https://helm.sh/docs/intro/install/) |
 | **OpenShift CLI (oc)** | Latest | Kubernetes command-line tool | [Install oc](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html) |
 | **kubectl** | Latest | Bundled with OpenShift CLI | Included with oc |
 | **jq** | Latest | JSON command-line processor | [Install jq](https://jqlang.github.io/jq/download/) |
@@ -26,7 +26,7 @@ Before you begin, ensure you have the following tools installed on your system:
 | **Docker** | Latest | Container runtime (required by Kind) | [Install Docker](https://docs.docker.com/get-docker/) |
 
 !!! warning "Helm Version Compatibility"
-    Currently, Helm **v3.19** is required. The deployment is **incompatible with Helm v4**.
+    Currently, Helm **v3.19+** is required. Earlier versions may not work correctly with this deployment.
 
 ---
 
