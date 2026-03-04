@@ -263,6 +263,80 @@ if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
     read ans
 fi
 
+echo "**********************************************************************"
+echo "**********************************************************************"
+echo "------  Configure Fine-Tuning Job Resources  -------------------------"
+echo "**********************************************************************"
+echo "**********************************************************************"
+
+# ASk user if to they have GPUs in their cluster. If Yes, keep configuration as is. If Nope, remove GPU configuration via the values.yaml
+printf "%s " "Do you have GPUs in your cluster? (y/n)"
+read ans
+if [ "$ans" = "y" ]; then
+    echo "Keeping GPU configuration in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
+    echo "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/"
+
+else
+    echo "Removing GPU configuration from values.yaml"
+    python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+      --gpu-limit 0 \
+      --gpu-request 0 
+    echo "--------------------------- Removed GPUs in the Cluster -------------------"
+
+fi
+
+
+# If not, print that they can edit the values_deploy.yaml file manually and update the cluster.
+# Ask user if they want to alter memory, CPU requests and limits for finetuning.
+printf "%s " "Do you want to alter memory, CPU requests and limits for finetuning? (y/n) "
+read ans
+
+# If yes, prompt user for memory limit, CPU limit, memory request and CPU request.
+if [ "$ans" = "y" ]; then
+    echo "Updating memory, CPU requests and limits for finetuning."
+    echo ""
+    
+    # Prompt for CPU limit
+    printf "%s " "CPU limit in cores (default: 4): "
+    read cpu_limit
+    cpu_limit=${cpu_limit:-4}
+    
+    # Prompt for CPU request
+    printf "%s " "CPU request in cores (default: 2): "
+    read cpu_request
+    cpu_request=${cpu_request:-2}
+    
+    # Prompt for Memory limit
+    printf "%s " "Memory limit in GB (default: 10): "
+    read memory_limit
+    memory_limit=${memory_limit:-10}
+    
+    # Prompt for Memory request
+    printf "%s " "Memory request in GB (default: 6): "
+    read memory_request
+    memory_request=${memory_request:-6}
+    
+    echo ""
+    echo "Applying configuration:"
+    echo "  GPU Limit: $gpu_limit, GPU Request: $gpu_request"
+    echo "  CPU Limit: ${cpu_limit} cores, CPU Request: ${cpu_request} cores"
+    echo "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB"
+    
+    # Call the update script with user-provided values
+    python3 ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+        --gpu-request "$gpu_request" \
+        --cpu-limit "$cpu_limit" \
+        --cpu-request "$cpu_request" \
+        --memory-limit "$memory_limit" \
+        --memory-request "$memory_request"
+    echo "Updated finetuning resource configurations"
+else
+    echo "Not updating resource configurations."
+    echo "You can manually edit workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml"
+    echo "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/"
+fi
+
+
 
 echo "----------------------------------------------------------------------"
 echo "----------------  Building Helm dependencies  ------------------------"
