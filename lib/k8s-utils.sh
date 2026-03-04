@@ -40,6 +40,13 @@ detect_cluster_type() {
     return 0
   fi
   
+  # Check for OpenShift (look for OpenShift API server or oc command)
+  if kubectl get clusterversion 2>/dev/null | grep -q "OpenShift" || \
+     kubectl api-resources 2>/dev/null | grep -q "route.openshift.io"; then
+    echo "openshift"
+    return 0
+  fi
+  
   # Check if nodes have lima labels (for Lima/k3s)
   if kubectl get nodes -o json 2>/dev/null | grep -q "lima"; then
     echo "lima"
@@ -52,6 +59,16 @@ detect_cluster_type() {
     return 0
   fi
   
+  # Check for nvkind (NVIDIA GPU-enabled kind)
+  # nvkind typically has nvidia.com resources or GPU-related labels
+  if kubectl get nodes -o json 2>/dev/null | grep -q "nvidia.com/gpu"; then
+    # If it has kind in context but also has NVIDIA GPUs, it's nvkind
+    if [[ "$current_context" == *kind* ]] || kubectl cluster-info 2>/dev/null | grep -q "kind"; then
+      echo "nvkind"
+      return 0
+    fi
+  fi
+  
   # Default to k8s for any other cluster
   echo "k8s"
   return 0
@@ -60,6 +77,11 @@ detect_cluster_type() {
 get_cluster_type() {
   local cluster_type=${CLUSTER_TYPE:-$(detect_cluster_type)}
   echo "$cluster_type"
+}
+
+get_csi_driver_type() {
+  # Only IBM Object CSI driver is supported
+  echo "ibm-object-csi"
 }
 
 # ==============================================================================

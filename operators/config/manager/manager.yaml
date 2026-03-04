@@ -61,6 +61,7 @@ spec:
       - args:
           - --leader-elect
           - --leader-election-id=operators
+          - --reconcile-period=5m
           - --health-probe-bind-address=:8081
         image: controller:latest
         name: manager

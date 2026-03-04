@@ -193,12 +193,25 @@ app_deploy() {
   # This is a valid base64 encoded dockerconfigjson with dummy credentials
   export IMAGE_PULL_SECRET_B64="eyJhdXRocyI6eyJleGFtcGxlLmlvIjp7InVzZXJuYW1lIjoiZXhhbXBsZSIsInBhc3N3b3JkIjoiZXhhbXBsZSIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImF1dGgiOiJaWGhoYlhCc1pUcGxlR0Z0Y0d4bCJ9fX0="
   
+  # Determine non-COS storage class based on cluster type
+  local non_cos_storage_class="standard"  # Default for kind, k8s, nvkind, openshift
+  if [ "$cluster_type" = "lima" ]; then
+    non_cos_storage_class="local-path"
+  fi
+  
   # Apply configuration using cross-platform sed
   sed_inplace "$env_sh_file" 's|export ROUTE_ENABLED=.*|export ROUTE_ENABLED=false|g'
   sed_inplace "$env_sh_file" "s/export ENVIRONMENT=.*/export ENVIRONMENT=local/g"
   sed_inplace "$env_sh_file" "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g"
-  sed_inplace "$env_sh_file" "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g"
-  sed_inplace "$env_sh_file" "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=local-path/g"
+  
+  # Determine CSI driver type and storage class
+  local csi_driver_type=$(get_csi_driver_type)
+  local cos_storage_class="cos-s3-csi-s3fs-sc"
+  log_info "Using CSI driver: $csi_driver_type with storage class: $cos_storage_class"
+  
+  sed_inplace "$env_sh_file" "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=$cos_storage_class/g"
+  sed_inplace "$env_sh_file" "s/export CSI_DRIVER_TYPE=.*/export CSI_DRIVER_TYPE=$csi_driver_type/g"
+  sed_inplace "$env_sh_file" "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=$non_cos_storage_class/g"
   sed_inplace "$env_sh_file" "s/export SHARE_PIPELINE_PVC=.*/export SHARE_PIPELINE_PVC=true/g"
   sed_inplace "$env_sh_file" "s/export STORAGE_PVC_ENABLED=.*/export STORAGE_PVC_ENABLED=true/g"
   sed_inplace "$env_sh_file" "s/export STORAGE_FILESYSTEM_ENABLED=.*/export STORAGE_FILESYSTEM_ENABLED=false/g"

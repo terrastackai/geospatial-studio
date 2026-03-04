@@ -73,7 +73,12 @@ else
 fi
 
 ## Setup storage class for minio and default in cluster storage class
-sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+# Use IBM Object CSI driver storage class
+source lib/k8s-utils.sh
+CSI_DRIVER_TYPE=$(get_csi_driver_type)
+export COS_STORAGE_CLASS="cos-s3-csi-s3fs-sc"
+echo "Using CSI driver type: $CSI_DRIVER_TYPE with storage class: $COS_STORAGE_CLASS"
+sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 echo "----------------------------------------------------------------------"
@@ -89,8 +94,8 @@ openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-pub
 kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml -n ${OC_PROJECT}
 
-kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
-kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
+kubectl create configmap minio-ca-cert --from-file=ca.crt=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-ca-cert.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-ca-cert.yaml -n kube-system
 
 
 python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml

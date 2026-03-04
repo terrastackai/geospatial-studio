@@ -193,29 +193,8 @@ operator_install() {
     NAMESPACE=${namespace} \
     IMG=${operator_image}
   
-  log_info "Waiting for operator deployment to be created..."
-  sleep 5
-  
-  # Configure for local mode
-  if [ "$deployment_mode" = "local" ]; then
-    log_info "Configuring operator for local development..."
-    
-    kubectl set image deployment/operators-controller-manager \
-      manager=${operator_image} \
-      -n ${namespace}
-    
-    kubectl patch deployment operators-controller-manager \
-      -n ${namespace} \
-      --type json \
-      -p '[{"op": "replace", "path": "/spec/template/spec/containers/0/imagePullPolicy", "value": "Never"}]'
-    
-    kubectl patch deployment operators-controller-manager \
-      -n ${namespace} \
-      --type json \
-      -p '[{"op": "remove", "path": "/spec/template/spec/imagePullSecrets"}]' 2>/dev/null || true
-    
-    log_success "Local configuration applied"
-  fi
+  log_info "Waiting for operator deployment to be ready..."
+  sleep 2
   
   # Wait for operator
   log_info "Waiting for operator to be ready..."

@@ -240,14 +240,18 @@ global:
         cpu: 2000m
   
   # CSI Driver Configuration
-  # IBM Object S3 CSI driver for MinIO bucket mounting as PersistentVolumes
+  # IBM Object S3 CSI driver for MinIO/S3 bucket mounting as PersistentVolumes
   # Deployed via pre-install Helm hook job when enabled
   # The job runs with hook-weight -75 (after TLS cert creation, before bucket creation)
-  # Creates storage classes: cos-s3-csi-sc and cos-s3-csi-s3fs-sc
+  # 
+  # Available type:
+  #   - "ibm-object-s3-csi": IBM Object S3 CSI driver (x86_64 only)
+  #       Creates storage classes: cos-s3-csi-sc and cos-s3-csi-s3fs-sc
   csiDriver:
     enabled: false
     type: "ibm-object-s3-csi"
     images:
+      # IBM Object S3 CSI images
       provisioner: "k8s.gcr.io/sig-storage/csi-provisioner:v5.2.0"
       driver: "quay.io/containerstorage/ibm-object-csi-driver:v0.1.19"
       nodeDriverRegistrar: "k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.13.0"
@@ -260,9 +264,17 @@ gfm-studio-gateway:
   enabled: true
   resources:
     api:
+      requests: {}
+      limits: {}
     oauth:
+      requests: {}
+      limits: {}
     celeryWorker:
+      requests: {}
+      limits: {}
     celeryFlower:
+      requests: {}
+      limits: {}
   image:
     name: quay.io/geospatial-studio/geostudio-gateway
     tag: latest
@@ -322,7 +334,11 @@ geofm-ui:
   enabled: true
   resources:
     ui:
+      requests: {}
+      limits: {}
     oauth:
+      requests: {}
+      limits: {}
   image:
     name: quay.io/geospatial-studio/geostudio-ui
     tag: latest
@@ -342,6 +358,8 @@ geofm-ui:
 gfm-mlflow:
   enabled: true
   resources:
+    requests: {}
+    limits: {}
   image:
     name: ghcr.io/mlflow/mlflow
     # pullPolicy inherited from global.imagePullPolicy

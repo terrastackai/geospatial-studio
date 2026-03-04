@@ -33,20 +33,13 @@ spec:
       {{- end }}
       containers:
       - name: postgresql-installer
-        image: alpine/helm:latest
+        image: dtzar/helm-kubectl:latest
         command:
-        - /bin/sh
+        - /bin/bash
         - -c
         - |
           set -e
-          
-          # Install kubectl
-          echo "Installing kubectl..."
-          apk add --no-cache curl
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          mv kubectl /usr/local/bin/kubectl
-          
+
           echo "=================================================="
           echo "PostgreSQL Installation Job"
           echo "=================================================="

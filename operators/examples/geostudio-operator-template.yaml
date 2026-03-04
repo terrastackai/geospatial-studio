@@ -475,7 +475,7 @@ spec:
     # CSI Driver Configuration
     csiDriver:
       enabled: true
-      type: "ibm-object-s3-csi"
+      type: "${CSI_DRIVER_TYPE}"
   
   # ==========================================================================
   # Redis - Cache and Message Broker
