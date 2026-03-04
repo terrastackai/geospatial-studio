@@ -73,6 +73,13 @@ spec:
         {{- range $config.command }}
             - {{ . | quote }}
         {{- end }}
+        {{- if hasKey $config "env" }}
+        env:
+        {{- range $config.env }}
+        - name: {{ .name }}
+          value: {{ tpl .value $ | quote }}
+        {{- end }}
+        {{- end }}
         envFrom:
           - configMapRef:
               name: {{ $values.global.appNames.gateway }}-cm

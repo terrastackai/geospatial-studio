@@ -282,10 +282,10 @@ def dump_k8s_diagnostics(job_hint: str = "") -> None:
     hint_pods: list[str] = []
     if job_hint:
         for line in pods_out.splitlines():
-            if job_hint.lower() in line.lower() or "terratorch" in line.lower() or "inference" in line.lower():
-                pod_name = line.split()[0] if line.split() else ""
-                if pod_name:
-                    hint_pods.append(pod_name)
+            # Include all pods when job_hint is provided
+            pod_name = line.split()[0] if line.split() else ""
+            if pod_name and pod_name != "NAME":  # Skip header line
+                hint_pods.append(pod_name)
 
     # Also grab any pods in non-Running/Completed state
     for line in pods_out.splitlines():
@@ -595,7 +595,7 @@ def run_lab3(client, studio_url: str, notebooks_dir: str) -> dict:
             lambda: client.poll_finetuning_until_finished(tune_id=tune_id, poll_frequency=15),
             label="Lab 3 model ready",
             job_hint=str(tune_id),
-            timeout_s=POLL_TIMEOUT_FINETUNE_S,
+            timeout_s=POLL_TIMEOUT_INFERENCE_S,
         )
         ok("Model is ready for inference!")
     except Exception as exc:

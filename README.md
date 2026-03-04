@@ -330,11 +330,6 @@ export STUDIO_API_KEY="<your api key from the UI>"
 export UI_ROUTE_URL="https://localhost:4180"
 ```
 
-4. Onboard the `sandbox-model`s, these are placeholder models (pipelines) for onboarding existing inferences or testing tuned models.
-```shell
-./deployment-scripts/add-sandbox-models.sh
-```
-
 At this point you can opt to continue getting started with the studio with the steps below by running them in terminal, or you can opt to use [this jupyter notebook](./populate-studio/getting-started-notebook.ipynb), leveraging studio sdk to get started.  
 
 > The notebook is a good way to get started with the studio sdk and see how it works.  The notebook is located in the `./populate-studio/getting-started-notebook.ipynb` directory of this repo.
