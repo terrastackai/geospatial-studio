@@ -1,7 +1,3 @@
-# © Copyright IBM Corporation 2025
-# SPDX-License-Identifier: Apache-2.0
-
-
 import os
 import shlex
 import subprocess
@@ -16,11 +12,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
-#from gfmstudio.common.api.utils import get_db
-#from gfmstudio.common.db.base import Base
-#from gfmstudio.config import settings
-#from gfmstudio.main import app
-from tests.integration._support.gateway import GatewayApiClient
+from tests.integration.gateway import GatewayApiClient
 
 from .integration.utils import make_timestamped_name
 
@@ -142,6 +134,7 @@ def gateway() -> GatewayApiClient:
     Requires:
       BASE_GATEWAY_URL and API_KEY in .env file
     """
+
     # Make sure .env is found whether you run from repo root or a subfolder
     load_dotenv(find_dotenv(usecwd=True), override=True)
 

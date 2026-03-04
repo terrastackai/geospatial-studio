@@ -1,10 +1,6 @@
-# © Copyright IBM Corporation 2025
-# SPDX-License-Identifier: Apache-2.0
-
-
 import os
 from typing import Any, Dict, Optional
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import requests
 from dotenv import find_dotenv, load_dotenv
@@ -18,15 +14,12 @@ class GatewayApiClient:
         base_url: str,
         api_key: Optional[str] = None,
         timeout: int = 60,
-        verify: Optional[bool | str] = None,
+        verify: Optional[bool | str] = False,
         proxies: Optional[Dict[str, str]] = None,
     ):
-
         self.base_url = base_url.rstrip("/") + "/"
         self.timeout = timeout
-        self.verify = (
-            verify if verify is not None else (os.getenv("REQUESTS_CA_BUNDLE") or True)
-        )
+        self.verify = verify
         self.proxies = proxies
 
         self.session = requests.Session()
@@ -42,10 +35,9 @@ class GatewayApiClient:
 
         self.session.headers.update({"Accept": "application/json"})
 
-        # Always use API key
         if api_key:
             key = api_key.strip().strip('"').strip("'")
-            if key.endswith("\r"):  # guard against CRLF from copied envs
+            if key.endswith("\r"):
                 key = key[:-1]
             self.session.headers.update({"X-Api-Key": key})
 
@@ -131,5 +123,4 @@ class GatewayApiClient:
         load_dotenv(find_dotenv(usecwd=True))
         base = os.environ["BASE_GATEWAY_URL"]
         api_key = os.environ["API_KEY"]  # uses the key *value* (pak-...), not the id
-        verify = os.getenv("REQUESTS_CA_BUNDLE") or True
-        return cls(base_url=base, api_key=api_key, verify=verify)
+        return cls(base_url=base, api_key=api_key)
