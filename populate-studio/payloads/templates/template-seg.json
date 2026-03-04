@@ -367,7 +367,7 @@
         "description": "A request sent to the finetuning service to start a finetune task for segmentation"
     },
     "extra_info": {
-        "runtime_image": "quay.io/geospatial-studio/terratorch:terratorch_v1_2_2",
+        "runtime_image": "quay.io/geospatial-studio/terratorch:latest",
         "model_category": "prithvi",
         "model_framework": "terratorch-v2"
     },
