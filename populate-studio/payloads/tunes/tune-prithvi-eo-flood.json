@@ -1,8 +1,8 @@
 {
   "name": "prithvi-eo-flood",
   "description": "prithvi-eo-flood",
-  "tune_config_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-300-flood/prithvi-eo-flood-config.yaml",
-  "tune_checkpoint_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-300-flood/prithvi-eo-flood-bestEpoch_Fixed_updated.ckpt",
+  "tune_config_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-flood/prithvi-eo-flood-config.yaml",
+  "tune_checkpoint_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-flood/prithvi-eo-flood-bestEpoch_Fixed_updated.ckpt",
   "model_input_data_spec": [
     {
       "bands": [
