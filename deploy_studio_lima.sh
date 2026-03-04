@@ -269,27 +269,37 @@ echo "------  Configure Fine-Tuning Job Resources  -------------------------"
 echo "**********************************************************************"
 echo "**********************************************************************"
 
-# ASk user if to they have GPUs in their cluster. If Yes, keep configuration as is. If Nope, remove GPU configuration via the values.yaml
-printf "%s " "Do you have GPUs in your cluster? (y/n)"
-read ans
+# Ask user if they have GPUs in their cluster. If Yes, keep configuration as is. If No, remove GPU configuration via the values.yaml
+if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+    printf "%s " "Do you have GPUs in your cluster? (y/n): "
+    read ans
+else
+    # Non-interactive mode: use HAS_GPU environment variable (default to "n" for no GPU)
+    ans="${HAS_GPU:-n}"
+    echo "Non-interactive mode: HAS_GPU=$ans"
+fi
+
 if [ "$ans" = "y" ]; then
     echo "Keeping GPU configuration in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
     echo "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/"
-
 else
     echo "Removing GPU configuration from values.yaml"
     python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
       --gpu-limit 0 \
-      --gpu-request 0 
+      --gpu-request 0
     echo "--------------------------- Removed GPUs in the Cluster -------------------"
-
 fi
 
 
-# If not, print that they can edit the values_deploy.yaml file manually and update the cluster.
 # Ask user if they want to alter memory, CPU requests and limits for finetuning.
-printf "%s " "Do you want to alter memory, CPU requests and limits for finetuning? (y/n) "
-read ans
+if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+    printf "%s " "Do you want to alter memory, CPU requests and limits for finetuning? (y/n) "
+    read ans
+else
+    # Non-interactive mode: use CONFIGURE_RESOURCES environment variable (default to "n")
+    ans="${CONFIGURE_RESOURCES:-n}"
+    echo "Non-interactive mode: CONFIGURE_RESOURCES=$ans"
+fi
 
 # If yes, prompt user for memory limit, CPU limit, memory request and CPU request.
 if [ "$ans" = "y" ]; then
