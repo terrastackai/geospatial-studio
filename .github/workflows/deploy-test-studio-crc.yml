@@ -263,13 +263,26 @@ jobs:
             oc get pods -n ${OC_PROJECT} --no-headers | awk '{print $3}' | sort | uniq -c
             echo ""
             
+            # Check PVC status
+            echo "=== PVC Status ==="
+            oc get pvc -n ${OC_PROJECT}
+            echo ""
+            
             # Check for pending pods and show events
             PENDING_PODS=$(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep "Pending" | awk '{print $1}')
             if [[ -n "$PENDING_PODS" ]]; then
               echo "=== Pending Pods Details ==="
               for pod in $PENDING_PODS; do
                 echo "--- Events for $pod ---"
-                oc describe pod $pod -n ${OC_PROJECT} | grep -A 10 "Events:"
+                oc describe pod $pod -n ${OC_PROJECT} | tail -20
+                echo ""
+                echo "--- PVC details for $pod ---"
+                oc get pod $pod -n ${OC_PROJECT} -o jsonpath='{.spec.volumes[*].persistentVolumeClaim.claimName}' | xargs -n1 | while read pvc; do
+                  if [[ -n "$pvc" ]]; then
+                    echo "PVC: $pvc"
+                    oc describe pvc $pvc -n ${OC_PROJECT} | tail -15
+                  fi
+                done
               done
               echo ""
             fi
