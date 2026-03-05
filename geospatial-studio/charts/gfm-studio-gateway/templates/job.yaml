@@ -71,7 +71,7 @@ spec:
         args:
         - |
           echo "Waiting for gateway service to be ready..."
-          until nc -z {{ $values.global.appNames.gateway }}.{{ $values.global.namespace }}.svc.cluster.local {{ $config.waitForGateway.port | default $values.global.oauth.oauthProxyPort }}; do
+          until nc -z {{ $values.global.appNames.ui }}.{{ $values.global.namespace }}.svc.cluster.local {{ $config.waitForGateway.port | default $values.global.oauth.oauthProxyPort }}; do
             echo "Gateway service not ready yet, retrying in {{ $config.waitForGateway.sleepTime | default 5 }} seconds..."
             sleep {{ $config.waitForGateway.sleepTime | default 5 }}
           done

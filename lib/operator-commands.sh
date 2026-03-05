@@ -61,8 +61,8 @@ operator_command() {
 # ==============================================================================
 
 operator_install() {
-  local deployment_mode=""
-  local operator_version=""
+  local deployment_mode="prod"
+  local operator_version="latest"
   local namespace="geostudio-operators-system"
   local operator_image=""
   local image_pull_policy="IfNotPresent"

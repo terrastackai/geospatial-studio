@@ -131,21 +131,57 @@ hooks:
         - |
           set -euo pipefail
           MODELS_URI="$BASE_URL"/studio-gateway/v2/models
+          MAX_RETRIES=30
+          RETRY_DELAY=5
           
           echo "Seeding sandbox models -> $MODELS_URI"
           
-          curl -X POST "$MODELS_URI" \
-            --header 'Content-Type: application/json' \
-            --header "X-API-Key: $FT_API_KEY" \
-            --insecure \
-            --data @/payloads/try-in-lab.json
+          # Function to post model with retry until 2xx response
+          post_model() {
+            local payload_file=$1
+            local model_name=$2
+            local attempt=1
+            
+            echo ""
+            echo "Posting $model_name (will retry up to $MAX_RETRIES times)..."
+            
+            while [ $attempt -le $MAX_RETRIES ]; do
+              echo "Attempt $attempt/$MAX_RETRIES for $model_name..."
+              
+              http_code=$(curl -X POST "$MODELS_URI" \
+                --header 'Content-Type: application/json' \
+                --header "X-API-Key: $FT_API_KEY" \
+                --insecure \
+                --silent \
+                --write-out "%{http_code}" \
+                --output /tmp/response.txt \
+                --data @"$payload_file")
+              
+              if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+                echo "✅ Success! $model_name created (HTTP $http_code)"
+                return 0
+              else
+                echo "⚠️  Got HTTP $http_code, retrying in $RETRY_DELAY seconds..."
+                
+                if [ $attempt -lt $MAX_RETRIES ]; then
+                  sleep $RETRY_DELAY
+                fi
+              fi
+              
+              attempt=$((attempt + 1))
+            done
+            
+            echo "❌ Failed to post $model_name after $MAX_RETRIES attempts"
+            cat /tmp/response.txt
+            echo ""
+            return 1
+          }
           
-          curl -X POST "$MODELS_URI" \
-            --header 'Content-Type: application/json' \
-            --header "X-API-Key: $FT_API_KEY" \
-            --insecure \
-            --data @/payloads/add-layer.json
+          # Post both models with retry logic
+          post_model "/payloads/try-in-lab.json" "geofm-sandbox-models"
+          post_model "/payloads/add-layer.json" "add-layer-sandbox-model"
           
+          echo ""
           echo "✅ Sandbox model seed complete"
 
 extraEnvironment:

@@ -107,7 +107,7 @@ kubectl cluster-info
 Install the operator using the helm chart from quay.io:
 
 ```bash
-./geostudio operator install --prod --version latest
+./geostudio operator install
 ```
 
 ### Step 3: Deploy Application
