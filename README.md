@@ -126,7 +126,7 @@ When deployed the studio will consist of the gateway api (which can trigger onbo
 
 #### Prerequisites:
 * Provisioned ocp cluster
-* [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
+* [Helm](https://helm.sh/docs/v3/) - v3.19 or later
 * [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html)
 * Kubectl (bundled with above) 
 * [jq](https://github.com/jqlang/jq) - json command-line processor
@@ -143,21 +143,21 @@ To deploy in an openshift cluster:
 
 #### Deployment steps
 1. Install Python dependencies:
-```shell
+```bash
 pip install -r requirements.txt
 ```
 2. Set up the kubectl context or login to OpenShift:
 For OpenShift use the script below to login after supplying the token and server. These can be obtained from the OpenShift console.
-```shell
+```bash
 oc login --token=<cluster-token> --server=<cluster-server>
 ```
 3. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below, [see details here](./deployment-scripts/images-pre-puller/README-image-prepuller.md):
-```shell
+```bash
 NAMESPACE=<my-namespace> ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
 ```
 
 4. Deploy the geospatial studio:
-```shell
+```bash
 ./deploy_studio_ocp.sh
 ```
 
@@ -173,8 +173,8 @@ After deployment the UI will pop up on the screen and you can jump to [First ste
 ## 💻⚙️ Getting Started (Local Deployment)
 
 #### Prerequisites:
-* [Lima VM](https://lima-vm.io/docs/installation/) - v1.2.1 (*currently incompatible with v2*)
-* [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
+* [Lima VM](https://lima-vm.io/docs/installation/) - v1.2.1 or later
+* [Helm](https://helm.sh/docs/v3/) - v3.19 or later
 * [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html)
 * Kubectl (bundled with above)
 * [jq](https://github.com/jqlang/jq) - json command-line processor
@@ -203,37 +203,37 @@ To deploy locally:
 #### Deployment steps
 1. Install [Lima VM](https://github.com/lima-vm/lima).
 2. Install Python dependencies:
-  ```shell
+  ```bash
   pip install -r requirements.txt
   ```
 3. Start the Lima VM cluster:
 
   For macOS >= 13.0, ARM use command below. For macOS >= 13.0, AMD consider using [VZ](https://lima-vm.io/docs/config/vmtype/vz/) without Rosetta, or use the QEMU as configured in `deployment-scripts/lima/studio-linux.yaml`
-  ```shell
+  ```bash
   limactl start --name=studio deployment-scripts/lima/studio.yaml
   ```
 
   For Linux use command below. It leverages [QEMU](https://lima-vm.io/docs/config/vmtype/qemu/) and QEMU install will be required.
-  ```shell
+  ```bash
   limactl start --name=studio deployment-scripts/lima/studio-linux.yaml
   ```
 4. Set up the kubectl context:
-```shell
+```bash
 export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 ```
 5. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below, [see details here](./deployment-scripts/images-pre-puller/README-image-prepuller.md):
-```shell
+```bash
 NAMESPACE=default ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
 ```
 6. Deploy the geospatial studio:
-```shell
+```bash
 ./deploy_studio_lima.sh
 ```
 
 *Deployment can take ~10 minutes (or longer) depending available download speed for container images.*
 
 You can monitor the progress and debug using [`k9s`](https://k9scli.io) or similar tools.
-```shell
+```bash
 export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 k9s
 ```
@@ -245,7 +245,7 @@ After successful deployment you can jump to [First steps](#first-steps).
 
 #### Prerequisites:
 * Provisioned k8s cluster - kind cluster, nvkind cluster, minikube, or any other k8s cluster.
-* [Helm](https://helm.sh/docs/v3/) - v3.19 (*currently incompatible with v4*)
+* [Helm](https://helm.sh/docs/v3/) - v3.19 or later
 * [OpenShift CLI](https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html)
 * Kubectl (bundled with above) 
 * [jq](https://github.com/jqlang/jq) - json command-line processor
@@ -266,17 +266,17 @@ To deploy in a k8s cluster:
 
 #### Deployment steps
 1. Install Python dependencies:
-```shell
+```bash
 pip install -r requirements.txt
 ```
 2. Set up the kubectl context for your cluster
 3. [Optional] If you have limited network bandwidth, you can pre-pull the container images using the script below, [see details here](./deployment-scripts/images-pre-puller/README-image-prepuller.md):
-```shell
+```bash
 NAMESPACE=<my-namespace> ./deployment-scripts/images-pre-puller/deploy-image-prepuller.sh
 ```
 
 4. Deploy the geospatial studio:
-```shell
+```bash
 ./deploy_studio_k8s.sh
 ```
 
@@ -321,13 +321,18 @@ Now you have a clean deployment of the studio and it is time to start using it. 
 ![Location of API key link](docs/images/sdk-auth.png)
 
 2. Copy your new api key to an env in your terminal:
-```shell
+```bash
 export STUDIO_API_KEY="<your api key from the UI>"
 ```
 
 3. Copy the UI url to an env in your terminal:
-```shell
+```bash
 export UI_ROUTE_URL="https://localhost:4180"
+```
+
+4. Onboard the `sandbox-model`s, these are placeholder models (pipelines) for onboarding existing inferences or testing tuned models.
+```bash
+./deployment-scripts/add-sandbox-models.sh
 ```
 
 At this point you can opt to continue getting started with the studio with the steps below by running them in terminal, or you can opt to use [this jupyter notebook](./populate-studio/getting-started-notebook.ipynb), leveraging studio sdk to get started.  
@@ -336,7 +341,7 @@ At this point you can opt to continue getting started with the studio with the s
 
 **Onboard an existing inference output (useful for loading examples)**
 1. Onboard one of the `inferences`.  This will start a pipeline to pull the data and set it up in the platform.  You should now be able to browser to the inferences page in the UI and view the example/s you have added.
-   ```shell
+   ```bash
    python populate-studio/populate-studio.py inferences
    # select "AGB Data - Karen, Nairobi,kenya"
    ```
@@ -346,12 +351,12 @@ At this point you can opt to continue getting started with the studio with the s
 First we ensure we have a tuning task `templates`.      
 Onboard the tuning task `templates`.  These are the outline configurations to make basic tuning tasks easier for users.
 
-   ```shell
+   ```bash
    python populate-studio/populate-studio.py templates
    # select  1. Segmentation - Generic template v1 and v2 models: Segmentation
    ```
 
-   ```shell
+   ```bash
    python populate-studio/populate-studio.py tunes
    # select "prithvi-eo-flood - prithvi-eo-flood"
    ```
@@ -391,19 +396,19 @@ Onboard the tuning task `templates`.  These are the outline configurations to ma
 **Tuning a model from a dataset**
 
 1. First onboard a tuning dataset. This can be done through the UI or the API, for now select and onboard a dataset using the below command.  This will trigger a backend task to download, validate and sort the dataset ready for use.  The dataset will appear in the UI datasets page, initally as pending, but will complete and change status after a few minutes.
-    ```shell
+    ```bash
     python populate-studio/populate-studio.py datasets
     # select "Wildfire burn scars"
     ```
 
 2. Onboard the backbone model/s from which we will fine-tune.
-    ```shell
+    ```bash
     python populate-studio/populate-studio.py backbones
     # select "Prithvi_EO_V2_300M"
     ```
 
 3. Onboard the tuning task `templates` if you have not done it.  These are the outline configurations to make basic tuning tasks easier for users.
-    ```shell
+    ```bash
     python populate-studio/populate-studio.py templates
     # select  1. Segmentation - Generic template v1 and v2 models: Segmentation
     ```
@@ -414,7 +419,7 @@ Onboard the tuning task `templates`.  These are the outline configurations to ma
 
 1. Now we can trigger a fine tuning job, using the payload and script below. First replace the values of keys `dataset_id`, `base_model_id`, and `tune_template_id` with the ids generated after onboarding 1, 2, and 3 above respectively. After submission, you can monitor the training in [MLflow ui](https://localhost:5000).
 
-    ```shell
+    ```bash
     payload='{
       "name": "burn-scars-demo",
       "description": "Segmentation",
@@ -675,7 +680,7 @@ Onboard the tuning task `templates`.  These are the outline configurations to ma
 #### Tuning a model from a dataset using Mac GPUs
 
 1. Now we can prepare the tuning task.  In a cluster deployed studio instance a user will prepare and submit their tuning task in one step, however, for local deployments, due to GPU accessibility within VMs (especially on Mac), we will use the studio to create the tuning config file and then run it outside the studio with TerraTorch.
-    ```shell
+    ```bash
     #Need to create a script to call the dry-run api, get the config to file and update paths.
     payload='{
       "name": "burn-scars-demo",
@@ -704,16 +709,16 @@ Onboard the tuning task `templates`.  These are the outline configurations to ma
     ```
 
 5. Run the tuning task:
-    ```shell
+    ```bash
     terratorch fit -c config.yaml
     ```
 
 6. Upload the tune back to the studio.  In this case we do it from the local config and checkpoint files.  Once its complete, you should see the it in the UI under the tunes/models page.
-    ```shell
+    ```bash
     Add api call to upload tune
     ```
 
 7. Now we can use it for inference.
-    ```shell
+    ```bash
     Add api call to run try out inference
     ```
