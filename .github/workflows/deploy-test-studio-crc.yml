@@ -69,7 +69,7 @@ jobs:
           preset: openshift
           memory: 14336  # 14GB - reduced to fit GitHub runner limits (16.77GB available)
           cpus: 6
-          disk: 100  # 100GB - increased for MinIO and storage needs (GitHub runners have ~70-80GB available)
+          disk: 144  # 144GB - increased for MinIO and storage needs (GitHub runners have ~70-80GB available)
 
       - name: Wait for CRC cluster to be ready
         run: |
@@ -123,17 +123,12 @@ jobs:
           # Determine the correct base directory
           if [[ -f "deploy_studio_ocp.sh" ]]; then
             BASE_DIR="."
-            echo "Working from repository root"
           elif [[ -f "geospatial-studio/deploy_studio_ocp.sh" ]]; then
             BASE_DIR="geospatial-studio"
-            echo "Working from geospatial-studio subdirectory"
           else
             echo "❌ Error: Cannot find geospatial-studio directory"
             exit 1
           fi
-          
-          echo "Base directory: $BASE_DIR"
-          ls -la $BASE_DIR/deployment-scripts/ | head -10
           
           # Create workspace directory structure
           mkdir -p $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation
@@ -145,88 +140,29 @@ jobs:
           sed -e "s/default/$OC_PROJECT/g" $BASE_DIR/deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
           sed -e "s/default/$OC_PROJECT/g" $BASE_DIR/deployment-scripts/template/cos-s3-csi-sc.yaml > $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
           
-          # Apply IBM Object CSI driver
-          echo "Applying IBM Object CSI driver..."
+          # Apply IBM Object CSI driver (will become ready after MinIO deployment)
           kubectl apply -k $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
           
           echo ""
-          echo "=== Waiting for IBM Object CSI driver pods to be ready ==="
-          
-          # Wait for controller with detailed status
-          if ! kubectl wait --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=120s 2>&1; then
-            echo "⚠️  CSI controller not ready within timeout"
-            echo ""
-            echo "=== CSI Controller Pod Details ==="
-            kubectl get pods -n kube-system -l app=cos-s3-csi-controller -o wide
-            echo ""
-            echo "=== CSI Controller Pod Events ==="
-            kubectl describe pods -n kube-system -l app=cos-s3-csi-controller | tail -30
-            echo ""
-            echo "=== CSI Controller Pod Logs ==="
-            kubectl logs -n kube-system -l app=cos-s3-csi-controller --tail=50 || echo "No logs available"
-          else
-            echo "✅ CSI controller ready"
-          fi
-          
-          # Wait for driver with detailed status
-          if ! kubectl wait --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=120s 2>&1; then
-            echo "⚠️  CSI driver not ready within timeout"
-            echo ""
-            echo "=== CSI Driver Pod Details ==="
-            kubectl get pods -n kube-system -l app=cos-s3-csi-driver -o wide
-            echo ""
-            echo "=== CSI Driver Pod Events ==="
-            kubectl describe pods -n kube-system -l app=cos-s3-csi-driver | tail -30
-          else
-            echo "✅ CSI driver ready"
-          fi
+          echo "=== IBM Object CSI driver installed ==="
+          echo "Note: CSI controller will become ready after MinIO creates the required ConfigMap"
+          kubectl get pods -n kube-system -l app.kubernetes.io/part-of=ibm-object-csi-driver
           
           echo ""
-          echo "=== All IBM Object CSI driver pods status ==="
-          kubectl get pods -n kube-system -l app.kubernetes.io/part-of=ibm-object-csi-driver -o wide
-          
-          echo ""
-          echo "⚠️  Note: CSI driver pods may take time to start. Continuing with deployment..."
-          
-          echo ""
-          echo "=== Available storage classes ==="
+          echo "=== Configuring storage classes ==="
           oc get storageclass
           
-          echo ""
-          echo "=== Setting default storage class ==="
-          # Get the CRC default storage class for non-COS workloads
+          # Set default storage class if not already set
           DEFAULT_SC=$(oc get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
-          
           if [[ -z "$DEFAULT_SC" ]]; then
-            echo "⚠️  No default storage class found, setting first available"
             AVAILABLE_SC=$(oc get storageclass -o jsonpath='{.items[0].metadata.name}')
             if [[ -n "$AVAILABLE_SC" ]]; then
               oc patch storageclass $AVAILABLE_SC -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-              DEFAULT_SC=$AVAILABLE_SC
-              echo "✅ Default storage class configured: $DEFAULT_SC"
+              echo "✅ Default storage class configured: $AVAILABLE_SC"
             fi
-          else
-            echo "✅ Default storage class already configured: $DEFAULT_SC"
           fi
           
-          echo ""
-          echo "=== Final storage class configuration ==="
-          oc get storageclass
-          
-          echo ""
           echo "✅ Storage configuration complete"
-          echo "   - COS Storage Class: cos-s3-csi-s3fs-sc (for object storage)"
-          echo "   - Non-COS Storage Class: $DEFAULT_SC (for regular PVCs)"
-          
-          echo ""
-          echo "=== Adjusting MinIO storage for CI environment ==="
-          # Reduce MinIO storage slightly to ensure it fits within available space
-          # Original: 95Gi PVC / 100Gi PV, CI: 50Gi PVC / 55Gi PV
-          if [[ -f "$BASE_DIR/deployment-scripts/minio-deployment.yaml" ]]; then
-            sed -i 's/storage: 95Gi/storage: 50Gi/g' $BASE_DIR/deployment-scripts/minio-deployment.yaml
-            sed -i 's/storage: 100Gi/storage: 55Gi/g' $BASE_DIR/deployment-scripts/minio-deployment.yaml
-            echo "✅ MinIO storage adjusted to 50Gi PVC / 55Gi PV for CI environment"
-          fi
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -335,61 +271,16 @@ jobs:
             exit 1
           fi
           
-          echo "Working directory: $(pwd)"
-          ls -la deploy_studio_ocp.sh
-          
-          # Display environment for debugging
-          echo ""
-          echo "=== Environment Variables ==="
-          echo "NON_INTERACTIVE: $NON_INTERACTIVE"
-          echo "DEPLOYMENT_ENV: $DEPLOYMENT_ENV"
-          echo "deployment_env: $deployment_env"
-          echo "OC_PROJECT: $OC_PROJECT"
-          echo "namespace: $namespace"
-          echo "CLUSTER_URL: $CLUSTER_URL"
-          echo "=========================="
+          echo "✅ Working directory: $(pwd)"
           echo ""
           
-          # Function to monitor pod status
-          monitor_pods() {
-            echo ""
-            echo "=== Pod Status Update ($(date +%H:%M:%S)) ==="
-            oc get pods -n ${OC_PROJECT} -o wide
-            echo ""
-            echo "Pod Summary:"
-            oc get pods -n ${OC_PROJECT} --no-headers | awk '{print $3}' | sort | uniq -c
-            echo ""
-            
-            # Check PVC status
-            echo "=== PVC Status ==="
-            oc get pvc -n ${OC_PROJECT}
-            echo ""
-            
-            # Check for pending pods and show events
-            PENDING_PODS=$(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep "Pending" | awk '{print $1}')
-            if [[ -n "$PENDING_PODS" ]]; then
-              echo "=== Pending Pods Details ==="
-              for pod in $PENDING_PODS; do
-                echo "--- Events for $pod ---"
-                oc describe pod $pod -n ${OC_PROJECT} | tail -20
-                echo ""
-                echo "--- PVC details for $pod ---"
-                oc get pod $pod -n ${OC_PROJECT} -o jsonpath='{.spec.volumes[*].persistentVolumeClaim.claimName}' | xargs -n1 | while read pvc; do
-                  if [[ -n "$pvc" ]]; then
-                    echo "PVC: $pvc"
-                    oc describe pvc $pvc -n ${OC_PROJECT} | tail -15
-                  fi
-                done
-              done
-              echo ""
-            fi
-          }
-          
-          # Start monitoring in background
+          # Monitor deployment progress
+          echo "=== Monitoring deployment progress ==="
           (
             while true; do
-              monitor_pods
-              sleep 30
+              echo "$(date +%H:%M:%S) - Pod status:"
+              oc get pods -n ${OC_PROJECT} --no-headers | awk '{print $1, $3}' | column -t
+              sleep 60
             done
           ) &
           MONITOR_PID=$!

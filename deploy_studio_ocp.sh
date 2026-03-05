@@ -243,9 +243,6 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     # Create buckets
     python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
-    # Populate buckets with initial data
-    ./deployment-scripts/populate-buckets-with-auxiliary-data.sh
-
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 
