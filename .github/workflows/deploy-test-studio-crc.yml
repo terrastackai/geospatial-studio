@@ -120,24 +120,34 @@ jobs:
           export OC_PROJECT=geostudio-test
           export DEPLOYMENT_ENV=crc-ci
           
-          # Navigate to geospatial-studio directory
-          if [[ -d "geospatial-studio" ]]; then
-            cd geospatial-studio
+          # Determine the correct base directory
+          if [[ -f "deploy_studio_ocp.sh" ]]; then
+            BASE_DIR="."
+            echo "Working from repository root"
+          elif [[ -f "geospatial-studio/deploy_studio_ocp.sh" ]]; then
+            BASE_DIR="geospatial-studio"
+            echo "Working from geospatial-studio subdirectory"
+          else
+            echo "❌ Error: Cannot find geospatial-studio directory"
+            exit 1
           fi
           
+          echo "Base directory: $BASE_DIR"
+          ls -la $BASE_DIR/deployment-scripts/ | head -10
+          
           # Create workspace directory structure
-          mkdir -p workspace/$DEPLOYMENT_ENV/initialisation
+          mkdir -p $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation
           
           # Copy IBM Object CSI driver files
-          cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation/
+          cp -R $BASE_DIR/deployment-scripts/ibm-object-csi-driver $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation/
           
           # Create storage class templates with correct namespace
-          sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
-          sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
+          sed -e "s/default/$OC_PROJECT/g" $BASE_DIR/deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
+          sed -e "s/default/$OC_PROJECT/g" $BASE_DIR/deployment-scripts/template/cos-s3-csi-sc.yaml > $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
           
           # Apply IBM Object CSI driver
           echo "Applying IBM Object CSI driver..."
-          kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
+          kubectl apply -k $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
           
           echo ""
           echo "=== Waiting for IBM Object CSI driver pods to be ready ==="
