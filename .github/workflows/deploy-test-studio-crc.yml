@@ -69,7 +69,7 @@ jobs:
           preset: openshift
           memory: 14336  # 14GB - reduced to fit GitHub runner limits (16.77GB available)
           cpus: 6
-          disk: 50
+          disk: 100  # 100GB - increased for MinIO and storage needs (GitHub runners have ~70-80GB available)
 
       - name: Wait for CRC cluster to be ready
         run: |
@@ -217,6 +217,16 @@ jobs:
           echo "✅ Storage configuration complete"
           echo "   - COS Storage Class: cos-s3-csi-s3fs-sc (for object storage)"
           echo "   - Non-COS Storage Class: $DEFAULT_SC (for regular PVCs)"
+          
+          echo ""
+          echo "=== Adjusting MinIO storage for CI environment ==="
+          # Reduce MinIO storage slightly to ensure it fits within available space
+          # Original: 95Gi PVC / 100Gi PV, CI: 50Gi PVC / 55Gi PV
+          if [[ -f "$BASE_DIR/deployment-scripts/minio-deployment.yaml" ]]; then
+            sed -i 's/storage: 95Gi/storage: 50Gi/g' $BASE_DIR/deployment-scripts/minio-deployment.yaml
+            sed -i 's/storage: 100Gi/storage: 55Gi/g' $BASE_DIR/deployment-scripts/minio-deployment.yaml
+            echo "✅ MinIO storage adjusted to 50Gi PVC / 55Gi PV for CI environment"
+          fi
 
       - name: Set up Python
         uses: actions/setup-python@v5
