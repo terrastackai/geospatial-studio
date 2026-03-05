@@ -67,7 +67,7 @@ jobs:
         with:
           pull-secret: ${{ secrets.CRC_PULL_SECRET }}
           preset: openshift
-          memory: 16384
+          memory: 14336  # 14GB - reduced to fit GitHub runner limits (16.77GB available)
           cpus: 6
           disk: 50
 
