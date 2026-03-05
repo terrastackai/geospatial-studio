@@ -191,6 +191,13 @@ jobs:
           # Load environment variables
           source /tmp/deploy-env.sh
           
+          # Export additional variables needed by deploy_studio_ocp.sh
+          export deployment_env="$DEPLOYMENT_ENV"
+          export namespace="$OC_PROJECT"
+          export cluster_url="$CLUSTER_URL"
+          export user_cos_storage_class="$COS_STORAGE_CLASS"
+          export user_non_cos_storage_class="$NON_COS_STORAGE_CLASS"
+          
           # Navigate to geospatial-studio directory
           if [[ -f "deploy_studio_ocp.sh" ]]; then
             echo "✅ Found deploy_studio_ocp.sh in current directory"
@@ -204,6 +211,18 @@ jobs:
           
           echo "Working directory: $(pwd)"
           ls -la deploy_studio_ocp.sh
+          
+          # Display environment for debugging
+          echo ""
+          echo "=== Environment Variables ==="
+          echo "NON_INTERACTIVE: $NON_INTERACTIVE"
+          echo "DEPLOYMENT_ENV: $DEPLOYMENT_ENV"
+          echo "deployment_env: $deployment_env"
+          echo "OC_PROJECT: $OC_PROJECT"
+          echo "namespace: $namespace"
+          echo "CLUSTER_URL: $CLUSTER_URL"
+          echo "=========================="
+          echo ""
           
           # Function to monitor pod status
           monitor_pods() {
