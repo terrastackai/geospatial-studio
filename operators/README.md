@@ -102,23 +102,15 @@ export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 kubectl cluster-info
 ```
 
-### Step 2: Build Operator Image
+### Step 2: Install Operator
 
-Build the operator image and import it into Lima's containerd:
-
-```bash
-./geostudio build --local
-```
-
-### Step 3: Install Operator
-
-Install the operator using the local image:
+Install the operator using the helm chart from quay.io:
 
 ```bash
-./geostudio operator install --local
+./geostudio operator install --prod --version latest
 ```
 
-### Step 4: Deploy Application
+### Step 3: Deploy Application
 
 Deploy a GEOStudio application instance:
 
@@ -126,7 +118,7 @@ Deploy a GEOStudio application instance:
 ./geostudio app deploy
 ```
 
-### Step 5: Verify Deployment
+### Step 4: Verify Deployment
 
 Monitor the deployment progress:
 
@@ -144,7 +136,7 @@ kubectl get pods -n default -w
 ./geostudio operator logs --follow
 ```
 
-### Step 6: Access the Application
+### Step 5: Access the Application
 
 Once deployed, port-forward to access services:
 

@@ -22,5 +22,5 @@ namespace: geostudio-operators-system
 # Default image configuration (updated by Makefile via 'kustomize edit')
 images:
 - name: controller
-  newName: geostudio-operator
-  newTag: local
+  newName: quay.io/geospatial-studio/geostudio-operator
+  newTag: latest
