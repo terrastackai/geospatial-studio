@@ -114,26 +114,56 @@ jobs:
           oc new-project ${OC_PROJECT} || oc project ${OC_PROJECT}
           echo "✅ Project ${OC_PROJECT} ready"
 
-      - name: Check and configure storage
+      - name: Install IBM Object CSI Driver and configure storage
         run: |
-          echo "=== Checking available storage classes ==="
+          echo "=== Installing IBM Object CSI Driver ==="
+          export OC_PROJECT=geostudio-test
+          export DEPLOYMENT_ENV=crc-ci
+          
+          # Navigate to geospatial-studio directory
+          if [[ -d "geospatial-studio" ]]; then
+            cd geospatial-studio
+          fi
+          
+          # Create workspace directory structure
+          mkdir -p workspace/$DEPLOYMENT_ENV/initialisation
+          
+          # Copy IBM Object CSI driver files
+          cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation/
+          
+          # Create storage class templates with correct namespace
+          sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
+          sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
+          
+          # Apply IBM Object CSI driver
+          echo "Applying IBM Object CSI driver..."
+          kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
+          
+          echo ""
+          echo "=== Waiting for IBM Object CSI driver pods to be ready ==="
+          kubectl wait --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s || echo "⚠️  CSI controller not ready yet"
+          kubectl wait --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=300s || echo "⚠️  CSI driver not ready yet"
+          
+          echo ""
+          echo "=== IBM Object CSI driver pods status ==="
+          kubectl get pods -n kube-system -l app.kubernetes.io/part-of=ibm-object-csi-driver
+          
+          echo ""
+          echo "=== Available storage classes ==="
           oc get storageclass
           
           echo ""
-          echo "=== Checking for default storage class ==="
+          echo "=== Setting default storage class ==="
+          # Get the CRC default storage class for non-COS workloads
           DEFAULT_SC=$(oc get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
           
           if [[ -z "$DEFAULT_SC" ]]; then
-            echo "⚠️  No default storage class found"
-            echo "Checking available storage classes..."
+            echo "⚠️  No default storage class found, setting first available"
             AVAILABLE_SC=$(oc get storageclass -o jsonpath='{.items[0].metadata.name}')
-            
             if [[ -n "$AVAILABLE_SC" ]]; then
-              echo "Setting $AVAILABLE_SC as default storage class"
               oc patch storageclass $AVAILABLE_SC -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-              echo "✅ Default storage class configured: $AVAILABLE_SC"
-            else
-              echo "❌ No storage classes available - this may cause PVC binding issues"
+              DEFAULT_SC=$AVAILABLE_SC
+              echo "✅ Default storage class configured: $DEFAULT_SC"
             fi
           else
             echo "✅ Default storage class already configured: $DEFAULT_SC"
@@ -142,6 +172,11 @@ jobs:
           echo ""
           echo "=== Final storage class configuration ==="
           oc get storageclass
+          
+          echo ""
+          echo "✅ Storage configuration complete"
+          echo "   - COS Storage Class: cos-s3-csi-s3fs-sc (for object storage)"
+          echo "   - Non-COS Storage Class: $DEFAULT_SC (for regular PVCs)"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -160,10 +195,8 @@ jobs:
         run: |
           echo "=== Configuring deployment environment ==="
           
-          # Set non-interactive mode
+          # Core configuration
           export NON_INTERACTIVE=true
-          
-          # Set deployment environment variables
           export DEPLOYMENT_ENV="crc-ci"
           export OC_PROJECT="geostudio-test"
           
@@ -171,9 +204,20 @@ jobs:
           export CLUSTER_URL=$(oc get IngressController default -n openshift-ingress-operator -o jsonpath='{.status.domain}')
           echo "Cluster URL: $CLUSTER_URL"
           
-          # Storage classes
-          export COS_STORAGE_CLASS="standard"
-          export NON_COS_STORAGE_CLASS="standard"
+          # Get default storage class for non-COS workloads (set in previous step)
+          export DEFAULT_STORAGE_CLASS=$(oc get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
+          if [[ -z "$DEFAULT_STORAGE_CLASS" ]]; then
+            # Fallback to first available storage class
+            export DEFAULT_STORAGE_CLASS=$(oc get storageclass -o jsonpath='{.items[0].metadata.name}')
+          fi
+          
+          # Storage classes - use IBM Object CSI driver for COS, default for regular PVCs
+          export COS_STORAGE_CLASS="cos-s3-csi-s3fs-sc"
+          export NON_COS_STORAGE_CLASS="$DEFAULT_STORAGE_CLASS"
+          
+          echo "Storage configuration:"
+          echo "  - COS Storage Class: $COS_STORAGE_CLASS"
+          echo "  - Non-COS Storage Class: $NON_COS_STORAGE_CLASS"
           
           # Image pull secret (using default for testing)
           export STUDIO_IMAGE_PULL_SECRET="eyJhdXRocyI6eyJleGFtcGxlLmlvIjp7InVzZXJuYW1lIjoiZXhhbXBsZSIsInBhc3N3b3JkIjoiZXhhbXBsZSIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImF1dGgiOiJaWGhoYlhCc1pUcGxlR0Z0Y0d4bCJ9fX0="
@@ -192,26 +236,29 @@ jobs:
           export KUBECTL_WAIT_RETRY_ATTEMPTS=10
           export KUBECTL_WAIT_RETRY_DELAY=10
           
-          # Save environment variables for next steps
+          # Save environment variables for next steps (using variables instead of hardcoded values)
           cat > /tmp/deploy-env.sh <<EOF
-          export NON_INTERACTIVE=true
-          export DEPLOYMENT_ENV="crc-ci"
-          export OC_PROJECT="geostudio-test"
-          export CLUSTER_URL="$CLUSTER_URL"
-          export COS_STORAGE_CLASS="standard"
-          export NON_COS_STORAGE_CLASS="standard"
-          export STUDIO_IMAGE_PULL_SECRET="$STUDIO_IMAGE_PULL_SECRET"
-          export cloud_object_storage_type="Cluster-deployment"
-          export postgres_type="Cluster-deployment"
-          export oauth_type="Keycloak"
-          export geoserver_install_type="Configure-SCC"
-          export gpu_configuration_type="No-GPU-Available"
-          export JUMP_TO_DEPLOYMENT="No"
-          export KUBECTL_WAIT_RETRY_ATTEMPTS=10
-          export KUBECTL_WAIT_RETRY_DELAY=10
+          export NON_INTERACTIVE=$NON_INTERACTIVE
+          export DEPLOYMENT_ENV=$DEPLOYMENT_ENV
+          export OC_PROJECT=$OC_PROJECT
+          export CLUSTER_URL=$CLUSTER_URL
+          export COS_STORAGE_CLASS=$COS_STORAGE_CLASS
+          export NON_COS_STORAGE_CLASS=$NON_COS_STORAGE_CLASS
+          export STUDIO_IMAGE_PULL_SECRET=$STUDIO_IMAGE_PULL_SECRET
+          export cloud_object_storage_type=$cloud_object_storage_type
+          export postgres_type=$postgres_type
+          export oauth_type=$oauth_type
+          export geoserver_install_type=$geoserver_install_type
+          export gpu_configuration_type=$gpu_configuration_type
+          export JUMP_TO_DEPLOYMENT=$JUMP_TO_DEPLOYMENT
+          export KUBECTL_WAIT_RETRY_ATTEMPTS=$KUBECTL_WAIT_RETRY_ATTEMPTS
+          export KUBECTL_WAIT_RETRY_DELAY=$KUBECTL_WAIT_RETRY_DELAY
           EOF
           
           echo "✅ Environment variables configured"
+          echo "   - Storage Class: $DEFAULT_STORAGE_CLASS"
+          echo "   - Cluster URL: $CLUSTER_URL"
+          echo "   - Namespace: $OC_PROJECT"
 
       - name: Deploy Geospatial Studio to CRC OpenShift
         run: |
