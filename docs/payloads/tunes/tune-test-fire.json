@@ -1,0 +1,6 @@
+{
+  "name": "prithvi-eo-fire-tune",
+  "description": "prithvi-eo-fire-tune",
+  "tune_config_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-burnscars/config_deploy.yaml",
+  "tune_checkpoint_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-burnscars/best-state_dict-epoch=09.ckpt"
+}

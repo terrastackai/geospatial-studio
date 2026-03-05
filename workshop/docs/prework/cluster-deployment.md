@@ -644,15 +644,6 @@ echo "GEOSTUDIO_API_KEY=<your-api-key>" > ~/.geostudio_config_file
 echo "BASE_STUDIO_UI_URL=https://studio-<namespace>.<cluster-url>" >> ~/.geostudio_config_file
 ```
 
-### Onboard Sandbox Models
-
-```bash
-export STUDIO_API_KEY="<your-api-key>"
-export UI_ROUTE_URL="https://studio-<namespace>.<cluster-url>"
-
-./deployment-scripts/add-sandbox-models.sh
-```
-
 ## Verify Configuration
 
 After deployment, verify your configuration:

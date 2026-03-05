@@ -1,0 +1,94 @@
+site_name: IBM Geospatial Exploration and Orchestration Studio
+site_url: https://terrastackai.github.io/geospatial-studio/
+docs_dir: docs
+hooks:
+  - my_hooks.py
+nav:
+  - Home: index.md
+  
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - First Steps: getting-started/first-steps.md
+    - UI Getting Started : getting-started/getting-started-UI.md
+    - SDK Getting Started: getting-started/getting-started-SDK.md
+  
+  - Deployment:
+    - Local Deployment: deployment/detailed_deployment_local.md
+    - Kubernetes cluster: deployment/detailed_deployment_k8s.md
+    - OpenShift: deployment/detailed_deployment_cluster.md
+    - Kind Cluster: deployment/kind_cluster_deployment.md
+    - NVKind Cluster: deployment/nvkind_cluster_deployment.md
+  
+  - User Guides:
+    - Dataset Factory:
+      - Overview: user-guides/dataset-factory/dataset-factory.md
+      - API Reference: user-guides/dataset-factory/dataset-factory-service.md
+    - Fine-Tuning:
+      - Overview: user-guides/fine-tuning/tuning-studio.md
+      - API Reference: user-guides/fine-tuning/fine-tuning-service.md
+    - Inference:
+      - Overview: user-guides/inference/inference-lab.md
+      - API Reference: user-guides/inference/inference-service.md
+  
+  - Tutorials:
+    - Flooding Detection: tutorials/flooding/GeospatialStudio-Walkthrough-Flooding-instructions.md
+    - Wildfire Burn Scars: tutorials/wildfire-burnscars/BurnScars-instructions.md
+  
+  - Reference:
+    - API Specification: reference/api-reference.md
+    - Architecture: reference/architecture_and_requirements.md
+    - Sample Payloads: reference/sample-payloads.md
+    - Sample Files: reference/sample-files.md
+# theme: material
+theme:
+  name: material
+  logo: assets/geospatial-studio-logo-white.svg
+  palette:
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      primary: black
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      primary: black
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: IBM Plex Sans
+  features:
+    - content.code.copy
+plugins:
+  - search:
+      lang: en
+      separator: '[\s\-\.]+'
+  - mkdocs-video
+  - glightbox
+  - mkdocs-jupyter:
+      include_source: True
+  - literate-nav
+  - git-revision-date-localized:
+      enable_creation_date: false
+      fallback_to_build_date: true
+      type: date
+  - swagger-ui-tag:
+      docExpansion: list
+markdown_extensions:
+  - tables
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.snippets:
+      base_path: docs
