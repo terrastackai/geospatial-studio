@@ -151,12 +151,42 @@ jobs:
           
           echo ""
           echo "=== Waiting for IBM Object CSI driver pods to be ready ==="
-          kubectl wait --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s || echo "⚠️  CSI controller not ready yet"
-          kubectl wait --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=300s || echo "⚠️  CSI driver not ready yet"
+          
+          # Wait for controller with detailed status
+          if ! kubectl wait --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=120s 2>&1; then
+            echo "⚠️  CSI controller not ready within timeout"
+            echo ""
+            echo "=== CSI Controller Pod Details ==="
+            kubectl get pods -n kube-system -l app=cos-s3-csi-controller -o wide
+            echo ""
+            echo "=== CSI Controller Pod Events ==="
+            kubectl describe pods -n kube-system -l app=cos-s3-csi-controller | tail -30
+            echo ""
+            echo "=== CSI Controller Pod Logs ==="
+            kubectl logs -n kube-system -l app=cos-s3-csi-controller --tail=50 || echo "No logs available"
+          else
+            echo "✅ CSI controller ready"
+          fi
+          
+          # Wait for driver with detailed status
+          if ! kubectl wait --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=120s 2>&1; then
+            echo "⚠️  CSI driver not ready within timeout"
+            echo ""
+            echo "=== CSI Driver Pod Details ==="
+            kubectl get pods -n kube-system -l app=cos-s3-csi-driver -o wide
+            echo ""
+            echo "=== CSI Driver Pod Events ==="
+            kubectl describe pods -n kube-system -l app=cos-s3-csi-driver | tail -30
+          else
+            echo "✅ CSI driver ready"
+          fi
           
           echo ""
-          echo "=== IBM Object CSI driver pods status ==="
-          kubectl get pods -n kube-system -l app.kubernetes.io/part-of=ibm-object-csi-driver
+          echo "=== All IBM Object CSI driver pods status ==="
+          kubectl get pods -n kube-system -l app.kubernetes.io/part-of=ibm-object-csi-driver -o wide
+          
+          echo ""
+          echo "⚠️  Note: CSI driver pods may take time to start. Continuing with deployment..."
           
           echo ""
           echo "=== Available storage classes ==="
