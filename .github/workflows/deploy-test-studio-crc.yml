@@ -233,6 +233,17 @@ jobs:
             echo "Pod Summary:"
             oc get pods -n ${OC_PROJECT} --no-headers | awk '{print $3}' | sort | uniq -c
             echo ""
+            
+            # Check for pending pods and show events
+            PENDING_PODS=$(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep "Pending" | awk '{print $1}')
+            if [[ -n "$PENDING_PODS" ]]; then
+              echo "=== Pending Pods Details ==="
+              for pod in $PENDING_PODS; do
+                echo "--- Events for $pod ---"
+                oc describe pod $pod -n ${OC_PROJECT} | grep -A 10 "Events:"
+              done
+              echo ""
+            fi
           }
           
           # Start monitoring in background
@@ -438,20 +449,9 @@ jobs:
           echo "Waiting 30 seconds for services to stabilize..."
           sleep 30
           
-          # Step 1: Add sandbox models
+          # Steps 1-6: Run workshop labs
           echo ""
-          echo "--- Step 1: Adding sandbox models ---"
-          chmod +x "${GS_DIR}/deployment-scripts/add-sandbox-models.sh"
-          "${GS_DIR}/deployment-scripts/add-sandbox-models.sh"
-          if [[ $? -eq 0 ]]; then
-            echo "✅ Sandbox models added successfully"
-          else
-            echo "⚠️  Warning: Failed to add sandbox models"
-          fi
-          
-          # Steps 2-6: Run workshop labs
-          echo ""
-          echo "--- Steps 2-6: Executing workshop labs (run_labs.py) ---"
+          echo "--- Steps 1-6: Executing workshop labs (run_labs.py) ---"
           python -u "${GS_DIR}/populate-studio/run_labs.py" \
             --api-key "${STUDIO_API_KEY}" \
             --studio-url "${BASE_STUDIO_UI_URL}" \
