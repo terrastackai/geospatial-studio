@@ -26,7 +26,7 @@ global:
   imagePullSecret:
     name: us-icr-pull-secret
     b64secret: image_pull_secret_b64
-    create: true
+    create: false
 
   jira:
     api_key: ''
@@ -51,7 +51,7 @@ global:
     responseType: responseType
     # oauth2-proxy needs
     issuerUrl: OAUTH_ISSUER_URL # authorization_endpoint used in oauth2-proxy
-    clientSecret: clientSecret
+    clientSecret: oauth_client_secret
     cookieSecret: cookieSecret
     extraOauthProxyArgs: OAUTH_EXTRA_PROXY_ARGS
     # for kubernetes we need the tls secret
@@ -107,10 +107,10 @@ global:
       auth: geostudio_auth
 
   cesium:
-    token: token
+    token: cesium_token
 
   mapbox:
-    token: token
+    token: mapbox_token
 
   appNames:
     gateway: geofm-gateway
@@ -128,6 +128,135 @@ global:
     password: redis_password
     architecture: REDIS_ARCHITECTURE
 
+  # ==============================================================================
+  # Infrastructure Resources
+  # ==============================================================================
+  
+  # PostgreSQL Configuration
+  # Deployed via pre-install Helm hook job when enabled
+  # The job runs with hook-weight -100 to ensure PostgreSQL is ready before other components
+  # Two jobs are created:
+  #   1. postgresql-installer (weight: -100): Deploys PostgreSQL using Bitnami Helm chart
+  #   2. postgresql-db-creator (weight: -90): Creates required databases (geostudio, geostudio_auth, mlflow)
+  postgresql:
+    enabled: false
+    chartVersion: "latest"
+    fullnameOverride: "postgresql"
+    auth:
+      username: pg_username
+      password: pg_password
+      database: postgres
+    primary:
+      persistence:
+        enabled: true
+        size: 10Gi
+        storageClass: ""
+      resources:
+        requests:
+          memory: 256Mi
+          cpu: 250m
+        limits:
+          memory: 1Gi
+          cpu: 1000m
+  
+  # MinIO Configuration
+  # Deployed via pre-install Helm hook jobs when enabled
+  # Jobs run with hook-weight -80 and -70
+  # Three jobs are created:
+  #   1. minio-tls-cert-generator (weight: -85): Generates self-signed TLS certificate
+  #   2. minio-installer (weight: -80): Deploys MinIO with TLS
+  #   3. minio-bucket-creator (weight: -70): Creates required S3 buckets
+  minio:
+    enabled: false
+    image: quay.io/minio/minio
+    tag: "latest"
+    auth:
+      rootUser: access_key_id
+      rootPassword: secret_access_key
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClass: local-path
+    resources:
+      requests:
+        memory: 2Gi
+        cpu: 2000m
+      limits:
+        memory: 4Gi
+        cpu: 4000m
+  
+  # Keycloak Configuration
+  # Deployed via pre-install Helm hook job when enabled
+  # The job runs with hook-weight -80 (after PostgreSQL) to ensure Keycloak is ready before other components
+  # Two jobs are created:
+  #   1. keycloak-installer (weight: -80): Deploys Keycloak with PostgreSQL backend
+  #   2. keycloak-configurator (weight: -70): Creates realm, client, and test user
+  keycloak:
+    enabled: false
+    image: quay.io/keycloak/keycloak
+    tag: "26.4.5"
+    database: keycloak
+    realm: geostudio
+    clientSecret: oauth_client_secret
+    auth:
+      adminUser: keycloak_admin_user
+      adminPassword: keycloak_admin_password
+    testUser:
+      username: testuser
+      password: testpass123
+      email: test@example.com
+      firstName: Test
+      lastName: User
+    resources:
+      requests:
+        memory: 1Gi
+        cpu: 500m
+      limits:
+        memory: 2Gi
+        cpu: 1000m
+  
+  # GeoServer Configuration
+  # Deployed via pre-install Helm hook jobs when enabled
+  # Jobs run with hook-weight -55 and -50
+  # Three components are created:
+  #   1. Secret with server.xml (weight: -60): PostgreSQL JNDI datasource configuration
+  #   2. geoserver-installer (weight: -55): Deploys GeoServer with configured resources
+  #   3. geoserver-configurator (weight: -50): Creates workspace and configures WMS settings
+  # Note: Requires PostgreSQL to be running (depends on postgresql-installer job)
+  geoserver:
+    enabled: false
+    image: "docker.osgeo.org/geoserver:2.28.1"
+    adminUsername: geoserver_username
+    adminPassword: geoserver_password
+    javaOpts: "-Xms4g -Xmx8g"
+    storage: "60Gi"
+    storageClass: "local-path"
+    resources:
+      requests:
+        memory: 4Gi
+        cpu: 1000m
+      limits:
+        memory: 8Gi
+        cpu: 2000m
+  
+  # CSI Driver Configuration
+  # IBM Object S3 CSI driver for MinIO/S3 bucket mounting as PersistentVolumes
+  # Deployed via pre-install Helm hook job when enabled
+  # The job runs with hook-weight -75 (after TLS cert creation, before bucket creation)
+  # 
+  # Available type:
+  #   - "ibm-object-s3-csi": IBM Object S3 CSI driver (x86_64 only)
+  #       Creates storage classes: cos-s3-csi-sc and cos-s3-csi-s3fs-sc
+  csiDriver:
+    enabled: false
+    type: "ibm-object-s3-csi"
+    images:
+      # IBM Object S3 CSI images
+      provisioner: "k8s.gcr.io/sig-storage/csi-provisioner:v5.2.0"
+      driver: "quay.io/containerstorage/ibm-object-csi-driver:v0.1.19"
+      nodeDriverRegistrar: "k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.13.0"
+      livenessProbe: "registry.k8s.io/sig-storage/livenessprobe:v2.16.0"
+
 ### Sub Charts Specific Values ###
 
 # gfm-studio-gateway:
@@ -135,9 +264,17 @@ gfm-studio-gateway:
   enabled: true
   resources:
     api:
+      requests: {}
+      limits: {}
     oauth:
+      requests: {}
+      limits: {}
     celeryWorker:
+      requests: {}
+      limits: {}
     celeryFlower:
+      requests: {}
+      limits: {}
   image:
     name: quay.io/geospatial-studio/geostudio-gateway
     tag: latest
@@ -197,7 +334,11 @@ geofm-ui:
   enabled: true
   resources:
     ui:
+      requests: {}
+      limits: {}
     oauth:
+      requests: {}
+      limits: {}
   image:
     name: quay.io/geospatial-studio/geostudio-ui
     tag: latest
@@ -217,6 +358,8 @@ geofm-ui:
 gfm-mlflow:
   enabled: true
   resources:
+    requests: {}
+    limits: {}
   image:
     name: ghcr.io/mlflow/mlflow
     # pullPolicy inherited from global.imagePullPolicy
@@ -501,6 +644,7 @@ geospatial-studio-pipelines:
                 operator: In
                 values:
                 - NODE_GPU_SPEC
+
     - name: generic-python-processor
       enabled: true
       image:

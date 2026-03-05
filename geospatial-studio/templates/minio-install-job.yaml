@@ -1,0 +1,287 @@
+{{- if .Values.global.minio.enabled }}
+---
+# Job to deploy MinIO
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-minio-installer
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: minio-installer
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-80"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 5
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: geostudio
+        app.kubernetes.io/component: minio-installer
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ .Values.global.serviceAccount.name }}
+      {{- if .Values.global.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecret.name }}
+      {{- end }}
+      containers:
+      - name: minio-installer
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          
+          echo "=================================================="
+          echo "MinIO Installation Job"
+          echo "=================================================="
+          echo "Release Name: {{ .Release.Name }}"
+          echo "Namespace: {{ .Values.global.namespace }}"
+          echo "MinIO Image: {{ .Values.global.minio.image }}:{{ .Values.global.minio.tag }}"
+          echo "=================================================="
+          
+          # Create MinIO PVC
+          cat <<EOF | kubectl apply -f -
+          apiVersion: v1
+          kind: PersistentVolumeClaim
+          metadata:
+            name: minio-pvc
+            namespace: {{ .Values.global.namespace }}
+            labels:
+              app: minio
+              app.kubernetes.io/name: minio
+              app.kubernetes.io/managed-by: {{ .Release.Service }}
+          spec:
+            storageClassName: {{ .Values.global.minio.persistence.storageClass }}
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: {{ .Values.global.minio.persistence.size }}
+          EOF
+          
+          echo "MinIO PVC created"
+          
+          # Create MinIO Deployment
+          cat <<EOF | kubectl apply -f -
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: minio
+            namespace: {{ .Values.global.namespace }}
+            labels:
+              app: minio
+              app.kubernetes.io/name: minio
+              app.kubernetes.io/managed-by: {{ .Release.Service }}
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: minio
+            template:
+              metadata:
+                labels:
+                  app: minio
+              spec:
+                containers:
+                - name: minio
+                  image: {{ .Values.global.minio.image }}:{{ .Values.global.minio.tag }}
+                  args:
+                  - server
+                  - /data
+                  - --console-address
+                  - ":9001"
+                  env:
+                  - name: MINIO_ROOT_USER
+                    value: "{{ .Values.global.minio.auth.rootUser }}"
+                  - name: MINIO_ROOT_PASSWORD
+                    value: "{{ .Values.global.minio.auth.rootPassword }}"
+                  ports:
+                  - containerPort: 9000
+                    name: api
+                  - containerPort: 9001
+                    name: console
+                  volumeMounts:
+                  - name: minio-tls-certs
+                    mountPath: /root/.minio/certs
+                    readOnly: true
+                  - name: data
+                    mountPath: /data
+                  livenessProbe:
+                    httpGet:
+                      path: /minio/health/live
+                      port: 9000
+                      scheme: HTTPS
+                    initialDelaySeconds: 30
+                    periodSeconds: 30
+                    timeoutSeconds: 10
+                    failureThreshold: 3
+                  readinessProbe:
+                    httpGet:
+                      path: /minio/health/ready
+                      port: 9000
+                      scheme: HTTPS
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+                    timeoutSeconds: 5
+                    failureThreshold: 3
+                volumes:
+                - name: minio-tls-certs
+                  secret:
+                    secretName: minio-tls-secret
+                    items:
+                    - key: tls.crt
+                      path: public.crt
+                    - key: tls.key
+                      path: private.key
+                - name: data
+                  persistentVolumeClaim:
+                    claimName: minio-pvc
+          EOF
+          
+          echo "MinIO deployment created"
+          
+          # Create MinIO Service
+          cat <<EOF | kubectl apply -f -
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: minio
+            namespace: {{ .Values.global.namespace }}
+            labels:
+              app: minio
+              app.kubernetes.io/name: minio
+              app.kubernetes.io/managed-by: {{ .Release.Service }}
+          spec:
+            type: ClusterIP
+            ports:
+            - port: 9000
+              targetPort: 9000
+              protocol: TCP
+              name: api
+            - port: 9001
+              targetPort: 9001
+              protocol: TCP
+              name: console
+            selector:
+              app: minio
+          EOF
+          
+          echo "MinIO service created"
+          
+          # Wait for MinIO to be ready
+          echo "Waiting for MinIO pod to be ready..."
+          kubectl wait --for=condition=ready pod \
+            -l app=minio \
+            -n {{ .Values.global.namespace }} \
+            --timeout=600s
+          
+          echo "MinIO is ready!"
+          
+          # Display MinIO connection info
+          echo "=================================================="
+          echo "MinIO Connection Information:"
+          echo "API URL: https://minio.{{ .Values.global.namespace }}.svc.cluster.local:9000"
+          echo "Console URL: http://minio.{{ .Values.global.namespace }}.svc.cluster.local:9001"
+          echo "Root User: {{ .Values.global.minio.auth.rootUser }}"
+          echo "=================================================="
+          
+          echo "Installation job completed successfully"
+---
+# Job to create MinIO buckets
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-minio-bucket-creator
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: minio-bucket-creator
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-70"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: geostudio
+        app.kubernetes.io/component: minio-bucket-creator
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: Never
+      {{- if .Values.global.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecret.name }}
+      {{- end }}
+      containers:
+      - name: bucket-creator
+        image: minio/mc:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          set -e
+          
+          echo "=================================================="
+          echo "MinIO Bucket Creation Job"
+          echo "=================================================="
+          echo "MinIO Host: minio.{{ .Values.global.namespace }}.svc.cluster.local:9000"
+          echo "=================================================="
+          
+          # Wait for MinIO to be ready
+          echo "Waiting for MinIO to accept connections..."
+          until mc alias set myminio https://minio.{{ .Values.global.namespace }}.svc.cluster.local:9000 {{ .Values.global.minio.auth.rootUser }} {{ .Values.global.minio.auth.rootPassword }} --insecure 2>/dev/null; do
+            echo "MinIO not ready yet, retrying in 5 seconds..."
+            sleep 5
+          done
+          echo "MinIO is ready!"
+          
+          # Function to create bucket if it doesn't exist
+          create_bucket() {
+            local bucket_name=$1
+            echo "Checking if bucket '$bucket_name' exists..."
+            
+            if mc ls myminio/$bucket_name --insecure >/dev/null 2>&1; then
+              echo "Bucket '$bucket_name' already exists, skipping creation"
+            else
+              echo "Creating bucket '$bucket_name'..."
+              mc mb myminio/$bucket_name --insecure
+              echo "Bucket '$bucket_name' created successfully"
+            fi
+          }
+          
+          # Create GeoStudio buckets
+          echo ""
+          echo "Creating GeoStudio buckets..."
+          {{- range $key, $value := .Values.global.objectStorage.buckets }}
+          create_bucket "{{ $value }}"
+          {{- end }}
+          
+          echo ""
+          echo "=================================================="
+          echo "Bucket creation completed successfully!"
+          echo "=================================================="
+          echo "Created buckets:"
+          {{- range $key, $value := .Values.global.objectStorage.buckets }}
+          echo "  - {{ $value }}"
+          {{- end }}
+          echo "=================================================="
+          
+          # List all buckets for verification
+          echo ""
+          echo "All buckets in MinIO:"
+          mc ls myminio --insecure
+{{- end }}

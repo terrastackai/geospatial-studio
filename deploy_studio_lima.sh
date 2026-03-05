@@ -60,9 +60,8 @@ openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-pub
 kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml -n ${OC_PROJECT}
 
-kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
-kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
-
+kubectl create configmap minio-ca-cert --from-file=ca.crt=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-ca-cert.yaml
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-ca-cert.yaml -n kube-system
 
 python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
@@ -73,7 +72,7 @@ sleep 5
 kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 >> studio-pf.log 2>&1 &
 sleep 5
 
-cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
+cp -R geospatial-studio/files/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
 sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
 sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
 kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
@@ -89,7 +88,12 @@ sed -i -e "s|endpoint=.*|endpoint=https://localhost:9000|g" workspace/${DEPLOYME
 sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
 ## Setup storage class for minio and default in cluster storage class
-sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+# Use IBM Object CSI driver storage class
+source lib/k8s-utils.sh
+CSI_DRIVER_TYPE=$(get_csi_driver_type)
+export COS_STORAGE_CLASS="cos-s3-csi-s3fs-sc"
+echo "Using CSI driver type: $CSI_DRIVER_TYPE with storage class: $COS_STORAGE_CLASS"
+sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=local-path/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 >> studio-pf.log 2>&1 &
@@ -262,7 +266,6 @@ if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
     printf "%s " "Press enter to continue"
     read ans
 fi
-
 
 echo "----------------------------------------------------------------------"
 echo "----------------  Building Helm dependencies  ------------------------"

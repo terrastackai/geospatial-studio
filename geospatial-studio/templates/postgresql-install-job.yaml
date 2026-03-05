@@ -1,0 +1,246 @@
+{{- if .Values.global.postgresql.enabled }}
+---
+# Job to deploy PostgreSQL using Helm before other components
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-postgresql-installer
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: postgresql-installer
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-100"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 5
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: geostudio
+        app.kubernetes.io/component: postgresql-installer
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ .Values.global.serviceAccount.name }}
+      {{- if .Values.global.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecret.name }}
+      {{- end }}
+      containers:
+      - name: postgresql-installer
+        image: dtzar/helm-kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+
+          echo "=================================================="
+          echo "PostgreSQL Installation Job"
+          echo "=================================================="
+          echo "Release Name: {{ .Release.Name }}"
+          echo "Namespace: {{ .Values.global.namespace }}"
+          echo "Chart Version: {{ .Values.global.postgresql.chartVersion }}"
+          echo "=================================================="
+          
+          # Add Bitnami Helm repository
+          echo "Adding Bitnami Helm repository..."
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+          
+          # Check if PostgreSQL pod is already running
+          if kubectl get pod -n {{ .Values.global.namespace }} -l app.kubernetes.io/name=postgresql,app.kubernetes.io/instance={{ .Values.global.postgresql.fullnameOverride }} 2>/dev/null | grep -q Running; then
+            echo "✓ PostgreSQL pod is already running"
+            kubectl get pod -n {{ .Values.global.namespace }} -l app.kubernetes.io/name=postgresql,app.kubernetes.io/instance={{ .Values.global.postgresql.fullnameOverride }}
+            echo "Skipping installation"
+            exit 0
+          fi
+          
+          # Check if PostgreSQL Helm release exists
+          if helm list -n {{ .Values.global.namespace }} | grep -q "^{{ .Values.global.postgresql.fullnameOverride }}\s"; then
+            echo "PostgreSQL release '{{ .Values.global.postgresql.fullnameOverride }}' exists but pod not running"
+            echo "Upgrading PostgreSQL..."
+            helm upgrade {{ .Values.global.postgresql.fullnameOverride }} bitnami/postgresql \
+              --namespace {{ .Values.global.namespace }} \
+              --version {{ .Values.global.postgresql.chartVersion }} \
+              --set image.tag=latest \
+              --set fullnameOverride={{ .Values.global.postgresql.fullnameOverride }} \
+              --set auth.username={{ .Values.global.postgresql.auth.username }} \
+              --set auth.password={{ .Values.global.postgresql.auth.password }} \
+              --set auth.database={{ .Values.global.postgresql.auth.database }} \
+              --set primary.persistence.enabled={{ .Values.global.postgresql.primary.persistence.enabled }} \
+              --set primary.persistence.size={{ .Values.global.postgresql.primary.persistence.size }} \
+              {{- if .Values.global.postgresql.primary.persistence.storageClass }}
+              --set primary.persistence.storageClass={{ .Values.global.postgresql.primary.persistence.storageClass }} \
+              {{- end }}
+              --set primary.resources.requests.memory={{ .Values.global.postgresql.primary.resources.requests.memory }} \
+              --set primary.resources.requests.cpu={{ .Values.global.postgresql.primary.resources.requests.cpu }} \
+              --set primary.resources.limits.memory={{ .Values.global.postgresql.primary.resources.limits.memory }} \
+              --set primary.resources.limits.cpu={{ .Values.global.postgresql.primary.resources.limits.cpu }} \
+              --wait \
+              --timeout 10m
+          else
+            echo "Installing PostgreSQL chart..."
+            helm install {{ .Values.global.postgresql.fullnameOverride }} bitnami/postgresql \
+              --namespace {{ .Values.global.namespace }} \
+              --version {{ .Values.global.postgresql.chartVersion }} \
+              --set image.tag=latest \
+              --set fullnameOverride={{ .Values.global.postgresql.fullnameOverride }} \
+              --set auth.username={{ .Values.global.postgresql.auth.username }} \
+              --set auth.password={{ .Values.global.postgresql.auth.password }} \
+              --set auth.database={{ .Values.global.postgresql.auth.database }} \
+              --set primary.persistence.enabled={{ .Values.global.postgresql.primary.persistence.enabled }} \
+              --set primary.persistence.size={{ .Values.global.postgresql.primary.persistence.size }} \
+              {{- if .Values.global.postgresql.primary.persistence.storageClass }}
+              --set primary.persistence.storageClass={{ .Values.global.postgresql.primary.persistence.storageClass }} \
+              {{- end }}
+              --set primary.resources.requests.memory={{ .Values.global.postgresql.primary.resources.requests.memory }} \
+              --set primary.resources.requests.cpu={{ .Values.global.postgresql.primary.resources.requests.cpu }} \
+              --set primary.resources.limits.memory={{ .Values.global.postgresql.primary.resources.limits.memory }} \
+              --set primary.resources.limits.cpu={{ .Values.global.postgresql.primary.resources.limits.cpu }} \
+              --wait \
+              --timeout 10m
+          fi
+          
+          echo "PostgreSQL deployment completed successfully"
+          
+          # Wait for PostgreSQL to be ready
+          echo "Waiting for PostgreSQL to be ready..."
+          kubectl wait --for=condition=ready pod \
+            -l app.kubernetes.io/name=postgresql \
+            -n {{ .Values.global.namespace }} \
+            --timeout=600s
+          
+          echo "PostgreSQL is ready!"
+          
+          # Display PostgreSQL connection info
+          echo "=================================================="
+          echo "PostgreSQL Connection Information:"
+          echo "Host: {{ .Values.global.postgresql.fullnameOverride }}.{{ .Values.global.namespace }}.svc.cluster.local"
+          echo "Port: 5432"
+          echo "Username: {{ .Values.global.postgresql.auth.username }}"
+          echo "Default Database: {{ .Values.global.postgresql.auth.database }}"
+          echo "=================================================="
+          
+          echo "Installation job completed successfully"
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: helm-cache
+          mountPath: /.cache/helm
+        - name: helm-config
+          mountPath: /.config/helm
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: helm-cache
+        emptyDir: {}
+      - name: helm-config
+        emptyDir: {}
+---
+# Job to create GeoStudio databases after PostgreSQL is ready
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-postgresql-db-creator
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: postgresql-db-creator
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-90"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 10
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: geostudio
+        app.kubernetes.io/component: postgresql-db-creator
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      restartPolicy: Never
+      {{- if .Values.global.imagePullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.global.imagePullSecret.name }}
+      {{- end }}
+      containers:
+      - name: db-creator
+        image: postgres:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          
+          echo "=================================================="
+          echo "PostgreSQL Database Creation Job"
+          echo "=================================================="
+          echo "PostgreSQL Host: {{ .Values.global.postgresql.fullnameOverride }}.{{ .Values.global.namespace }}.svc.cluster.local"
+          echo "=================================================="
+          
+          export PGPASSWORD="{{ .Values.global.postgresql.auth.password }}"
+          export PGHOST="{{ .Values.global.postgresql.fullnameOverride }}.{{ .Values.global.namespace }}.svc.cluster.local"
+          export PGPORT="5432"
+          export PGUSER="{{ .Values.global.postgresql.auth.username }}"
+          
+          # Wait for PostgreSQL to be ready
+          echo "Waiting for PostgreSQL to accept connections..."
+          until pg_isready -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -t 3; do
+            echo "PostgreSQL not ready yet, retrying in 5 seconds..."
+            sleep 5
+          done
+          echo "PostgreSQL is accepting connections!"
+          
+          # Function to create database if it doesn't exist
+          create_database() {
+            local db_name=$1
+            echo "Checking if database '$db_name' exists..."
+            
+            DB_EXISTS=$(psql -tA -c "SELECT 1 FROM pg_database WHERE datname='$db_name'")
+            if [ "$DB_EXISTS" = "1" ]; then
+              echo "Database '$db_name' already exists, skipping creation"
+            else
+              echo "Creating database '$db_name'..."
+              psql -c "CREATE DATABASE $db_name;"
+              echo "Database '$db_name' created successfully"
+            fi
+          }
+          
+          # Create GeoStudio databases
+          echo ""
+          echo "Creating GeoStudio databases..."
+          create_database "geostudio"
+          create_database "geostudio_auth"
+          create_database "mlflow"
+          {{- if .Values.global.keycloak.enabled }}
+          create_database "{{ .Values.global.keycloak.database }}"
+          {{- end }}
+          
+          echo ""
+          echo "=================================================="
+          echo "Database creation completed successfully!"
+          echo "=================================================="
+          echo "Created databases:"
+          echo "  - geostudio"
+          echo "  - geostudio_auth"
+          echo "  - mlflow"
+          {{- if .Values.global.keycloak.enabled }}
+          echo "  - {{ .Values.global.keycloak.database }}"
+          {{- end }}
+          echo "=================================================="
+          
+          # List all databases for verification
+          echo ""
+          echo "All databases in PostgreSQL:"
+          psql -t -c "SELECT datname FROM pg_database WHERE datistemplate = false;"
+{{- end }}

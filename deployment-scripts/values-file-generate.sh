@@ -7,6 +7,7 @@
 
 
 source workspace/$DEPLOYMENT_ENV/env/env.sh
+source workspace/$DEPLOYMENT_ENV/env/.env
 
 charts=( 
         geospatial-studio
@@ -63,5 +64,7 @@ do
         -e "s|geospatial-studio|${CONTAINER_IMAGE_REPOSITORY}|" \
         -e "s|PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE|${PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE}|" \
         -e "s|PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC|${PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC}|" \
+        -e "s|cesium_token|${cesium_token}|" \
+        -e "s|mapbox_token|${mapbox_token}|" \
         ${HELM_CHART_NAME}/values.yaml > workspace/$DEPLOYMENT_ENV/values/${HELM_CHART_NAME}/values.yaml
 done

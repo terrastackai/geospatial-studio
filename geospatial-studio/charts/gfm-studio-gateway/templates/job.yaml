@@ -20,7 +20,7 @@ metadata:
     # job is considered part of the release.
     "helm.sh/hook": {{ join "," $config.when | quote }}
     "helm.sh/hook-weight": {{ $config.weight | quote }}
-    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
 spec:
   template:
     metadata:
@@ -35,7 +35,7 @@ spec:
       imagePullSecrets:
         - name: {{ $values.global.imagePullSecret.name }}
       {{- end }}
-      {{- if (and (hasKey $config "waitForDb") $config.waitForDb.enabled) }}
+      {{- if or (and (hasKey $config "waitForDb") $config.waitForDb.enabled) (and (hasKey $config "waitForGateway") $config.waitForGateway.enabled) }}
       initContainers:
       {{- end }}
       # Init container to wait for database to be ready (for pre-install hooks)
@@ -59,6 +59,23 @@ spec:
               name: {{ $values.global.appNames.gateway }}-cm
           - secretRef:
               name: {{ $values.global.appNames.gateway }}-secrets
+      {{- end }}
+      {{- end }}
+      # Init container to wait for gateway service to be ready
+      {{- if hasKey $config "waitForGateway" }}
+      {{- if $config.waitForGateway.enabled }}
+      - name: wait-for-gateway
+        image: {{ $config.waitForGateway.image | default "busybox:1.36" }}
+        imagePullPolicy: {{ $values.image.pullPolicy | default $values.global.imagePullPolicy }}
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Waiting for gateway service to be ready..."
+          until nc -z {{ $values.global.appNames.ui }}.{{ $values.global.namespace }}.svc.cluster.local {{ $config.waitForGateway.port | default $values.global.oauth.oauthProxyPort }}; do
+            echo "Gateway service not ready yet, retrying in {{ $config.waitForGateway.sleepTime | default 5 }} seconds..."
+            sleep {{ $config.waitForGateway.sleepTime | default 5 }}
+          done
+          echo "Gateway service is ready!"
       {{- end }}
       {{- end }}
       containers:

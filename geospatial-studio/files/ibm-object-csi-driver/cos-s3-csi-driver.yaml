@@ -1,0 +1,177 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cos-s3-csi-driver
+  namespace: kube-system
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cos-s3-csi-driver-role
+  namespace: kube-system
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "update"]
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["volumeattachments"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cos-s3-csi-driver-rolebind
+  namespace: kube-system
+subjects:
+  - kind: ServiceAccount
+    name: cos-s3-csi-driver
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: cos-s3-csi-driver-role
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: cos-s3-csi-driver
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: cos-s3-csi-driver
+  template:
+    metadata:
+      labels:
+        app: cos-s3-csi-driver
+    spec:
+      serviceAccountName: cos-s3-csi-driver
+      hostNetwork: false
+      priorityClassName: system-node-critical
+      containers:
+        - name: driver-registrar
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            allowPrivilegeEscalation: false
+            runAsNonRoot: false
+            runAsUser: 0
+            runAsGroup: 0
+          image: driver-registrar-image
+          args:
+            - --v=5
+            - --csi-address=$(ADDRESS)
+            - --kubelet-registration-path=$(DRIVER_REG_SOCK_PATH)
+          env:
+            - name: ADDRESS
+              value: /csi/csi.sock
+            - name: DRIVER_REG_SOCK_PATH
+              value: /var/lib/kubelet/plugins/cos.s3.csi.ibm.io/csi.sock
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          imagePullPolicy: Always
+          volumeMounts:
+          - name: plugin-dir
+            mountPath: /csi
+          - name: registration-dir
+            mountPath: /registration
+        - name: cos-csi-driver
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            privileged: true
+            runAsNonRoot: false
+            runAsUser: 0
+            runAsGroup: 0
+          image: cos-driver-image
+          args:
+            - "--servermode=node"
+            - "--endpoint=$(CSI_ENDPOINT)"
+            - "--nodeid=$(KUBE_NODE_NAME)"
+            - "--logtostderr=true"
+            - "--v=5"
+          env:
+            - name: CSI_ENDPOINT
+              value: unix:///csi/csi.sock
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /csi
+            - name: kubelet-dir-ibm
+              mountPath: /var/data/kubelet
+              mountPropagation: Bidirectional
+            - name: kubelet-dir
+              mountPath: /var/lib/kubelet
+              mountPropagation: Bidirectional
+            - name: fuse-device
+              mountPath: /dev/fuse
+            - name: log-dev
+              mountPath: /dev/log
+            - name: host-log
+              mountPath: /host/var/log
+        - name: liveness-probe
+          image: liveness-probe-image
+          args:
+            - "--csi-address=/csi/csi.sock"
+          env:
+            - name: ADDRESS
+              value: /csi/csi.sock
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /csi
+      volumes:
+        - name: plugin-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/cos.s3.csi.ibm.io/
+            type: DirectoryOrCreate
+        - name: kubelet-dir-ibm
+          hostPath:
+            path: /var/data/kubelet
+            type: DirectoryOrCreate
+        - name: kubelet-dir
+          hostPath:
+            path: /var/lib/kubelet
+            type: Directory
+        - name: registration-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins_registry/
+            type: DirectoryOrCreate
+        - name: fuse-device
+          hostPath:
+            path: /dev/fuse
+        - name: log-dev
+          hostPath:
+            path: /dev/log
+        - name: host-log
+          hostPath:
+            path: /var/log
