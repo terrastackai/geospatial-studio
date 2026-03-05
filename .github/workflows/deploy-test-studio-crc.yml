@@ -1,0 +1,474 @@
+name: Deploy and Test Studio on CRC OpenShift
+
+on:
+  workflow_dispatch:
+  push:  # TEMPORARY: Remove this trigger after testing
+    branches:
+      - 'deploy-crc-actions'  # Triggers on push to this branch
+  # pull_request:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'deployment-scripts/**'
+  #     - 'populate-studio/**'
+  #     - 'geospatial-studio/**'
+  #     - 'deploy_studio_ocp.sh'
+  #     - 'common_functions.sh'
+  #     - 'requirements.txt'
+  #     - '.github/workflows/deploy-test-studio-crc.yml'
+  #   types: [opened, synchronize, reopened]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.filter.outputs.deploy }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for deployment-relevant changes
+        id: filter
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            git fetch origin ${{ github.base_ref }}
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          fi
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Trigger deployment for changes to scripts, operators, helm charts,
+          # populate-studio, or this workflow file.
+          # Explicitly skip docs-only changes.
+          if echo "$CHANGED_FILES" | grep -qE \
+            "^(operators/|deployment-scripts/|populate-studio/|geospatial-studio/|deploy_studio_ocp\.sh|common_functions\.sh|requirements\.txt|\.github/workflows/deploy-test-studio-crc\.yml)"; then
+            echo "deploy=true" >> $GITHUB_OUTPUT
+            echo "Deployment-relevant files changed – deployment will proceed"
+          else
+            echo "deploy=false" >> $GITHUB_OUTPUT
+            echo "No deployment-relevant files changed – skipping deployment"
+          fi
+
+  deploy-and-test:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.should_deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up CRC OpenShift Local
+        uses: crc-org/crc-github-action@v1
+        with:
+          pull-secret: ${{ secrets.CRC_PULL_SECRET }}
+          preset: openshift
+          memory: 16384
+          cpus: 6
+          disk: 50
+
+      - name: Wait for CRC cluster to be ready
+        run: |
+          echo "=== Waiting for CRC cluster to be ready ==="
+          
+          # Wait for cluster to be accessible
+          timeout=600
+          elapsed=0
+          interval=10
+          
+          while [ $elapsed -lt $timeout ]; do
+            if oc get nodes &>/dev/null; then
+              echo "✅ Cluster is accessible"
+              break
+            fi
+            echo "Waiting for cluster... ($elapsed/$timeout seconds)"
+            sleep $interval
+            elapsed=$((elapsed + interval))
+          done
+          
+          if [ $elapsed -ge $timeout ]; then
+            echo "❌ Timeout waiting for cluster"
+            exit 1
+          fi
+          
+          # Wait for nodes to be ready
+          oc wait --for=condition=ready nodes --all --timeout=300s
+          
+          echo ""
+          echo "=== Cluster Information ==="
+          oc get nodes -o wide
+          oc version
+          
+          echo ""
+          echo "=== Cluster Resources ==="
+          oc describe nodes | grep -A 5 "Capacity:\|Allocatable:"
+
+      - name: Create project namespace
+        run: |
+          echo "=== Creating project namespace ==="
+          export OC_PROJECT=geostudio-test
+          oc new-project ${OC_PROJECT} || oc project ${OC_PROJECT}
+          echo "✅ Project ${OC_PROJECT} ready"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          echo "=== Installing Python dependencies ==="
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          echo "✅ Python dependencies installed"
+
+      - name: Configure deployment environment variables
+        run: |
+          echo "=== Configuring deployment environment ==="
+          
+          # Set non-interactive mode
+          export NON_INTERACTIVE=true
+          
+          # Set deployment environment variables
+          export DEPLOYMENT_ENV="crc-ci"
+          export OC_PROJECT="geostudio-test"
+          
+          # Get cluster URL from CRC
+          export CLUSTER_URL=$(oc get IngressController default -n openshift-ingress-operator -o jsonpath='{.status.domain}')
+          echo "Cluster URL: $CLUSTER_URL"
+          
+          # Storage classes
+          export COS_STORAGE_CLASS="standard"
+          export NON_COS_STORAGE_CLASS="standard"
+          
+          # Image pull secret (using default for testing)
+          export STUDIO_IMAGE_PULL_SECRET="eyJhdXRocyI6eyJleGFtcGxlLmlvIjp7InVzZXJuYW1lIjoiZXhhbXBsZSIsInBhc3N3b3JkIjoiZXhhbXBsZSIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImF1dGgiOiJaWGhoYlhCc1pUcGxlR0Z0Y0d4bCJ9fX0="
+          
+          # Storage type selections (using cluster deployments for CI)
+          export cloud_object_storage_type="Cluster-deployment"
+          export postgres_type="Cluster-deployment"
+          export oauth_type="Keycloak"
+          export geoserver_install_type="Configure-SCC"
+          export gpu_configuration_type="No-GPU-Available"
+          
+          # Jump to deployment flag
+          export JUMP_TO_DEPLOYMENT="No"
+          
+          # Retry settings for CI/CD
+          export KUBECTL_WAIT_RETRY_ATTEMPTS=10
+          export KUBECTL_WAIT_RETRY_DELAY=10
+          
+          # Save environment variables for next steps
+          cat > /tmp/deploy-env.sh <<EOF
+          export NON_INTERACTIVE=true
+          export DEPLOYMENT_ENV="crc-ci"
+          export OC_PROJECT="geostudio-test"
+          export CLUSTER_URL="$CLUSTER_URL"
+          export COS_STORAGE_CLASS="standard"
+          export NON_COS_STORAGE_CLASS="standard"
+          export STUDIO_IMAGE_PULL_SECRET="$STUDIO_IMAGE_PULL_SECRET"
+          export cloud_object_storage_type="Cluster-deployment"
+          export postgres_type="Cluster-deployment"
+          export oauth_type="Keycloak"
+          export geoserver_install_type="Configure-SCC"
+          export gpu_configuration_type="No-GPU-Available"
+          export JUMP_TO_DEPLOYMENT="No"
+          export KUBECTL_WAIT_RETRY_ATTEMPTS=10
+          export KUBECTL_WAIT_RETRY_DELAY=10
+          EOF
+          
+          echo "✅ Environment variables configured"
+
+      - name: Deploy Geospatial Studio to CRC OpenShift
+        run: |
+          echo "=== Deploying Geospatial Studio in non-interactive mode ==="
+          
+          # Load environment variables
+          source /tmp/deploy-env.sh
+          
+          # Navigate to geospatial-studio directory
+          if [[ -f "deploy_studio_ocp.sh" ]]; then
+            echo "✅ Found deploy_studio_ocp.sh in current directory"
+          elif [[ -f "geospatial-studio/deploy_studio_ocp.sh" ]]; then
+            echo "✅ Found deploy_studio_ocp.sh in geospatial-studio subdirectory"
+            cd geospatial-studio
+          else
+            echo "❌ Error: deploy_studio_ocp.sh not found"
+            exit 1
+          fi
+          
+          echo "Working directory: $(pwd)"
+          ls -la deploy_studio_ocp.sh
+          
+          # Function to monitor pod status
+          monitor_pods() {
+            echo ""
+            echo "=== Pod Status Update ($(date +%H:%M:%S)) ==="
+            oc get pods -n ${OC_PROJECT} -o wide
+            echo ""
+            echo "Pod Summary:"
+            oc get pods -n ${OC_PROJECT} --no-headers | awk '{print $3}' | sort | uniq -c
+            echo ""
+          }
+          
+          # Start monitoring in background
+          (
+            while true; do
+              monitor_pods
+              sleep 30
+            done
+          ) &
+          MONITOR_PID=$!
+          
+          # Make script executable and run deployment
+          chmod +x deploy_studio_ocp.sh
+          ./deploy_studio_ocp.sh
+          
+          # Stop monitoring
+          kill $MONITOR_PID 2>/dev/null || true
+          
+          echo "=== Deployment script completed ==="
+
+      - name: Verify Deployment
+        run: |
+          echo "=== Final Deployment Verification ==="
+          export OC_PROJECT="geostudio-test"
+          
+          echo ""
+          echo "--- All Pods Status ---"
+          oc get pods -n ${OC_PROJECT} -o wide
+          
+          echo ""
+          echo "--- Pod Status Summary ---"
+          TOTAL_PODS=$(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | wc -l | tr -d ' ')
+          RUNNING_PODS=$(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -c "Running" || echo "0")
+          PENDING_PODS=$(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -c "Pending" || echo "0")
+          ERROR_PODS=$(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -cE "Error|CrashLoopBackOff|ImagePullBackOff" || echo "0")
+          
+          echo "Total Pods: $TOTAL_PODS"
+          echo "Running: $RUNNING_PODS"
+          echo "Pending: $PENDING_PODS"
+          echo "Error/Failed: $ERROR_PODS"
+          
+          echo ""
+          echo "--- Service Status ---"
+          oc get svc -n ${OC_PROJECT}
+          
+          echo ""
+          echo "--- Routes Status ---"
+          oc get routes -n ${OC_PROJECT}
+          
+          echo ""
+          echo "--- PVC Status ---"
+          oc get pvc -n ${OC_PROJECT}
+          
+          echo ""
+          echo "--- Node Resource Usage ---"
+          oc adm top nodes 2>/dev/null || echo "Metrics not available"
+          
+          echo ""
+          echo "--- Pod Resource Usage ---"
+          oc adm top pods -n ${OC_PROJECT} 2>/dev/null || echo "Metrics not available"
+          
+          # Check for critical pods by name pattern
+          echo ""
+          echo "--- Critical Services Check ---"
+          ALL_CRITICAL_RUNNING=true
+          
+          # Check PostgreSQL
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "postgresql.*Running"; then
+            echo "✅ postgresql: Running"
+          else
+            echo "⚠️  postgresql: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          # Check MinIO
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "minio.*Running"; then
+            echo "✅ minio: Running"
+          else
+            echo "⚠️  minio: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          # Check Keycloak
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "keycloak.*Running"; then
+            echo "✅ keycloak: Running"
+          else
+            echo "⚠️  keycloak: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          # Check Redis
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "redis.*Running"; then
+            echo "✅ redis: Running"
+          else
+            echo "⚠️  redis: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          # Check Gateway
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "geofm-gateway.*Running"; then
+            echo "✅ geofm-gateway: Running"
+          else
+            echo "⚠️  geofm-gateway: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          # Check UI
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "geofm-ui.*Running"; then
+            echo "✅ geofm-ui: Running"
+          else
+            echo "⚠️  geofm-ui: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          # Check Geoserver
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "geoserver.*Running"; then
+            echo "✅ geoserver: Running"
+          else
+            echo "⚠️  geoserver: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          echo ""
+          ERROR_PODS_INT=$(echo "$ERROR_PODS" | tr -d ' \n')
+          ERROR_PODS_INT=$((10#$ERROR_PODS_INT))
+          echo "ALL_CRITICAL_RUNNING: $ALL_CRITICAL_RUNNING , ERROR_PODS_INT: $ERROR_PODS_INT , ERROR_PODS: $ERROR_PODS"
+          
+          if [[ "$ALL_CRITICAL_RUNNING" == "true" ]] && [[ "$ERROR_PODS_INT" -eq 0 ]]; then
+            echo "✅ Deployment verification PASSED"
+            echo "All critical services are running and no pods have errors"
+          else
+            echo "⚠️  Deployment verification completed with warnings"
+            echo "Some pods may still be starting up or have issues"
+            
+            if [[ "$ERROR_PODS_INT" =~ ^[0-9]+$ ]] && [[ "$ERROR_PODS_INT" -gt 0 ]]; then
+              echo ""
+              echo "--- Pods with Issues ---"
+              oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -E "Error|CrashLoopBackOff|ImagePullBackOff" || true
+              
+              echo ""
+              echo "--- Logs from Failed Pods ---"
+              for pod in $(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -E "Error|CrashLoopBackOff|ImagePullBackOff" | awk '{print $1}'); do
+                echo "=== Logs for $pod ==="
+                oc logs $pod -n ${OC_PROJECT} --tail=50 2>/dev/null || true
+                echo ""
+              done
+            fi
+            
+            echo ""
+            echo "--- Verification Summary ---"
+            if [[ "$ALL_CRITICAL_RUNNING" != "true" ]]; then
+              echo "❌ Some critical services are not running"
+            fi
+            if [[ "$ERROR_PODS_INT" =~ ^[0-9]+$ ]] && [[ "$ERROR_PODS_INT" -gt 0 ]]; then
+              echo "❌ $ERROR_PODS_INT pod(s) have errors"
+            fi
+            
+            exit 1
+          fi
+
+      - name: Run Workshop Labs
+        if: success()
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          echo "----------------------------------------------------------------------"
+          echo "-------------------  Running Workshop Labs  --------------------------"
+          echo "----------------------------------------------------------------------"
+          
+          export OC_PROJECT="geostudio-test"
+          
+          # Get UI route URL
+          export UI_ROUTE_URL=$(oc get route geofm-ui -n ${OC_PROJECT} -o jsonpath='{"https://"}{.spec.host}')
+          export BASE_STUDIO_UI_URL="$UI_ROUTE_URL"
+          
+          echo "Studio UI URL: $UI_ROUTE_URL"
+          
+          # Locate the geospatial-studio directory
+          if [[ -f "populate-studio/run_labs.py" ]]; then
+            GS_DIR="."
+          elif [[ -f "geospatial-studio/populate-studio/run_labs.py" ]]; then
+            GS_DIR="geospatial-studio"
+          else
+            echo "❌ Error: run_labs.py not found"
+            exit 1
+          fi
+          echo "✓ Using geospatial-studio directory: $GS_DIR"
+          
+          # Extract API key
+          if [[ -f "${GS_DIR}/.studio-api-key" ]]; then
+            source "${GS_DIR}/.studio-api-key"
+            echo "✓ Loaded STUDIO_API_KEY from .studio-api-key"
+          elif [[ -f ".studio-api-key" ]]; then
+            source .studio-api-key
+            echo "✓ Loaded STUDIO_API_KEY from .studio-api-key (repo root)"
+          else
+            echo "❌ Error: .studio-api-key file not found"
+            exit 1
+          fi
+          
+          # Wait for services to stabilize
+          echo ""
+          echo "Waiting 30 seconds for services to stabilize..."
+          sleep 30
+          
+          # Step 1: Add sandbox models
+          echo ""
+          echo "--- Step 1: Adding sandbox models ---"
+          chmod +x "${GS_DIR}/deployment-scripts/add-sandbox-models.sh"
+          "${GS_DIR}/deployment-scripts/add-sandbox-models.sh"
+          if [[ $? -eq 0 ]]; then
+            echo "✅ Sandbox models added successfully"
+          else
+            echo "⚠️  Warning: Failed to add sandbox models"
+          fi
+          
+          # Steps 2-6: Run workshop labs
+          echo ""
+          echo "--- Steps 2-6: Executing workshop labs (run_labs.py) ---"
+          python -u "${GS_DIR}/populate-studio/run_labs.py" \
+            --api-key "${STUDIO_API_KEY}" \
+            --studio-url "${BASE_STUDIO_UI_URL}" \
+            --skip-lab4-training
+          
+          LAB_EXIT=$?
+          if [[ $LAB_EXIT -eq 0 ]]; then
+            echo ""
+            echo "----------------------------------------------------------------------"
+            echo "✅ All workshop labs completed successfully!"
+            echo "----------------------------------------------------------------------"
+            echo ""
+            echo "📊 Studio is now populated with:"
+            echo "  - Sandbox models for testing"
+            echo "  - Example inference output (AGB Karen)"
+            echo "  - Flood detection model checkpoint & inference"
+            echo "  - Burn scars backbone, dataset, template & fine-tuning job"
+            echo ""
+            echo "🌐 Access the Studio UI at: $UI_ROUTE_URL"
+            echo "🔑 Login with: username: testuser, password: testpass123"
+            echo "----------------------------------------------------------------------"
+          else
+            echo ""
+            echo "----------------------------------------------------------------------"
+            echo "⚠️  One or more workshop labs encountered errors (exit code: $LAB_EXIT)"
+            echo "----------------------------------------------------------------------"
+            exit $LAB_EXIT
+          fi
+
+      - name: Workflow summary
+        if: always()
+        run: |
+          echo "## 🌍 Deploy and Test Studio on CRC OpenShift – Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployment:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Platform:** CRC OpenShift Local" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
