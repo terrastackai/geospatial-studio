@@ -114,6 +114,35 @@ jobs:
           oc new-project ${OC_PROJECT} || oc project ${OC_PROJECT}
           echo "✅ Project ${OC_PROJECT} ready"
 
+      - name: Check and configure storage
+        run: |
+          echo "=== Checking available storage classes ==="
+          oc get storageclass
+          
+          echo ""
+          echo "=== Checking for default storage class ==="
+          DEFAULT_SC=$(oc get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
+          
+          if [[ -z "$DEFAULT_SC" ]]; then
+            echo "⚠️  No default storage class found"
+            echo "Checking available storage classes..."
+            AVAILABLE_SC=$(oc get storageclass -o jsonpath='{.items[0].metadata.name}')
+            
+            if [[ -n "$AVAILABLE_SC" ]]; then
+              echo "Setting $AVAILABLE_SC as default storage class"
+              oc patch storageclass $AVAILABLE_SC -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+              echo "✅ Default storage class configured: $AVAILABLE_SC"
+            else
+              echo "❌ No storage classes available - this may cause PVC binding issues"
+            fi
+          else
+            echo "✅ Default storage class already configured: $DEFAULT_SC"
+          fi
+          
+          echo ""
+          echo "=== Final storage class configuration ==="
+          oc get storageclass
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
