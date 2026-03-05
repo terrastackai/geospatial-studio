@@ -116,19 +116,23 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         echo "***********************************************************************************"
         echo "-----------------------  Configure image pull secret ------------------------------"
         echo "-----------------------------------------------------------------------------------"
-        image_pull_secret_config_options="Default User-Generated"
+        echo "Image pull secrets are only required for private container registries."
+        echo "Leave empty if your images are publicly accessible."
+        echo "-----------------------------------------------------------------------------------"
+        image_pull_secret_config_options="Skip-for-public-images Provide-secret"
         typeset image_pull_secret_config_type
 
         get_menu_selection \
-        "Select whether to use the default image pull secret or to provide your own: " \
+        "Select image pull secret configuration: " \
         image_pull_secret_config_type \
         "$image_pull_secret_config_options"
 
-        if [[ "$image_pull_secret_config_type" == "Default" ]]; then
-            export STUDIO_IMAGE_PULL_SECRET="eyJhdXRocyI6eyJleGFtcGxlLmlvIjp7InVzZXJuYW1lIjoiZXhhbXBsZSIsInBhc3N3b3JkIjoiZXhhbXBsZSIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImF1dGgiOiJaWGhoYlhCc1pUcGxlR0Z0Y0d4bCJ9fX0="
+        if [[ "$image_pull_secret_config_type" == "Skip-for-public-images" ]]; then
+            export STUDIO_IMAGE_PULL_SECRET=""
+            echo "ℹ️  Image pull secret not configured (using public images)"
         else
             typeset ips
-            get_user_input "Enter Image pull secret: " ips
+            get_user_input "Enter base64-encoded image pull secret: " ips
             echo "STUDIO_IMAGE_PULL_SECRET accepted: **$ips**"
             export STUDIO_IMAGE_PULL_SECRET=$ips
         fi
@@ -207,6 +211,25 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s|endpoint=.*|endpoint=$MINIO_API_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+        # Wait for MinIO service to be ready (pod ready doesn't mean service is accepting connections)
+        echo "Waiting for MinIO service to be ready..."
+        MAX_RETRIES=30
+        RETRY_DELAY=10
+        
+        for i in $(seq 1 $MAX_RETRIES); do
+            if curl -k -s -f "$MINIO_API_URL/minio/health/live" > /dev/null 2>&1; then
+                echo "✓ MinIO service is ready (attempt $i/$MAX_RETRIES)"
+                break
+            else
+                if [ $i -eq $MAX_RETRIES ]; then
+                    echo "✗ MinIO service failed to become ready after $MAX_RETRIES attempts"
+                    exit 1
+                fi
+                echo "MinIO not ready yet (attempt $i/$MAX_RETRIES), waiting ${RETRY_DELAY}s..."
+                sleep $RETRY_DELAY
+            fi
+        done
 
     else
         echo "**********************************************************************"

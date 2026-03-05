@@ -6,8 +6,12 @@ import ibm_boto3
 from ibm_botocore.client import Config, ClientError
 import os
 import argparse
+import warnings
 
 import dotenv
+
+# Suppress SSL warnings for self-signed certificates (e.g., CRC OpenShift Local)
+warnings.filterwarnings('ignore', message='Unverified HTTPS request')
 
 parser = argparse.ArgumentParser(description="Run create bucket with a specified .env file.")
 parser.add_argument('--env-path', type=str, default=None,

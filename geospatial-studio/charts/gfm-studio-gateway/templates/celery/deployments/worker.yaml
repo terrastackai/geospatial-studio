@@ -29,7 +29,7 @@ spec:
         app: {{ .Values.global.appNames.gateway }}-celery
         app.kubernetes.io/component: {{ .Values.celery.worker.componentName }}
     spec:
-      {{- if .Values.global.imagePullSecret }}
+      {{- if .Values.global.imagePullSecret.b64secret }}
       imagePullSecrets:
         - name: {{ .Values.global.imagePullSecret.name }}
       {{- end }}

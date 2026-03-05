@@ -205,8 +205,9 @@ jobs:
           echo "  - COS Storage Class: $COS_STORAGE_CLASS"
           echo "  - Non-COS Storage Class: $NON_COS_STORAGE_CLASS"
           
-          # Image pull secret (using default for testing)
-          export STUDIO_IMAGE_PULL_SECRET="eyJhdXRocyI6eyJleGFtcGxlLmlvIjp7InVzZXJuYW1lIjoiZXhhbXBsZSIsInBhc3N3b3JkIjoiZXhhbXBsZSIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImF1dGgiOiJaWGhoYlhCc1pUcGxlR0Z0Y0d4bCJ9fX0="
+          # Image pull secret (empty for public images)
+          # Set to your base64-encoded secret if using private registry
+          export STUDIO_IMAGE_PULL_SECRET=""
           
           # Storage type selections (using cluster deployments for CI)
           export cloud_object_storage_type="Cluster-deployment"
