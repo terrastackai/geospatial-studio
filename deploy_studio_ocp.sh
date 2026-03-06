@@ -217,17 +217,56 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         MAX_RETRIES=30
         RETRY_DELAY=10
         
+        # First, try to reach MinIO via the internal service (faster and more reliable)
+        echo "Checking MinIO via internal service..."
+        MINIO_SERVICE_URL="http://minio.${OC_PROJECT}.svc.cluster.local:9000"
+        
         for i in $(seq 1 $MAX_RETRIES); do
+            # Try internal service first
+            if kubectl exec -n ${OC_PROJECT} $(kubectl get pod -n ${OC_PROJECT} -l app=minio -o jsonpath='{.items[0].metadata.name}') -- curl -s -f http://localhost:9000/minio/health/live > /dev/null 2>&1; then
+                echo "✓ MinIO service is ready via localhost (attempt $i/$MAX_RETRIES)"
+                break
+            fi
+            
+            # If internal check fails, show diagnostics
+            if [ $i -eq $MAX_RETRIES ]; then
+                echo "✗ MinIO service failed to become ready after $MAX_RETRIES attempts"
+                echo "Diagnostics:"
+                echo "- Pod status:"
+                kubectl get pods -n ${OC_PROJECT} -l app=minio
+                echo "- Pod logs (last 20 lines):"
+                kubectl logs -n ${OC_PROJECT} -l app=minio --tail=20
+                echo "- Service status:"
+                kubectl get svc -n ${OC_PROJECT} minio
+                echo "- Route status:"
+                kubectl get route -n ${OC_PROJECT} minio-api
+                exit 1
+            fi
+            
+            echo "MinIO not ready yet (attempt $i/$MAX_RETRIES), waiting ${RETRY_DELAY}s..."
+            
+            # Show pod status every 5 attempts
+            if [ $((i % 5)) -eq 0 ]; then
+                echo "$(date +%H:%M:%S) - Pod status:"
+                kubectl get pods -n ${OC_PROJECT} -l app=minio -o custom-columns=NAME:.metadata.name,STATUS:.status.phase --no-headers
+            fi
+            
+            sleep $RETRY_DELAY
+        done
+        
+        # Now verify the Route is accessible (this might take longer due to SSL/routing)
+        echo "Verifying MinIO Route accessibility..."
+        for i in $(seq 1 10); do
             if curl -k -s -f "$MINIO_API_URL/minio/health/live" > /dev/null 2>&1; then
-                echo "✓ MinIO service is ready (attempt $i/$MAX_RETRIES)"
+                echo "✓ MinIO Route is accessible"
                 break
             else
-                if [ $i -eq $MAX_RETRIES ]; then
-                    echo "✗ MinIO service failed to become ready after $MAX_RETRIES attempts"
-                    exit 1
+                if [ $i -eq 10 ]; then
+                    echo "⚠ Warning: MinIO Route not accessible, but service is running. This may be a Route/SSL issue."
+                    echo "Continuing deployment - MinIO is accessible internally."
                 fi
-                echo "MinIO not ready yet (attempt $i/$MAX_RETRIES), waiting ${RETRY_DELAY}s..."
-                sleep $RETRY_DELAY
+                echo "Route check attempt $i/10..."
+                sleep 5
             fi
         done
 
