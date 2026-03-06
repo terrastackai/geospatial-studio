@@ -275,12 +275,62 @@ jobs:
           echo "✅ Working directory: $(pwd)"
           echo ""
           
-          # Monitor deployment progress
+          # Monitor deployment progress with detailed diagnostics
           echo "=== Monitoring deployment progress ==="
           (
             while true; do
-              echo "$(date +%H:%M:%S) - Pod status:"
+              echo ""
+              echo "=========================================="
+              echo "$(date +%H:%M:%S) - Deployment Status Check"
+              echo "=========================================="
+              
+              # Show all pods status
+              echo ""
+              echo "--- All Pods ---"
               oc get pods -n ${OC_PROJECT} --no-headers | awk '{print $1, $3}' | column -t
+              
+              # Check for non-running pods
+              NON_RUNNING_PODS=$(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -v "Running\|Completed" || true)
+              
+              if [[ -n "$NON_RUNNING_PODS" ]]; then
+                echo ""
+                echo "--- Pods Not Running (Detailed Diagnostics) ---"
+                
+                for pod in $(echo "$NON_RUNNING_PODS" | awk '{print $1}'); do
+                  POD_STATUS=$(oc get pod $pod -n ${OC_PROJECT} --no-headers 2>/dev/null | awk '{print $3}')
+                  echo ""
+                  echo "🔍 Pod: $pod (Status: $POD_STATUS)"
+                  echo "---"
+                  
+                  # Show last 10 lines of pod description (includes events)
+                  echo "Recent Events:"
+                  oc describe pod $pod -n ${OC_PROJECT} 2>/dev/null | tail -15 | grep -A 10 "Events:" || echo "  No events available"
+                  
+                  # Show image configuration if ImagePullBackOff
+                  if echo "$POD_STATUS" | grep -q "ImagePull\|ErrImage"; then
+                    echo ""
+                    echo "Image Configuration:"
+                    oc get pod $pod -n ${OC_PROJECT} -o yaml 2>/dev/null | grep -A 3 "image:" | head -8 || echo "  Unable to retrieve image info"
+                    
+                    echo ""
+                    echo "ImagePullSecrets:"
+                    oc get pod $pod -n ${OC_PROJECT} -o yaml 2>/dev/null | grep -A 2 "imagePullSecrets:" || echo "  No imagePullSecrets configured"
+                  fi
+                  
+                  # Try to get container logs if available
+                  if ! echo "$POD_STATUS" | grep -q "Pending\|ContainerCreating"; then
+                    echo ""
+                    echo "Recent Logs (last 5 lines):"
+                    oc logs $pod -n ${OC_PROJECT} --tail=5 2>/dev/null || echo "  No logs available yet"
+                  fi
+                  
+                  echo "---"
+                done
+              else
+                echo ""
+                echo "✅ All pods are Running or Completed"
+              fi
+              
               sleep 60
             done
           ) &
