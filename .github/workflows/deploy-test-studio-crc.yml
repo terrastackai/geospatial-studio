@@ -317,6 +317,27 @@ jobs:
           echo "Error/Failed: $ERROR_PODS"
           
           echo ""
+          echo "--- Pods with Issues (ImagePullBackOff, Error, CrashLoop) ---"
+          oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -E "ImagePullBackOff|Error|CrashLoopBackOff" || echo "No pods with issues found"
+          
+          echo ""
+          echo "--- Detailed Diagnostics for Failed Pods ---"
+          for pod in $(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -E "ImagePullBackOff|Error|CrashLoopBackOff" | awk '{print $1}'); do
+            echo ""
+            echo "=== Diagnostics for pod: $pod ==="
+            echo ""
+            echo "--- Pod Description ---"
+            oc describe pod $pod -n ${OC_PROJECT} | tail -50
+            echo ""
+            echo "--- Pod Events ---"
+            oc get events -n ${OC_PROJECT} --field-selector involvedObject.name=$pod --sort-by='.lastTimestamp' | tail -20
+            echo ""
+            echo "--- Pod YAML (image and imagePullSecrets sections) ---"
+            oc get pod $pod -n ${OC_PROJECT} -o yaml | grep -A 5 -E "image:|imagePullSecrets:"
+            echo ""
+          done
+          
+          echo ""
           echo "--- Service Status ---"
           oc get svc -n ${OC_PROJECT}
           

@@ -140,7 +140,9 @@ gfm-studio-gateway:
     celeryFlower:
   image:
     name: quay.io/geospatial-studio/geostudio-gateway
-    tag: latest
+    # TEMPORARY: Using cleanup-pull-secret tag for testing image pull secret changes
+    # TODO: Revert to 'latest' after testing
+    tag: cleanup-pull-secret
     # pullPolicy inherited from global.imagePullPolicy
     # Can be overridden here if needed
     pullPolicy: ""

@@ -199,7 +199,19 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         echo "----------------------------------------------------------------------"
 
         source workspace/${DEPLOYMENT_ENV}/env/env.sh
-        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+        
+        # Detect if running on CRC (CodeReady Containers) by checking cluster domain
+        CLUSTER_DOMAIN=$(oc get IngressController default -n openshift-ingress-operator -o jsonpath='{.status.domain}' 2>/dev/null || echo "")
+        
+        if [[ "$CLUSTER_DOMAIN" == *"crc.testing"* ]] || [[ "$CLUSTER_DOMAIN" == *"apps-crc"* ]]; then
+            echo "Detected CRC (CodeReady Containers) - using edge TLS termination for MinIO"
+            MINIO_TEMPLATE="deployment-scripts/minio-deployment-crc.yaml"
+        else
+            echo "Using standard MinIO deployment with reencrypt TLS termination"
+            MINIO_TEMPLATE="deployment-scripts/minio-deployment.yaml"
+        fi
+        
+        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename $MINIO_TEMPLATE --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
         kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
