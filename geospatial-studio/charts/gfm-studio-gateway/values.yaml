@@ -46,7 +46,7 @@ hooks:
       # Wait for database to be ready before running migration
       waitForDb:
         enabled: true
-        image: postgres:13
+        image: docker.io/library/postgres:13
         sleepTime: 5
       # No volumes needed - alembic uses database connection
       when:
@@ -59,11 +59,11 @@ hooks:
         - "alembic upgrade head && alembic -n auth upgrade head"
   db-seed-data:
       enabled: true
-      image:  postgres:13
+      image: docker.io/library/postgres:13
       # Wait for database to be ready before running seeding
       waitForDb:
         enabled: true
-        image: postgres:13
+        image: docker.io/library/postgres:13
         sleepTime: 5
       # Mount seed data SQL file
       volumeMounts:
@@ -87,7 +87,7 @@ hooks:
           psql "$DB_URI" -f /tmp/init.sql
   db-mlflow-run-trigger:
       enabled: true
-      image:  postgres:13
+      image: docker.io/library/postgres:13
       # Mount mlflow trigger SQL file
       volumeMounts:
         - name: db-trigger-config

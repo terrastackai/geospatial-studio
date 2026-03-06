@@ -30,7 +30,7 @@ image:
 # Wait for gateway service to be ready before starting pipelines
 waitForGateway:
   enabled: true
-  image: busybox:1.36
+  image: docker.io/library/busybox:1.36
   port: OAUTH_PROXY_PORT
   sleepTime: 5
 

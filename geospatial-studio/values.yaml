@@ -293,7 +293,7 @@ geospatial-studio-pipelines:
     pullPolicy: ""
   waitForGateway:
     enabled: true
-    image: busybox:1.36
+    image: docker.io/library/busybox:1.36
     port: OAUTH_PROXY_PORT
     sleepTime: 5
   namePrefix: pipelines
