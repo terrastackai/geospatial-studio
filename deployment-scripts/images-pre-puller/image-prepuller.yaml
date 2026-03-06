@@ -42,7 +42,7 @@ spec:
       
       # 1. OAuth Proxy (~100MB)
       - name: prepull-01-oauth-proxy
-        image: bitnamilegacy/oauth2-proxy:latest
+        image: docker.io/bitnamilegacy/oauth2-proxy:latest
         command: ['sh', '-c', 'echo "✓ OAuth proxy image pulled" && sleep 1']
         resources:
           requests:

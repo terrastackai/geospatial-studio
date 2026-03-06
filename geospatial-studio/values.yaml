@@ -37,7 +37,7 @@ global:
 
   oauth:
     image:
-      name: bitnamilegacy/oauth2-proxy
+      name: docker.io/bitnamilegacy/oauth2-proxy
       tag: latest
     oauthProxyEnabled: OAUTH_PROXY_ENABLED
     oauthProxyPort: "OAUTH_PROXY_PORT"

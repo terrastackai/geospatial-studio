@@ -331,6 +331,26 @@ jobs:
                 echo "✅ All pods are Running or Completed"
               fi
               
+              # Check for PVC issues
+              echo ""
+              echo "--- PVC Status ---"
+              oc get pvc -n ${OC_PROJECT}
+              
+              PENDING_PVCS=$(oc get pvc -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -v "Bound" || true)
+              if [[ -n "$PENDING_PVCS" ]]; then
+                echo ""
+                echo "⚠️  Unbound PVCs detected:"
+                echo "$PENDING_PVCS"
+                
+                echo ""
+                echo "--- Storage Classes ---"
+                oc get storageclass
+                
+                echo ""
+                echo "--- Available PVs ---"
+                oc get pv
+              fi
+              
               sleep 60
             done
           ) &
