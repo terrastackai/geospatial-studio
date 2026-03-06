@@ -7,6 +7,7 @@ from ibm_botocore.client import Config, ClientError
 import os
 import argparse
 import warnings
+import time
 
 import dotenv
 
@@ -58,14 +59,38 @@ buckets = [
 
 
 for b in buckets:
-
-    try:
-        response = cos.create_bucket(
-            Bucket=f"{deployment_name}-{b}",
-        )
-        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            print(f"Bucket {deployment_name}-{b} created successfully \u2714")
-        else:
-            print(f"Potential error creating bucket {deployment_name}-{b} please check")
-    except Exception as e:
-        print(f"Creating bucket {deployment_name}-{b} failed with {e}")
+    bucket_name = f"{deployment_name}-{b}"
+    max_retries = 3
+    retry_delay = 5  # seconds
+    
+    for attempt in range(max_retries):
+        try:
+            response = cos.create_bucket(
+                Bucket=bucket_name,
+            )
+            if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+                print(f"Bucket {bucket_name} created successfully \u2714")
+                break
+            else:
+                print(f"Potential error creating bucket {bucket_name} please check")
+                break
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', '')
+            if error_code == 'BucketAlreadyOwnedByYou' or error_code == 'BucketAlreadyExists':
+                print(f"Bucket {bucket_name} already exists \u2714")
+                break
+            elif attempt < max_retries - 1:
+                print(f"Creating bucket {bucket_name} failed (attempt {attempt + 1}/{max_retries}): {e}")
+                print(f"Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff
+            else:
+                print(f"Creating bucket {bucket_name} failed after {max_retries} attempts: {e}")
+        except Exception as e:
+            if attempt < max_retries - 1:
+                print(f"Creating bucket {bucket_name} failed (attempt {attempt + 1}/{max_retries}): {e}")
+                print(f"Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff
+            else:
+                print(f"Creating bucket {bucket_name} failed after {max_retries} attempts: {e}")
