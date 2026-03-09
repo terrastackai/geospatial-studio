@@ -122,10 +122,8 @@ spec:
             - name: socket-dir
               mountPath: /csi
       volumes:
-        - hostPath:
-            path: /var/lib/kubelet/csi-plugins/cos.s3.csi.ibm.io
-            type: DirectoryOrCreate
-          name: socket-dir
+        - name: socket-dir
+          emptyDir: {}
         - name: trusted-ca-certs
           configMap:
             name: minio-public-config
