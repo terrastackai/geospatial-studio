@@ -129,3 +129,4 @@ spec:
         - name: trusted-ca-certs
           configMap:
             name: minio-public-config
+            optional: true  # Allow CSI driver to start before MinIO creates this ConfigMap

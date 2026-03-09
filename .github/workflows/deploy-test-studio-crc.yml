@@ -114,42 +114,11 @@ jobs:
           oc new-project ${OC_PROJECT} || oc project ${OC_PROJECT}
           echo "✅ Project ${OC_PROJECT} ready"
 
-      - name: Install IBM Object CSI Driver and configure storage
+      - name: Configure storage classes
         run: |
-          echo "=== Installing IBM Object CSI Driver ==="
-          export OC_PROJECT=geostudio-test
-          export DEPLOYMENT_ENV=crc-ci
-          
-          # Determine the correct base directory
-          if [[ -f "deploy_studio_ocp.sh" ]]; then
-            BASE_DIR="."
-          elif [[ -f "geospatial-studio/deploy_studio_ocp.sh" ]]; then
-            BASE_DIR="geospatial-studio"
-          else
-            echo "❌ Error: Cannot find geospatial-studio directory"
-            exit 1
-          fi
-          
-          # Create workspace directory structure
-          mkdir -p $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation
-          
-          # Copy IBM Object CSI driver files
-          cp -R $BASE_DIR/deployment-scripts/ibm-object-csi-driver $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation/
-          
-          # Create storage class templates with correct namespace
-          sed -e "s/default/$OC_PROJECT/g" $BASE_DIR/deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
-          sed -e "s/default/$OC_PROJECT/g" $BASE_DIR/deployment-scripts/template/cos-s3-csi-sc.yaml > $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
-          
-          # Apply IBM Object CSI driver (will become ready after MinIO deployment)
-          kubectl apply -k $BASE_DIR/workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
-          
-          echo ""
-          echo "=== IBM Object CSI driver installed ==="
-          echo "Note: CSI controller will become ready after MinIO creates the required ConfigMap"
-          kubectl get pods -n kube-system -l app.kubernetes.io/part-of=ibm-object-csi-driver
-          
-          echo ""
           echo "=== Configuring storage classes ==="
+          export OC_PROJECT=geostudio-test
+          
           oc get storageclass
           
           # Set default storage class if not already set
@@ -216,6 +185,9 @@ jobs:
           export geoserver_install_type="Configure-SCC"
           export gpu_configuration_type="No-GPU-Available"
           
+          # Enable CSI driver installation (will be deployed after MinIO)
+          export INSTALL_CSI_DRIVER="Yes"
+          
           # Jump to deployment flag
           export JUMP_TO_DEPLOYMENT="No"
           
@@ -237,6 +209,7 @@ jobs:
           export oauth_type=$oauth_type
           export geoserver_install_type=$geoserver_install_type
           export gpu_configuration_type=$gpu_configuration_type
+          export INSTALL_CSI_DRIVER=$INSTALL_CSI_DRIVER
           export JUMP_TO_DEPLOYMENT=$JUMP_TO_DEPLOYMENT
           export KUBECTL_WAIT_RETRY_ATTEMPTS=$KUBECTL_WAIT_RETRY_ATTEMPTS
           export KUBECTL_WAIT_RETRY_DELAY=$KUBECTL_WAIT_RETRY_DELAY
@@ -349,6 +322,50 @@ jobs:
                 echo ""
                 echo "--- Available PVs ---"
                 oc get pv
+                
+                echo ""
+                echo "--- Detailed PVC Debugging (First Pending PVC) ---"
+                FIRST_PENDING_PVC=$(echo "$PENDING_PVCS" | head -1 | awk '{print $1}')
+                if [[ -n "$FIRST_PENDING_PVC" ]]; then
+                  echo "Debugging PVC: $FIRST_PENDING_PVC"
+                  echo ""
+                  echo "PVC Description:"
+                  oc describe pvc $FIRST_PENDING_PVC -n ${OC_PROJECT}
+                  echo ""
+                  echo "PVC YAML:"
+                  oc get pvc $FIRST_PENDING_PVC -n ${OC_PROJECT} -o yaml
+                  echo ""
+                  echo "PVC Events:"
+                  oc get events -n ${OC_PROJECT} --field-selector involvedObject.name=$FIRST_PENDING_PVC --sort-by='.lastTimestamp'
+                  echo ""
+                  echo "Storage Class Details:"
+                  STORAGE_CLASS=$(oc get pvc $FIRST_PENDING_PVC -n ${OC_PROJECT} -o jsonpath='{.spec.storageClassName}')
+                  if [[ -n "$STORAGE_CLASS" ]]; then
+                    echo "Storage Class: $STORAGE_CLASS"
+                    oc get storageclass $STORAGE_CLASS -o yaml
+                    echo ""
+                    echo "CSI Driver Pods Status:"
+                    oc get pods -n kube-system -l app.kubernetes.io/part-of=ibm-object-csi-driver
+                    echo ""
+                    echo "CSI Controller Logs (last 50 lines):"
+                    oc logs -n kube-system -l app=cos-s3-csi-controller --tail=50 --all-containers=true 2>/dev/null || echo "No logs available"
+                    echo ""
+                    echo "CSI Driver Logs (last 50 lines):"
+                    oc logs -n kube-system -l app=cos-s3-csi-driver --tail=50 --all-containers=true 2>/dev/null || echo "No logs available"
+                  fi
+                  echo ""
+                  echo "Checking for required secrets:"
+                  SECRET_NAME=$(oc get pvc $FIRST_PENDING_PVC -n ${OC_PROJECT} -o yaml | grep 'ibm.io/secret-name:' | awk '{print $2}')
+                  if [[ -n "$SECRET_NAME" ]]; then
+                    echo "Required secret: $SECRET_NAME"
+                    if oc get secret $SECRET_NAME -n ${OC_PROJECT} &>/dev/null; then
+                      echo "✅ Secret exists"
+                      oc get secret $SECRET_NAME -n ${OC_PROJECT} -o yaml | grep -E 'name:|type:|data:'
+                    else
+                      echo "❌ Secret NOT found in namespace ${OC_PROJECT}"
+                    fi
+                  fi
+                fi
               fi
               
               sleep 60
@@ -418,6 +435,60 @@ jobs:
           echo ""
           echo "--- PVC Status ---"
           oc get pvc -n ${OC_PROJECT}
+          
+          # Detailed PVC debugging if any are pending
+          PENDING_PVCS=$(oc get pvc -n ${OC_PROJECT} --no-headers 2>/dev/null | grep "Pending" || true)
+          if [[ -n "$PENDING_PVCS" ]]; then
+            echo ""
+            echo "⚠️  CRITICAL: Unbound PVCs detected in final verification:"
+            echo "$PENDING_PVCS"
+            
+            echo ""
+            echo "--- Detailed PVC Analysis ---"
+            FIRST_PENDING_PVC=$(echo "$PENDING_PVCS" | head -1 | awk '{print $1}')
+            echo "Analyzing PVC: $FIRST_PENDING_PVC"
+            echo ""
+            
+            echo "PVC Description:"
+            oc describe pvc $FIRST_PENDING_PVC -n ${OC_PROJECT}
+            echo ""
+            
+            echo "PVC Events:"
+            oc get events -n ${OC_PROJECT} --field-selector involvedObject.name=$FIRST_PENDING_PVC --sort-by='.lastTimestamp'
+            echo ""
+            
+            echo "Storage Class Configuration:"
+            STORAGE_CLASS=$(oc get pvc $FIRST_PENDING_PVC -n ${OC_PROJECT} -o jsonpath='{.spec.storageClassName}')
+            if [[ -n "$STORAGE_CLASS" ]]; then
+              oc describe storageclass $STORAGE_CLASS
+              echo ""
+              
+              echo "CSI Driver Status:"
+              oc get pods -n kube-system -l app.kubernetes.io/part-of=ibm-object-csi-driver -o wide
+              echo ""
+              
+              echo "CSI Controller Logs:"
+              oc logs -n kube-system -l app=cos-s3-csi-controller --tail=100 --all-containers=true 2>/dev/null || echo "No controller logs"
+              echo ""
+              
+              echo "CSI Driver DaemonSet Logs:"
+              oc logs -n kube-system -l app=cos-s3-csi-driver --tail=100 --all-containers=true 2>/dev/null || echo "No driver logs"
+            fi
+            echo ""
+            
+            echo "Required Secrets Check:"
+            SECRET_NAME=$(oc get pvc $FIRST_PENDING_PVC -n ${OC_PROJECT} -o yaml | grep 'ibm.io/secret-name:' | awk '{print $2}')
+            if [[ -n "$SECRET_NAME" ]]; then
+              echo "Secret name: $SECRET_NAME"
+              if oc get secret $SECRET_NAME -n ${OC_PROJECT} &>/dev/null; then
+                echo "✅ Secret exists"
+              else
+                echo "❌ Secret NOT found - this is likely the root cause"
+                echo "Available secrets in namespace:"
+                oc get secrets -n ${OC_PROJECT} | grep -E "NAME|cos|minio"
+              fi
+            fi
+          fi
           
           echo ""
           echo "--- Node Resource Usage ---"

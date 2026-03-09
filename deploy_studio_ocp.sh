@@ -317,6 +317,34 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     # Create buckets
     python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
+
+    # Install IBM Object CSI Driver (optional, controlled by INSTALL_CSI_DRIVER env var)
+    if [[ "${INSTALL_CSI_DRIVER:-No}" == "Yes" ]]; then
+        echo "----------------------------------------------------------------------"
+        echo "----------  Installing IBM Object CSI Driver  ------------------------"
+        echo "----------------------------------------------------------------------"
+        
+        # Copy CSI driver files
+        cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
+        
+        # Create storage class templates with correct namespace
+        sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
+        sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
+        
+        # Apply CSI driver
+        kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
+        
+        echo "Waiting for CSI driver pods to be ready..."
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=300s
+        
+        echo "✅ IBM Object CSI Driver installed successfully"
+    else
+        echo "----------------------------------------------------------------------"
+        echo "Skipping IBM Object CSI Driver installation (INSTALL_CSI_DRIVER not set to 'Yes')"
+        echo "----------------------------------------------------------------------"
+    fi
+
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 
