@@ -107,12 +107,24 @@ jobs:
           echo "=== Cluster Resources ==="
           oc describe nodes | grep -A 5 "Capacity:\|Allocatable:"
 
-      - name: Create project namespace
+      - name: Create project namespace and label nodes
         run: |
           echo "=== Creating project namespace ==="
           export OC_PROJECT=geostudio-test
           oc new-project ${OC_PROJECT} || oc project ${OC_PROJECT}
           echo "✅ Project ${OC_PROJECT} ready"
+          
+          echo ""
+          echo "=== Labeling nodes for CSI driver ==="
+          # CSI driver requires topology labels on nodes
+          NODE_NAME=$(oc get nodes -o jsonpath='{.items[0].metadata.name}')
+          echo "Labeling node: $NODE_NAME"
+          
+          oc label nodes ${NODE_NAME} topology.kubernetes.io/region=us-east-1 --overwrite
+          oc label nodes ${NODE_NAME} topology.kubernetes.io/zone=us-east-1a --overwrite
+          
+          echo "✅ Node labels configured"
+          oc get nodes --show-labels | grep topology
 
       - name: Configure storage classes
         run: |
