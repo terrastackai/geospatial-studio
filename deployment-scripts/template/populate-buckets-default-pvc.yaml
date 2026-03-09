@@ -29,6 +29,6 @@ metadata:
   name: populate-buckets-cos-secret
   namespace: ${OC_PROJECT}
 stringData:
-  accessKey: ${access_key_id}
-  secretKey: ${secret_access_key}
+  access-key: ${access_key_id}
+  secret-key: ${secret_access_key}
 type: ibm/ibmc-s3fs
