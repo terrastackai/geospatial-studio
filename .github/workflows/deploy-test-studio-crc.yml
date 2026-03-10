@@ -107,12 +107,12 @@ jobs:
           echo "=== Cluster Resources ==="
           oc describe nodes | grep -A 5 "Capacity:\|Allocatable:"
 
-      - name: Label nodes for CSI driver
+      - name: Create project namespace and label nodes
         run: |
-          echo "=== Using default namespace ==="
-          export OC_PROJECT=default
-          oc project ${OC_PROJECT}
-          echo "✅ Using namespace: ${OC_PROJECT}"
+          echo "=== Creating project namespace ==="
+          export OC_PROJECT=geostudio-test
+          oc new-project ${OC_PROJECT} || oc project ${OC_PROJECT}
+          echo "✅ Project ${OC_PROJECT} ready"
           
           echo ""
           echo "=== Labeling nodes for CSI driver ==="
@@ -129,7 +129,7 @@ jobs:
       - name: Configure storage classes
         run: |
           echo "=== Configuring storage classes ==="
-          export OC_PROJECT=default
+          export OC_PROJECT=geostudio-test
           
           oc get storageclass
           
@@ -165,7 +165,7 @@ jobs:
           # Core configuration
           export NON_INTERACTIVE=true
           export DEPLOYMENT_ENV="crc-ci"
-          export OC_PROJECT="default"
+          export OC_PROJECT="geostudio-test"
           
           # Get cluster URL from CRC
           export CLUSTER_URL=$(oc get IngressController default -n openshift-ingress-operator -o jsonpath='{.status.domain}')
@@ -397,7 +397,7 @@ jobs:
       - name: Verify Deployment
         run: |
           echo "=== Final Deployment Verification ==="
-          export OC_PROJECT="default"
+          export OC_PROJECT="geostudio-test"
           
           echo ""
           echo "--- All Pods Status ---"
@@ -618,7 +618,7 @@ jobs:
           echo "-------------------  Running Workshop Labs  --------------------------"
           echo "----------------------------------------------------------------------"
           
-          export OC_PROJECT="default"
+          export OC_PROJECT="geostudio-test"
           
           # Get UI route URL
           export UI_ROUTE_URL=$(oc get route geofm-ui -n ${OC_PROJECT} -o jsonpath='{"https://"}{.spec.host}')
