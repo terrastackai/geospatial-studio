@@ -99,7 +99,7 @@ Lists all datasets available to the logged in user.
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X GET /v2/datasets \
+        curl -kX GET /v2/datasets \
         -H 'Accept: application/json' \
         -H 'X-API-Key: {API_KEY}'
         ```
@@ -160,7 +160,7 @@ Retrieves a single dataset by the `dataset_id`.
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X GET /v2/datasets/{dataset_id} \
+        curl -kX GET /v2/datasets/{dataset_id} \
         -H 'Accept: application/json' \
         -H 'X-API-Key: {API_KEY}'
         ```
@@ -199,7 +199,7 @@ Submits a new dataset for onboarding to the Dataset Factory.
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X POST /v2/datasets/onboard \
+        curl -kX POST /v2/datasets/onboard \
         -H 'Content-Type: application/json' \
         -H 'Accept: application/json' \
         -H 'X-API-Key: {API_KEY}'
@@ -267,7 +267,7 @@ Deletes a dataset by its ID.
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X DELETE /v2/datasets/{dataset_id} \
+        curl -kX DELETE /v2/datasets/{dataset_id} \
         -H 'Accept: application/json' \
         -H 'X-API-Key: {API_KEY}'
         ```
@@ -348,7 +348,7 @@ Lists all fine tuning jobs available to the logged in user.
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X GET /v2/tunes \
+        curl -kX GET /v2/tunes \
         -H 'Accept: application/json' \
         -H 'Authorization: Bearer {access-token}'
 
@@ -412,7 +412,7 @@ Retrieves a single fine-tuning job by the `tune_id`
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X GET /v2/tunes/{tune_id} \
+        curl -kX GET /v2/tunes/{tune_id} \
         -H 'Accept: application/json' \
         -H 'Authorization: Bearer {access-token}'
 
@@ -467,7 +467,7 @@ Retrieves a single fine-tuning job by the `tune_id`
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X POST /v2/submit-tune \
+        curl -kX POST /v2/submit-tune \
         -H 'Content-Type: application/json' \
         -H 'Accept: application/json' \
         -H 'Authorization: Bearer {access-token}' \
@@ -517,7 +517,7 @@ Updates tune metadata fields.
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X PATCH /v2/tunes/{tune_id} \
+        curl -kX PATCH /v2/tunes/{tune_id} \
         -H 'Content-Type: application/json' \
         -H 'Accept: application/json' \
         -H 'Authorization: Bearer {access-token}'
@@ -555,7 +555,7 @@ Updates tune metadata fields.
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X DELETE /v2/tunes/{tune_id} \
+        curl -kX DELETE /v2/tunes/{tune_id} \
         -H 'Accept: application/json' \
         -H 'Authorization: Bearer {access-token}'
 
@@ -577,7 +577,7 @@ Updates tune metadata fields.
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X POST /v2/tunes/{tune_id}/try-out \
+        curl -kX POST /v2/tunes/{tune_id}/try-out \
         -H 'Content-Type: application/json' \
         -H 'Accept: application/json' \
         -H 'Authorization: Bearer {access-token}' \
@@ -711,7 +711,7 @@ Updates tune metadata fields.
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X GET /v2/tunes/{tune_id}/download \
+        curl -kX GET /v2/tunes/{tune_id}/download \
         -H 'Accept: application/json' \
         -H 'Authorization: Bearer {access-token}'
         ```
@@ -748,7 +748,7 @@ Updates tune metadata fields.
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X GET /v2/tunes/{tune_id}/metrics \
+        curl -kX GET /v2/tunes/{tune_id}/metrics \
         -H 'Accept: application/json' \
         -H 'Authorization: Bearer {access-token}'
 
@@ -792,7 +792,7 @@ Managing available tuning tasks (i.e. experiment templates)
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X GET /v2/tune-templates \
+        curl -kX GET /v2/tune-templates \
         -H 'Accept: application/json' \
         -H 'Authorization: Bearer {access-token}'
 
@@ -850,7 +850,7 @@ Managing available tuning tasks (i.e. experiment templates)
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X POST /v2/tune-templates \
+        curl -kX POST /v2/tune-templates \
         -H 'Content-Type: application/json' \
         -H 'Accept: application/json' \
         -H 'Authorization: Bearer {access-token}' \
@@ -894,7 +894,7 @@ Managing available tuning tasks (i.e. experiment templates)
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X GET /v2/tune-templates/{task_id} \
+        curl -kX GET /v2/tune-templates/{task_id} \
         -H 'Accept: application/json' \
         -H 'Authorization: Bearer {access-token}'
 
@@ -938,7 +938,7 @@ Check Task Content Rendered With Defaults
     === "Curl :material-powershell:"
 
         ```shell
-        curl -X GET /v2/tune-templates/{task_id}/test-render \
+        curl -kX GET /v2/tune-templates/{task_id}/test-render \
         -H 'Accept: application/json' \
         -H 'Authorization: Bearer {access-token}'
 
@@ -981,7 +981,7 @@ Available foundation model bases
 
         ```shell
         # You can also use wget
-        curl -X GET /v2/base-models \
+        curl -kX GET /v2/base-models \
         -H 'Accept: application/json' \
         -H 'Authorization: Bearer {access-token}'
 
@@ -1035,7 +1035,7 @@ Available foundation model bases
 
     ```shell
     # You can also use wget
-    curl -X POST /v2/base-models \
+    curl -kX POST /v2/base-models \
     -H 'Content-Type: application/json' \
     -H 'Accept: application/json' \
     -H 'Authorization: Bearer {access-token}'
@@ -1082,7 +1082,7 @@ Available foundation model bases
 
     ```shell
     # You can also use wget
-    curl -X GET /v2/base-models/{base_id} \
+    curl -kX GET /v2/base-models/{base_id} \
     -H 'Accept: application/json' \
     -H 'Authorization: Bearer {access-token}'
 
