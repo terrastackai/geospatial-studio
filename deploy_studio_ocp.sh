@@ -405,7 +405,9 @@ EOF
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
     # Create buckets
-    python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env 
+    python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+
+    sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
