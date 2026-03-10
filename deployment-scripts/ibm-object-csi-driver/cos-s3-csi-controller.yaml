@@ -122,9 +122,10 @@ spec:
             - name: socket-dir
               mountPath: /csi
       volumes:
-        - name: socket-dir
-          emptyDir: {}
+        - hostPath:
+            path: /var/lib/kubelet/csi-plugins/cos.s3.csi.ibm.io
+            type: DirectoryOrCreate
+          name: socket-dir
         - name: trusted-ca-certs
           configMap:
             name: minio-public-config
-            optional: true  # Allow CSI driver to start before MinIO creates this ConfigMap

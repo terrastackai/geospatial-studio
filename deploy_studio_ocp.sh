@@ -318,30 +318,60 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
 
-    # Install IBM Object CSI Driver (optional, controlled by INSTALL_CSI_DRIVER env var)
+    # Install IBM Object Storage Plugin (optional, controlled by INSTALL_CSI_DRIVER env var)
     if [[ "${INSTALL_CSI_DRIVER:-No}" == "Yes" ]]; then
         echo "----------------------------------------------------------------------"
-        echo "----------  Installing IBM Object CSI Driver  ------------------------"
+        echo "------  Installing IBM Object Storage Plugin (Helm-based)  ----------"
         echo "----------------------------------------------------------------------"
         
-        # Copy CSI driver files
-        cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
+        # Add IBM Helm repo
+        helm repo add ibm-helm https://raw.githubusercontent.com/IBM/charts/master/repo/ibm-helm
+        helm repo update
         
-        # Create storage class templates with correct namespace
-        sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
-        sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
+        # Fetch and install Helm plugin
+        helm fetch --untar ibm-helm/ibm-object-storage-plugin
+        helm plugin install ./ibm-object-storage-plugin/helm-ibmc  2>/dev/null || echo "Helm plugin already installed"
         
-        # Apply CSI driver
-        kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
+        # Install IBM Object Storage Plugin
+        helm ibmc install ibm-object-storage-plugin ibm-helm/ibm-object-storage-plugin \
+            --set license=true \
+            --set workerOS="linux" \
+            --set region="us-east-1"
         
-        echo "Waiting for CSI driver pods to be ready..."
-        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s
-        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=300s
+        echo "Waiting for plugin deployment to be ready..."
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY \
+            --for=condition=available deployment/ibmcloud-object-storage-plugin \
+            -n ibm-object-s3fs --timeout=300s
         
-        echo "✅ IBM Object CSI Driver installed successfully"
+        # Create trusted CA bundle ConfigMap for OpenShift TLS
+        echo "Creating trusted CA bundle for TLS..."
+        kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trusted-ca-bundle
+  namespace: ibm-object-s3fs
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+data: {}
+EOF
+        
+        # Mount CA bundle to plugin deployment
+        oc set volume deployment/ibmcloud-object-storage-plugin \
+            --add \
+            --name=ca-bundle-vol \
+            --type=configmap \
+            --configmap-name=trusted-ca-bundle \
+            --mount-path=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
+            --read-only=true \
+            --sub-path=service-ca.crt \
+            -n ibm-object-s3fs
+        
+        echo "✅ IBM Object Storage Plugin installed successfully"
+        echo "   Storage class 'ibmc-s3fs-cos' is now available"
     else
         echo "----------------------------------------------------------------------"
-        echo "Skipping IBM Object CSI Driver installation (INSTALL_CSI_DRIVER not set to 'Yes')"
+        echo "Skipping IBM Object Storage Plugin installation (INSTALL_CSI_DRIVER not set to 'Yes')"
         echo "----------------------------------------------------------------------"
     fi
 

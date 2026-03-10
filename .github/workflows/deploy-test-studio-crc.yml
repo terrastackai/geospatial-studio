@@ -178,8 +178,8 @@ jobs:
             export DEFAULT_STORAGE_CLASS=$(oc get storageclass -o jsonpath='{.items[0].metadata.name}')
           fi
           
-          # Storage classes - use IBM Object CSI driver for COS, default for regular PVCs
-          export COS_STORAGE_CLASS="cos-s3-csi-s3fs-sc"
+          # Storage classes - use IBM Object Storage Plugin for COS, default for regular PVCs
+          export COS_STORAGE_CLASS="ibmc-s3fs-cos"
           export NON_COS_STORAGE_CLASS="$DEFAULT_STORAGE_CLASS"
           
           echo "Storage configuration:"
