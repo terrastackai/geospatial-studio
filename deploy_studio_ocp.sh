@@ -143,6 +143,94 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
+    install_csi_driver_options="Yes No"
+    typeset install_csi_driver_config_type
+
+    get_menu_selection \
+    "Do you want to install the ibm cos csi driver: " \
+    install_csi_driver_config_type \
+    "$install_csi_driver_options"
+
+    export INSTALL_CSI_DRIVER="$install_csi_driver_config_type"
+
+    # Install IBM Object Storage Plugin (optional, controlled by INSTALL_CSI_DRIVER env var)
+    if [[ "${INSTALL_CSI_DRIVER:-No}" == "Yes" ]]; then
+        echo "----------------------------------------------------------------------"
+        echo "------  Installing IBM Object Storage Plugin (Helm-based)  ----------"
+        echo "----------------------------------------------------------------------"
+
+        # Add IBM Helm repo
+        helm repo add ibm-helm https://raw.githubusercontent.com/IBM/charts/master/repo/ibm-helm
+        helm repo update
+
+        # Fetch and install Helm plugin with proper permissions
+        echo "Fetching IBM Object Storage Plugin chart..."
+        helm fetch --untar ibm-helm/ibm-object-storage-plugin
+
+        # Make the plugin script executable
+        if [ -f "./ibm-object-storage-plugin/helm-ibmc/ibmc.sh" ]; then
+            chmod +x ./ibm-object-storage-plugin/helm-ibmc/ibmc.sh
+            echo "Made helm-ibmc plugin executable"
+        fi
+
+        # Install Helm plugin (suppress error if already installed)
+        if ! helm plugin list | grep -q ibmc; then
+            echo "Installing helm-ibmc plugin..."
+            helm plugin install ./ibm-object-storage-plugin/helm-ibmc
+        else
+            echo "Helm plugin 'ibmc' already installed"
+        fi
+
+        # Install IBM Object Storage Plugin
+        echo "Installing IBM Object Storage Plugin via Helm..."
+        helm ibmc install ibm-object-storage-plugin ibm-helm/ibm-object-storage-plugin \
+            --set license=true \
+            --set workerOS="linux" \
+            --set region="us-east-1"
+
+        # Check if installation succeeded
+        if [ $? -ne 0 ]; then
+            echo "✗ Failed to install IBM Object Storage Plugin"
+            exit 1
+        fi
+
+        echo "Waiting for plugin deployment to be ready..."
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY \
+            --for=condition=available deployment/ibmcloud-object-storage-plugin \
+            -n ibm-object-s3fs --timeout=300s
+
+        # Create trusted CA bundle ConfigMap for OpenShift TLS
+        echo "Creating trusted CA bundle for TLS..."
+        kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trusted-ca-bundle
+  namespace: ibm-object-s3fs
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+data: {}
+EOF
+
+        # Mount CA bundle to plugin deployment
+        oc set volume deployment/ibmcloud-object-storage-plugin \
+            --add \
+            --name=ca-bundle-vol \
+            --type=configmap \
+            --configmap-name=trusted-ca-bundle \
+            --mount-path=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
+            --read-only=true \
+            --sub-path=service-ca.crt \
+            -n ibm-object-s3fs
+
+        echo "✅ IBM Object Storage Plugin installed successfully"
+        echo "   Storage class 'ibmc-s3fs-cos' is now available"
+    else
+        echo "----------------------------------------------------------------------"
+        echo "Skipping IBM Object Storage Plugin installation (INSTALL_CSI_DRIVER not set to 'Yes')"
+        echo "----------------------------------------------------------------------"
+    fi
+
     echo "***********************************************************************************"
     echo "-----------------------  Configure s3 storage classes -----------------------------"
     echo "-----------------------------------------------------------------------------------"
@@ -200,28 +288,28 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
         source workspace/${DEPLOYMENT_ENV}/env/env.sh
         
-        # Use standard MinIO deployment with TLS for all environments
-        # SSL verification skip in PVC annotations handles self-signed certificates
-        MINIO_TEMPLATE="deployment-scripts/minio-deployment.yaml"
+        # Detect if running on CRC (CodeReady Containers) by checking cluster domain
+        # CLUSTER_DOMAIN=$(oc get IngressController default -n openshift-ingress-operator -o jsonpath='{.status.domain}' 2>/dev/null || echo "")
         
-        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename $MINIO_TEMPLATE --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+        # if [[ "$CLUSTER_DOMAIN" == *"crc.testing"* ]] || [[ "$CLUSTER_DOMAIN" == *"apps-crc"* ]]; then
+        #     echo "Detected CRC (CodeReady Containers) - using edge TLS termination for MinIO"
+        #     MINIO_TEMPLATE="deployment-scripts/minio-deployment-crc.yaml"
+        # else
+        #     echo "Using standard MinIO deployment with reencrypt TLS termination"
+        #     MINIO_TEMPLATE="deployment-scripts/minio-deployment.yaml"
+        # fi
+        
+        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
         kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
-        # Get cluster domain for external access
-        CLUSTER_DOMAIN=$(oc get IngressController default -n openshift-ingress-operator -o jsonpath='{.status.domain}' 2>/dev/null || echo "$CLUSTER_URL")
-        
-        # External Route URL for bucket creation (accessed from outside cluster)
-        MINIO_EXTERNAL_URL="https://minio-api-$OC_PROJECT.$CLUSTER_DOMAIN"
-        
-        # Internal service URL for in-cluster access (IBM plugin, application pods)
-        MINIO_INTERNAL_URL="https://minio.${OC_PROJECT}.svc.cluster.local:9000"
+        MINIO_API_URL="https://minio-api-$OC_PROJECT.$CLUSTER_URL"
 
-        # Update .env with external URL for bucket creation script
+        # Update .env with the MinIO details for connection
         sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
-        sed -i -e "s|endpoint=.*|endpoint=$MINIO_EXTERNAL_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s|endpoint=.*|endpoint=$MINIO_API_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
         # Wait for MinIO service to be ready (pod ready doesn't mean service is accepting connections)
@@ -229,9 +317,13 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         MAX_RETRIES=30
         RETRY_DELAY=10
         
+        # First, try to reach MinIO via the internal service (faster and more reliable)
+        # echo "Checking MinIO via internal service..."
+        # MINIO_SERVICE_URL="https://minio.${OC_PROJECT}.svc.cluster.local:9000"
+        
         for i in $(seq 1 $MAX_RETRIES); do
             # Try internal service first
-            if kubectl exec -n ${OC_PROJECT} $(kubectl get pod -n ${OC_PROJECT} -l app=minio -o jsonpath='{.items[0].metadata.name}') -- curl -s -f http://localhost:9000/minio/health/live > /dev/null 2>&1; then
+            if kubectl exec -n ${OC_PROJECT} $(kubectl get pod -n ${OC_PROJECT} -l app=minio -o jsonpath='{.items[0].metadata.name}') -- curl -ks -f "https://localhost:9000/minio/health/live" > /dev/null 2>&1; then
                 echo "✓ MinIO service is ready via localhost (attempt $i/$MAX_RETRIES)"
                 break
             fi
@@ -310,92 +402,8 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-    # Create buckets using external Route URL
-    echo "Creating MinIO buckets via external route..."
-    python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
-    
-    # Now update .env with internal service URL for Helm values (in-cluster access)
-    echo "Updating endpoint to internal service URL for in-cluster access..."
-    sed -i -e "s|endpoint=.*|endpoint=$MINIO_INTERNAL_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-
-    # Install IBM Object Storage Plugin (optional, controlled by INSTALL_CSI_DRIVER env var)
-    if [[ "${INSTALL_CSI_DRIVER:-No}" == "Yes" ]]; then
-        echo "----------------------------------------------------------------------"
-        echo "------  Installing IBM Object Storage Plugin (Helm-based)  ----------"
-        echo "----------------------------------------------------------------------"
-        
-        # Add IBM Helm repo
-        helm repo add ibm-helm https://raw.githubusercontent.com/IBM/charts/master/repo/ibm-helm
-        helm repo update
-        
-        # Fetch and install Helm plugin with proper permissions
-        echo "Fetching IBM Object Storage Plugin chart..."
-        helm fetch --untar ibm-helm/ibm-object-storage-plugin
-        
-        # Make the plugin script executable
-        if [ -f "./ibm-object-storage-plugin/helm-ibmc/ibmc.sh" ]; then
-            chmod +x ./ibm-object-storage-plugin/helm-ibmc/ibmc.sh
-            echo "Made helm-ibmc plugin executable"
-        fi
-        
-        # Install Helm plugin (suppress error if already installed)
-        if ! helm plugin list | grep -q ibmc; then
-            echo "Installing helm-ibmc plugin..."
-            helm plugin install ./ibm-object-storage-plugin/helm-ibmc
-        else
-            echo "Helm plugin 'ibmc' already installed"
-        fi
-        
-        # Install IBM Object Storage Plugin
-        echo "Installing IBM Object Storage Plugin via Helm..."
-        helm ibmc install ibm-object-storage-plugin ibm-helm/ibm-object-storage-plugin \
-            --set license=true \
-            --set workerOS="linux" \
-            --set region="us-east-1"
-        
-        # Check if installation succeeded
-        if [ $? -ne 0 ]; then
-            echo "✗ Failed to install IBM Object Storage Plugin"
-            exit 1
-        fi
-        
-        echo "Waiting for plugin deployment to be ready..."
-        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY \
-            --for=condition=available deployment/ibmcloud-object-storage-plugin \
-            -n ibm-object-s3fs --timeout=300s
-        
-        # Create trusted CA bundle ConfigMap for OpenShift TLS
-        echo "Creating trusted CA bundle for TLS..."
-        kubectl apply -f - <<EOF
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: trusted-ca-bundle
-  namespace: ibm-object-s3fs
-  annotations:
-    service.beta.openshift.io/inject-cabundle: "true"
-data: {}
-EOF
-        
-        # Mount CA bundle to plugin deployment
-        oc set volume deployment/ibmcloud-object-storage-plugin \
-            --add \
-            --name=ca-bundle-vol \
-            --type=configmap \
-            --configmap-name=trusted-ca-bundle \
-            --mount-path=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
-            --read-only=true \
-            --sub-path=service-ca.crt \
-            -n ibm-object-s3fs
-        
-        echo "✅ IBM Object Storage Plugin installed successfully"
-        echo "   Storage class 'ibmc-s3fs-cos' is now available"
-    else
-        echo "----------------------------------------------------------------------"
-        echo "Skipping IBM Object Storage Plugin installation (INSTALL_CSI_DRIVER not set to 'Yes')"
-        echo "----------------------------------------------------------------------"
-    fi
+    # Create buckets
+    python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env 
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
