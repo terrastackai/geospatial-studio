@@ -148,7 +148,7 @@ gfm-studio-gateway:
     pullPolicy: ""
   images:
     cleanup_cronjob:
-      name: bitnamilegacy/kubectl
+      name: docker.io/bitnamilegacy/kubectl
       tag: latest
     tt_caikit:
       name: quay.io/geospatial-studio/geospatial-model-inference-service
