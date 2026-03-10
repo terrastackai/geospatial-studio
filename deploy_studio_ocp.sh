@@ -209,14 +209,19 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
         kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
-        # Use internal HTTPS service endpoint for all in-cluster access
-        # (IBM plugin, application pods, etc.) with SSL skip in PVC annotations
-        MINIO_ENDPOINT="https://minio.${OC_PROJECT}.svc.cluster.local:9000"
+        # Get cluster domain for external access
+        CLUSTER_DOMAIN=$(oc get IngressController default -n openshift-ingress-operator -o jsonpath='{.status.domain}' 2>/dev/null || echo "$CLUSTER_URL")
+        
+        # External Route URL for bucket creation (accessed from outside cluster)
+        MINIO_EXTERNAL_URL="https://minio-api-$OC_PROJECT.$CLUSTER_DOMAIN"
+        
+        # Internal service URL for in-cluster access (IBM plugin, application pods)
+        MINIO_INTERNAL_URL="https://minio.${OC_PROJECT}.svc.cluster.local:9000"
 
-        # Update .env with the MinIO details for connection
+        # Update .env with external URL for bucket creation script
         sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
-        sed -i -e "s|endpoint=.*|endpoint=$MINIO_ENDPOINT|g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s|endpoint=.*|endpoint=$MINIO_EXTERNAL_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
         # Wait for MinIO service to be ready (pod ready doesn't mean service is accepting connections)
@@ -305,8 +310,13 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-    # Create buckets
+    # Create buckets using external Route URL
+    echo "Creating MinIO buckets via external route..."
     python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+    
+    # Now update .env with internal service URL for Helm values (in-cluster access)
+    echo "Updating endpoint to internal service URL for in-cluster access..."
+    sed -i -e "s|endpoint=.*|endpoint=$MINIO_INTERNAL_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
 
 
     # Install IBM Object Storage Plugin (optional, controlled by INSTALL_CSI_DRIVER env var)
