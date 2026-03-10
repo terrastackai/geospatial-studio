@@ -200,38 +200,29 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
         source workspace/${DEPLOYMENT_ENV}/env/env.sh
         
-        # Detect if running on CRC (CodeReady Containers) by checking cluster domain
-        CLUSTER_DOMAIN=$(oc get IngressController default -n openshift-ingress-operator -o jsonpath='{.status.domain}' 2>/dev/null || echo "")
-        
-        if [[ "$CLUSTER_DOMAIN" == *"crc.testing"* ]] || [[ "$CLUSTER_DOMAIN" == *"apps-crc"* ]]; then
-            echo "Detected CRC (CodeReady Containers) - using edge TLS termination for MinIO"
-            MINIO_TEMPLATE="deployment-scripts/minio-deployment-crc.yaml"
-        else
-            echo "Using standard MinIO deployment with reencrypt TLS termination"
-            MINIO_TEMPLATE="deployment-scripts/minio-deployment.yaml"
-        fi
+        # Use standard MinIO deployment with TLS for all environments
+        # SSL verification skip in PVC annotations handles self-signed certificates
+        MINIO_TEMPLATE="deployment-scripts/minio-deployment.yaml"
         
         python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename $MINIO_TEMPLATE --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
         kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
-        MINIO_API_URL="https://minio-api-$OC_PROJECT.$CLUSTER_URL"
+        # Use internal HTTPS service endpoint for all in-cluster access
+        # (IBM plugin, application pods, etc.) with SSL skip in PVC annotations
+        MINIO_ENDPOINT="https://minio.${OC_PROJECT}.svc.cluster.local:9000"
 
         # Update .env with the MinIO details for connection
         sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
-        sed -i -e "s|endpoint=.*|endpoint=$MINIO_API_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s|endpoint=.*|endpoint=$MINIO_ENDPOINT|g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
         # Wait for MinIO service to be ready (pod ready doesn't mean service is accepting connections)
         echo "Waiting for MinIO service to be ready..."
         MAX_RETRIES=30
         RETRY_DELAY=10
-        
-        # First, try to reach MinIO via the internal service (faster and more reliable)
-        echo "Checking MinIO via internal service..."
-        MINIO_SERVICE_URL="http://minio.${OC_PROJECT}.svc.cluster.local:9000"
         
         for i in $(seq 1 $MAX_RETRIES); do
             # Try internal service first
