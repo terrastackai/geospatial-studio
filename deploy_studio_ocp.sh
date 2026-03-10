@@ -328,15 +328,36 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         helm repo add ibm-helm https://raw.githubusercontent.com/IBM/charts/master/repo/ibm-helm
         helm repo update
         
-        # Fetch and install Helm plugin
+        # Fetch and install Helm plugin with proper permissions
+        echo "Fetching IBM Object Storage Plugin chart..."
         helm fetch --untar ibm-helm/ibm-object-storage-plugin
-        helm plugin install ./ibm-object-storage-plugin/helm-ibmc  2>/dev/null || echo "Helm plugin already installed"
+        
+        # Make the plugin script executable
+        if [ -f "./ibm-object-storage-plugin/helm-ibmc/ibmc.sh" ]; then
+            chmod +x ./ibm-object-storage-plugin/helm-ibmc/ibmc.sh
+            echo "Made helm-ibmc plugin executable"
+        fi
+        
+        # Install Helm plugin (suppress error if already installed)
+        if ! helm plugin list | grep -q ibmc; then
+            echo "Installing helm-ibmc plugin..."
+            helm plugin install ./ibm-object-storage-plugin/helm-ibmc
+        else
+            echo "Helm plugin 'ibmc' already installed"
+        fi
         
         # Install IBM Object Storage Plugin
+        echo "Installing IBM Object Storage Plugin via Helm..."
         helm ibmc install ibm-object-storage-plugin ibm-helm/ibm-object-storage-plugin \
             --set license=true \
             --set workerOS="linux" \
             --set region="us-east-1"
+        
+        # Check if installation succeeded
+        if [ $? -ne 0 ]; then
+            echo "✗ Failed to install IBM Object Storage Plugin"
+            exit 1
+        fi
         
         echo "Waiting for plugin deployment to be ready..."
         kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY \
