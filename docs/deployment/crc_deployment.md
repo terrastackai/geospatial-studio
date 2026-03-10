@@ -98,7 +98,7 @@ pip install -r requirements.txt
 ```bash
 # Set deployment environment
 export DEPLOYMENT_ENV="crc-local"
-export OC_PROJECT="geostudio-test"
+export OC_PROJECT="default"
 
 # Storage configuration
 export COS_STORAGE_CLASS="ibmc-s3fs-cos"
@@ -188,17 +188,17 @@ echo "Geoserver: https://$(oc get route geofm-geoserver -n $OC_PROJECT -o jsonpa
 ### 4.2 Login Credentials
 
 **Geospatial Studio:**
-- URL: `https://geofm-gateway-geostudio-test.apps-crc.testing`
+- URL: `https://geofm-gateway-default.apps-crc.testing`
 - Username: `admin`
 - Password: `admin` (default, check Keycloak for actual credentials)
 
 **MinIO:**
-- URL: `https://minio-console-geostudio-test.apps-crc.testing`
+- URL: `https://minio-console-default.apps-crc.testing`
 - Username: `minioadmin`
 - Password: `minioadmin`
 
 **Keycloak:**
-- URL: `https://keycloak-geostudio-test.apps-crc.testing`
+- URL: `https://keycloak-default.apps-crc.testing`
 - Username: `admin`
 - Password: Check deployment logs or secrets
 
