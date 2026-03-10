@@ -143,6 +143,8 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
+    oc adm policy add-scc-to-user anyuid -n $OC_PROJECT -z default
+
     install_csi_driver_options="Yes No"
     typeset install_csi_driver_config_type
 
@@ -514,7 +516,7 @@ EOF
 
         sed -i -e "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-        sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "https://%s-%s.%s/realms/geostudio" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "http://%s.%s.svc.cluster.local:8080/realms/geostudio" "keycloak" "$OC_PROJECT")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=$(printf "https://%s-%s.%s/realms/geostudio/protocol/openid-connect/auth" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=${OAUTH_PROXY_PORT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
