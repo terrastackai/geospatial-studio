@@ -227,6 +227,24 @@ EOF
 
         echo "✅ IBM Object Storage Plugin installed successfully"
         echo "   Storage class 'ibmc-s3fs-cos' is now available"
+        
+        # Verify the plugin is working
+        echo ""
+        echo "Verifying IBM Object Storage Plugin..."
+        echo "Checking plugin pods:"
+        kubectl get pods -n ibm-object-s3fs
+        
+        echo ""
+        echo "Checking storage class:"
+        kubectl get storageclass ibmc-s3fs-cos -o yaml
+        
+        echo ""
+        echo "Checking plugin logs for any errors:"
+        kubectl logs -n ibm-object-s3fs deployment/ibmcloud-object-storage-plugin --tail=20 --all-containers=true || echo "No logs available yet"
+        
+        echo ""
+        echo "Waiting 10 seconds for plugin to fully initialize..."
+        sleep 10
     else
         echo "----------------------------------------------------------------------"
         echo "Skipping IBM Object Storage Plugin installation (INSTALL_CSI_DRIVER not set to 'Yes')"
