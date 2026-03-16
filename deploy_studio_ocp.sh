@@ -140,10 +140,10 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         # Update the workspace env file with STUDIO_IMAGE_PULL_SECRET
         sed -i -e "s/image_pull_secret_b64=.*/image_pull_secret_b64=\"${STUDIO_IMAGE_PULL_SECRET}\"/g" workspace/${DEPLOYMENT_ENV}/env/.env
     fi
+
+    oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
     
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-    oc adm policy add-scc-to-user anyuid -n $OC_PROJECT -z default
 
     install_csi_driver_options="Yes No"
     typeset install_csi_driver_config_type
@@ -157,6 +157,11 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
     # Install IBM Object Storage Plugin (optional, controlled by INSTALL_CSI_DRIVER env var)
     if [[ "${INSTALL_CSI_DRIVER:-No}" == "Yes" ]]; then
+        # label node
+        oc label nodes crc topology.kubernetes.io/region=us-east --overwrite
+        oc label nodes crc topology.kubernetes.io/zone=us-east --overwrite
+        oc label nodes crc ibm-cloud.kubernetes.io/region=us-east --overwrite
+
         echo "----------------------------------------------------------------------"
         echo "------  Installing IBM Object Storage Plugin (Helm-based)  ----------"
         echo "----------------------------------------------------------------------"
@@ -185,10 +190,11 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
         # Install IBM Object Storage Plugin
         echo "Installing IBM Object Storage Plugin via Helm..."
+        # crc runs on a redhat vm
         helm ibmc install ibm-object-storage-plugin ibm-helm/ibm-object-storage-plugin \
             --set license=true \
-            --set workerOS="linux" \
-            --set region="us-east-1"
+            --set workerOS="redhat" \
+            --set region="us-east"
 
         # Check if installation succeeded
         if [ $? -ne 0 ]; then
@@ -389,6 +395,15 @@ EOF
                 sleep 5
             fi
         done
+
+        MINIO_CLUSTER_IP=$(oc get svc minio -n "${OC_PROJECT}" -o jsonpath='{.spec.clusterIP}')
+        MINIO_INTERNAL_URL="minio.${OC_PROJECT}.svc.cluster.local"
+        export LOCAL_CA_CRT=$(oc get configmap trusted-ca-bundle -n ibm-object-s3fs -o jsonpath='{.data.service-ca\.crt}')
+
+        cat deployment-scripts/crc-hosts-modifier-daemonset.yaml | sed -e "s/\$MINIO_CLUSTER_IP/$MINIO_CLUSTER_IP/g" | sed -e "s/\$MINIO_INTERNAL_URL/$MINIO_INTERNAL_URL/g" > workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
+        auto_indent_and_replace workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml SELF_CA_CRT "$LOCAL_CA_CRT" workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml
+        rm workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
+        oc apply -f workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml -n default
 
     else
         echo "**********************************************************************"
@@ -804,11 +819,11 @@ echo "----------------------------------------------------------------------"
 echo "----------------------------------------------------------------------"
 echo "-----------------------  Deployment summary  -------------------------"
 echo "----------------------------------------------------------------------"
-export UI_ROUTE_URL=$(kubectl get route geofm-ui -o jsonpath='{"https://"}{.spec.host}') && \
+export UI_ROUTE_URL=$(kubectl get route geofm-ui -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}') && \
 echo "Opening $UI_ROUTE_URL..." && \
 (open $UI_ROUTE_URL || xdg-open $UI_ROUTE_URL || start $UI_ROUTE_URL)
 
-export API_ROUTE_URL=$(kubectl get route geofm-gateway -o jsonpath='{"https://"}{.spec.host}')
+export API_ROUTE_URL=$(kubectl get route geofm-gateway -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}')
 
 printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed in an OpenShift Cluster! \n"
 printf "\U1F5FA   Access the Geospatial Studio UI at: ${UI_ROUTE_URL}\n"
