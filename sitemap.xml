@@ -2,90 +2,90 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/deployment/detailed_deployment_cluster/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/deployment/detailed_deployment_k8s/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/deployment/detailed_deployment_local/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/deployment/kind_cluster_deployment/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/deployment/nvkind_cluster_deployment/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/getting-started/first-steps/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/getting-started/getting-started-SDK/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/getting-started/getting-started-UI/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/getting-started/installation/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/reference/api-reference/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/reference/architecture_and_requirements/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/reference/sample-files/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/reference/sample-payloads/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/tutorials/flooding/GeospatialStudio-Walkthrough-Flooding-instructions/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/tutorials/wildfire-burnscars/BurnScars-instructions/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/user-guides/dataset-factory/dataset-factory-service/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/user-guides/dataset-factory/dataset-factory/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/user-guides/fine-tuning/fine-tuning-service/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/user-guides/fine-tuning/tuning-studio/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/user-guides/inference/inference-lab/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
     <url>
          <loc>https://terrastackai.github.io/geospatial-studio/user-guides/inference/inference-service/</loc>
-         <lastmod>2026-03-04</lastmod>
+         <lastmod>2026-03-16</lastmod>
     </url>
 </urlset>
