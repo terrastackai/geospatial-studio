@@ -3,7 +3,7 @@
 
 
 {{- if .Values.global.storage.pvc.enabled }}
-{{- if and (hasKey .Values.global "environment") (ne .Values.global.environment "local") }}
+{{- if contains "ibmc-s3fs-cos" .Values.global.objectStorage.cos_storage_class }}
 ---
 kind: PersistentVolumeClaim
 apiVersion: v1
@@ -104,6 +104,60 @@ spec:
   # storageClassName: {{ .Values.global.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
   storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 
+{{- else if contains "in-cluster-pvc" .Values.global.objectStorage.cos_storage_class }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mountLocations.files_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+spec:
+  storageClassName: {{ .Values.global.non_cos_storage_class }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mountLocations.models_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+spec:
+  storageClassName: {{ .Values.global.non_cos_storage_class }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mountLocations.data_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+spec:
+  storageClassName: {{ .Values.global.non_cos_storage_class }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mountLocations.generic_python_processor_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+spec:
+  storageClassName: {{ .Values.global.non_cos_storage_class }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
 {{- else if contains "cos-s3-csi-s3fs-sc" .Values.global.objectStorage.cos_storage_class }}
 
 ---

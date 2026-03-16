@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-{{- if ne .Values.environment "local" }}
+{{- if contains "ibmc-s3fs-cos" .Values.objectStorage.cos_storage_class }}
+---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -25,6 +26,7 @@ spec:
   storageClassName: {{ .Values.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 ---
 {{- range $v := .Values.processors }}{{ if hasKey $v "extra_volumes"}}{{- range $e := $v.extra_volumes }}{{ if hasKey $e "bucket_name" }}{{ if $e.create }}
+---
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
@@ -45,5 +47,34 @@ spec:
     requests:
       storage: 200Gi
   storageClassName: {{ $.Values.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+--- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
+{{- else if contains "in-cluster-pvc" .Values.objectStorage.cos_storage_class }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.inference_volume.pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+spec:
+  storageClassName: {{ .Values.non_cos_storage_class }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+{{- range $v := .Values.processors }}{{ if hasKey $v "extra_volumes"}}{{- range $e := $v.extra_volumes }}{{ if hasKey $e "bucket_name" }}{{ if $e.create }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ $e.claimName }} # Enter the name of the PVC.
+  namespace: {{ $.Values.namespace }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: {{ $.Values.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 --- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
 {{- end }}

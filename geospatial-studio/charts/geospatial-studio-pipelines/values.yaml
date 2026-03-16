@@ -97,6 +97,7 @@ objectStorage:
     inference_auxdata: BUCKET_INFERENCE_AUXDATA
     generic_python_processor: BUCKET_GENERIC_PYTHON_PROCESSOR
   cos_storage_class: COS_STORAGE_CLASS
+non_cos_storage_class: NON_COS_STORAGE_CLASS
 
 serviceAccount:
   # Specifies serviceaccount to be used
