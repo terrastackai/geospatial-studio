@@ -109,7 +109,7 @@ hooks:
           psql "$DB_URI" -f /tmp/trigger.sql
   sandbox-models-seed:
       enable: true
-      image: alpine/curl
+      image: docker.io/alpine/curl:latest
       when:
         - post-install
         - post-upgrade
