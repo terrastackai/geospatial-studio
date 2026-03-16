@@ -165,7 +165,7 @@ jobs:
           
           # Core configuration
           export NON_INTERACTIVE=true
-          export DEPLOYMENT_ENV="crc-ci"
+          export DEPLOYMENT_ENV="crc"
           export OC_PROJECT="geostudio-test"
           
           # Get cluster URL from CRC
