@@ -124,6 +124,30 @@ export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 k9s
 ```
 
+If you need to restart any of the port-forwards you can use the following commands:
+
+Setup the environment variable
+```bash
+export OC_PROJECT=default
+```
+```shell
+kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward -n ${OC_PROJECT} deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT svc/minio 9001:9001 >> studio-pf.log 2>&1 &
+kubectl port-forward -n $OC_PROJECT svc/minio 9000:9000 >> studio-pf.log 2>&1 &
+```
+
+This is printed at the end of the installation script. In case you missed it and have issues with keycloak, Run this command to configure the `etc/hosts ` for seamless connection as some of the services may call the internal urls on the host machine.
+
+```shell
+echo -e \"127.0.0.1 keycloak.$OC_PROJECT.svc.cluster.local postgresql.$OC_PROJECT.svc.cluster.local minio.$OC_PROJECT.svc.cluster.local geofm-ui.$OC_PROJECT.svc.cluster.local geofm-gateway.$OC_PROJECT.svc.cluster.local geofm-geoserver.$OC_PROJECT.svc.cluster.local\" >> /etc/hosts
+
+```
+
 | After deployment: | |
 |---|---|
 | Access the Studio UI | [https://localhost:4180](https://localhost:4180) |
@@ -135,23 +159,6 @@ k9s
 | Authenticate Keycloak | username: `admin` password: `admin` |
 | Access MinIO | Console: [https://localhost:9001](https://localhost:9001)      API: [https://localhost:9000](https://localhost:9000) |
 | Authenticate MinIO | username: `minioadmin` password: `minioadmin` |
-
-If you need to restart any of the port-forwards you can use the following commands:
-```shell
-kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
-kubectl port-forward -n ${OC_PROJECT} svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
-kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
-kubectl port-forward -n ${OC_PROJECT} deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward -n ${OC_PROJECT} deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward -n ${OC_PROJECT} deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
-```
-
-This is printed at the end of the installation script. In case you missed it and have issues with keycloak, Run this command to configure the `etc/hosts ` for seamless connection as some of the services may call the internal urls on the host machine.
-
-```shell
-echo -e \"127.0.0.1 keycloak.$OC_PROJECT.svc.cluster.local postgresql.$OC_PROJECT.svc.cluster.local minio.$OC_PROJECT.svc.cluster.local geofm-ui.$OC_PROJECT.svc.cluster.local geofm-gateway.$OC_PROJECT.svc.cluster.local geofm-geoserver.$OC_PROJECT.svc.cluster.local\" >> /etc/hosts
-
-```
 
 ## Geospatial Studio - Deployment instructions (manual)
 
