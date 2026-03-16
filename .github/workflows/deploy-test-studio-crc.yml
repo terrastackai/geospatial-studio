@@ -120,8 +120,9 @@ jobs:
           NODE_NAME=$(oc get nodes -o jsonpath='{.items[0].metadata.name}')
           echo "Labeling node: $NODE_NAME"
           
-          oc label nodes ${NODE_NAME} topology.kubernetes.io/region=us-east-1 --overwrite
-          oc label nodes ${NODE_NAME} topology.kubernetes.io/zone=us-east-1a --overwrite
+          oc label nodes ${NODE_NAME} topology.kubernetes.io/region=us-east --overwrite
+          oc label nodes ${NODE_NAME} topology.kubernetes.io/zone=us-east --overwrite
+          oc label nodes ${NODE_NAME} ibm-cloud.kubernetes.io/region=us-east --overwrite
           
           echo "✅ Node labels configured"
           oc get nodes --show-labels | grep topology
