@@ -14,20 +14,19 @@ nav:
   
   - Deployment:
     - Local Deployment: deployment/detailed_deployment_local.md
-    - Kubernetes cluster: deployment/detailed_deployment_k8s.md
-    - OpenShift: deployment/detailed_deployment_cluster.md
-    - Kind Cluster: deployment/kind_cluster_deployment.md
-    - NVKind Cluster: deployment/nvkind_cluster_deployment.md
-  
+    - Kubernetes Cluster:
+        - Detailed k8s Deployment: deployment/detailed_deployment_k8s.md
+        - Kind Cluster: deployment/kind_cluster_deployment.md
+        - NVKind Cluster: deployment/nvkind_cluster_deployment.md
+    - OpenShift Cluster: deployment/detailed_deployment_cluster.md
+      
   - User Guides:
-    - Dataset Factory:
-      - Overview: user-guides/dataset-factory/dataset-factory.md
-      - API Reference: user-guides/dataset-factory/dataset-factory-service.md
     - Fine-Tuning:
-      - Overview: user-guides/fine-tuning/tuning-studio.md
+      - Dataset Onboarding: user-guides/dataset-factory/dataset-factory.md
+      - Tuning Studio: user-guides/fine-tuning/tuning-studio.md
       - API Reference: user-guides/fine-tuning/fine-tuning-service.md
     - Inference:
-      - Overview: user-guides/inference/inference-lab.md
+      - Inference Lab: user-guides/inference/inference-lab.md
       - API Reference: user-guides/inference/inference-service.md
   
   - Tutorials:
