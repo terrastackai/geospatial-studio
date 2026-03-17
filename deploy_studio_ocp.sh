@@ -208,8 +208,9 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
             -n ibm-object-s3fs --timeout=300s
 
         # Create trusted CA bundle ConfigMap for OpenShift TLS
-        echo "Creating trusted CA bundle for TLS..."
-        kubectl apply -f - <<EOF
+        if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+            echo "Creating trusted CA bundle for TLS..."
+            kubectl apply -f - <<EOF
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -220,16 +221,17 @@ metadata:
 data: {}
 EOF
 
-        # Mount CA bundle to plugin deployment
-        oc set volume deployment/ibmcloud-object-storage-plugin \
-            --add \
-            --name=ca-bundle-vol \
-            --type=configmap \
-            --configmap-name=trusted-ca-bundle \
-            --mount-path=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
-            --read-only=true \
-            --sub-path=service-ca.crt \
-            -n ibm-object-s3fs
+            # Mount CA bundle to plugin deployment
+            oc set volume deployment/ibmcloud-object-storage-plugin \
+                --add \
+                --name=ca-bundle-vol \
+                --type=configmap \
+                --configmap-name=trusted-ca-bundle \
+                --mount-path=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
+                --read-only=true \
+                --sub-path=service-ca.crt \
+                -n ibm-object-s3fs
+        fi
 
         echo "✅ IBM Object Storage Plugin installed successfully"
         echo "   Storage class 'ibmc-s3fs-cos' is now available"
@@ -314,17 +316,6 @@ EOF
 
         source workspace/${DEPLOYMENT_ENV}/env/env.sh
         
-        # Detect if running on CRC (CodeReady Containers) by checking cluster domain
-        # CLUSTER_DOMAIN=$(oc get IngressController default -n openshift-ingress-operator -o jsonpath='{.status.domain}' 2>/dev/null || echo "")
-        
-        # if [[ "$CLUSTER_DOMAIN" == *"crc.testing"* ]] || [[ "$CLUSTER_DOMAIN" == *"apps-crc"* ]]; then
-        #     echo "Detected CRC (CodeReady Containers) - using edge TLS termination for MinIO"
-        #     MINIO_TEMPLATE="deployment-scripts/minio-deployment-crc.yaml"
-        # else
-        #     echo "Using standard MinIO deployment with reencrypt TLS termination"
-        #     MINIO_TEMPLATE="deployment-scripts/minio-deployment.yaml"
-        # fi
-        
         python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
@@ -336,16 +327,12 @@ EOF
         sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s|endpoint=.*|endpoint=$MINIO_API_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
-        sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/region=.*/region=us-east/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
         # Wait for MinIO service to be ready (pod ready doesn't mean service is accepting connections)
         echo "Waiting for MinIO service to be ready..."
-        MAX_RETRIES=30
+        MAX_RETRIES=6
         RETRY_DELAY=10
-        
-        # First, try to reach MinIO via the internal service (faster and more reliable)
-        # echo "Checking MinIO via internal service..."
-        # MINIO_SERVICE_URL="https://minio.${OC_PROJECT}.svc.cluster.local:9000"
         
         for i in $(seq 1 $MAX_RETRIES); do
             # Try internal service first
@@ -372,7 +359,7 @@ EOF
             echo "MinIO not ready yet (attempt $i/$MAX_RETRIES), waiting ${RETRY_DELAY}s..."
             
             # Show pod status every 5 attempts
-            if [ $((i % 5)) -eq 0 ]; then
+            if [ $((i % 2)) -eq 0 ]; then
                 echo "$(date +%H:%M:%S) - Pod status:"
                 kubectl get pods -n ${OC_PROJECT} -l app=minio -o custom-columns=NAME:.metadata.name,STATUS:.status.phase --no-headers
             fi
@@ -382,7 +369,7 @@ EOF
         
         # Now verify the Route is accessible (this might take longer due to SSL/routing)
         echo "Verifying MinIO Route accessibility..."
-        for i in $(seq 1 10); do
+        for i in $(seq 1 5); do
             if curl -k -s -f "$MINIO_API_URL/minio/health/live" > /dev/null 2>&1; then
                 echo "✓ MinIO Route is accessible"
                 break
@@ -396,14 +383,16 @@ EOF
             fi
         done
 
-        MINIO_CLUSTER_IP=$(oc get svc minio -n "${OC_PROJECT}" -o jsonpath='{.spec.clusterIP}')
-        MINIO_INTERNAL_URL="minio.${OC_PROJECT}.svc.cluster.local"
-        export LOCAL_CA_CRT=$(oc get configmap trusted-ca-bundle -n ibm-object-s3fs -o jsonpath='{.data.service-ca\.crt}')
+        if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+            MINIO_CLUSTER_IP=$(oc get svc minio -n "${OC_PROJECT}" -o jsonpath='{.spec.clusterIP}')
+            MINIO_INTERNAL_URL="minio.${OC_PROJECT}.svc.cluster.local"
+            export LOCAL_CA_CRT=$(oc get configmap trusted-ca-bundle -n ibm-object-s3fs -o jsonpath='{.data.service-ca\.crt}')
 
-        cat deployment-scripts/crc-hosts-modifier-daemonset.yaml | sed -e "s/\$MINIO_CLUSTER_IP/$MINIO_CLUSTER_IP/g" | sed -e "s/\$MINIO_INTERNAL_URL/$MINIO_INTERNAL_URL/g" > workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
-        auto_indent_and_replace workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml SELF_CA_CRT "$LOCAL_CA_CRT" workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml
-        rm workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
-        oc apply -f workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml -n default
+            cat deployment-scripts/crc-hosts-modifier-daemonset.yaml | sed -e "s/\$MINIO_CLUSTER_IP/$MINIO_CLUSTER_IP/g" | sed -e "s/\$MINIO_INTERNAL_URL/$MINIO_INTERNAL_URL/g" > workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
+            auto_indent_and_replace workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml SELF_CA_CRT "$LOCAL_CA_CRT" workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml
+            rm workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
+            oc apply -f workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml -n default
+        fi
 
     else
         echo "**********************************************************************"
@@ -440,7 +429,10 @@ EOF
     # Create buckets
     python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
-    sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+    # For crc we set the endpoint for the cos pvc to internal cluster url since at the driver s3fuse level the routes don't resolve
+    if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+        sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+    fi
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
@@ -551,7 +543,11 @@ EOF
 
         sed -i -e "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-        sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "http://%s.%s.svc.cluster.local:8080/realms/geostudio" "keycloak" "$OC_PROJECT")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+            sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "http://%s.%s.svc.cluster.local:8080/realms/geostudio" "keycloak" "$OC_PROJECT")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        else
+            sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "https://%s-%s.%s/realms/geostudio" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        fi
         sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=$(printf "https://%s-%s.%s/realms/geostudio/protocol/openid-connect/auth" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=${OAUTH_PROXY_PORT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
