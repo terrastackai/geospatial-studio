@@ -2,21 +2,10 @@ name: Deploy and Test Studio on CRC OpenShift
 
 on:
   workflow_dispatch:
-  push:  # TEMPORARY: Remove this trigger after testing
-    branches:
-      - 'deploy-crc-actions'  # Triggers on push to this branch
-  # pull_request:
-  #   branches:
-  #     - main
-  #   paths:
-  #     - 'deployment-scripts/**'
-  #     - 'populate-studio/**'
-  #     - 'geospatial-studio/**'
-  #     - 'deploy_studio_ocp.sh'
-  #     - 'common_functions.sh'
-  #     - 'requirements.txt'
-  #     - '.github/workflows/deploy-test-studio-crc.yml'
-  #   types: [opened, synchronize, reopened]
+  workflow_run:
+    workflows: ["Deploy and Test Studio on Kind"]
+    types:
+      - completed
 
 jobs:
   detect-changes:
