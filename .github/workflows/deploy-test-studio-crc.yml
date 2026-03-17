@@ -2,13 +2,34 @@ name: Deploy and Test Studio on CRC OpenShift
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Deploy and Test Studio on Kind"]
-    types:
-      - completed
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'deployment-scripts/**'
+      - 'populate-studio/**'
+      - 'geospatial-studio/**'
+      - 'deploy_studio_ocp.sh'
+      - 'common_functions.sh'
+      - 'requirements.txt'
+      - '.github/workflows/deploy-test-studio-crc.yml'
+    types: [opened, synchronize, reopened]
 
 jobs:
+  wait-for-kind-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Kind workflow to complete
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: 'deploy-and-test'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+          allowed-conclusions: success,failure,cancelled,skipped
+
   detect-changes:
+    needs: wait-for-kind-workflow
     runs-on: ubuntu-latest
     outputs:
       should_deploy: ${{ steps.filter.outputs.deploy }}
