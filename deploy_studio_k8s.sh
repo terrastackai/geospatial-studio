@@ -1,10 +1,13 @@
-#!/bin/zsh
+#!/bin/bash
 
 # © Copyright IBM Corporation 2025
 # SPDX-License-Identifier: Apache-2.0
 
 # Source (import) common_functions.sh
 source ./common_functions.sh
+
+export KUBECTL_WAIT_RETRY_ATTEMPTS=5
+export KUBECTL_WAIT_RETRY_DELAY=5
 
 # Paste your image pull secret below
 ## This is a dummy image pull secret
@@ -43,11 +46,35 @@ export CLUSTER_NODE_NAME=$cluster_node_name
 
 kubectl label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
 
-# echo "----------------------------------------------------------------------"
-# echo "--------------------  Create local Storage Classes  ------------------"
-# echo "----------------------------------------------------------------------"
+echo "***********************************************************************************"
+echo "--------------------------  Configure storage classes -----------------------------"
+echo "-----------------------------------------------------------------------------------"
+echo "----------- Verify the available in-cluster storage classes in your cluster -------"
+echo "-----------------------------------------------------------------------------------"
+echo "***********************************************************************************"
+echo "************************  You will enter the following  ***************************"
+echo "------------------------  NON_COS_STORAGE_CLASS -----------------------------------"
+echo "***********************************************************************************"
+in_cluster_storage_class_options="Default User-Supplied"
+typeset in_cluster_storage_class_type
 
-# kubectl apply -f deployment-scripts/create_local_storage_class.yaml -n ${OC_PROJECT}
+get_menu_selection \
+"Select a storage class for your cluster. You can use the default 'standard' class or provide a custom one." \
+in_cluster_storage_class_type \
+"$in_cluster_storage_class_options"
+
+if [[ "$in_cluster_storage_class_type" == "Default" ]]; then
+    export NON_COS_STORAGE_CLASS="standard"
+else
+    typeset user_non_cos_storage_class
+    get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
+    echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
+    export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
+fi
+
+## Setup storage class for minio and default in cluster storage class
+sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 echo "----------------------------------------------------------------------"
 echo "----------------------  Deploying Minio  -----------------------------"
@@ -65,10 +92,11 @@ kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml 
 kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
 
-python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml --storageclass standard > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+
+python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
-kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
 sleep 5
 kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 >> studio-pf.log 2>&1 &
@@ -79,8 +107,8 @@ sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.
 sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
 kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
 
-kubectl wait --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s
-kubectl wait --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=300s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=300s
 
 
 # # # Update .env with the MinIO details for local connection
@@ -89,9 +117,6 @@ sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DE
 sed -i -e "s|endpoint=.*|endpoint=https://localhost:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
 sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
-## Setup storage class for minio and default in cluster storage class
-sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=standard/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 >> studio-pf.log 2>&1 &
 sleep 5
@@ -115,7 +140,7 @@ export POSTGRES_PASSWORD=devPostgresql123
 
 ./deployment-scripts/install-postgres.sh UPDATE_STORAGE ENABLE_PV
 
-kubectl wait --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
 
 # export POSTGRES_PASSWORD=$(kubectl get secret --namespace ${OC_PROJECT} postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
 
@@ -142,7 +167,7 @@ echo "----------------------------------------------------------------------"
 python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 
-kubectl wait --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
 
 kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
 sleep 5
@@ -191,10 +216,10 @@ echo "--------------------  Deploying Geoserver  ----------------------------"
 echo "----------------------------------------------------------------------"
 
 
-python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --storageclass standard --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
 
-kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n $OC_PROJECT --timeout=900s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n $OC_PROJECT --timeout=900s
 
 kubectl port-forward -n $OC_PROJECT svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
 sleep 5
@@ -267,8 +292,10 @@ echo "-----------  Make any changes to deployment values yaml --------------"
 echo "**********************************************************************"
 echo "**********************************************************************"
 
-printf "%s " "Press enter to continue"
-read ans
+if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+    printf "%s " "Press enter to continue"
+    read ans
+fi
 
 
 echo "----------------------------------------------------------------------"
@@ -290,7 +317,7 @@ echo "----------------------------------------------------------------------"
 echo "---------  Set up Port Forwarding for UI and API  --------------------"
 echo "----------------------------------------------------------------------"
 
-kubectl wait --for=condition=ready pod -l app=geofm-gateway -n $OC_PROJECT --timeout=300s
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=geofm-gateway -n $OC_PROJECT --timeout=300s
 
 kubectl port-forward deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
 kubectl port-forward deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &

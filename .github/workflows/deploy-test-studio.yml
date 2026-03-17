@@ -1,0 +1,417 @@
+name: Deploy and Test Studio
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'deployment-scripts/**'
+      - 'populate-studio/**'
+      - 'geospatial-studio/**'
+      - 'deploy_studio_k8s.sh'
+      - 'requirements.txt'
+      - '.github/workflows/deploy-test-studio.yml'
+    types: [opened, synchronize, reopened]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.filter.outputs.deploy }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for deployment-relevant changes
+        id: filter
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            git fetch origin ${{ github.base_ref }}
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          fi
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Trigger deployment for changes to scripts, operators, helm charts,
+          # populate-studio, or this workflow file.
+          # Explicitly skip docs-only changes.
+          if echo "$CHANGED_FILES" | grep -qE \
+            "^(operators/|deployment-scripts/|populate-studio/|geospatial-studio/|deploy_studio_k8s\.sh|requirements\.txt|\.github/workflows/deploy-test-studio\.yml)"; then
+            echo "deploy=true" >> $GITHUB_OUTPUT
+            echo "Deployment-relevant files changed – deployment will proceed"
+          else
+            echo "deploy=false" >> $GITHUB_OUTPUT
+            echo "No deployment-relevant files changed – skipping deployment"
+          fi
+
+  deploy-and-test:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.should_deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create kind config
+        run: |
+          cat > kind-config.yaml <<EOF
+          kind: Cluster
+          apiVersion: kind.x-k8s.io/v1alpha4
+          nodes:
+          - role: control-plane
+          - role: worker
+          EOF
+
+      - name: Set up kind cluster
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: studio
+          wait: 30s
+          config: kind-config.yaml
+
+      - name: Print kind cluster resources
+        run: |
+          echo "=== Kind Cluster Resource Information ==="
+          echo ""
+          echo "--- CPU Information ---"
+          kubectl top nodes || echo "Metrics server not available yet"
+          kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.capacity.cpu}{" CPUs\n"}{end}'
+          echo ""
+          echo "--- Memory Information (GB) ---"
+          kubectl get nodes -o json | jq -r '.items[] | "\(.metadata.name)\t\((.status.capacity.memory | rtrimstr("Ki") | tonumber) / 1024 / 1024 | floor) GB"'
+          echo ""
+          echo "--- Storage Information (GB) ---"
+          kubectl get nodes -o json | jq -r '.items[] | "\(.metadata.name)\t\((.status.capacity."ephemeral-storage" | rtrimstr("Ki") | tonumber) / 1024 / 1024 | floor) GB"'
+          echo ""
+          echo "--- Node Details ---"
+          kubectl describe nodes | grep -A 5 "Capacity:\|Allocatable:"
+          echo ""
+          echo "--- System Info ---"
+          kubectl get nodes -o wide
+
+      - name: Wait for nodes to be ready
+        run: |
+          echo "=== Waiting for all nodes to be ready ==="
+          kubectl wait --for=condition=ready nodes --all --timeout=300s
+
+          echo ""
+          echo "=== Node Status ==="
+          kubectl get nodes -o wide
+          echo ""
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          echo "=== Installing Python dependencies ==="
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          echo "✅ Python dependencies installed"
+
+      - name: Deploy Geospatial Studio to Kind cluster
+        run: |
+          echo "=== Deploying Geospatial Studio in non-interactive mode ==="
+
+          echo "Current directory: $(pwd)"
+          echo "Checking for deployment script..."
+
+          # The script should be in the root of the checked-out repository
+          if [[ -f "deploy_studio_k8s.sh" ]]; then
+            echo "✅ Found deploy_studio_k8s.sh in current directory"
+          elif [[ -f "geospatial-studio/deploy_studio_k8s.sh" ]]; then
+            echo "✅ Found deploy_studio_k8s.sh in geospatial-studio subdirectory"
+            cd geospatial-studio
+          else
+            echo "❌ Error: deploy_studio_k8s.sh not found"
+            echo "Directory contents:"
+            ls -la
+            exit 1
+          fi
+
+          echo "Working directory: $(pwd)"
+          ls -la deploy_studio_k8s.sh
+
+          # Wait a bit more to ensure nodes are fully ready
+          sleep 10
+
+          # Get worker node name - look for node with worker role
+          echo "Detecting worker node..."
+          kubectl get nodes --show-labels
+
+          export WORKER_NODE=$(kubectl get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/worker"] != null) | .metadata.name' | head -1)
+
+          if [[ -z "$WORKER_NODE" ]]; then
+            echo "No dedicated worker node found, checking for nodes without control-plane role..."
+            export WORKER_NODE=$(kubectl get nodes -o json | jq -r '.items[] | select(.metadata.labels["node-role.kubernetes.io/control-plane"] == null) | .metadata.name' | head -1)
+          fi
+
+          if [[ -z "$WORKER_NODE" ]]; then
+            echo "No worker node found, using control-plane node"
+            export WORKER_NODE=$(kubectl get nodes -o jsonpath='{.items[0].metadata.name}')
+          fi
+
+          echo "Selected node: $WORKER_NODE"
+          kubectl get node $WORKER_NODE
+
+          # Set non-interactive mode and required variables
+          export NON_INTERACTIVE=true
+          export cluster_node_name="$WORKER_NODE"
+          export in_cluster_storage_class_type="Default"
+          export NON_COS_STORAGE_CLASS="standard"
+          export OC_PROJECT=default
+
+          # Increase retry attempts and delays for CI/CD environment
+          export KUBECTL_WAIT_RETRY_ATTEMPTS=10
+          export KUBECTL_WAIT_RETRY_DELAY=10
+
+          # Function to monitor pod status
+          monitor_pods() {
+            echo ""
+            echo "=== Pod Status Update ($(date +%H:%M:%S)) ==="
+            kubectl get pods -n ${OC_PROJECT} -o wide
+            echo ""
+            echo "Pod Summary:"
+            kubectl get pods -n ${OC_PROJECT} --no-headers | awk '{print $3}' | sort | uniq -c
+            echo ""
+          }
+
+          # Start monitoring in background
+          (
+            while true; do
+              monitor_pods
+              sleep 30
+            done
+          ) &
+          MONITOR_PID=$!
+
+          # Run deployment script
+          chmod +x deploy_studio_k8s.sh
+          ./deploy_studio_k8s.sh
+
+          # Stop monitoring
+          kill $MONITOR_PID 2>/dev/null || true
+
+          echo "=== Deployment script completed ==="
+
+      - name: Verify Deployment
+        run: |
+          echo "=== Final Deployment Verification ==="
+          export OC_PROJECT=default
+
+          echo ""
+          echo "--- All Pods Status ---"
+          kubectl get pods -n ${OC_PROJECT} -o wide
+
+          echo ""
+          echo "--- Pod Status Summary ---"
+          TOTAL_PODS=$(kubectl get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | wc -l | tr -d ' ')
+          RUNNING_PODS=$(kubectl get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -c "Running" || echo "0")
+          PENDING_PODS=$(kubectl get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -c "Pending" || echo "0")
+          ERROR_PODS=$(kubectl get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -cE "Error|CrashLoopBackOff|ImagePullBackOff" || echo "0")
+
+          echo "Total Pods: $TOTAL_PODS"
+          echo "Running: $RUNNING_PODS"
+          echo "Pending: $PENDING_PODS"
+          echo "Error/Failed: $ERROR_PODS"
+
+          echo ""
+          echo "--- Service Status ---"
+          kubectl get svc -n ${OC_PROJECT}
+
+          echo ""
+          echo "--- PVC Status ---"
+          kubectl get pvc -n ${OC_PROJECT}
+
+          echo ""
+          echo "--- Node Resource Usage ---"
+          kubectl top nodes 2>/dev/null || echo "Metrics server not available"
+
+          echo ""
+          echo "--- Pod Resource Usage ---"
+          kubectl top pods -n ${OC_PROJECT} 2>/dev/null || echo "Metrics server not available"
+
+          # Check for critical pods by name pattern
+          echo ""
+          echo "--- Critical Services Check ---"
+          ALL_CRITICAL_RUNNING=true
+
+          # Check PostgreSQL
+          if kubectl get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "postgresql.*Running"; then
+            echo "✅ postgresql: Running"
+          else
+            echo "⚠️  postgresql: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+
+          # Check MinIO
+          if kubectl get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "minio.*Running"; then
+            echo "✅ minio: Running"
+          else
+            echo "⚠️  minio: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+
+          # Check Keycloak
+          if kubectl get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "keycloak.*Running"; then
+            echo "✅ keycloak: Running"
+          else
+            echo "⚠️  keycloak: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+
+          # Check Redis
+          if kubectl get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "redis.*Running"; then
+            echo "✅ redis: Running"
+          else
+            echo "⚠️  redis: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+
+          # Check Gateway
+          if kubectl get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "geofm-gateway.*Running"; then
+            echo "✅ geofm-gateway: Running"
+          else
+            echo "⚠️  geofm-gateway: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+
+          # Check UI
+          if kubectl get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "geofm-ui.*Running"; then
+            echo "✅ geofm-ui: Running"
+          else
+            echo "⚠️  geofm-ui: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+
+          echo ""
+          ERROR_PODS_INT=$(echo "$ERROR_PODS" | tr -d ' \n')
+          # Convert to integer to handle leading zeros (e.g., "00" -> 0)
+          ERROR_PODS_INT=$((10#$ERROR_PODS_INT))
+          echo "ALL_CRITICAL_RUNNING: $ALL_CRITICAL_RUNNING , ERROR_PODS_INT: $ERROR_PODS_INT , ERROR_PODS: $ERROR_PODS"
+          if [[ "$ALL_CRITICAL_RUNNING" == "true" ]] && [[ "$ERROR_PODS_INT" -eq 0 ]]; then
+            echo "✅ Deployment verification PASSED"
+            echo "All critical services are running and no pods have errors"
+          else
+            echo "⚠️  Deployment verification completed with warnings"
+            echo "Some pods may still be starting up or have issues"
+
+            # Check if ERROR_PODS_INT is a valid number and greater than 0
+            if [[ "$ERROR_PODS_INT" =~ ^[0-9]+$ ]] && [[ "$ERROR_PODS_INT" -gt 0 ]]; then
+              echo ""
+              echo "--- Pods with Issues ---"
+              kubectl get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -E "Error|CrashLoopBackOff|ImagePullBackOff" || true
+
+              echo ""
+              echo "--- Logs from Failed Pods ---"
+              for pod in $(kubectl get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -E "Error|CrashLoopBackOff|ImagePullBackOff" | awk '{print $1}'); do
+                echo "=== Logs for $pod ==="
+                kubectl logs $pod -n ${OC_PROJECT} --tail=50 2>/dev/null || true
+                echo ""
+              done
+            fi
+
+            # Show summary of what failed
+            echo ""
+            echo "--- Verification Summary ---"
+            if [[ "$ALL_CRITICAL_RUNNING" != "true" ]]; then
+              echo "❌ Some critical services are not running"
+            fi
+            if [[ "$ERROR_PODS_INT" =~ ^[0-9]+$ ]] && [[ "$ERROR_PODS_INT" -gt 0 ]]; then
+              echo "❌ $ERROR_PODS_INT pod(s) have errors"
+            fi
+
+            exit 1
+          fi
+
+      - name: Run Workshop Labs
+        if: success()
+        env:
+          BASE_STUDIO_UI_URL: "https://localhost:4180"
+          UI_ROUTE_URL: "https://localhost:4180"
+          PYTHONUNBUFFERED: "1"
+        run: |
+          echo "----------------------------------------------------------------------"
+          echo "-------------------  Running Workshop Labs  --------------------------"
+          echo "----------------------------------------------------------------------"
+
+          # Locate the geospatial-studio directory (script may run from repo root
+          # or from inside the geospatial-studio subdirectory)
+          if [[ -f "populate-studio/run_labs.py" ]]; then
+            GS_DIR="."
+          elif [[ -f "geospatial-studio/populate-studio/run_labs.py" ]]; then
+            GS_DIR="geospatial-studio"
+          else
+            echo "❌ Error: run_labs.py not found"
+            exit 1
+          fi
+          echo "✓ Using geospatial-studio directory: $GS_DIR"
+
+          # Extract API key written by the deployment script
+          if [[ -f "${GS_DIR}/.studio-api-key" ]]; then
+            source "${GS_DIR}/.studio-api-key"
+            echo "✓ Loaded STUDIO_API_KEY from .studio-api-key"
+          elif [[ -f ".studio-api-key" ]]; then
+            source .studio-api-key
+            echo "✓ Loaded STUDIO_API_KEY from .studio-api-key (repo root)"
+          else
+            echo "❌ Error: .studio-api-key file not found"
+            exit 1
+          fi
+
+          # Wait for services to be fully ready
+          echo ""
+          echo "Waiting 30 seconds for services to stabilize..."
+          sleep 30
+
+          # Steps 1-6: Run all 4 workshop labs via run_labs.py
+          # (covers inference examples, templates, tunes, datasets, and backbone)
+          # --notebooks-dir defaults to populate-studio/payloads/ inside the repo
+          echo ""
+          echo "--- Steps 1-6: Executing workshop labs (run_labs.py) ---"
+          python -u "${GS_DIR}/populate-studio/run_labs.py" \
+            --api-key "${STUDIO_API_KEY}" \
+            --studio-url "${BASE_STUDIO_UI_URL}" \
+            --skip-lab4-training
+
+          LAB_EXIT=$?
+          if [[ $LAB_EXIT -eq 0 ]]; then
+            echo ""
+            echo "----------------------------------------------------------------------"
+            echo "✅ All workshop labs completed successfully!"
+            echo "----------------------------------------------------------------------"
+            echo ""
+            echo "📊 Studio is now populated with:"
+            echo "  - Sandbox models for testing"
+            echo "  - Example inference output (AGB Karen)"
+            echo "  - Flood detection model checkpoint & inference"
+            echo "  - Burn scars backbone, dataset, template & fine-tuning job"
+            echo ""
+            echo "🌐 Access the Studio UI at: https://localhost:4180"
+            echo "🔑 Login with: username: testuser, password: testpass123"
+            echo "----------------------------------------------------------------------"
+          else
+            echo ""
+            echo "----------------------------------------------------------------------"
+            echo "⚠️  One or more workshop labs encountered errors (exit code: $LAB_EXIT)"
+            echo "----------------------------------------------------------------------"
+            exit $LAB_EXIT
+          fi
+
+      - name: Workflow summary
+        if: always()
+        run: |
+          echo "## 🌍 Deploy and Test Studio – Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployment:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY

@@ -29,6 +29,7 @@ data:
   DATA_PVC: {{ .Values.mountLocations.data_pvc_name }}
   NAMESPACE: {{ .Values.global.namespace }}
   PIPELINES_V2_COS_BUCKET: {{ .Values.global.objectStorage.buckets.inference }}
+  GENERIC_PROCESSOR_BUCKET: {{ .Values.global.objectStorage.buckets.generic_python_processor}}
   OBJECT_STORAGE_ENDPOINT: {{ .Values.global.objectStorage.endpoint }}
   OBJECT_STORAGE_REGION: {{ .Values.global.objectStorage.region }}
   SERVER_TYPE: {{ .Values.serverType.type }}
@@ -284,3 +285,105 @@ data:
     AFTER INSERT ON runs
     FOR EACH ROW
     EXECUTE FUNCTION notify_new_mlflow_run();
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.global.appNames.gateway }}-sandbox-models
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-40"
+data:
+  add-layer.json: |
+    {
+      "display_name": "add-layer-sandbox-model",
+      "description": "Early-access test model made available for demonstration or limited user evaluation. These models may include incomplete features or evolving performance characteristics and are intended for feedback and experimentation before full deployment.",
+      "pipeline_steps": [
+        {
+          "status": "READY",
+          "process_id": "url-connector",
+          "step_number": 0
+        },
+        {
+          "status": "WAITING",
+          "process_id": "push-to-geoserver",
+          "step_number": 1
+        }
+      ],
+      "geoserver_push": [],
+      "model_input_data_spec": [
+        {
+          "bands": [],
+          "connector": "sentinelhub",
+          "collection": "hls_s30",
+          "file_suffix": "S2Hand"
+        }
+      ],
+      "postprocessing_options": {},
+      "sharable": false,
+      "model_onboarding_config": {
+        "fine_tuned_model_id": "",
+        "model_configs_url": "",
+        "model_checkpoint_url": ""
+      },
+      "latest": true,
+      "version": 1.0
+    }
+  try-in-lab.json: |
+    {
+      "display_name": "geofm-sandbox-models",
+      "description": "Early-access test model made available for demonstration or limited user evaluation. These models may include incomplete features or evolving performance characteristics and are intended for feedback and experimentation before full deployment.",
+      "model_url": null,
+      "pipeline_steps": [
+        {
+          "status": "READY",
+          "process_id": "terrakit-data-fetch",
+          "step_number": 0
+        },
+        {
+          "status": "WAITING",
+          "process_id": "terratorch-inference",
+          "step_number": 1
+        },
+        {
+          "status": "WAITING",
+          "process_id": "postprocess-generic",
+          "step_number": 2
+        },
+        {
+          "status": "WAITING",
+          "process_id": "push-to-geoserver",
+          "step_number": 3
+        }
+      ],
+      "geoserver_push": [
+        {
+          "workspace": "geofm",
+          "layer_name": "input_rgb",
+          "file_suffix": "",
+          "display_name": "Input image (RGB)",
+          "filepath_key": "model_input_original_image_rgb",
+          "geoserver_style": ""
+        },
+        {
+          "workspace": "geofm",
+          "layer_name": "pred",
+          "file_suffix": "",
+          "display_name": "Model prediction",
+          "filepath_key": "model_output_image_masked",
+          "geoserver_style": ""
+        }
+      ],
+      "model_input_data_spec": [],
+      "postprocessing_options": {
+        "cloud_masking": "True",
+        "ocean_masking": "True"
+      },
+      "sharable": true,
+      "model_onboarding_config": {
+        "fine_tuned_model_id": "",
+        "model_configs_url": "",
+        "model_checkpoint_url": ""
+      }
+    }
