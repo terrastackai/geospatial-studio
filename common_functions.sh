@@ -194,3 +194,21 @@ kubectl_wait_with_retry() {
         fi
     done
 }
+
+auto_indent_and_replace() {
+  local template_file="$1"
+  local var_name="$2"
+  local content="$3"
+  local output_file="$4"
+
+  # find the line with the variable and extract its indentation
+  local indent=$(grep "\$$var_name" "$template_file" | sed "s/\$$var_name.*//" | head -1)
+
+  # Add indentation to all lines EXPECT the first line
+  local indented_content=$(echo "$content" | awk -v indent="$indent" 'NR==1 {print; next} {print indent $0}')
+
+
+  # Export and replace
+  export "$var_name"="$indented_content"
+  envsubst "\$$var_name" < "$template_file" > "$output_file"
+}
