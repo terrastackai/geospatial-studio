@@ -31,7 +31,7 @@ spec:
         helm.sh/chart: "{{ $chart.Name }}-{{ $chart.Version }}"
     spec:
       restartPolicy: Never
-      {{- if $values.global.imagePullSecret }}
+      {{- if $values.global.imagePullSecret.b64secret }}
       imagePullSecrets:
         - name: {{ $values.global.imagePullSecret.name }}
       {{- end }}
