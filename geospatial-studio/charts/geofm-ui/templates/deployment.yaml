@@ -81,8 +81,10 @@ spec:
             name: {{ .Values.global.appNames.ui }}-trusted-certificates-ca
             defaultMode: 420
       {{- end }}
+      {{- if .Values.global.imagePullSecret.b64secret }}
       imagePullSecrets:
         - name: {{ .Values.global.imagePullSecret.name }}
+      {{- end }}
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       tolerations:

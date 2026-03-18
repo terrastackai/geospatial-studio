@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: crc-host-modifier
+  namespace: default # Use a system namespace or your own
+spec:
+  selector:
+    matchLabels:
+      name: host-modifier
+  template:
+    metadata:
+      labels:
+        name: host-modifier
+    spec:
+      # This is critical to allow writing to the host filesystem
+      hostNetwork: true
+      hostPID: true
+      containers:
+      - name: host-modifier
+        image: registry.access.redhat.com/ubi8/ubi-minimal:latest
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          MINO_TARGET_IP="$MINIO_CLUSTER_IP"
+          MINO_TARGET_HOST="$MINIO_INTERNAL_URL"
+
+          echo "Checking /etc/hosts on the host..."
+          if grep -q "$MINO_TARGET_HOST" /workdir/hosts; then
+            echo "Entry already exists. Updating IP..."
+            sed -i "s/.*$MINO_TARGET_HOST/$MINO_TARGET_IP $MINO_TARGET_HOST/" /workdir/hosts
+          else
+            echo "Entry missing. Appending..."
+            echo "$MINO_TARGET_IP $MINO_TARGET_HOST" >> /workdir/hosts
+          fi
+
+          echo "Modifying ca-cert"
+          echo "" >> /workdir/tls-ca-bundle.pem
+          echo "# self-signed ca" >> /workdir/tls-ca-bundle.pem
+          cat >> /workdir/tls-ca-bundle.pem << 'EOF'
+          $SELF_CA_CRT
+          EOF
+
+          # Keep the pod alive so it doesn't restart constantly
+          sleep infinity
+        volumeMounts:
+        - name: host-etc-hosts
+          mountPath: /workdir/hosts
+        - name: host-ca-trust-pem
+          mountPath: /workdir/tls-ca-bundle.pem
+      volumes:
+      - name: host-etc-hosts
+        hostPath:
+          path: /etc/hosts
+          type: File
+      - name: host-ca-trust-pem
+        hostPath:
+          path: /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+          type: File

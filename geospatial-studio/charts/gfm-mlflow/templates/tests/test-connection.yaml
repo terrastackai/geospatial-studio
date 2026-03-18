@@ -13,7 +13,7 @@ metadata:
 spec:
   containers:
     - name: wget
-      image: busybox
+      image: docker.io/library/busybox:latest
       command: ['wget']
       args: ['{{ include "gfm-mlflow.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never

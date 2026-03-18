@@ -1,0 +1,709 @@
+name: Deploy and Test Studio on CRC OpenShift
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'deployment-scripts/**'
+      - 'populate-studio/**'
+      - 'geospatial-studio/**'
+      - 'deploy_studio_ocp.sh'
+      - 'common_functions.sh'
+      - 'requirements.txt'
+      - '.github/workflows/deploy-test-studio-crc.yml'
+    types: [opened, synchronize, reopened]
+
+jobs:
+  wait-for-kind-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Kind workflow to complete
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: 'deploy-and-test'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+          allowed-conclusions: success,failure,cancelled,skipped
+
+  detect-changes:
+    needs: wait-for-kind-workflow
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.filter.outputs.deploy }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for deployment-relevant changes
+        id: filter
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            git fetch origin ${{ github.base_ref }}
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          fi
+
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Trigger deployment for changes to scripts, operators, helm charts,
+          # populate-studio, or this workflow file.
+          # Explicitly skip docs-only changes.
+          if echo "$CHANGED_FILES" | grep -qE \
+            "^(operators/|deployment-scripts/|populate-studio/|geospatial-studio/|deploy_studio_ocp\.sh|common_functions\.sh|requirements\.txt|\.github/workflows/deploy-test-studio-crc\.yml)"; then
+            echo "deploy=true" >> $GITHUB_OUTPUT
+            echo "Deployment-relevant files changed – deployment will proceed"
+          else
+            echo "deploy=false" >> $GITHUB_OUTPUT
+            echo "No deployment-relevant files changed – skipping deployment"
+          fi
+
+  deploy-and-test:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.should_deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up CRC OpenShift Local
+        uses: crc-org/crc-github-action@v1
+        with:
+          pull-secret: ${{ secrets.CRC_PULL_SECRET }}
+          preset: openshift
+          memory: 15360
+          cpus: 6
+          disk: 144  # 144GB - increased for MinIO and storage needs (GitHub runners have ~70-80GB available)
+
+      - name: Wait for CRC cluster to be ready
+        run: |
+          echo "=== Waiting for CRC cluster to be ready ==="
+          
+          # Wait for cluster to be accessible
+          timeout=600
+          elapsed=0
+          interval=10
+          
+          while [ $elapsed -lt $timeout ]; do
+            if oc get nodes &>/dev/null; then
+              echo "✅ Cluster is accessible"
+              break
+            fi
+            echo "Waiting for cluster... ($elapsed/$timeout seconds)"
+            sleep $interval
+            elapsed=$((elapsed + interval))
+          done
+          
+          if [ $elapsed -ge $timeout ]; then
+            echo "❌ Timeout waiting for cluster"
+            exit 1
+          fi
+          
+          # Wait for nodes to be ready
+          oc wait --for=condition=ready nodes --all --timeout=300s
+          
+          echo ""
+          echo "=== Cluster Information ==="
+          oc get nodes -o wide
+          oc version
+          
+          echo ""
+          echo "=== Cluster Resources ==="
+          oc describe nodes | grep -A 5 "Capacity:\|Allocatable:"
+
+      - name: Create project namespace and label nodes
+        run: |
+          echo "=== Creating project namespace ==="
+          export OC_PROJECT=geostudio-test
+          oc new-project ${OC_PROJECT} || oc project ${OC_PROJECT}
+          echo "✅ Project ${OC_PROJECT} ready"
+          
+          echo ""
+          echo "=== Labeling nodes for CSI driver ==="
+          # CSI driver requires topology labels on nodes
+          NODE_NAME=$(oc get nodes -o jsonpath='{.items[0].metadata.name}')
+          echo "Labeling node: $NODE_NAME"
+          
+          oc label nodes ${NODE_NAME} topology.kubernetes.io/region=us-east --overwrite
+          oc label nodes ${NODE_NAME} topology.kubernetes.io/zone=us-east --overwrite
+          oc label nodes ${NODE_NAME} ibm-cloud.kubernetes.io/region=us-east --overwrite
+          
+          echo "✅ Node labels configured"
+          oc get nodes --show-labels | grep topology
+
+      - name: Configure storage classes
+        run: |
+          echo "=== Configuring storage classes ==="
+          export OC_PROJECT=geostudio-test
+          
+          oc get storageclass
+          
+          # Set default storage class if not already set
+          DEFAULT_SC=$(oc get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
+          if [[ -z "$DEFAULT_SC" ]]; then
+            AVAILABLE_SC=$(oc get storageclass -o jsonpath='{.items[0].metadata.name}')
+            if [[ -n "$AVAILABLE_SC" ]]; then
+              oc patch storageclass $AVAILABLE_SC -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+              echo "✅ Default storage class configured: $AVAILABLE_SC"
+            fi
+          fi
+          
+          echo "✅ Storage configuration complete"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          echo "=== Installing Python dependencies ==="
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          echo "✅ Python dependencies installed"
+
+      - name: Configure deployment environment variables
+        run: |
+          echo "=== Configuring deployment environment ==="
+          
+          # Core configuration
+          export NON_INTERACTIVE=true
+          export DEPLOYMENT_ENV="crc"
+          export OC_PROJECT="geostudio-test"
+          
+          # Get cluster URL from CRC
+          export CLUSTER_URL=$(oc get IngressController default -n openshift-ingress-operator -o jsonpath='{.status.domain}')
+          echo "Cluster URL: $CLUSTER_URL"
+          
+          # Get default storage class for non-COS workloads (set in previous step)
+          export DEFAULT_STORAGE_CLASS=$(oc get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
+          if [[ -z "$DEFAULT_STORAGE_CLASS" ]]; then
+            # Fallback to first available storage class
+            export DEFAULT_STORAGE_CLASS=$(oc get storageclass -o jsonpath='{.items[0].metadata.name}')
+          fi
+          
+          # Storage classes - use IBM Object Storage Plugin for COS, default for regular PVCs
+          export COS_STORAGE_CLASS="ibmc-s3fs-cos"
+          export NON_COS_STORAGE_CLASS="$DEFAULT_STORAGE_CLASS"
+          
+          echo "Storage configuration:"
+          echo "  - COS Storage Class: $COS_STORAGE_CLASS"
+          echo "  - Non-COS Storage Class: $NON_COS_STORAGE_CLASS"
+          
+          # Image pull secret (empty for public images)
+          # Set to your base64-encoded secret if using private registry
+          export STUDIO_IMAGE_PULL_SECRET=""
+          
+          # Storage type selections (using cluster deployments for CI)
+          export cloud_object_storage_type="Cluster-deployment"
+          export postgres_type="Cluster-deployment"
+          export oauth_type="Keycloak"
+          export geoserver_install_type="Configure-SCC"
+          export gpu_configuration_type="No-GPU-Available"
+          
+          # Enable CSI driver installation (will be deployed after MinIO)
+          export INSTALL_CSI_DRIVER="Yes"
+          
+          # Jump to deployment flag
+          export JUMP_TO_DEPLOYMENT="No"
+          
+          # Retry settings for CI/CD
+          export KUBECTL_WAIT_RETRY_ATTEMPTS=10
+          export KUBECTL_WAIT_RETRY_DELAY=10
+          
+          # Save environment variables for next steps (using variables instead of hardcoded values)
+          cat > /tmp/deploy-env.sh <<EOF
+          export NON_INTERACTIVE=$NON_INTERACTIVE
+          export DEPLOYMENT_ENV=$DEPLOYMENT_ENV
+          export OC_PROJECT=$OC_PROJECT
+          export CLUSTER_URL=$CLUSTER_URL
+          export COS_STORAGE_CLASS=$COS_STORAGE_CLASS
+          export NON_COS_STORAGE_CLASS=$NON_COS_STORAGE_CLASS
+          export STUDIO_IMAGE_PULL_SECRET=$STUDIO_IMAGE_PULL_SECRET
+          export cloud_object_storage_type=$cloud_object_storage_type
+          export postgres_type=$postgres_type
+          export oauth_type=$oauth_type
+          export geoserver_install_type=$geoserver_install_type
+          export gpu_configuration_type=$gpu_configuration_type
+          export INSTALL_CSI_DRIVER=$INSTALL_CSI_DRIVER
+          export JUMP_TO_DEPLOYMENT=$JUMP_TO_DEPLOYMENT
+          export KUBECTL_WAIT_RETRY_ATTEMPTS=$KUBECTL_WAIT_RETRY_ATTEMPTS
+          export KUBECTL_WAIT_RETRY_DELAY=$KUBECTL_WAIT_RETRY_DELAY
+          EOF
+          
+          echo "✅ Environment variables configured"
+          echo "   - Storage Class: $DEFAULT_STORAGE_CLASS"
+          echo "   - Cluster URL: $CLUSTER_URL"
+          echo "   - Namespace: $OC_PROJECT"
+
+      - name: Deploy Geospatial Studio to CRC OpenShift
+        run: |
+          echo "=== Deploying Geospatial Studio in non-interactive mode ==="
+          
+          # Load environment variables
+          source /tmp/deploy-env.sh
+          
+          # Export additional variables needed by deploy_studio_ocp.sh
+          export deployment_env="$DEPLOYMENT_ENV"
+          export namespace="$OC_PROJECT"
+          export cluster_url="$CLUSTER_URL"
+          export user_cos_storage_class="$COS_STORAGE_CLASS"
+          export user_non_cos_storage_class="$NON_COS_STORAGE_CLASS"
+          
+          # Navigate to geospatial-studio directory
+          if [[ -f "deploy_studio_ocp.sh" ]]; then
+            echo "✅ Found deploy_studio_ocp.sh in current directory"
+          elif [[ -f "geospatial-studio/deploy_studio_ocp.sh" ]]; then
+            echo "✅ Found deploy_studio_ocp.sh in geospatial-studio subdirectory"
+            cd geospatial-studio
+          else
+            echo "❌ Error: deploy_studio_ocp.sh not found"
+            exit 1
+          fi
+          
+          echo "✅ Working directory: $(pwd)"
+          echo ""
+          
+          # Monitor deployment progress with detailed diagnostics
+          echo "=== Monitoring deployment progress ==="
+          (
+            while true; do
+              echo ""
+              echo "=========================================="
+              echo "$(date +%H:%M:%S) - Deployment Status Check"
+              echo "=========================================="
+              
+              # Show all pods status
+              echo ""
+              echo "--- All Pods ---"
+              oc get pods -n ${OC_PROJECT} --no-headers | awk '{print $1, $3}' | column -t
+              
+              # Check for non-running pods
+              NON_RUNNING_PODS=$(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -v "Running\|Completed" || true)
+              
+              if [[ -n "$NON_RUNNING_PODS" ]]; then
+                echo ""
+                echo "--- Pods Not Running (Detailed Diagnostics) ---"
+                
+                for pod in $(echo "$NON_RUNNING_PODS" | awk '{print $1}'); do
+                  POD_STATUS=$(oc get pod $pod -n ${OC_PROJECT} --no-headers 2>/dev/null | awk '{print $3}')
+                  echo ""
+                  echo "🔍 Pod: $pod (Status: $POD_STATUS)"
+                  echo "---"
+                  
+                  # Show last 10 lines of pod description (includes events)
+                  echo "Recent Events:"
+                  oc describe pod $pod -n ${OC_PROJECT} 2>/dev/null | tail -15 | grep -A 10 "Events:" || echo "  No events available"
+                  
+                  # Show image configuration if ImagePullBackOff
+                  if echo "$POD_STATUS" | grep -q "ImagePull\|ErrImage"; then
+                    echo ""
+                    echo "Image Configuration:"
+                    oc get pod $pod -n ${OC_PROJECT} -o yaml 2>/dev/null | grep -A 3 "image:" | head -8 || echo "  Unable to retrieve image info"
+                    
+                    echo ""
+                    echo "ImagePullSecrets:"
+                    oc get pod $pod -n ${OC_PROJECT} -o yaml 2>/dev/null | grep -A 2 "imagePullSecrets:" || echo "  No imagePullSecrets configured"
+                  fi
+                  
+                  # Try to get container logs if available
+                  if ! echo "$POD_STATUS" | grep -q "Pending\|ContainerCreating"; then
+                    echo ""
+                    echo "Recent Logs (last 5 lines):"
+                    oc logs $pod -n ${OC_PROJECT} --tail=5 2>/dev/null || echo "  No logs available yet"
+                  fi
+                  
+                  echo "---"
+                done
+              else
+                echo ""
+                echo "✅ All pods are Running or Completed"
+              fi
+              
+              # Check for PVC issues
+              echo ""
+              echo "--- PVC Status ---"
+              oc get pvc -n ${OC_PROJECT}
+              
+              PENDING_PVCS=$(oc get pvc -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -v "Bound" || true)
+              if [[ -n "$PENDING_PVCS" ]]; then
+                echo ""
+                echo "⚠️  Unbound PVCs detected:"
+                echo "$PENDING_PVCS"
+                
+                echo ""
+                echo "--- Storage Classes ---"
+                oc get storageclass
+                
+                echo ""
+                echo "--- Available PVs ---"
+                oc get pv
+                
+                echo ""
+                echo "--- Detailed PVC Debugging (First Pending PVC) ---"
+                FIRST_PENDING_PVC=$(echo "$PENDING_PVCS" | head -1 | awk '{print $1}')
+                if [[ -n "$FIRST_PENDING_PVC" ]]; then
+                  echo "Debugging PVC: $FIRST_PENDING_PVC"
+                  echo ""
+                  echo "PVC Description:"
+                  oc describe pvc $FIRST_PENDING_PVC -n ${OC_PROJECT}
+                  echo ""
+                  echo "PVC YAML:"
+                  oc get pvc $FIRST_PENDING_PVC -n ${OC_PROJECT} -o yaml
+                  echo ""
+                  echo "PVC Events:"
+                  oc get events -n ${OC_PROJECT} --field-selector involvedObject.name=$FIRST_PENDING_PVC --sort-by='.lastTimestamp'
+                  echo ""
+                  echo "Storage Class Details:"
+                  STORAGE_CLASS=$(oc get pvc $FIRST_PENDING_PVC -n ${OC_PROJECT} -o jsonpath='{.spec.storageClassName}')
+                  if [[ -n "$STORAGE_CLASS" ]]; then
+                    echo "Storage Class: $STORAGE_CLASS"
+                    oc get storageclass $STORAGE_CLASS -o yaml
+                    echo ""
+                    echo "CSI Driver Pods Status:"
+                    oc get pods -n kube-system -l app.kubernetes.io/part-of=ibm-object-csi-driver
+                    echo ""
+                    echo "CSI Controller Logs (last 50 lines):"
+                    oc logs -n kube-system -l app=cos-s3-csi-controller --tail=50 --all-containers=true 2>/dev/null || echo "No logs available"
+                    echo ""
+                    echo "CSI Driver Logs (last 50 lines):"
+                    oc logs -n kube-system -l app=cos-s3-csi-driver --tail=50 --all-containers=true 2>/dev/null || echo "No logs available"
+                  fi
+                  echo ""
+                  echo "Checking for required secrets:"
+                  SECRET_NAME=$(oc get pvc $FIRST_PENDING_PVC -n ${OC_PROJECT} -o yaml | grep 'ibm.io/secret-name:' | awk '{print $2}')
+                  if [[ -n "$SECRET_NAME" ]]; then
+                    echo "Required secret: $SECRET_NAME"
+                    if oc get secret $SECRET_NAME -n ${OC_PROJECT} &>/dev/null; then
+                      echo "✅ Secret exists"
+                      oc get secret $SECRET_NAME -n ${OC_PROJECT} -o yaml | grep -E 'name:|type:|data:'
+                    else
+                      echo "❌ Secret NOT found in namespace ${OC_PROJECT}"
+                    fi
+                  fi
+                fi
+              fi
+              
+              sleep 60
+            done
+          ) &
+          MONITOR_PID=$!
+          
+          # Make script executable and run deployment
+          chmod +x deploy_studio_ocp.sh
+          ./deploy_studio_ocp.sh
+          
+          # Stop monitoring
+          kill $MONITOR_PID 2>/dev/null || true
+          
+          echo "=== Deployment script completed ==="
+
+      - name: Verify Deployment
+        run: |
+          echo "=== Final Deployment Verification ==="
+          export OC_PROJECT="geostudio-test"
+          
+          echo ""
+          echo "--- All Pods Status ---"
+          oc get pods -n ${OC_PROJECT} -o wide
+          
+          echo ""
+          echo "--- Pod Status Summary ---"
+          TOTAL_PODS=$(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | wc -l | tr -d ' ')
+          RUNNING_PODS=$(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -c "Running" || echo "0")
+          PENDING_PODS=$(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -c "Pending" || echo "0")
+          ERROR_PODS=$(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -cE "Error|CrashLoopBackOff|ImagePullBackOff" || echo "0")
+          
+          echo "Total Pods: $TOTAL_PODS"
+          echo "Running: $RUNNING_PODS"
+          echo "Pending: $PENDING_PODS"
+          echo "Error/Failed: $ERROR_PODS"
+          
+          echo ""
+          echo "--- Pods with Issues (ImagePullBackOff, Error, CrashLoop) ---"
+          oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -E "ImagePullBackOff|Error|CrashLoopBackOff" || echo "No pods with issues found"
+          
+          echo ""
+          echo "--- Detailed Diagnostics for Failed Pods ---"
+          for pod in $(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -E "ImagePullBackOff|Error|CrashLoopBackOff" | awk '{print $1}'); do
+            echo ""
+            echo "=== Diagnostics for pod: $pod ==="
+            echo ""
+            echo "--- Pod Description ---"
+            oc describe pod $pod -n ${OC_PROJECT} | tail -50
+            echo ""
+            echo "--- Pod Events ---"
+            oc get events -n ${OC_PROJECT} --field-selector involvedObject.name=$pod --sort-by='.lastTimestamp' | tail -20
+            echo ""
+            echo "--- Pod YAML (image and imagePullSecrets sections) ---"
+            oc get pod $pod -n ${OC_PROJECT} -o yaml | grep -A 5 -E "image:|imagePullSecrets:"
+            echo ""
+          done
+          
+          echo ""
+          echo "--- Service Status ---"
+          oc get svc -n ${OC_PROJECT}
+          
+          echo ""
+          echo "--- Routes Status ---"
+          oc get routes -n ${OC_PROJECT}
+          
+          echo ""
+          echo "--- PVC Status ---"
+          oc get pvc -n ${OC_PROJECT}
+          
+          # Detailed PVC debugging if any are pending
+          PENDING_PVCS=$(oc get pvc -n ${OC_PROJECT} --no-headers 2>/dev/null | grep "Pending" || true)
+          if [[ -n "$PENDING_PVCS" ]]; then
+            echo ""
+            echo "⚠️  CRITICAL: Unbound PVCs detected in final verification:"
+            echo "$PENDING_PVCS"
+            
+            echo ""
+            echo "--- Detailed PVC Analysis ---"
+            FIRST_PENDING_PVC=$(echo "$PENDING_PVCS" | head -1 | awk '{print $1}')
+            echo "Analyzing PVC: $FIRST_PENDING_PVC"
+            echo ""
+            
+            echo "PVC Description:"
+            oc describe pvc $FIRST_PENDING_PVC -n ${OC_PROJECT}
+            echo ""
+            
+            echo "PVC Events:"
+            oc get events -n ${OC_PROJECT} --field-selector involvedObject.name=$FIRST_PENDING_PVC --sort-by='.lastTimestamp'
+            echo ""
+            
+            echo "Storage Class Configuration:"
+            STORAGE_CLASS=$(oc get pvc $FIRST_PENDING_PVC -n ${OC_PROJECT} -o jsonpath='{.spec.storageClassName}')
+            if [[ -n "$STORAGE_CLASS" ]]; then
+              oc describe storageclass $STORAGE_CLASS
+              echo ""
+              
+              echo "CSI Driver Status:"
+              oc get pods -n kube-system -l app.kubernetes.io/part-of=ibm-object-csi-driver -o wide
+              echo ""
+              
+              echo "CSI Controller Logs:"
+              oc logs -n kube-system -l app=cos-s3-csi-controller --tail=100 --all-containers=true 2>/dev/null || echo "No controller logs"
+              echo ""
+              
+              echo "CSI Driver DaemonSet Logs:"
+              oc logs -n kube-system -l app=cos-s3-csi-driver --tail=100 --all-containers=true 2>/dev/null || echo "No driver logs"
+            fi
+            echo ""
+            
+            echo "Required Secrets Check:"
+            SECRET_NAME=$(oc get pvc $FIRST_PENDING_PVC -n ${OC_PROJECT} -o yaml | grep 'ibm.io/secret-name:' | awk '{print $2}')
+            if [[ -n "$SECRET_NAME" ]]; then
+              echo "Secret name: $SECRET_NAME"
+              if oc get secret $SECRET_NAME -n ${OC_PROJECT} &>/dev/null; then
+                echo "✅ Secret exists"
+              else
+                echo "❌ Secret NOT found - this is likely the root cause"
+                echo "Available secrets in namespace:"
+                oc get secrets -n ${OC_PROJECT} | grep -E "NAME|cos|minio"
+              fi
+            fi
+          fi
+          
+          echo ""
+          echo "--- Node Resource Usage ---"
+          oc adm top nodes 2>/dev/null || echo "Metrics not available"
+          
+          echo ""
+          echo "--- Pod Resource Usage ---"
+          oc adm top pods -n ${OC_PROJECT} 2>/dev/null || echo "Metrics not available"
+          
+          # Check for critical pods by name pattern
+          echo ""
+          echo "--- Critical Services Check ---"
+          ALL_CRITICAL_RUNNING=true
+          
+          # Check PostgreSQL
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "postgresql.*Running"; then
+            echo "✅ postgresql: Running"
+          else
+            echo "⚠️  postgresql: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          # Check MinIO
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "minio.*Running"; then
+            echo "✅ minio: Running"
+          else
+            echo "⚠️  minio: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          # Check Keycloak
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "keycloak.*Running"; then
+            echo "✅ keycloak: Running"
+          else
+            echo "⚠️  keycloak: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          # Check Redis
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "redis.*Running"; then
+            echo "✅ redis: Running"
+          else
+            echo "⚠️  redis: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          # Check Gateway
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "geofm-gateway.*Running"; then
+            echo "✅ geofm-gateway: Running"
+          else
+            echo "⚠️  geofm-gateway: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          # Check UI
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "geofm-ui.*Running"; then
+            echo "✅ geofm-ui: Running"
+          else
+            echo "⚠️  geofm-ui: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          # Check Geoserver
+          if oc get pods -n ${OC_PROJECT} 2>/dev/null | grep -q "geoserver.*Running"; then
+            echo "✅ geoserver: Running"
+          else
+            echo "⚠️  geoserver: Not found or not running"
+            ALL_CRITICAL_RUNNING=false
+          fi
+          
+          echo ""
+          ERROR_PODS_INT=$(echo "$ERROR_PODS" | tr -d ' \n')
+          ERROR_PODS_INT=$((10#$ERROR_PODS_INT))
+          echo "ALL_CRITICAL_RUNNING: $ALL_CRITICAL_RUNNING , ERROR_PODS_INT: $ERROR_PODS_INT , ERROR_PODS: $ERROR_PODS"
+          
+          if [[ "$ALL_CRITICAL_RUNNING" == "true" ]] && [[ "$ERROR_PODS_INT" -eq 0 ]]; then
+            echo "✅ Deployment verification PASSED"
+            echo "All critical services are running and no pods have errors"
+          else
+            echo "⚠️  Deployment verification completed with warnings"
+            echo "Some pods may still be starting up or have issues"
+            
+            if [[ "$ERROR_PODS_INT" =~ ^[0-9]+$ ]] && [[ "$ERROR_PODS_INT" -gt 0 ]]; then
+              echo ""
+              echo "--- Pods with Issues ---"
+              oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -E "Error|CrashLoopBackOff|ImagePullBackOff" || true
+              
+              echo ""
+              echo "--- Logs from Failed Pods ---"
+              for pod in $(oc get pods -n ${OC_PROJECT} --no-headers 2>/dev/null | grep -E "Error|CrashLoopBackOff|ImagePullBackOff" | awk '{print $1}'); do
+                echo "=== Logs for $pod ==="
+                oc logs $pod -n ${OC_PROJECT} --tail=50 2>/dev/null || true
+                echo ""
+              done
+            fi
+            
+            echo ""
+            echo "--- Verification Summary ---"
+            if [[ "$ALL_CRITICAL_RUNNING" != "true" ]]; then
+              echo "❌ Some critical services are not running"
+            fi
+            if [[ "$ERROR_PODS_INT" =~ ^[0-9]+$ ]] && [[ "$ERROR_PODS_INT" -gt 0 ]]; then
+              echo "❌ $ERROR_PODS_INT pod(s) have errors"
+            fi
+            
+            exit 1
+          fi
+
+      - name: Run Workshop Labs
+        if: success()
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          echo "----------------------------------------------------------------------"
+          echo "-------------------  Running Workshop Labs  --------------------------"
+          echo "----------------------------------------------------------------------"
+          
+          export OC_PROJECT="geostudio-test"
+          
+          # Get UI route URL
+          export UI_ROUTE_URL=$(oc get route geofm-ui -n ${OC_PROJECT} -o jsonpath='{"https://"}{.spec.host}')
+          export BASE_STUDIO_UI_URL="$UI_ROUTE_URL"
+          
+          echo "Studio UI URL: $UI_ROUTE_URL"
+          
+          # Locate the geospatial-studio directory
+          if [[ -f "populate-studio/run_labs.py" ]]; then
+            GS_DIR="."
+          elif [[ -f "geospatial-studio/populate-studio/run_labs.py" ]]; then
+            GS_DIR="geospatial-studio"
+          else
+            echo "❌ Error: run_labs.py not found"
+            exit 1
+          fi
+          echo "✓ Using geospatial-studio directory: $GS_DIR"
+          
+          # Extract API key
+          if [[ -f "${GS_DIR}/.studio-api-key" ]]; then
+            source "${GS_DIR}/.studio-api-key"
+            echo "✓ Loaded STUDIO_API_KEY from .studio-api-key"
+          elif [[ -f ".studio-api-key" ]]; then
+            source .studio-api-key
+            echo "✓ Loaded STUDIO_API_KEY from .studio-api-key (repo root)"
+          else
+            echo "❌ Error: .studio-api-key file not found"
+            exit 1
+          fi
+          
+          # Wait for services to stabilize
+          echo ""
+          echo "Waiting 30 seconds for services to stabilize..."
+          sleep 30
+          
+          # Steps 1-6: Run workshop labs
+          echo ""
+          echo "--- Steps 1-6: Executing workshop labs (run_labs.py) ---"
+          python -u "${GS_DIR}/populate-studio/run_labs.py" \
+            --api-key "${STUDIO_API_KEY}" \
+            --studio-url "${BASE_STUDIO_UI_URL}" \
+            --skip-lab4-training
+          
+          LAB_EXIT=$?
+          if [[ $LAB_EXIT -eq 0 ]]; then
+            echo ""
+            echo "----------------------------------------------------------------------"
+            echo "✅ All workshop labs completed successfully!"
+            echo "----------------------------------------------------------------------"
+            echo ""
+            echo "📊 Studio is now populated with:"
+            echo "  - Sandbox models for testing"
+            echo "  - Example inference output (AGB Karen)"
+            echo "  - Flood detection model checkpoint & inference"
+            echo "  - Burn scars backbone, dataset, template & fine-tuning job"
+            echo ""
+            echo "🌐 Access the Studio UI at: $UI_ROUTE_URL"
+            echo "🔑 Login with: username: testuser, password: testpass123"
+            echo "----------------------------------------------------------------------"
+          else
+            echo ""
+            echo "----------------------------------------------------------------------"
+            echo "⚠️  One or more workshop labs encountered errors (exit code: $LAB_EXIT)"
+            echo "----------------------------------------------------------------------"
+            exit $LAB_EXIT
+          fi
+
+      - name: Workflow summary
+        if: always()
+        run: |
+          echo "## 🌍 Deploy and Test Studio on CRC OpenShift – Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployment:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Platform:** CRC OpenShift Local" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY

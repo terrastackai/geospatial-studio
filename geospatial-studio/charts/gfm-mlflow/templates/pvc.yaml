@@ -20,6 +20,8 @@ metadata:
     ibm.io/quota-limit: "false" # Disable or enable a quota limit for your PVC. To use this annotation you must specify the -set quotaLimit=true option during installation.
     ibm.io/endpoint: {{ .Values.global.objectStorage.endpoint }}
     ibm.io/tls-cipher-suite: "default"
+    ibm.io/curl-debug: "true"
+    ibm.io/add-mount-param: "ssl_verify_hostname=0,no_check_certificate,dbglevel=info"
 spec:
   accessModes:
     - ReadWriteMany
