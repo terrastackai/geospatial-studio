@@ -8,7 +8,7 @@ This guide provides instructions for deploying Geospatial Studio on Red Hat Open
 - **CPU**: 4+ cores (8+ recommended)
 - **Memory**: 16GB RAM minimum (32GB recommended)
 - **Disk**: 50GB free space minimum
-- **OS**: macOS, Linux, or Windows
+- **OS**: Linux
 
 ### Required Software
 - [Red Hat OpenShift Local (CRC)](https://developers.redhat.com/products/openshift-local/overview)
