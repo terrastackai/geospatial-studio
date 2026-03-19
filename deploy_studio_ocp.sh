@@ -116,19 +116,23 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         echo "***********************************************************************************"
         echo "-----------------------  Configure image pull secret ------------------------------"
         echo "-----------------------------------------------------------------------------------"
-        image_pull_secret_config_options="Default User-Generated"
+        echo "Image pull secrets are only required for private container registries."
+        echo "Leave empty if your images are publicly accessible."
+        echo "-----------------------------------------------------------------------------------"
+        image_pull_secret_config_options="Skip-for-public-images Provide-secret"
         typeset image_pull_secret_config_type
 
         get_menu_selection \
-        "Select whether to use the default image pull secret or to provide your own: " \
+        "Select image pull secret configuration: " \
         image_pull_secret_config_type \
         "$image_pull_secret_config_options"
 
-        if [[ "$image_pull_secret_config_type" == "Default" ]]; then
-            export STUDIO_IMAGE_PULL_SECRET="eyJhdXRocyI6eyJleGFtcGxlLmlvIjp7InVzZXJuYW1lIjoiZXhhbXBsZSIsInBhc3N3b3JkIjoiZXhhbXBsZSIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImF1dGgiOiJaWGhoYlhCc1pUcGxlR0Z0Y0d4bCJ9fX0="
+        if [[ "$image_pull_secret_config_type" == "Skip-for-public-images" ]]; then
+            export STUDIO_IMAGE_PULL_SECRET=""
+            echo "ℹ️  Image pull secret not configured (using public images)"
         else
             typeset ips
-            get_user_input "Enter Image pull secret: " ips
+            get_user_input "Enter base64-encoded image pull secret: " ips
             echo "STUDIO_IMAGE_PULL_SECRET accepted: **$ips**"
             export STUDIO_IMAGE_PULL_SECRET=$ips
         fi
@@ -136,8 +140,124 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         # Update the workspace env file with STUDIO_IMAGE_PULL_SECRET
         sed -i -e "s/image_pull_secret_b64=.*/image_pull_secret_b64=\"${STUDIO_IMAGE_PULL_SECRET}\"/g" workspace/${DEPLOYMENT_ENV}/env/.env
     fi
+
+    oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
     
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    install_csi_driver_options="Yes No"
+    typeset install_csi_driver_config_type
+
+    get_menu_selection \
+    "Do you want to install the ibm cos csi driver: " \
+    install_csi_driver_config_type \
+    "$install_csi_driver_options"
+
+    export INSTALL_CSI_DRIVER="$install_csi_driver_config_type"
+
+    # Install IBM Object Storage Plugin (optional, controlled by INSTALL_CSI_DRIVER env var)
+    if [[ "${INSTALL_CSI_DRIVER:-No}" == "Yes" ]]; then
+        # label node
+        oc label nodes crc topology.kubernetes.io/region=us-east --overwrite
+        oc label nodes crc topology.kubernetes.io/zone=us-east --overwrite
+        oc label nodes crc ibm-cloud.kubernetes.io/region=us-east --overwrite
+
+        echo "----------------------------------------------------------------------"
+        echo "------  Installing IBM Object Storage Plugin (Helm-based)  ----------"
+        echo "----------------------------------------------------------------------"
+
+        # Add IBM Helm repo
+        helm repo add ibm-helm https://raw.githubusercontent.com/IBM/charts/master/repo/ibm-helm
+        helm repo update
+
+        # Fetch and install Helm plugin with proper permissions
+        echo "Fetching IBM Object Storage Plugin chart..."
+        helm fetch --untar ibm-helm/ibm-object-storage-plugin
+
+        # Make the plugin script executable
+        if [ -f "./ibm-object-storage-plugin/helm-ibmc/ibmc.sh" ]; then
+            chmod +x ./ibm-object-storage-plugin/helm-ibmc/ibmc.sh
+            echo "Made helm-ibmc plugin executable"
+        fi
+
+        # Install Helm plugin (suppress error if already installed)
+        if ! helm plugin list | grep -q ibmc; then
+            echo "Installing helm-ibmc plugin..."
+            helm plugin install ./ibm-object-storage-plugin/helm-ibmc
+        else
+            echo "Helm plugin 'ibmc' already installed"
+        fi
+
+        # Install IBM Object Storage Plugin
+        echo "Installing IBM Object Storage Plugin via Helm..."
+        # crc runs on a redhat vm
+        helm ibmc install ibm-object-storage-plugin ibm-helm/ibm-object-storage-plugin \
+            --set license=true \
+            --set workerOS="redhat" \
+            --set region="us-east"
+
+        # Check if installation succeeded
+        if [ $? -ne 0 ]; then
+            echo "✗ Failed to install IBM Object Storage Plugin"
+            exit 1
+        fi
+
+        echo "Waiting for plugin deployment to be ready..."
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY \
+            --for=condition=available deployment/ibmcloud-object-storage-plugin \
+            -n ibm-object-s3fs --timeout=300s
+
+        # Create trusted CA bundle ConfigMap for OpenShift TLS
+        if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+            echo "Creating trusted CA bundle for TLS..."
+            kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trusted-ca-bundle
+  namespace: ibm-object-s3fs
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+data: {}
+EOF
+
+            # Mount CA bundle to plugin deployment
+            oc set volume deployment/ibmcloud-object-storage-plugin \
+                --add \
+                --name=ca-bundle-vol \
+                --type=configmap \
+                --configmap-name=trusted-ca-bundle \
+                --mount-path=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
+                --read-only=true \
+                --sub-path=service-ca.crt \
+                -n ibm-object-s3fs
+        fi
+
+        echo "✅ IBM Object Storage Plugin installed successfully"
+        echo "   Storage class 'ibmc-s3fs-cos' is now available"
+        
+        # Verify the plugin is working
+        echo ""
+        echo "Verifying IBM Object Storage Plugin..."
+        echo "Checking plugin pods:"
+        kubectl get pods -n ibm-object-s3fs
+        
+        echo ""
+        echo "Checking storage class:"
+        kubectl get storageclass ibmc-s3fs-cos -o yaml
+        
+        echo ""
+        echo "Checking plugin logs for any errors:"
+        kubectl logs -n ibm-object-s3fs deployment/ibmcloud-object-storage-plugin --tail=20 --all-containers=true || echo "No logs available yet"
+        
+        echo ""
+        echo "Waiting 10 seconds for plugin to fully initialize..."
+        sleep 10
+    else
+        echo "----------------------------------------------------------------------"
+        echo "Skipping IBM Object Storage Plugin installation (INSTALL_CSI_DRIVER not set to 'Yes')"
+        echo "----------------------------------------------------------------------"
+    fi
 
     echo "***********************************************************************************"
     echo "-----------------------  Configure s3 storage classes -----------------------------"
@@ -195,6 +315,7 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         echo "----------------------------------------------------------------------"
 
         source workspace/${DEPLOYMENT_ENV}/env/env.sh
+        
         python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
@@ -206,7 +327,72 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s|endpoint=.*|endpoint=$MINIO_API_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
-        sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/region=.*/region=us-east/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+        # Wait for MinIO service to be ready (pod ready doesn't mean service is accepting connections)
+        echo "Waiting for MinIO service to be ready..."
+        MAX_RETRIES=6
+        RETRY_DELAY=10
+        
+        for i in $(seq 1 $MAX_RETRIES); do
+            # Try internal service first
+            if kubectl exec -n ${OC_PROJECT} $(kubectl get pod -n ${OC_PROJECT} -l app=minio -o jsonpath='{.items[0].metadata.name}') -- curl -ks -f "https://localhost:9000/minio/health/live" > /dev/null 2>&1; then
+                echo "✓ MinIO service is ready via localhost (attempt $i/$MAX_RETRIES)"
+                break
+            fi
+            
+            # If internal check fails, show diagnostics
+            if [ $i -eq $MAX_RETRIES ]; then
+                echo "✗ MinIO service failed to become ready after $MAX_RETRIES attempts"
+                echo "Diagnostics:"
+                echo "- Pod status:"
+                kubectl get pods -n ${OC_PROJECT} -l app=minio
+                echo "- Pod logs (last 20 lines):"
+                kubectl logs -n ${OC_PROJECT} -l app=minio --tail=20
+                echo "- Service status:"
+                kubectl get svc -n ${OC_PROJECT} minio
+                echo "- Route status:"
+                kubectl get route -n ${OC_PROJECT} minio-api
+                exit 1
+            fi
+            
+            echo "MinIO not ready yet (attempt $i/$MAX_RETRIES), waiting ${RETRY_DELAY}s..."
+            
+            # Show pod status every 5 attempts
+            if [ $((i % 2)) -eq 0 ]; then
+                echo "$(date +%H:%M:%S) - Pod status:"
+                kubectl get pods -n ${OC_PROJECT} -l app=minio -o custom-columns=NAME:.metadata.name,STATUS:.status.phase --no-headers
+            fi
+            
+            sleep $RETRY_DELAY
+        done
+        
+        # Now verify the Route is accessible (this might take longer due to SSL/routing)
+        echo "Verifying MinIO Route accessibility..."
+        for i in $(seq 1 5); do
+            if curl -k -s -f "$MINIO_API_URL/minio/health/live" > /dev/null 2>&1; then
+                echo "✓ MinIO Route is accessible"
+                break
+            else
+                if [ $i -eq 10 ]; then
+                    echo "⚠ Warning: MinIO Route not accessible, but service is running. This may be a Route/SSL issue."
+                    echo "Continuing deployment - MinIO is accessible internally."
+                fi
+                echo "Route check attempt $i/10..."
+                sleep 5
+            fi
+        done
+
+        if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+            MINIO_CLUSTER_IP=$(oc get svc minio -n "${OC_PROJECT}" -o jsonpath='{.spec.clusterIP}')
+            MINIO_INTERNAL_URL="minio.${OC_PROJECT}.svc.cluster.local"
+            export LOCAL_CA_CRT=$(oc get configmap trusted-ca-bundle -n ibm-object-s3fs -o jsonpath='{.data.service-ca\.crt}')
+
+            cat deployment-scripts/crc-hosts-modifier-daemonset.yaml | sed -e "s/\$MINIO_CLUSTER_IP/$MINIO_CLUSTER_IP/g" | sed -e "s/\$MINIO_INTERNAL_URL/$MINIO_INTERNAL_URL/g" > workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
+            auto_indent_and_replace workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml SELF_CA_CRT "$LOCAL_CA_CRT" workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml
+            rm workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
+            oc apply -f workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml -n default
+        fi
 
     else
         echo "**********************************************************************"
@@ -243,8 +429,10 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     # Create buckets
     python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
-    # Populate buckets with initial data
-    ./deployment-scripts/populate-buckets-with-auxiliary-data.sh
+    # For crc we set the endpoint for the cos pvc to internal cluster url since at the driver s3fuse level the routes don't resolve
+    if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+        sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+    fi
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
@@ -355,7 +543,11 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
         sed -i -e "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-        sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "https://%s-%s.%s/realms/geostudio" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+            sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "http://%s.%s.svc.cluster.local:8080/realms/geostudio" "keycloak" "$OC_PROJECT")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        else
+            sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "https://%s-%s.%s/realms/geostudio" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        fi
         sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=$(printf "https://%s-%s.%s/realms/geostudio/protocol/openid-connect/auth" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=${OAUTH_PROXY_PORT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
@@ -707,11 +899,11 @@ echo "----------------------------------------------------------------------"
 echo "----------------------------------------------------------------------"
 echo "-----------------------  Deployment summary  -------------------------"
 echo "----------------------------------------------------------------------"
-export UI_ROUTE_URL=$(kubectl get route geofm-ui -o jsonpath='{"https://"}{.spec.host}') && \
+export UI_ROUTE_URL=$(kubectl get route geofm-ui -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}') && \
 echo "Opening $UI_ROUTE_URL..." && \
 (open $UI_ROUTE_URL || xdg-open $UI_ROUTE_URL || start $UI_ROUTE_URL)
 
-export API_ROUTE_URL=$(kubectl get route geofm-gateway -o jsonpath='{"https://"}{.spec.host}')
+export API_ROUTE_URL=$(kubectl get route geofm-gateway -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}')
 
 printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed in an OpenShift Cluster! \n"
 printf "\U1F5FA   Access the Geospatial Studio UI at: ${UI_ROUTE_URL}\n"

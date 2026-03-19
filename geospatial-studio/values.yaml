@@ -37,7 +37,7 @@ global:
 
   oauth:
     image:
-      name: bitnamilegacy/oauth2-proxy
+      name: docker.io/bitnamilegacy/oauth2-proxy
       tag: latest
     oauthProxyEnabled: OAUTH_PROXY_ENABLED
     oauthProxyPort: "OAUTH_PROXY_PORT"
@@ -146,7 +146,7 @@ gfm-studio-gateway:
     pullPolicy: ""
   images:
     cleanup_cronjob:
-      name: bitnamilegacy/kubectl
+      name: docker.io/bitnamilegacy/kubectl
       tag: latest
     tt_caikit:
       name: quay.io/geospatial-studio/geospatial-model-inference-service
@@ -257,13 +257,13 @@ redis:
         runAsUser: 'auto'
     resources:
       limits:
-        cpu: "2"  # 2 full CPU cores
-        memory: "2Gi"  # 4 GiB RAM
-        ephemeral-storage: "4Gi"  # 8 GiB disk for AOF & RDB persistence
+        cpu: "1"  # 1 CPU core (reduced for CRC)
+        memory: "1Gi"  # 1 GiB RAM (reduced for CRC)
+        ephemeral-storage: "2Gi"  # 2 GiB disk for AOF & RDB persistence
       requests:
-        cpu: "500m"  # 0.25 CPU guaranteed
-        memory: "500Mi"  # 2 GiB RAM guaranteed
-        ephemeral-storage: "1Gi"  # 4 GiB guaranteed
+        cpu: "250m"  # 0.25 CPU guaranteed
+        memory: "256Mi"  # 256 MiB RAM guaranteed
+        ephemeral-storage: "512Mi"  # 512 MiB guaranteed
     metrics:
       enabled: true
     persistence:
@@ -281,13 +281,13 @@ redis:
         runAsUser: 'auto'
     resources:
       limits:
-        cpu: "2"  # 2 full CPU cores
-        memory: "2Gi"  # 4 GiB RAM
-        ephemeral-storage: "4Gi"  # 8 GiB disk for AOF & RDB persistence
+        cpu: "1"  # 1 CPU core (reduced for CRC)
+        memory: "1Gi"  # 1 GiB RAM (reduced for CRC)
+        ephemeral-storage: "2Gi"  # 2 GiB disk for AOF & RDB persistence
       requests:
-        cpu: "500m"  # 0.25 CPU guaranteed
-        memory: "500Mi"  # 1 GiB RAM guaranteed
-        ephemeral-storage: "1Gi"  # 4 GiB guaranteed
+        cpu: "250m"  # 0.25 CPU guaranteed
+        memory: "256Mi"  # 256 MiB RAM guaranteed
+        ephemeral-storage: "512Mi"  # 512 MiB guaranteed
     metrics:
       enabled: true
     persistence:
@@ -302,7 +302,7 @@ geospatial-studio-pipelines:
     pullPolicy: ""
   waitForGateway:
     enabled: true
-    image: busybox:1.36
+    image: docker.io/library/busybox:1.36
     port: OAUTH_PROXY_PORT
     sleepTime: 5
   namePrefix: pipelines

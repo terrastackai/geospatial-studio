@@ -32,7 +32,7 @@ spec:
     spec:
       securityContext:
         {{- toYaml .Values.securityContext.api | nindent 10 }}
-      {{- if .Values.global.imagePullSecret }}
+      {{- if .Values.global.imagePullSecret.b64secret }}
       imagePullSecrets:
         - name: {{ .Values.global.imagePullSecret.name }}
       {{- end }}

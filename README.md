@@ -133,7 +133,7 @@ When deployed the studio will consist of the gateway api (which can trigger onbo
 * [yq](https://github.com/mikefarah/yq) - yaml command-line processor
 * [Optional] [s3 compatible cloud object storage](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-provision) - e.g. IBM Cloud COS to set up cloud object storage
 
-*If you want detailed description 📚 of the deployment process on an external cluster [see here 📚](./docs/geospatial-studio-docs/docs/detailed_deployment_cluster.md).*
+*If you want detailed description 📚 of the deployment process on an external cluster [see here 📚](./docs/deployment/detailed_deployment_cluster.md).*
 
 The Geospatial Studio is primarily developed to be deployed on a Red Hat OpenShift, with access to NVIDIA GPU resources (for tuning and inference).
 
@@ -180,7 +180,7 @@ After deployment the UI will pop up on the screen and you can jump to [First ste
 * [jq](https://github.com/jqlang/jq) - json command-line processor
 * [yq](https://github.com/mikefarah/yq) - yaml command-line processor
 
-*If you want detailed description 📚 of the local deployment process [see here 📚](./docs/geospatial-studio-docs/docs/detailed_deployment_local.md).*
+*If you want detailed description 📚 of the local deployment process [see here 📚](./docs/deployment/detailed_deployment_local.md).*
 
 Whilst not providing full performance and functionality, the studio can be deployed locally for testing and development purposes.  The instructions below will deploy the main components of the Geospatial Studio in a Kubernetes cluster on the local machine (i.e. your laptop).  This is provisioned through a Lima VM.  
 
@@ -252,11 +252,11 @@ After successful deployment you can jump to [First steps](#first-steps).
 * [yq](https://github.com/mikefarah/yq) - yaml command-line processor
 * [Optional] [s3 compatible cloud object storage](https://cloud.ibm.com/docs/cloud-object-storage?topic=cloud-object-storage-provision) - e.g. IBM Cloud COS to set up cloud object storage
 
-*If you want detailed description 📚 of the deployment process on an external cluster [see here 📚](./docs/geospatial-studio-docs/docs/detailed_deployment_k8s.md).*
+*If you want detailed description 📚 of the deployment process on an external cluster [see here 📚](./docs/deployment/detailed_deployment_k8s.md).*
 
-*For Kind cluster deployments without GPUs, follow specific instructions [see here 📚](./docs/geospatial-studio-docs/docs/kind_cluster_deployment.md).*
+*For Kind cluster deployments without GPUs, follow specific instructions [see here 📚](./docs/deployment/kind_cluster_deployment.md).*
 
-*For Kind cluster deployments with GPUs i.e NVKind cluster, follow specific instructions [see here 📚](./docs/geospatial-studio-docs/docs/nvkind_cluster_deployment.md).*
+*For Kind cluster deployments with GPUs i.e NVKind cluster, follow specific instructions [see here 📚](./docs/deployment/nvkind_cluster_deployment.md).*
 
 The Geospatial Studio is developed to be deployed on Kubernetes cluster as well, with access to NVIDIA GPU resources (for tuning and inference). The deployment process is similar to the OpenShift deployment process, but with some differences.
 
@@ -330,10 +330,6 @@ export STUDIO_API_KEY="<your api key from the UI>"
 export UI_ROUTE_URL="https://localhost:4180"
 ```
 
-4. Onboard the `sandbox-model`s, these are placeholder models (pipelines) for onboarding existing inferences or testing tuned models.
-```bash
-./deployment-scripts/add-sandbox-models.sh
-```
 
 At this point you can opt to continue getting started with the studio with the steps below by running them in terminal, or you can opt to use [this jupyter notebook](./populate-studio/getting-started-notebook.ipynb), leveraging studio sdk to get started.  
 

@@ -18,18 +18,8 @@ Before choosing a deployment path, ensure these tools are installed:
     - **Local (Lima/Minikube):** Lima v1.2.1+ or Minikube, minimum 8GB RAM / 4 CPUs
     - **Cloud K8s / OpenShift:** Existing cluster with kubectl/oc access configured
 
-## Which path should I choose?
-
-| I want to... | Recommended path |
-|-------------|-----------------|
-| Try the studio on my laptop (no GPU needed) | [Kind](../deployment/kind_cluster_deployment.md) — simplest local setup |
-| Try on my laptop with a Lima/Minikube VM | [Local (Lima/Minikube)](../deployment/detailed_deployment_local.md) |
-| Try with NVIDIA GPU acceleration locally | [NVKind](../deployment/nvkind_cluster_deployment.md) |
-| Deploy to a cloud cluster (GKE, EKS, AKS) | [Kubernetes cluster](../deployment/detailed_deployment_k8s.md) |
-| Deploy to enterprise Red Hat OpenShift | [OpenShift](../deployment/detailed_deployment_cluster.md) |
-
 !!! tip "Not sure?"
-    Start with **Kind** — no VM setup required, and you can be running in ~10 minutes.
+    Start with **Lima**
 
 ## Deployment Options
 

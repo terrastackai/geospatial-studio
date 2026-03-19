@@ -1,4 +1,4 @@
-name: Deploy and Test Studio
+name: Deploy and Test Studio on Kind
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ on:
       - 'geospatial-studio/**'
       - 'deploy_studio_k8s.sh'
       - 'requirements.txt'
-      - '.github/workflows/deploy-test-studio.yml'
+      - '.github/workflows/deploy-test-studio-kind.yml'
     types: [opened, synchronize, reopened]
 
 jobs:

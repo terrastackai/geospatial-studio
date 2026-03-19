@@ -28,8 +28,10 @@ spec:  {{ if hasKey $v "replicas" }}
       # securityContext:
       #   fsGroup: 1000880000
       serviceAccountName: {{ $.Values.serviceAccount.name }}
+      {{- if $.Values.imagePullSecret.b64secret }}
       imagePullSecrets:
        - name: {{ $.Values.imagePullSecret.name }}
+      {{- end }}
       {{- if and (hasKey $v "affinity") ($.Values.gpuConfig.enabled) }}
       affinity: {{ $v.affinity | toYaml | nindent 8 }} {{- end }}
       {{- if $.Values.waitForGateway.enabled }}

@@ -9,11 +9,10 @@ source ./common_functions.sh
 export KUBECTL_WAIT_RETRY_ATTEMPTS=5
 export KUBECTL_WAIT_RETRY_DELAY=5
 
-# Paste your image pull secret below
-## This is a dummy image pull secret
-## {"auths":{"example.io":{"username":"example","password":"example","email":"example@example.com","auth":"ZXhhbXBsZTpleGFtcGxl"}}}
-## base64 encoded
-export STUDIO_IMAGE_PULL_SECRET="eyJhdXRocyI6eyJleGFtcGxlLmlvIjp7InVzZXJuYW1lIjoiZXhhbXBsZSIsInBhc3N3b3JkIjoiZXhhbXBsZSIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImF1dGgiOiJaWGhoYlhCc1pUcGxlR0Z0Y0d4bCJ9fX0="
+# Image pull secret (optional - leave empty for public images)
+# If your images are in a private registry, set this to your base64-encoded Docker config JSON
+# Example: export STUDIO_IMAGE_PULL_SECRET="your-base64-encoded-secret"
+export STUDIO_IMAGE_PULL_SECRET=""
 export GEOSERVER_USERNAME="admin"
 export GEOSERVER_PASSWORD="geoserver"
 
@@ -250,6 +249,7 @@ sed -i -e "s/studio_api_encryption_key=.*/studio_api_encryption_key=$API_ENCRYPT
 
 
 sed -i -e "s/redis_password=.*/redis_password=devPassword/g" workspace/${DEPLOYMENT_ENV}/env/.env
+# Set image pull secret (empty for public images)
 sed -i -e "s/image_pull_secret_b64=.*/image_pull_secret_b64=\"${STUDIO_IMAGE_PULL_SECRET}\"/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
 sed -i -e "s/export ENVIRONMENT=.*/export ENVIRONMENT=local/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
