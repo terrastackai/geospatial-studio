@@ -11,6 +11,11 @@ hunter==3.7.0
 IPython>=8.18,<9.0.0
 rich>=14.0.0
 
+# Needed by conftest
+fastapi
+httpx
+sqlalchemy
+sqlalchemy-utils
 
 # Test
 pytest
