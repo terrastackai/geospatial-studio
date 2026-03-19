@@ -87,7 +87,7 @@
             ],
             "connector": "sentinelhub",
             "collection": "s2_l2a",
-            "modality_tag": "S2L1C",
+            "modality_tag": "S2L2A",
             "file_suffix": "_S2Hand.tif"
         },
         {

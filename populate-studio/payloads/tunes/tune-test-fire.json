@@ -2,5 +2,118 @@
   "name": "prithvi-eo-fire-tune",
   "description": "prithvi-eo-fire-tune",
   "tune_config_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-300-fire/config_deploy.yaml",
-  "tune_checkpoint_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-300-fire/best-state_dict-epoch=09.ckpt"
+  "tune_checkpoint_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/prithvi-eo-300-fire/best-state_dict-epoch=91.ckpt",
+      "post_processing": {
+      "cloud_masking": false,
+      "ocean_masking": false,
+      "snow_ice_masking": false,
+      "permanent_water_masking": false
+    },
+    "model_input_data_spec": [
+    {
+      "bands": [
+        {
+          "index": "0",
+          "RGB_band": "B",
+          "band_name": "Blue",
+          "scaling_factor": "0.0001"
+        },
+        {
+          "index": "1",
+          "RGB_band": "G",
+          "band_name": "Green",
+          "scaling_factor": "0.0001"
+        },
+        {
+          "index": "2",
+          "RGB_band": "R",
+          "band_name": "Red",
+          "scaling_factor": "0.0001"
+        },
+        {
+          "index": "3",
+          "band_name": "NIR_Narrow",
+          "scaling_factor": "0.0001"
+        },
+        {
+          "index": "4",
+          "band_name": "SWIR1",
+          "scaling_factor": "0.0001"
+        },
+        {
+          "index": "5",
+          "band_name": "SWIR2",
+          "scaling_factor": "0.0001"
+        }
+      ],
+      "connector": "sentinelhub",
+      "collection": "hls_l30",
+      "file_suffix": "_merged.tif",
+      "modality_tag": "HLS_L30"
+    }
+  ],
+    "geoserver_push": [
+    {
+      "z_index": 0,
+      "workspace": "geofm",
+      "layer_name": "input_rgb",
+      "file_suffix": "",
+      "display_name": "Input image (RGB)",
+      "filepath_key": "model_input_original_image_rgb",
+      "geoserver_style": {
+        "rgb": [
+          {
+            "label": "RedChannel",
+            "channel": 1,
+            "maxValue": 255,
+            "minValue": 0
+          },
+          {
+            "label": "GreenChannel",
+            "channel": 2,
+            "maxValue": 255,
+            "minValue": 0
+          },
+          {
+            "label": "BlueChannel",
+            "channel": 3,
+            "maxValue": 255,
+            "minValue": 0
+          }
+        ]
+      },
+      "visible_by_default": "True"
+    },
+    {
+      "z_index": 1,
+      "workspace": "geofm",
+      "layer_name": "pred",
+      "file_suffix": "",
+      "display_name": "Model prediction",
+      "filepath_key": "model_output_image",
+      "geoserver_style": {
+        "segmentation": [
+          {
+            "color": "#000000",
+            "label": "ignore",
+            "opacity": "0",
+            "quantity": "-1"
+          },
+          {
+            "color": "#000000",
+            "label": "no-data",
+            "opacity": "0",
+            "quantity": "0"
+          },
+          {
+            "color": "#ab4f4f",
+            "label": "fire-scar",
+            "opacity": 1,
+            "quantity": "1"
+          }
+        ]
+      },
+      "visible_by_default": "True"
+    }
+  ]
 }
