@@ -20,7 +20,7 @@ metadata:
     # job is considered part of the release.
     "helm.sh/hook": {{ join "," $config.when | quote }}
     "helm.sh/hook-weight": {{ $config.weight | quote }}
-    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   template:
     metadata:
@@ -58,7 +58,7 @@ spec:
           - configMapRef:
               name: {{ $values.global.appNames.gateway }}-cm
           - secretRef:
-              name: {{ $values.global.appNames.gateway }}-secrets
+              name: {{ $values.global.appNames.gateway }}-jobs-secrets
       {{- end }}
       {{- end }}
       containers:
@@ -84,7 +84,7 @@ spec:
           - configMapRef:
               name: {{ $values.global.appNames.gateway }}-cm
           - secretRef:
-              name: {{ $values.global.appNames.gateway }}-secrets
+              name: {{ $values.global.appNames.gateway }}-jobs-secrets
         {{- if hasKey $config "volumeMounts" }}
         volumeMounts:
         {{- range $config.volumeMounts }}
