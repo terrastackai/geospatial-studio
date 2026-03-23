@@ -179,20 +179,20 @@ kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY -
 
 # export POSTGRES_PASSWORD=$(kubectl get secret --namespace ${OC_PROJECT} postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
 
-kubectl port-forward --namespace ${OC_PROJECT} svc/postgresql 54321:5432 >> studio-pf.log 2>&1 &
+kubectl port-forward --namespace ${OC_PROJECT} svc/postgresql 54322:5432 >> studio-pf.log 2>&1 &
 sleep 5
 
 # Update .env with the Postgres details for local connection
 sed -i -e "s/pg_username=.*/pg_username=postgres/g" workspace/${DEPLOYMENT_ENV}/env/.env
 sed -i -e "s/pg_password=.*/pg_password=${POSTGRES_PASSWORD}/g" workspace/${DEPLOYMENT_ENV}/env/.env
 sed -i -e "s/pg_uri=.*/pg_uri=127.0.0.1/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/pg_port=.*/pg_port=54321/g" workspace/${DEPLOYMENT_ENV}/env/.env
+sed -i -e "s/pg_port=.*/pg_port=5432/g" workspace/${DEPLOYMENT_ENV}/env/.env
+sed -i -e "s/pg_forwarded_port=.*/pg_forwarded_port=54322/g" workspace/${DEPLOYMENT_ENV}/env/.env
 sed -i -e "s/pg_original_db_name=.*/pg_original_db_name='postgres'/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
 python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
-# After creating dbs; reset pg uri and port
+
 sed -i -e "s/pg_uri=.*/pg_uri=postgresql.$OC_PROJECT.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/pg_port=.*/pg_port=5432/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
