@@ -128,7 +128,7 @@ minikube dashboard
 - **CPU**: 8+ cores (12+ recommended)
 - **Memory**: 32GB RAM minimum (48GB recommended)
 - **Disk**: 100GB free space minimum
-- **OS**: macOS, Linux, or Windows
+- **OS**: Linux
 
 #### Required Software
 - [Red Hat OpenShift Local (CRC)](https://developers.redhat.com/products/openshift-local/overview)
