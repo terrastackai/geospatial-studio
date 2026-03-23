@@ -104,6 +104,7 @@ echo "Waiting for PostgreSQL pods to terminate..."
 $KUBECTL_CMD wait --for=delete pod -l app.kubernetes.io/name=postgresql -n $OC_PROJECT --timeout=300s 2>/dev/null || echo "No PostgreSQL pods found or timeout reached"
 
 echo "----------------------------------------------------------------------"
+<<<<<<< HEAD
 echo "--------------------  Deleting Deployments  --------------------------"
 echo "----------------------------------------------------------------------"
 
@@ -144,6 +145,59 @@ $KUBECTL_CMD delete jobs -l app.kubernetes.io/instance=studio -n $OC_PROJECT 2>/
 
 # Delete jobs by name pattern (for jobs without the label)
 $KUBECTL_CMD get jobs -n $OC_PROJECT -o name | grep -E "(geofm-|gfm-|gateway-)" | xargs -r $KUBECTL_CMD delete -n $OC_PROJECT 2>/dev/null || echo "No additional Studio jobs found"
+=======
+echo "--------------------  Deleting PVCs  ---------------------------------"
+echo "----------------------------------------------------------------------"
+
+# Delete Redis PVCs
+$KUBECTL_CMD delete pvc redis-data-geofm-redis-master-0 -n $OC_PROJECT 2>/dev/null || echo "Redis master PVC not found"
+$KUBECTL_CMD delete pvc redis-data-geofm-redis-replicas-0 -n $OC_PROJECT 2>/dev/null || echo "Redis replica PVC not found"
+
+# Delete PostgreSQL PVC
+$KUBECTL_CMD delete pvc data-postgresql-0 -n $OC_PROJECT 2>/dev/null || echo "PostgreSQL PVC not found"
+
+# Delete all Studio-related PVCs
+echo "Deleting all Studio-related PVCs..."
+$KUBECTL_CMD get pvc -n $OC_PROJECT -o name | grep -E "(gfm-|geofm-|inference-|generic-)" | xargs -r $KUBECTL_CMD delete -n $OC_PROJECT 2>/dev/null || echo "No additional Studio PVCs found"
+
+echo "----------------------------------------------------------------------"
+echo "--------------------  Deleting Deployments  --------------------------"
+echo "----------------------------------------------------------------------"
+
+# Delete Geoserver
+if [ -f "workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml" ]; then
+    echo "Deleting Geoserver..."
+    $KUBECTL_CMD delete -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n $OC_PROJECT 2>/dev/null || echo "Geoserver not found"
+fi
+
+# Delete Keycloak
+if [ -f "workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml" ]; then
+    echo "Deleting Keycloak..."
+    $KUBECTL_CMD delete -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n $OC_PROJECT 2>/dev/null || echo "Keycloak not found"
+fi
+
+# Delete MinIO
+if [ -f "workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml" ]; then
+    echo "Deleting MinIO..."
+    $KUBECTL_CMD delete -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n $OC_PROJECT 2>/dev/null || echo "MinIO not found"
+fi
+
+echo "----------------------------------------------------------------------"
+echo "--------------------  Deleting Jobs and Pods  ------------------------"
+echo "----------------------------------------------------------------------"
+
+# Delete populate buckets jobs/pods
+if [ -f "workspace/$DEPLOYMENT_ENV/initialisation/populate-buckets-with-initial-data.yaml" ]; then
+    $KUBECTL_CMD delete -f workspace/$DEPLOYMENT_ENV/initialisation/populate-buckets-with-initial-data.yaml -n $OC_PROJECT 2>/dev/null || echo "Populate buckets job not found"
+fi
+
+if [ -f "workspace/$DEPLOYMENT_ENV/initialisation/populate-buckets-default-pvc.yaml" ]; then
+    $KUBECTL_CMD delete -f workspace/$DEPLOYMENT_ENV/initialisation/populate-buckets-default-pvc.yaml -n $OC_PROJECT 2>/dev/null || echo "Populate buckets PVC job not found"
+fi
+
+# Delete any remaining jobs
+$KUBECTL_CMD delete jobs -l app.kubernetes.io/instance=studio -n $OC_PROJECT 2>/dev/null || echo "No Studio jobs found"
+>>>>>>> 1d5df52 (♻️ refactor(uninstall): enhance cleanup script for reliable resource removal)
 
 echo "----------------------------------------------------------------------"
 echo "--------------------  Deleting Secrets  ------------------------------"
@@ -217,6 +271,7 @@ if [ -f "workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-c
 fi
 
 echo "----------------------------------------------------------------------"
+<<<<<<< HEAD
 echo "--------------------  Deleting PVCs  ---------------------------------"
 echo "----------------------------------------------------------------------"
 
@@ -232,6 +287,8 @@ echo "Deleting all Studio-related PVCs..."
 $KUBECTL_CMD get pvc -n $OC_PROJECT -o name | grep -E "(gfm-|geofm-|inference-|generic-)" | xargs -r $KUBECTL_CMD delete -n $OC_PROJECT 2>/dev/null || echo "No additional Studio PVCs found"
 
 echo "----------------------------------------------------------------------"
+=======
+>>>>>>> 1d5df52 (♻️ refactor(uninstall): enhance cleanup script for reliable resource removal)
 echo "--------------------  Removing Node Labels  --------------------------"
 echo "----------------------------------------------------------------------"
 
