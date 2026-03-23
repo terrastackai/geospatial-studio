@@ -171,6 +171,7 @@ minikube dashboard
 - **Memory**: 32GB RAM minimum (48GB recommended)
 - **Disk**: 100GB free space minimum
 - **OS**: Linux
+<<<<<<< HEAD
 
 #### Required Software
 - [Red Hat OpenShift Local (CRC)](https://developers.redhat.com/products/openshift-local/overview)
@@ -208,6 +209,8 @@ crc start --cpus 8 --memory 32768 --disk-size 100
 - **Memory**: 32GB RAM minimum (48GB recommended)
 - **Disk**: 100GB free space minimum
 - **OS**: macOS, Linux, or Windows
+=======
+>>>>>>> 0d4180c (docs: update OS requirements in crc deployment instructions)
 
 #### Required Software
 - [Red Hat OpenShift Local (CRC)](https://developers.redhat.com/products/openshift-local/overview)
