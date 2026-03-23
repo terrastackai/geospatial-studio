@@ -32,6 +32,102 @@ sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${D
 
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
+# Component selection for deployment/redeployment
+echo "----------------------------------------------------------------------"
+echo "---------------  Select Components to Deploy  ------------------------"
+echo "----------------------------------------------------------------------"
+
+# Default: deploy all components
+DEPLOY_MINIO="Deploy"
+DEPLOY_POSTGRES="Deploy"
+DEPLOY_KEYCLOAK="Deploy"
+DEPLOY_GEOSERVER="Deploy"
+DEPLOY_STUDIO="Deploy"
+
+# Check if this is a re-run (check for existing deployments)
+if kubectl get deployment minio -n ${OC_PROJECT} &> /dev/null || \
+   kubectl get statefulset postgresql -n ${OC_PROJECT} &> /dev/null || \
+   kubectl get deployment keycloak -n ${OC_PROJECT} &> /dev/null || \
+   kubectl get deployment geofm-geoserver -n ${OC_PROJECT} &> /dev/null; then
+    
+    echo "Existing deployment(s) detected. Select components to deploy/redeploy:"
+    echo ""
+    
+    # MinIO selection
+    if kubectl get deployment minio -n ${OC_PROJECT} &> /dev/null; then
+        echo "⚠️  MinIO deployment already exists"
+    fi
+    minio_options="Deploy Skip"
+    typeset deploy_minio_choice
+    get_menu_selection \
+        "Deploy/Redeploy MinIO (object storage)?" \
+        deploy_minio_choice \
+        "$minio_options"
+    DEPLOY_MINIO=$deploy_minio_choice
+    
+    # PostgreSQL selection
+    if kubectl get statefulset postgresql -n ${OC_PROJECT} &> /dev/null; then
+        echo "⚠️  PostgreSQL deployment already exists"
+    fi
+    postgres_options="Deploy Skip"
+    typeset deploy_postgres_choice
+    get_menu_selection \
+        "Deploy/Redeploy PostgreSQL (database)?" \
+        deploy_postgres_choice \
+        "$postgres_options"
+    DEPLOY_POSTGRES=$deploy_postgres_choice
+    
+    # Keycloak selection
+    if kubectl get deployment keycloak -n ${OC_PROJECT} &> /dev/null; then
+        echo "⚠️  Keycloak deployment already exists"
+    fi
+    keycloak_options="Deploy Skip"
+    typeset deploy_keycloak_choice
+    get_menu_selection \
+        "Deploy/Redeploy Keycloak (authentication)?" \
+        deploy_keycloak_choice \
+        "$keycloak_options"
+    DEPLOY_KEYCLOAK=$deploy_keycloak_choice
+    
+    # GeoServer selection
+    if kubectl get deployment geofm-geoserver -n ${OC_PROJECT} &> /dev/null; then
+        echo "⚠️  GeoServer deployment already exists"
+    fi
+    geoserver_options="Deploy Skip"
+    typeset deploy_geoserver_choice
+    get_menu_selection \
+        "Deploy/Redeploy GeoServer?" \
+        deploy_geoserver_choice \
+        "$geoserver_options"
+    DEPLOY_GEOSERVER=$deploy_geoserver_choice
+    
+    # Studio selection
+    if kubectl get deployment geofm-ui -n ${OC_PROJECT} &> /dev/null; then
+        echo "⚠️  Geospatial Studio deployment already exists"
+    fi
+    studio_options="Deploy Skip"
+    typeset deploy_studio_choice
+    get_menu_selection \
+        "Deploy/Redeploy Geospatial Studio?" \
+        deploy_studio_choice \
+        "$studio_options"
+    DEPLOY_STUDIO=$deploy_studio_choice
+    
+    echo ""
+    echo "Deployment plan:"
+    echo "  MinIO: $DEPLOY_MINIO"
+    echo "  PostgreSQL: $DEPLOY_POSTGRES"
+    echo "  Keycloak: $DEPLOY_KEYCLOAK"
+    echo "  GeoServer: $DEPLOY_GEOSERVER"
+    echo "  Studio: $DEPLOY_STUDIO"
+    echo ""
+    
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        printf "%s " "Press enter to continue with this deployment plan"
+        read ans
+    fi
+fi
+
 echo "----------------------------------------------------------------------"
 echo "--------------------  Add labels to node  ------------------"
 echo "----------------------------------------------------------------------"
@@ -43,7 +139,7 @@ get_user_input "Provide a name for the cluster node for deployment, e.g. studio-
 echo "CLUSTER_NODE_NAME accepted: **$cluster_node_name**"
 export CLUSTER_NODE_NAME=$cluster_node_name
 
-kubectl label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
+kubectl label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
 
 echo "***********************************************************************************"
 echo "--------------------------  Configure storage classes -----------------------------"
@@ -75,9 +171,10 @@ fi
 sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-echo "----------------------------------------------------------------------"
-echo "----------------------  Deploying Minio  -----------------------------"
-echo "----------------------------------------------------------------------"
+if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "----------------------  Deploying Minio  -----------------------------"
+    echo "----------------------------------------------------------------------"
 
 # Install MinIO
 # Create TLS for minio
@@ -124,12 +221,20 @@ python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_EN
 
 sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
 
-source workspace/${DEPLOYMENT_ENV}/env/env.sh
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+else
+    echo "----------------------------------------------------------------------"
+    echo "-------------------  Skipping Minio Deployment  ----------------------"
+    echo "----------------------------------------------------------------------"
+    echo "Loading existing MinIO configuration..."
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+fi
 
 
-echo "----------------------------------------------------------------------"
-echo "--------------------  Deploying Postgres  ----------------------------"
-echo "----------------------------------------------------------------------"
+if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Deploying Postgres  ----------------------------"
+    echo "----------------------------------------------------------------------"
 
 # Install Postgres
 helm repo add bitnami  https://charts.bitnami.com/bitnami
@@ -157,11 +262,19 @@ python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT
 
 sed -i -e "s/pg_uri=.*/pg_uri=postgresql.$OC_PROJECT.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
-source workspace/${DEPLOYMENT_ENV}/env/env.sh
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+else
+    echo "----------------------------------------------------------------------"
+    echo "-----------------  Skipping Postgres Deployment  ---------------------"
+    echo "----------------------------------------------------------------------"
+    echo "Loading existing PostgreSQL configuration..."
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+fi
 
-echo "----------------------------------------------------------------------"
-echo "--------------------  Deploying Keycloak  ----------------------------"
-echo "----------------------------------------------------------------------"
+if [[ "$DEPLOY_KEYCLOAK" == "Deploy" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Deploying Keycloak  ----------------------------"
+    echo "----------------------------------------------------------------------"
 
 python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
@@ -185,6 +298,13 @@ sed -i -e "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g
 sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+else
+    echo "----------------------------------------------------------------------"
+    echo "-----------------  Skipping Keycloak Deployment  ---------------------"
+    echo "----------------------------------------------------------------------"
+    echo "Loading existing Keycloak configuration..."
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+fi
 
 
 echo "----------------------------------------------------------------------"
@@ -210,9 +330,10 @@ export GEOSERVER_URL=http://localhost:3000/geoserver
 sed -i -e "s/geoserver_username=.*/geoserver_username=$GEOSERVER_USERNAME/g" workspace/${DEPLOYMENT_ENV}/env/.env
 sed -i -e "s/geoserver_password=.*/geoserver_password=$GEOSERVER_PASSWORD/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
-echo "----------------------------------------------------------------------"
-echo "--------------------  Deploying Geoserver  ----------------------------"
-echo "----------------------------------------------------------------------"
+if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Deploying Geoserver  ----------------------------"
+    echo "----------------------------------------------------------------------"
 
 
 python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
@@ -223,10 +344,17 @@ kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY -
 kubectl port-forward -n $OC_PROJECT svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
 sleep 5
 
-echo "----------------------------------------------------------------------"
-echo "--------------------  Configuring Geoserver  ----------------------------"
-echo "----------------------------------------------------------------------"
-./deployment-scripts/setup_geoserver.sh
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Configuring Geoserver  ----------------------------"
+    echo "----------------------------------------------------------------------"
+    ./deployment-scripts/setup_geoserver.sh
+else
+    echo "----------------------------------------------------------------------"
+    echo "-----------------  Skipping Geoserver Deployment  --------------------"
+    echo "----------------------------------------------------------------------"
+    echo "Loading existing GeoServer configuration..."
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+fi
 
 # Additional setup
 
@@ -306,22 +434,29 @@ echo "----------------------------------------------------------------------"
 helm dep update ./geospatial-studio/
 helm dependency build ./geospatial-studio/
 
-echo "----------------------------------------------------------------------"
-echo "--------------------  Deploying the Studio  --------------------------"
-echo "----------------------------------------------------------------------"
+if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Deploying the Studio  --------------------------"
+    echo "----------------------------------------------------------------------"
 
-# Deploy Geospatial Studio
-./deployment-scripts/deploy_studio.sh
+    # Deploy Geospatial Studio
+    ./deployment-scripts/deploy_studio.sh
 
-echo "----------------------------------------------------------------------"
-echo "---------  Set up Port Forwarding for UI and API  --------------------"
-echo "----------------------------------------------------------------------"
+    echo "----------------------------------------------------------------------"
+    echo "---------  Set up Port Forwarding for UI and API  --------------------"
+    echo "----------------------------------------------------------------------"
 
-kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=geofm-gateway -n $OC_PROJECT --timeout=300s
+    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=geofm-gateway -n $OC_PROJECT --timeout=300s
 
-kubectl port-forward deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
-kubectl port-forward deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
+    kubectl port-forward deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
+    kubectl port-forward deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
+    kubectl port-forward deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
+else
+    echo "----------------------------------------------------------------------"
+    echo "------------------  Skipping Studio Deployment  ----------------------"
+    echo "----------------------------------------------------------------------"
+    echo "Note: Port forwarding not set up. Run manually if needed."
+fi
 
 echo "----------------------------------------------------------------------"
 echo "-----------------------  Deployment summary  -------------------------"

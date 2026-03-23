@@ -73,6 +73,101 @@ else
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 fi
 
+# Component selection for deployment/redeployment
+echo "----------------------------------------------------------------------"
+echo "---------------  Select Components to Deploy  ------------------------"
+echo "----------------------------------------------------------------------"
+
+# Default: deploy all components
+DEPLOY_MINIO="Deploy"
+DEPLOY_POSTGRES="Deploy"
+DEPLOY_KEYCLOAK="Deploy"
+DEPLOY_GEOSERVER="Deploy"
+DEPLOY_STUDIO="Deploy"
+
+# Check if this is a re-run or jump to deployment (check for existing deployments)
+if [[ "$JUMP_TO_DEPLOYMENT" == "Yes" ]] || \
+   kubectl get deployment minio -n ${OC_PROJECT} &> /dev/null || \
+   kubectl get statefulset postgresql -n ${OC_PROJECT} &> /dev/null || \
+   kubectl get deployment keycloak -n ${OC_PROJECT} &> /dev/null || \
+   kubectl get deployment geofm-geoserver -n ${OC_PROJECT} &> /dev/null; then
+    
+    echo "Existing deployment(s) detected or jumping to deployment."
+    echo "Select components to deploy/redeploy:"
+    echo ""
+    
+    # MinIO selection
+    if kubectl get deployment minio -n ${OC_PROJECT} &> /dev/null; then
+        echo "⚠️  MinIO deployment already exists"
+    fi
+    minio_options="Deploy Skip"
+    typeset deploy_minio_choice
+    get_menu_selection \
+        "Deploy/Redeploy MinIO (object storage)?" \
+        deploy_minio_choice \
+        "$minio_options"
+    DEPLOY_MINIO=$deploy_minio_choice
+    
+    # PostgreSQL selection
+    if kubectl get statefulset postgresql -n ${OC_PROJECT} &> /dev/null; then
+        echo "⚠️  PostgreSQL deployment already exists"
+    fi
+    postgres_options="Deploy Skip"
+    typeset deploy_postgres_choice
+    get_menu_selection \
+        "Deploy/Redeploy PostgreSQL (database)?" \
+        deploy_postgres_choice \
+        "$postgres_options"
+    DEPLOY_POSTGRES=$deploy_postgres_choice
+    
+    # Keycloak selection
+    if kubectl get deployment keycloak -n ${OC_PROJECT} &> /dev/null; then
+        echo "⚠️  Keycloak deployment already exists"
+    fi
+    keycloak_options="Deploy Skip"
+    typeset deploy_keycloak_choice
+    get_menu_selection \
+        "Deploy/Redeploy Keycloak (authentication)?" \
+        deploy_keycloak_choice \
+        "$keycloak_options"
+    DEPLOY_KEYCLOAK=$deploy_keycloak_choice
+    
+    # GeoServer selection
+    if kubectl get deployment geofm-geoserver -n ${OC_PROJECT} &> /dev/null; then
+        echo "⚠️  GeoServer deployment already exists"
+    fi
+    geoserver_options="Deploy Skip"
+    typeset deploy_geoserver_choice
+    get_menu_selection \
+        "Deploy/Redeploy GeoServer?" \
+        deploy_geoserver_choice \
+        "$geoserver_options"
+    DEPLOY_GEOSERVER=$deploy_geoserver_choice
+    
+    # Studio selection
+    if kubectl get deployment geofm-ui -n ${OC_PROJECT} &> /dev/null; then
+        echo "⚠️  Geospatial Studio deployment already exists"
+    fi
+    studio_options="Deploy Skip"
+    typeset deploy_studio_choice
+    get_menu_selection \
+        "Deploy/Redeploy Geospatial Studio?" \
+        deploy_studio_choice \
+        "$studio_options"
+    DEPLOY_STUDIO=$deploy_studio_choice
+    
+    echo ""
+    echo "Deployment plan:"
+    echo "  MinIO: $DEPLOY_MINIO"
+    echo "  PostgreSQL: $DEPLOY_POSTGRES"
+    echo "  Keycloak: $DEPLOY_KEYCLOAK"
+    echo "  GeoServer: $DEPLOY_GEOSERVER"
+    echo "  Studio: $DEPLOY_STUDIO"
+    echo ""
+    
+    printf "%s " "Press enter to continue with this deployment plan"
+    read ans
+fi
 
 if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     # Below step will create two env scripts under the workspace/${DEPLOYMENT_ENV}/env folder.
@@ -300,13 +395,18 @@ EOF
         fi
     done
 
-    cloud_object_storage_type_options="Cluster-deployment Cloud-managed-instance"
-    typeset cloud_object_storage_type
+    if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
+        cloud_object_storage_type_options="Cluster-deployment Cloud-managed-instance"
+        typeset cloud_object_storage_type
 
-    get_menu_selection \
-        "Select whether to deploy a cloud object storage in cluster or use a cloud managed instance that you have externally subscribed to: " \
-        cloud_object_storage_type \
-        "$cloud_object_storage_type_options"
+        get_menu_selection \
+            "Select whether to deploy a cloud object storage in cluster or use a cloud managed instance that you have externally subscribed to: " \
+            cloud_object_storage_type \
+            "$cloud_object_storage_type_options"
+    else
+        # If skipping MinIO, assume cloud-managed to skip deployment
+        cloud_object_storage_type="Cloud-managed-instance"
+    fi
 
     if [[ "$cloud_object_storage_type" == "Cluster-deployment" ]]; then
 
@@ -395,33 +495,40 @@ EOF
         fi
 
     else
-        echo "**********************************************************************"
-        echo "**********************************************************************"
-        echo "-----------  Configure s3 storage and update the values --------------"
-        echo "**********************************************************************"
-        echo "**********************************************************************"
-        echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/.env *************"
-        echo "-----------  access_key_id= ------------------------------------------"
-        echo "-----------  secret_access_key= --------------------------------------"
-        echo "-----------  endpoint= -----------------------------------------------"
-        echo "-----------  region= -------------------------------------------------"
-        echo "**********************************************************************"
-        echo "**********************************************************************"
+        if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
+            echo "**********************************************************************"
+            echo "**********************************************************************"
+            echo "-----------  Configure s3 storage and update the values --------------"
+            echo "**********************************************************************"
+            echo "**********************************************************************"
+            echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/.env *************"
+            echo "-----------  access_key_id= ------------------------------------------"
+            echo "-----------  secret_access_key= --------------------------------------"
+            echo "-----------  endpoint= -----------------------------------------------"
+            echo "-----------  region= -------------------------------------------------"
+            echo "**********************************************************************"
+            echo "**********************************************************************"
 
-        while true; do
-            printf "%s " "Press enter to continue after entering the variables"
-            read ans
+            while true; do
+                printf "%s " "Press enter to continue after entering the variables"
+                read ans
 
-            python deployment-scripts/validate-env-files.py \
-            --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
-            --env-variables "access_key_id,secret_access_key,endpoint,region" \
-            --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-            --env-sh-variables ""
+                python deployment-scripts/validate-env-files.py \
+                --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
+                --env-variables "access_key_id,secret_access_key,endpoint,region" \
+                --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
+                --env-sh-variables ""
 
-            if [ $? -eq 0 ]; then
-                break
-            fi
-        done
+                if [ $? -eq 0 ]; then
+                    break
+                fi
+            done
+        else
+            echo "----------------------------------------------------------------------"
+            echo "-------------------  Skipping Minio Deployment  ----------------------"
+            echo "----------------------------------------------------------------------"
+            echo "Loading existing MinIO/S3 configuration..."
+        fi
     fi
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
@@ -437,14 +544,19 @@ EOF
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 
-    postgres_type_options="Cluster-deployment Cloud-managed-instance"
-    typeset postgres_type
+    if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
+        postgres_type_options="Cluster-deployment Cloud-managed-instance"
+        typeset postgres_type
 
-    # Call the function
-    get_menu_selection \
-        "Select whether to deploy postgres in cluster or use a cloud managed instance that you have externally subscribed to: " \
-        postgres_type \
-        "$postgres_type_options"
+        # Call the function
+        get_menu_selection \
+            "Select whether to deploy postgres in cluster or use a cloud managed instance that you have externally subscribed to: " \
+            postgres_type \
+            "$postgres_type_options"
+    else
+        # If skipping PostgreSQL, assume cloud-managed to skip deployment
+        postgres_type="Cloud-managed-instance"
+    fi
 
     if [[ "$postgres_type" == "Cluster-deployment" ]]; then
         echo "----------------------------------------------------------------------"
@@ -475,48 +587,60 @@ EOF
 
         sed -i -e "s/pg_uri=.*/pg_uri=postgresql.${OC_PROJECT}.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
     else
-        echo "**********************************************************************"
-        echo "**********************************************************************"
-        echo "-----------  Configure cloud based posgtres and update the values ----"
-        echo "**********************************************************************"
-        echo "**********************************************************************"
-        echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/.env *************"
-        echo "-----------  pg_username= --------------------------------------------"
-        echo "-----------  pg_password= --------------------------------------------"
-        echo "-----------  pg_uri= -------------------------------------------------"
-        echo "-----------  pg_port= ------------------------------------------------"
-        echo "-----------  pg_original_db_name= ------------------------------------"
-        echo "**********************************************************************"
-        echo "**********************************************************************"
+        if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
+            echo "**********************************************************************"
+            echo "**********************************************************************"
+            echo "-----------  Configure cloud based posgtres and update the values ----"
+            echo "**********************************************************************"
+            echo "**********************************************************************"
+            echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/.env *************"
+            echo "-----------  pg_username= --------------------------------------------"
+            echo "-----------  pg_password= --------------------------------------------"
+            echo "-----------  pg_uri= -------------------------------------------------"
+            echo "-----------  pg_port= ------------------------------------------------"
+            echo "-----------  pg_original_db_name= ------------------------------------"
+            echo "**********************************************************************"
+            echo "**********************************************************************"
 
-        while true; do
-            printf "%s " "Press enter to continue after entering the variables"
-            read ans
+            while true; do
+                printf "%s " "Press enter to continue after entering the variables"
+                read ans
 
-            python deployment-scripts/validate-env-files.py \
-            --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
-            --env-variables "pg_username,pg_password,pg_uri,pg_port,pg_original_db_name" \
-            --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-            --env-sh-variables ""
+                python deployment-scripts/validate-env-files.py \
+                --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
+                --env-variables "pg_username,pg_password,pg_uri,pg_port,pg_original_db_name" \
+                --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
+                --env-sh-variables ""
 
-            if [ $? -eq 0 ]; then
-                break
-            fi
-        done
+                if [ $? -eq 0 ]; then
+                    break
+                fi
+            done
 
-        python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+            python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+        else
+            echo "----------------------------------------------------------------------"
+            echo "-----------------  Skipping Postgres Deployment  ---------------------"
+            echo "----------------------------------------------------------------------"
+            echo "Loading existing PostgreSQL configuration..."
+        fi
     fi
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-    oauth_type_options="Keycloak ISV"
-    typeset oauth_type
+    if [[ "$DEPLOY_KEYCLOAK" == "Deploy" ]]; then
+        oauth_type_options="Keycloak ISV"
+        typeset oauth_type
 
-    # Call the function
-    get_menu_selection \
-        "Select whether to use incluster Keycloak of an instance of IBM Verify that you have provisioned externally: " \
-        oauth_type \
-        "$oauth_type_options"
+        # Call the function
+        get_menu_selection \
+            "Select whether to use incluster Keycloak of an instance of IBM Verify that you have provisioned externally: " \
+            oauth_type \
+            "$oauth_type_options"
+    else
+        # If skipping Keycloak, assume ISV to skip deployment
+        oauth_type="ISV"
+    fi
 
     if [[ "$oauth_type" == "Keycloak" ]]; then
 
@@ -552,38 +676,45 @@ EOF
         sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=${OAUTH_PROXY_PORT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
     else
-        echo "**********************************************************************"
-        echo "**********************************************************************"
-        echo "-----------  Configure IBM Verify and update the values --------------"
-        echo "**********************************************************************"
-        echo "**********************************************************************"
-        echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/.env *************"
-        echo "-----------  oauth_client_secret= ------------------------------------"
-        echo "-----------  oauth_cookie_secret= ------------------------------------"
-        echo "**********************************************************************"
-        echo "**********************************************************************"
-        echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/env.sh ***********"
-        echo "-----------  export OAUTH_TYPE=isv -----------------------------------"
-        echo "-----------  export OAUTH_CLIENT_ID= ---------------------------------"
-        echo "-----------  export OAUTH_ISSUER_URL= --------------------------------"
-        echo "-----------  export OAUTH_URL= ---------------------------------------"
-        echo "**********************************************************************"
-        echo "**********************************************************************"
+        if [[ "$DEPLOY_KEYCLOAK" == "Deploy" ]]; then
+            echo "**********************************************************************"
+            echo "**********************************************************************"
+            echo "-----------  Configure IBM Verify and update the values --------------"
+            echo "**********************************************************************"
+            echo "**********************************************************************"
+            echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/.env *************"
+            echo "-----------  oauth_client_secret= ------------------------------------"
+            echo "-----------  oauth_cookie_secret= ------------------------------------"
+            echo "**********************************************************************"
+            echo "**********************************************************************"
+            echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/env.sh ***********"
+            echo "-----------  export OAUTH_TYPE=isv -----------------------------------"
+            echo "-----------  export OAUTH_CLIENT_ID= ---------------------------------"
+            echo "-----------  export OAUTH_ISSUER_URL= --------------------------------"
+            echo "-----------  export OAUTH_URL= ---------------------------------------"
+            echo "**********************************************************************"
+            echo "**********************************************************************"
 
-        while true; do
-            printf "%s " "Press enter to continue after entering the variables"
-            read ans
+            while true; do
+                printf "%s " "Press enter to continue after entering the variables"
+                read ans
 
-            python deployment-scripts/validate-env-files.py \
-            --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
-            --env-variables "oauth_client_secret,oauth_cookie_secret" \
-            --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-            --env-sh-variables "OAUTH_TYPE,OAUTH_CLIENT_ID,OAUTH_ISSUER_URL,OAUTH_URL"
+                python deployment-scripts/validate-env-files.py \
+                --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
+                --env-variables "oauth_client_secret,oauth_cookie_secret" \
+                --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
+                --env-sh-variables "OAUTH_TYPE,OAUTH_CLIENT_ID,OAUTH_ISSUER_URL,OAUTH_URL"
 
-            if [ $? -eq 0 ]; then
-                break
-            fi
-        done
+                if [ $? -eq 0 ]; then
+                    break
+                fi
+            done
+        else
+            echo "----------------------------------------------------------------------"
+            echo "-----------------  Skipping Keycloak Deployment  ---------------------"
+            echo "----------------------------------------------------------------------"
+            echo "Loading existing Keycloak/OAuth configuration..."
+        fi
     fi
 
 
@@ -620,11 +751,12 @@ EOF
     sed -i -e "s/geoserver_username=.*/geoserver_username=$GEOSERVER_USERNAME/g" workspace/${DEPLOYMENT_ENV}/env/.env
     sed -i -e "s/geoserver_password=.*/geoserver_password=$GEOSERVER_PASSWORD/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
-    echo "----------------------------------------------------------------------"
-    echo "--------------------  Deploying Geoserver  ----------------------------"
-    echo "----------------------------------------------------------------------"
+    if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
+        echo "----------------------------------------------------------------------"
+        echo "--------------------  Deploying Geoserver  ----------------------------"
+        echo "----------------------------------------------------------------------"
 
-    if [[ "$IS_OPENSHIFT" == "false" ]]; then
+        if [[ "$IS_OPENSHIFT" == "false" ]]; then
         python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
     else
@@ -684,15 +816,22 @@ EOF
         fi
     fi
 
-    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
 
-    kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 &
-    sleep 5
+        kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 &
+        sleep 5
 
-    echo "----------------------------------------------------------------------"
-    echo "--------------------  Configuring Geoserver  ----------------------------"
-    echo "----------------------------------------------------------------------"
-    ./deployment-scripts/setup_geoserver.sh
+        echo "----------------------------------------------------------------------"
+        echo "--------------------  Configuring Geoserver  ----------------------------"
+        echo "----------------------------------------------------------------------"
+        ./deployment-scripts/setup_geoserver.sh
+    else
+        echo "----------------------------------------------------------------------"
+        echo "-----------------  Skipping Geoserver Deployment  --------------------"
+        echo "----------------------------------------------------------------------"
+        echo "Loading existing GeoServer configuration..."
+        source workspace/${DEPLOYMENT_ENV}/env/env.sh
+    fi
 
     # Additional setup
 
@@ -805,12 +944,18 @@ echo "----------------------------------------------------------------------"
 helm dep update ./geospatial-studio/
 helm dependency build ./geospatial-studio/
 
-echo "----------------------------------------------------------------------"
-echo "--------------------  Deploying the Studio  --------------------------"
-echo "----------------------------------------------------------------------"
+if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Deploying the Studio  --------------------------"
+    echo "----------------------------------------------------------------------"
 
-# Deploy Geospatial Studio
-./deployment-scripts/deploy_studio.sh
+    # Deploy Geospatial Studio
+    ./deployment-scripts/deploy_studio.sh
+else
+    echo "----------------------------------------------------------------------"
+    echo "------------------  Skipping Studio Deployment  ----------------------"
+    echo "----------------------------------------------------------------------"
+fi
 
 echo "----------------------------------------------------------------------"
 echo "-----------------------  Deployment summary  -------------------------"
