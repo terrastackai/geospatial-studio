@@ -319,14 +319,12 @@ EOF
                 export COS_STORAGE_CLASS=$user_cos_storage_class
             fi
 
-            if [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
-                typeset user_non_cos_storage_class
-                get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
-                echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
-                export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
-            fi
+            typeset user_non_cos_storage_class
+            get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
+            echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
+            export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
 
-            sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS:-cos-s3-csi-s3fs-sc}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+            sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS:-ibmc-s3fs-cos}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
             sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS:-standard}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
             python deployment-scripts/validate-env-files.py \

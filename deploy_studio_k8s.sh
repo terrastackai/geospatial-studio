@@ -75,41 +75,31 @@ if [[ "$STORAGE_MODE" == "cloud-object-storage" ]] || [[ "$STORAGE_MODE" == "clu
     echo "-----------------------------------------------------------------------------------"
 
     if [[ "$STORAGE_MODE" == "cloud-object-storage" ]]; then
-        echo "Select COS storage class implementation:"
-        cos_storage_class_options="cos-s3-csi-s3fs-sc ibmc-s3fs-cos"
-        typeset cos_storage_class_type
-
-        get_menu_selection \
-        "Select COS storage class:" \
-        cos_storage_class_type \
-        "$cos_storage_class_options"
-
-        export COS_STORAGE_CLASS=$cos_storage_class_type
+        export COS_STORAGE_CLASS="cos-s3-csi-s3fs-sc"
         echo "COS_STORAGE_CLASS selected: **$COS_STORAGE_CLASS**"
     fi
 
-    if [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
-        echo "----------- Verify the available in-cluster storage classes in your cluster -------"
-        echo "***********************************************************************************"
-        echo "************************  You will enter the following  ***************************"
-        echo "------------------------  NON_COS_STORAGE_CLASS -----------------------------------"
-        echo "***********************************************************************************"
-        in_cluster_storage_class_options="Default User-Supplied"
-        typeset in_cluster_storage_class_type
+    # Set NON_COS_STORAGE_CLASS for both COS and cluster-block-storage
+    echo "----------- Verify the available in-cluster storage classes in your cluster -------"
+    echo "***********************************************************************************"
+    echo "************************  You will enter the following  ***************************"
+    echo "------------------------  NON_COS_STORAGE_CLASS -----------------------------------"
+    echo "***********************************************************************************"
+    in_cluster_storage_class_options="Default User-Supplied"
+    typeset in_cluster_storage_class_type
 
-        get_menu_selection \
-        "Select a storage class for your cluster. You can use the default 'standard' class or provide a custom one." \
-        in_cluster_storage_class_type \
-        "$in_cluster_storage_class_options"
+    get_menu_selection \
+    "Select a storage class for your cluster. You can use the default 'standard' class or provide a custom one." \
+    in_cluster_storage_class_type \
+    "$in_cluster_storage_class_options"
 
-        if [[ "$in_cluster_storage_class_type" == "Default" ]]; then
-            export NON_COS_STORAGE_CLASS="standard"
-        else
-            typeset user_non_cos_storage_class
-            get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
-            echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
-            export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
-        fi
+    if [[ "$in_cluster_storage_class_type" == "Default" ]]; then
+        export NON_COS_STORAGE_CLASS="standard"
+    else
+        typeset user_non_cos_storage_class
+        get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
+        echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
+        export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
     fi
 
     # Update env.sh
