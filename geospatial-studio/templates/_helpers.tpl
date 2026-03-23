@@ -45,7 +45,7 @@ Used for jobs that need direct database access
 
 {{/*
 Build DATABASE_URI for gateway database
-Uses pgbouncer if enabled, otherwise direct postgres
+Uses pgbouncer pool if enabled, otherwise direct postgres
 */}}
 {{- define "geospatial-studio.postgres.gateway.uri" -}}
 {{- if .Values.global.postgres.in_cluster_db -}}
@@ -53,13 +53,19 @@ postgresql+pg8000://{{ .Values.global.postgresql.auth.username }}:{{ .Values.glo
 {{- else -}}
 {{- $host := include "geospatial-studio.postgres.host" . -}}
 {{- $port := include "geospatial-studio.postgres.port" . -}}
+{{- if .Values.global.pgbouncer.enabled -}}
+{{- /* Use PgBouncer pool for gateway API */ -}}
+postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/geostudio_api_pool
+{{- else -}}
+{{- /* Direct connection to database */ -}}
 postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/{{ .Values.global.postgres.dbs.gateway }}
+{{- end -}}
 {{- end -}}
 {{- end }}
 
 {{/*
 Build AUTH_DATABASE_URI for auth database
-Uses pgbouncer if enabled, otherwise direct postgres
+Uses pgbouncer if enabled (pool name matches database name), otherwise direct postgres
 */}}
 {{- define "geospatial-studio.postgres.auth.uri" -}}
 {{- if .Values.global.postgres.in_cluster_db -}}
@@ -67,13 +73,14 @@ postgresql+pg8000://{{ .Values.global.postgresql.auth.username }}:{{ .Values.glo
 {{- else -}}
 {{- $host := include "geospatial-studio.postgres.host" . -}}
 {{- $port := include "geospatial-studio.postgres.port" . -}}
+{{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
 postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/{{ .Values.global.postgres.dbs.auth }}
 {{- end -}}
 {{- end }}
 
 {{/*
 Build MLFLOW_DATABASE_URI for mlflow database
-Uses pgbouncer if enabled, otherwise direct postgres
+Uses pgbouncer if enabled (pool name matches database name), otherwise direct postgres
 */}}
 {{- define "geospatial-studio.postgres.mlflow.uri" -}}
 {{- if .Values.global.postgres.in_cluster_db -}}
@@ -81,27 +88,30 @@ postgresql+pg8000://{{ .Values.global.postgresql.auth.username }}:{{ .Values.glo
 {{- else -}}
 {{- $host := include "geospatial-studio.postgres.host" . -}}
 {{- $port := include "geospatial-studio.postgres.port" . -}}
+{{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
 postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/{{ .Values.global.postgres.dbs.mlflow }}
 {{- end -}}
 {{- end }}
 
 {{/*
 Build orchestration database URI for pipelines
-Uses pgbouncer if enabled, otherwise direct postgres
+Uses pgbouncer if enabled (pool name matches database name), otherwise direct postgres
 */}}
 {{- define "geospatial-studio.postgres.orchestrate.uri" -}}
 {{- $host := include "geospatial-studio.postgres.host" . -}}
 {{- $port := include "geospatial-studio.postgres.port" . -}}
+{{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
 postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port | int }}/{{ .Values.global.postgres.dbs.gateway }}
 {{- end }}
 
 {{/*
 Build MLflow backend URI (without +pg8000 driver)
-Uses pgbouncer if enabled, otherwise direct postgres
+Uses pgbouncer if enabled (pool name matches database name), otherwise direct postgres
 */}}
 {{- define "geospatial-studio.postgres.mlflow.backend.uri" -}}
 {{- $host := include "geospatial-studio.postgres.host" . -}}
 {{- $port := include "geospatial-studio.postgres.port" . -}}
+{{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
 postgresql://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/{{ .Values.global.postgres.dbs.mlflow }}
 {{- end }}
 
