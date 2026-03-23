@@ -62,10 +62,14 @@ resources:
   limits:
     cpu: "1"
 <<<<<<< HEAD
+<<<<<<< HEAD
     memory: "1Gi"
 =======
     memory: "512Mi"
 >>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
+=======
+    memory: "1Gi"
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
   requests:
     cpu: "250m"
     memory: "256Mi"

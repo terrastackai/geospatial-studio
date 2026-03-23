@@ -113,7 +113,11 @@ hooks:
       # Wait for gateway service to be ready before seeding
       waitForGateway:
         enabled: true
+<<<<<<< HEAD
         image: docker.io/library/busybox:latest
+=======
+        image: busybox:1.36
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
         sleepTime: 5      # Mount JSON payloads
       volumeMounts:
         - name: sandbox-models-payloads

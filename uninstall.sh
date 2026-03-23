@@ -105,6 +105,7 @@ $KUBECTL_CMD wait --for=delete pod -l app.kubernetes.io/name=postgresql -n $OC_P
 
 echo "----------------------------------------------------------------------"
 <<<<<<< HEAD
+<<<<<<< HEAD
 echo "--------------------  Deleting Deployments  --------------------------"
 echo "----------------------------------------------------------------------"
 
@@ -161,6 +162,8 @@ echo "Deleting all Studio-related PVCs..."
 $KUBECTL_CMD get pvc -n $OC_PROJECT -o name | grep -E "(gfm-|geofm-|inference-|generic-)" | xargs -r $KUBECTL_CMD delete -n $OC_PROJECT 2>/dev/null || echo "No additional Studio PVCs found"
 
 echo "----------------------------------------------------------------------"
+=======
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 echo "--------------------  Deleting Deployments  --------------------------"
 echo "----------------------------------------------------------------------"
 
@@ -196,8 +199,16 @@ if [ -f "workspace/$DEPLOYMENT_ENV/initialisation/populate-buckets-default-pvc.y
 fi
 
 # Delete any remaining jobs
+<<<<<<< HEAD
 $KUBECTL_CMD delete jobs -l app.kubernetes.io/instance=studio -n $OC_PROJECT 2>/dev/null || echo "No Studio jobs found"
 >>>>>>> 1d5df52 (♻️ refactor(uninstall): enhance cleanup script for reliable resource removal)
+=======
+echo "Deleting all Studio-related jobs..."
+$KUBECTL_CMD delete jobs -l app.kubernetes.io/instance=studio -n $OC_PROJECT 2>/dev/null || echo "No Studio jobs with label found"
+
+# Delete jobs by name pattern (for jobs without the label)
+$KUBECTL_CMD get jobs -n $OC_PROJECT -o name | grep -E "(geofm-|gfm-|gateway-)" | xargs -r $KUBECTL_CMD delete -n $OC_PROJECT 2>/dev/null || echo "No additional Studio jobs found"
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 
 echo "----------------------------------------------------------------------"
 echo "--------------------  Deleting Secrets  ------------------------------"
@@ -272,6 +283,9 @@ fi
 
 echo "----------------------------------------------------------------------"
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 echo "--------------------  Deleting PVCs  ---------------------------------"
 echo "----------------------------------------------------------------------"
 
@@ -287,8 +301,11 @@ echo "Deleting all Studio-related PVCs..."
 $KUBECTL_CMD get pvc -n $OC_PROJECT -o name | grep -E "(gfm-|geofm-|inference-|generic-)" | xargs -r $KUBECTL_CMD delete -n $OC_PROJECT 2>/dev/null || echo "No additional Studio PVCs found"
 
 echo "----------------------------------------------------------------------"
+<<<<<<< HEAD
 =======
 >>>>>>> 1d5df52 (♻️ refactor(uninstall): enhance cleanup script for reliable resource removal)
+=======
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 echo "--------------------  Removing Node Labels  --------------------------"
 echo "----------------------------------------------------------------------"
 

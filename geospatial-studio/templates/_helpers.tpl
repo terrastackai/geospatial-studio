@@ -46,10 +46,14 @@ Used for jobs that need direct database access
 {{/*
 Build DATABASE_URI for gateway database
 <<<<<<< HEAD
+<<<<<<< HEAD
 Uses pgbouncer pool if enabled, otherwise direct postgres
 =======
 Uses pgbouncer if enabled, otherwise direct postgres
 >>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
+=======
+Uses pgbouncer pool if enabled, otherwise direct postgres
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 */}}
 {{- define "geospatial-studio.postgres.gateway.uri" -}}
 {{- if .Values.global.postgres.in_cluster_db -}}
@@ -58,6 +62,9 @@ postgresql+pg8000://{{ .Values.global.postgresql.auth.username }}:{{ .Values.glo
 {{- $host := include "geospatial-studio.postgres.host" . -}}
 {{- $port := include "geospatial-studio.postgres.port" . -}}
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 {{- if .Values.global.pgbouncer.enabled -}}
 {{- /* Use PgBouncer pool for gateway API */ -}}
 postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/geostudio_api_pool
@@ -66,19 +73,26 @@ postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.globa
 postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/{{ .Values.global.postgres.dbs.gateway }}
 {{- end -}}
 {{- end -}}
+<<<<<<< HEAD
 =======
 postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/{{ .Values.global.postgres.dbs.gateway }}
 {{- end -}}
 >>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
+=======
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 {{- end }}
 
 {{/*
 Build AUTH_DATABASE_URI for auth database
 <<<<<<< HEAD
+<<<<<<< HEAD
 Uses pgbouncer if enabled (pool name matches database name), otherwise direct postgres
 =======
 Uses pgbouncer if enabled, otherwise direct postgres
 >>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
+=======
+Uses pgbouncer if enabled (pool name matches database name), otherwise direct postgres
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 */}}
 {{- define "geospatial-studio.postgres.auth.uri" -}}
 {{- if .Values.global.postgres.in_cluster_db -}}
@@ -87,9 +101,13 @@ postgresql+pg8000://{{ .Values.global.postgresql.auth.username }}:{{ .Values.glo
 {{- $host := include "geospatial-studio.postgres.host" . -}}
 {{- $port := include "geospatial-studio.postgres.port" . -}}
 <<<<<<< HEAD
+<<<<<<< HEAD
 {{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
 =======
 >>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
+=======
+{{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/{{ .Values.global.postgres.dbs.auth }}
 {{- end -}}
 {{- end }}
@@ -97,10 +115,14 @@ postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.globa
 {{/*
 Build MLFLOW_DATABASE_URI for mlflow database
 <<<<<<< HEAD
+<<<<<<< HEAD
 Uses pgbouncer if enabled (pool name matches database name), otherwise direct postgres
 =======
 Uses pgbouncer if enabled, otherwise direct postgres
 >>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
+=======
+Uses pgbouncer if enabled (pool name matches database name), otherwise direct postgres
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 */}}
 {{- define "geospatial-studio.postgres.mlflow.uri" -}}
 {{- if .Values.global.postgres.in_cluster_db -}}
@@ -109,9 +131,13 @@ postgresql+pg8000://{{ .Values.global.postgresql.auth.username }}:{{ .Values.glo
 {{- $host := include "geospatial-studio.postgres.host" . -}}
 {{- $port := include "geospatial-studio.postgres.port" . -}}
 <<<<<<< HEAD
+<<<<<<< HEAD
 {{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
 =======
 >>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
+=======
+{{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/{{ .Values.global.postgres.dbs.mlflow }}
 {{- end -}}
 {{- end }}
@@ -119,36 +145,52 @@ postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.globa
 {{/*
 Build orchestration database URI for pipelines
 <<<<<<< HEAD
+<<<<<<< HEAD
 Uses pgbouncer if enabled (pool name matches database name), otherwise direct postgres
 =======
 Uses pgbouncer if enabled, otherwise direct postgres
 >>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
+=======
+Uses pgbouncer if enabled (pool name matches database name), otherwise direct postgres
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 */}}
 {{- define "geospatial-studio.postgres.orchestrate.uri" -}}
 {{- $host := include "geospatial-studio.postgres.host" . -}}
 {{- $port := include "geospatial-studio.postgres.port" . -}}
 <<<<<<< HEAD
+<<<<<<< HEAD
 {{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
 =======
 >>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
+=======
+{{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port | int }}/{{ .Values.global.postgres.dbs.gateway }}
 {{- end }}
 
 {{/*
 Build MLflow backend URI (without +pg8000 driver)
 <<<<<<< HEAD
+<<<<<<< HEAD
 Uses pgbouncer if enabled (pool name matches database name), otherwise direct postgres
 =======
 Uses pgbouncer if enabled, otherwise direct postgres
 >>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
+=======
+Uses pgbouncer if enabled (pool name matches database name), otherwise direct postgres
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 */}}
 {{- define "geospatial-studio.postgres.mlflow.backend.uri" -}}
 {{- $host := include "geospatial-studio.postgres.host" . -}}
 {{- $port := include "geospatial-studio.postgres.port" . -}}
 <<<<<<< HEAD
+<<<<<<< HEAD
 {{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
 =======
 >>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
+=======
+{{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
+>>>>>>> b566d2e (✨ feat(pgbouncer): add isolated connection pools to prevent service starvation)
 postgresql://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/{{ .Values.global.postgres.dbs.mlflow }}
 {{- end }}
 
