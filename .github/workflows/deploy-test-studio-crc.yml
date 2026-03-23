@@ -177,6 +177,7 @@ jobs:
           export NON_INTERACTIVE=true
           export DEPLOYMENT_ENV="crc"
           export OC_PROJECT="geostudio-test"
+          export STORAGE_MODE="cloud-object-storage"
           
           # Get cluster URL from CRC
           export CLUSTER_URL=$(oc get IngressController default -n openshift-ingress-operator -o jsonpath='{.status.domain}')

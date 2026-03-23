@@ -165,6 +165,7 @@ jobs:
           # Set non-interactive mode and required variables
           export NON_INTERACTIVE=true
           export cluster_node_name="$WORKER_NODE"
+          export STORAGE_MODE="cloud-object-storage"
           export in_cluster_storage_class_type="Default"
           export NON_COS_STORAGE_CLASS="standard"
           export OC_PROJECT=default
