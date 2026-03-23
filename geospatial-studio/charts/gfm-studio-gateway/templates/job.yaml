@@ -20,7 +20,7 @@ metadata:
     # job is considered part of the release.
     "helm.sh/hook": {{ join "," $config.when | quote }}
     "helm.sh/hook-weight": {{ $config.weight | quote }}
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   template:
     metadata:
@@ -59,23 +59,6 @@ spec:
               name: {{ $values.global.appNames.gateway }}-cm
           - secretRef:
               name: {{ $values.global.appNames.gateway }}-jobs-secrets
-      {{- end }}
-      {{- end }}
-      # Init container to wait for gateway service to be ready
-      {{- if hasKey $config "waitForGateway" }}
-      {{- if $config.waitForGateway.enabled }}
-      - name: wait-for-gateway
-        image: {{ $config.waitForGateway.image | default "docker.io/library/busybox:latest" }}
-        imagePullPolicy: {{ $values.image.pullPolicy | default $values.global.imagePullPolicy }}
-        command: ['sh', '-c']
-        args:
-        - |
-          echo "Waiting for gateway service to be ready..."
-          until nc -z {{ $values.global.appNames.ui }}.{{ $values.global.namespace }}.svc.cluster.local {{ $config.waitForGateway.port | default $values.global.oauth.oauthProxyPort }}; do
-            echo "Gateway service not ready yet, retrying in {{ $config.waitForGateway.sleepTime | default 5 }} seconds..."
-            sleep {{ $config.waitForGateway.sleepTime | default 5 }}
-          done
-          echo "Gateway service is ready!"
       {{- end }}
       {{- end }}
       containers:

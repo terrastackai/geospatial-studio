@@ -20,6 +20,7 @@ spec:
       securityContext:
         runAsUser: {{ .Values.podSecurityContext.runAsUser }}
       {{- end }}
+<<<<<<< HEAD
       initContainers:
       - name: setup-config
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -52,6 +53,8 @@ spec:
           mountPath: /config-source
         - name: pgbouncer-conf
           mountPath: /opt/bitnami/pgbouncer/conf
+=======
+>>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
       containers:
       - name: pgbouncer
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -62,6 +65,7 @@ spec:
         securityContext:
           runAsUser: {{ .Values.containerSecurityContext.runAsUser }}
         {{- end }}
+<<<<<<< HEAD
         # Use custom command to bypass Bitnami's auto-configuration
         command:
         - /bin/bash
@@ -69,10 +73,18 @@ spec:
         - |
           # Start PgBouncer with our custom config
           exec pgbouncer /opt/bitnami/pgbouncer/conf/pgbouncer.ini
+=======
+>>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
         ports:
         - name: pgbouncer
           containerPort: {{ .Values.service.port }}
           protocol: TCP
+<<<<<<< HEAD
+=======
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.fullnameOverride }}-config
+>>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
         env:
         - name: POSTGRESQL_PASSWORD
           valueFrom:
@@ -91,6 +103,7 @@ spec:
             port: pgbouncer
           initialDelaySeconds: 5
           periodSeconds: 5
+<<<<<<< HEAD
         volumeMounts:
         - name: pgbouncer-conf
           mountPath: /opt/bitnami/pgbouncer/conf
@@ -103,4 +116,6 @@ spec:
             path: pgbouncer.ini
       - name: pgbouncer-conf
         emptyDir: {}
+=======
+>>>>>>> 42c9d82 (✨ feat(pgbouncer): add connection pooling with deployment improvements)
 {{- end }}

@@ -19,37 +19,4 @@ data:
   PGBOUNCER_RESERVE_POOL_SIZE: {{ .Values.pooler.reservePoolSize | quote }}
   PGBOUNCER_MAX_DB_CONNECTIONS: {{ .Values.pooler.maxDbConnections | quote }}
   PGBOUNCER_MAX_USER_CONNECTIONS: {{ .Values.pooler.maxUserConnections | quote }}
-
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Values.fullnameOverride }}-config-ini
-data:
-  pgbouncer.ini: |
-    [databases]
-    # Lane 1: Gateway API (Transaction mode for 1000 RPS, separate pool for isolation)
-    geostudio_api_pool = host={{ .Values.postgresql.host }} port={{ .Values.postgresql.port }} dbname=geostudio pool_mode=transaction pool_size=80
-    
-    # Lane 2: Pipeline Services (Transaction mode, pool name matches database name)
-    geostudio = host={{ .Values.postgresql.host }} port={{ .Values.postgresql.port }} dbname=geostudio pool_mode=transaction pool_size=30
-    
-    # Lane 3: MLflow (Session mode for persistence)
-    mlflow = host={{ .Values.postgresql.host }} port={{ .Values.postgresql.port }} dbname=mlflow pool_mode=session pool_size=10
-
-    # Lane 4: Auth (Session mode for persistence)
-    geostudio_auth = host={{ .Values.postgresql.host }} port={{ .Values.postgresql.port }} dbname=geostudio_auth pool_mode=session pool_size=20
-
-    # Lane 5: Keycloak (Session mode for persistence)
-    keycloak = host={{ .Values.postgresql.host }} port={{ .Values.postgresql.port }} dbname=keycloak pool_mode=session pool_size=10
-
-    [pgbouncer]
-    listen_addr = 0.0.0.0
-    listen_port = 6432
-    auth_type = md5
-    auth_file = /opt/bitnami/pgbouncer/conf/userlist.txt
-    # High performance tuning
-    max_client_conn = 5000
-    default_pool_size = 20
-    server_reset_query_always = 1
 {{- end }}
