@@ -60,6 +60,7 @@ global:
     tlsKeyB64: tlsKeyB64
   
   storage:
+    storageMode: STORAGE_MODE
     pvc:
       enabled: STORAGE_PVC_ENABLED
     filesystem:

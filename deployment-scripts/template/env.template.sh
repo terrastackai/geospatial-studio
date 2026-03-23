@@ -19,6 +19,7 @@ export PG_VERSION=18.2.0
 export CLUSTER_URL=
 
 # Storage
+export STORAGE_MODE=cloud-object-storage
 export SHARE_PIPELINE_PVC=false
 export COS_STORAGE_CLASS=
 export NON_COS_STORAGE_CLASS=

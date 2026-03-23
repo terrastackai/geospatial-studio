@@ -46,34 +46,80 @@ export CLUSTER_NODE_NAME=$cluster_node_name
 kubectl label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
 
 echo "***********************************************************************************"
-echo "--------------------------  Configure storage classes -----------------------------"
-echo "-----------------------------------------------------------------------------------"
-echo "----------- Verify the available in-cluster storage classes in your cluster -------"
+echo "----------------------  Configure Storage Mode  -----------------------------------"
 echo "-----------------------------------------------------------------------------------"
 echo "***********************************************************************************"
-echo "************************  You will enter the following  ***************************"
-echo "------------------------  NON_COS_STORAGE_CLASS -----------------------------------"
+echo "Select the storage mode for your deployment:"
+echo "  - cloud-object-storage: Use Cloud Object Storage (production) [DEFAULT]"
+echo "  - cluster-block-storage: Use in-cluster dynamic provisioning"
+echo "  - local-hostpath: Use local host directories (development/testing)"
 echo "***********************************************************************************"
-in_cluster_storage_class_options="Default User-Supplied"
-typeset in_cluster_storage_class_type
+
+storage_mode_options="cloud-object-storage cluster-block-storage local-hostpath"
+typeset storage_mode
 
 get_menu_selection \
-"Select a storage class for your cluster. You can use the default 'standard' class or provide a custom one." \
-in_cluster_storage_class_type \
-"$in_cluster_storage_class_options"
+"Select storage mode for your deployment:" \
+storage_mode \
+"$storage_mode_options"
 
-if [[ "$in_cluster_storage_class_type" == "Default" ]]; then
-    export NON_COS_STORAGE_CLASS="standard"
+export STORAGE_MODE=$storage_mode
+echo "STORAGE_MODE selected: **$STORAGE_MODE**"
+
+# Update env.sh with storage mode
+sed -i -e "s/export STORAGE_MODE=.*/export STORAGE_MODE=${STORAGE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+if [[ "$STORAGE_MODE" == "cloud-object-storage" ]] || [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
+    echo "***********************************************************************************"
+    echo "--------------------------  Configure storage classes -----------------------------"
+    echo "-----------------------------------------------------------------------------------"
+
+    if [[ "$STORAGE_MODE" == "cloud-object-storage" ]]; then
+        echo "Select COS storage class implementation:"
+        cos_storage_class_options="cos-s3-csi-s3fs-sc ibmc-s3fs-cos"
+        typeset cos_storage_class_type
+
+        get_menu_selection \
+        "Select COS storage class:" \
+        cos_storage_class_type \
+        "$cos_storage_class_options"
+
+        export COS_STORAGE_CLASS=$cos_storage_class_type
+        echo "COS_STORAGE_CLASS selected: **$COS_STORAGE_CLASS**"
+    fi
+
+    if [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
+        echo "----------- Verify the available in-cluster storage classes in your cluster -------"
+        echo "***********************************************************************************"
+        echo "************************  You will enter the following  ***************************"
+        echo "------------------------  NON_COS_STORAGE_CLASS -----------------------------------"
+        echo "***********************************************************************************"
+        in_cluster_storage_class_options="Default User-Supplied"
+        typeset in_cluster_storage_class_type
+
+        get_menu_selection \
+        "Select a storage class for your cluster. You can use the default 'standard' class or provide a custom one." \
+        in_cluster_storage_class_type \
+        "$in_cluster_storage_class_options"
+
+        if [[ "$in_cluster_storage_class_type" == "Default" ]]; then
+            export NON_COS_STORAGE_CLASS="standard"
+        else
+            typeset user_non_cos_storage_class
+            get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
+            echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
+            export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
+        fi
+    fi
+
+    # Update env.sh
+    sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS:-cos-s3-csi-s3fs-sc}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS:-standard}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 else
-    typeset user_non_cos_storage_class
-    get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
-    echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
-    export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
+    echo "Using local-hostpath storage mode - no storage class configuration needed"
+    sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 fi
-
-## Setup storage class for minio and default in cluster storage class
-sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 echo "----------------------------------------------------------------------"
 echo "----------------------  Deploying Minio  -----------------------------"

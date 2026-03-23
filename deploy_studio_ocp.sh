@@ -260,45 +260,90 @@ EOF
     fi
 
     echo "***********************************************************************************"
-    echo "-----------------------  Configure s3 storage classes -----------------------------"
+    echo "----------------------  Configure Storage Mode  -----------------------------------"
     echo "-----------------------------------------------------------------------------------"
-    echo "---------------- Verify the available storage classes in your cluster -------------"
-    echo "-----------------------------------------------------------------------------------"
-    echo "---------- You should already have setup the cloud object storage drivers ---------"
-    echo "-- See: https://cloud.ibm.com/docs/openshift?topic=openshift-storage_cos_install --"
     echo "***********************************************************************************"
-    echo "************************  You will enter the following  ***************************"
-    echo "--------------------------  COS_STORAGE_CLASS -------------------------------------"
-    echo "------------------------  NON_COS_STORAGE_CLASS ---------------------------------"
+    echo "Select the storage mode for your deployment:"
+    echo "  - cloud-object-storage: Use Cloud Object Storage (production) [DEFAULT]"
+    echo "  - cluster-block-storage: Use in-cluster dynamic provisioning"
+    echo "  - local-hostpath: Use local host directories (development/testing)"
     echo "***********************************************************************************"
 
-    while true; do
-        printf "%s " "Press enter to continue"
-        read ans
+    storage_mode_options="cloud-object-storage cluster-block-storage local-hostpath"
+    typeset storage_mode
 
-        typeset user_cos_storage_class
-        get_user_input "Enter COS_STORAGE_CLASS: " user_cos_storage_class
-        echo "COS_STORAGE_CLASS accepted: **$user_cos_storage_class**"
-        export COS_STORAGE_CLASS=$user_cos_storage_class
+    get_menu_selection \
+    "Select storage mode for your deployment:" \
+    storage_mode \
+    "$storage_mode_options"
 
-        typeset user_non_cos_storage_class
-        get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
-        echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
-        export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
+    export STORAGE_MODE=$storage_mode
+    echo "STORAGE_MODE selected: **$STORAGE_MODE**"
 
-        sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-        sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    # Update env.sh with storage mode
+    sed -i -e "s/export STORAGE_MODE=.*/export STORAGE_MODE=${STORAGE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-        python deployment-scripts/validate-env-files.py \
-        --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
-        --env-variables "" \
-        --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-        --env-sh-variables "COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS"
+    if [[ "$STORAGE_MODE" == "cloud-object-storage" ]] || [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
+        echo "***********************************************************************************"
+        echo "-----------------------  Configure s3 storage classes -----------------------------"
+        echo "-----------------------------------------------------------------------------------"
+        echo "---------------- Verify the available storage classes in your cluster -------------"
+        echo "-----------------------------------------------------------------------------------"
 
-        if [ $? -eq 0 ]; then
-            break
+        if [[ "$STORAGE_MODE" == "cloud-object-storage" ]]; then
+            echo "---------- You should already have setup the cloud object storage drivers ---------"
+            echo "-- See: https://cloud.ibm.com/docs/openshift?topic=openshift-storage_cos_install --"
         fi
-    done
+
+        echo "***********************************************************************************"
+        echo "************************  You will enter the following  ***************************"
+
+        if [[ "$STORAGE_MODE" == "cloud-object-storage" ]]; then
+            echo "--------------------------  COS_STORAGE_CLASS -------------------------------------"
+        fi
+
+        if [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
+            echo "------------------------  NON_COS_STORAGE_CLASS -----------------------------------"
+        fi
+
+        echo "***********************************************************************************"
+
+        while true; do
+            printf "%s " "Press enter to continue"
+            read ans
+
+            if [[ "$STORAGE_MODE" == "cloud-object-storage" ]]; then
+                typeset user_cos_storage_class
+                get_user_input "Enter COS_STORAGE_CLASS (cos-s3-csi-s3fs-sc or ibmc-s3fs-cos): " user_cos_storage_class
+                echo "COS_STORAGE_CLASS accepted: **$user_cos_storage_class**"
+                export COS_STORAGE_CLASS=$user_cos_storage_class
+            fi
+
+            if [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
+                typeset user_non_cos_storage_class
+                get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
+                echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
+                export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
+            fi
+
+            sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS:-cos-s3-csi-s3fs-sc}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+            sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS:-standard}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+            python deployment-scripts/validate-env-files.py \
+            --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
+            --env-variables "" \
+            --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
+            --env-sh-variables "COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS"
+
+            if [ $? -eq 0 ]; then
+                break
+            fi
+        done
+    else
+        echo "Using local-hostpath storage mode - no storage class configuration needed"
+        sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    fi
 
     cloud_object_storage_type_options="Cluster-deployment Cloud-managed-instance"
     typeset cloud_object_storage_type
@@ -457,7 +502,11 @@ EOF
 
         export POSTGRES_PASSWORD=devPostgresql123
 
-        ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV DO_NOT_SET_SCC
+        if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+            ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV
+        else
+            ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV DO_NOT_SET_SCC
+        fi
 
         kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
 

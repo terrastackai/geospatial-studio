@@ -87,6 +87,18 @@ sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DE
 sed -i -e "s|endpoint=.*|endpoint=https://localhost:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
 sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
+echo "***********************************************************************************"
+echo "----------------------  Configure Storage Mode  -----------------------------------"
+echo "***********************************************************************************"
+echo "Lima deployment uses cloud-object-storage mode with MinIO (default)"
+echo "***********************************************************************************"
+
+export STORAGE_MODE="cloud-object-storage"
+echo "STORAGE_MODE set to: **$STORAGE_MODE**"
+
+# Update env.sh with storage mode
+sed -i -e "s/export STORAGE_MODE=.*/export STORAGE_MODE=${STORAGE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
 ## Setup storage class for minio and default in cluster storage class
 sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=local-path/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
