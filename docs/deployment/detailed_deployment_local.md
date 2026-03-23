@@ -392,23 +392,17 @@ export DEPLOYMENT_ENV=crc
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 Use the `default` namespace
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
 =======
 Use the `default` namespace for *Lima VM* and *Minikube:*
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
+=======
+>>>>>>> c15dba1 (Update crc instructions)
 ```bash
 export OC_PROJECT=default
-```
-
-Create and use a dedicated namespace for *OpenShift local(CRC):*
-```bash
-export OC_PROJECT=geostudio-test
-oc new-project ${OC_PROJECT}
-
-# Then Configure security context constraints
-oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
 ```
 
 
@@ -438,16 +432,18 @@ DEPLOYMENT_ENV=crc
 
 # oc_project
 OC_PROJECT=default
-# For OpenShift local(CRC):
-OC_PROJECT=geostudio-test
 
 # cluster_url
 # For OpenShift local:
+<<<<<<< HEAD
 <<<<<<< HEAD
 export CLUSTER_URL='apps-crc.testing'
 =======
 export CLUSTER_URL='https://api.crc.testing:6443'
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
+=======
+export CLUSTER_URL='apps-crc.testing'
+>>>>>>> c15dba1 (Update crc instructions)
 
 # Otherwise use:
 export CLUSTER_URL=localhost
@@ -692,34 +688,14 @@ python ./deployment-scripts/update-deployment-template.py \
 
 # Apply MinIO deployment
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
+
+# Wait for MinIO to be ready
+kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 ```
-* Verify MinIO Service
+
+* Update MinIO Connection details:
   ```bash
-  # Set MinIO API URL
   export MINIO_API_URL="https://minio-api-$OC_PROJECT.$CLUSTER_URL"
-
-  # Wait for MinIO service to be ready
-  MAX_RETRIES=30
-  RETRY_DELAY=10
-
-  for i in $(seq 1 $MAX_RETRIES); do
-      if kubectl exec -n ${OC_PROJECT} $(kubectl get pod -n ${OC_PROJECT} -l app=minio -o jsonpath='{.items[0].metadata.name}') -- curl -ks -f "https://localhost:9000/minio/health/live" > /dev/null 2>&1; then
-          echo "✓ MinIO service is ready (attempt $i/$MAX_RETRIES)"
-          break
-      fi
-      
-      if [ $i -eq $MAX_RETRIES ]; then
-          echo "✗ MinIO service failed to become ready"
-          exit 1
-      fi
-      
-      echo "MinIO not ready yet (attempt $i/$MAX_RETRIES), waiting ${RETRY_DELAY}s..."
-      sleep $RETRY_DELAY
-  done
-  ```
-
-* Update MinIO Connection details
-  ```bash
   # Update `workspace/${DEPLOYMENT_ENV}/env/.env` with MinIO details for external connection
   sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
   sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
@@ -759,7 +735,20 @@ kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml 
 #### Otherwise, for Lima VM and Minikube:
 
 ```bash
+<<<<<<< HEAD
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
+=======
+### Install cloud object storage drivers in the cluster
+# Ensure node has labels required by drivers
+kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
+
+# Install the drivers
+cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
+kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
+
+>>>>>>> c15dba1 (Update crc instructions)
 # Create TLS for MinIO
 openssl genrsa -out minio-private.key 2048
 mkdir -p workspace/$DEPLOYMENT_ENV/initialisation
@@ -777,6 +766,7 @@ kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.ya
 # Install MinIO
 python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 # Apply MinIO deployment
 =======
@@ -815,20 +805,31 @@ kubectl label node $NODE topology.kubernetes.io/region=us-east-1 topology.kubern
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
 =======
 # Wait for MinIO to be ready:
+=======
+# Apply MinIO deployment
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
+
+# Wait for MinIO to be ready
+>>>>>>> c15dba1 (Update crc instructions)
 kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
 # Access MinIO Console:
 # Port forward to access MinIO console at https://localhost:9001
 kubectl port-forward -n ${OC_PROJECT} svc/minio-console 9001:9001 &
+kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 &
 
 # Login with username: `minioadmin`, password: `minioadmin`
 
+<<<<<<< HEAD
 ### Install cloud object storage drivers in the cluster
 # Ensure node has labels required by drivers
 kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
 
 
+=======
+
+>>>>>>> c15dba1 (Update crc instructions)
 # Also at this point update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with...
 export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc
 export NON_COS_STORAGE_CLASS=local-path
@@ -853,6 +854,7 @@ export NON_COS_STORAGE_CLASS=local-path
   ```
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 * Also at this point update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with...
   ```bash
@@ -862,6 +864,8 @@ export NON_COS_STORAGE_CLASS=local-path
   ```
 
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
+=======
+>>>>>>> c15dba1 (Update crc instructions)
 ### Create the required buckets
 Source the environment variables:
 <<<<<<< HEAD
@@ -871,6 +875,7 @@ Source the environment variables:
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 ```
 
+<<<<<<< HEAD
 Run the following script to create the buckets (For Lima VM and minikube only):
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
 
@@ -878,6 +883,8 @@ Run the following script to create the buckets (For Lima VM and minikube only):
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 ```
 
+=======
+>>>>>>> c15dba1 (Update crc instructions)
 Create required S3 buckets
 ```bash
 python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
@@ -918,6 +925,7 @@ Install postgres:
 
 ```bash
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Export postgres password
 export POSTGRES_PASSWORD=devPostgresql123
 
@@ -931,6 +939,15 @@ export POSTGRES_PASSWORD=devPostgresql123
 
 # Otherwise use:
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
+=======
+# Export postgres password
+export POSTGRES_PASSWORD=devPostgresql123
+
+# For OpenShift local(CRC):
+./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV
+
+# For Lima/Minikube:
+>>>>>>> c15dba1 (Update crc instructions)
 ./deployment-scripts/install-postgres.sh
 ```
 
@@ -941,12 +958,15 @@ kubectl wait --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=3
 
 Once completed, in terminal you will find some notes on the created postgres database. To prepare for the [create databases](#create-databases) section below, follow these steps..
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 * Export postgres password:
 ```bash
 export POSTGRES_PASSWORD=devPostgresql123
 ```
 >>>>>>> 31c028f (feat: Test Openshift local deployment)
+=======
+>>>>>>> c15dba1 (Update crc instructions)
 
 * To connect to your database from outside the cluster for [create databases](#create-databases) section below execute the following commands:
 
@@ -1019,10 +1039,15 @@ Deploy Keycloak for authentication:
 python ./deployment-scripts/update-keycloak-deployment.py --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 
 =======
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
+=======
+
+
+>>>>>>> c15dba1 (Update crc instructions)
 # Otherwise use:
 python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
 
@@ -1190,6 +1215,7 @@ For Lima and minikube:
 export GEOSERVER_URL=http://localhost:3000/geoserver
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
 =======
 # For openshift local(crc):
@@ -1197,6 +1223,8 @@ python ./deployment-scripts/update-deployment-template.py --storageclass ${NON_C
 
 
 # Otherwise use:
+=======
+>>>>>>> c15dba1 (Update crc instructions)
 python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
 
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
@@ -1267,10 +1295,14 @@ Update `workspace/${DEPLOYMENT_ENV}/env/env.sh`
 ```bash
 # Environment vars
 <<<<<<< HEAD
+<<<<<<< HEAD
 export ENVIRONMENT=local # set to 'crc' for Openshift Local(CRC)
 =======
 export ENVIRONMENT=local
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
+=======
+export ENVIRONMENT=local # set to 'crc' for Openshift Local(CRC)
+>>>>>>> c15dba1 (Update crc instructions)
 export ROUTE_ENABLED=false # set to true for Openshift Local(CRC)
 
 # storage config
@@ -1290,7 +1322,7 @@ export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/data
 =======
 export STORAGE_FILESYSTEM_ENABLED=true # set to false for Openshift Local(CRC)
 export CREATE_TUNING_FOLDERS_FLAG=false # set to true for Openshift Local(CRC)
-export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/data
+export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=
 export PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC=false
 >>>>>>> 36f1fcd (Update manual local deployment steps with CRC option)
 
