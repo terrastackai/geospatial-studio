@@ -104,21 +104,6 @@ echo "Waiting for PostgreSQL pods to terminate..."
 $KUBECTL_CMD wait --for=delete pod -l app.kubernetes.io/name=postgresql -n $OC_PROJECT --timeout=300s 2>/dev/null || echo "No PostgreSQL pods found or timeout reached"
 
 echo "----------------------------------------------------------------------"
-echo "--------------------  Deleting PVCs  ---------------------------------"
-echo "----------------------------------------------------------------------"
-
-# Delete Redis PVCs
-$KUBECTL_CMD delete pvc redis-data-geofm-redis-master-0 -n $OC_PROJECT 2>/dev/null || echo "Redis master PVC not found"
-$KUBECTL_CMD delete pvc redis-data-geofm-redis-replicas-0 -n $OC_PROJECT 2>/dev/null || echo "Redis replica PVC not found"
-
-# Delete PostgreSQL PVC
-$KUBECTL_CMD delete pvc data-postgresql-0 -n $OC_PROJECT 2>/dev/null || echo "PostgreSQL PVC not found"
-
-# Delete all Studio-related PVCs
-echo "Deleting all Studio-related PVCs..."
-$KUBECTL_CMD get pvc -n $OC_PROJECT -o name | grep -E "(gfm-|geofm-|inference-|generic-)" | xargs -r $KUBECTL_CMD delete -n $OC_PROJECT 2>/dev/null || echo "No additional Studio PVCs found"
-
-echo "----------------------------------------------------------------------"
 echo "--------------------  Deleting Deployments  --------------------------"
 echo "----------------------------------------------------------------------"
 
@@ -154,7 +139,11 @@ if [ -f "workspace/$DEPLOYMENT_ENV/initialisation/populate-buckets-default-pvc.y
 fi
 
 # Delete any remaining jobs
-$KUBECTL_CMD delete jobs -l app.kubernetes.io/instance=studio -n $OC_PROJECT 2>/dev/null || echo "No Studio jobs found"
+echo "Deleting all Studio-related jobs..."
+$KUBECTL_CMD delete jobs -l app.kubernetes.io/instance=studio -n $OC_PROJECT 2>/dev/null || echo "No Studio jobs with label found"
+
+# Delete jobs by name pattern (for jobs without the label)
+$KUBECTL_CMD get jobs -n $OC_PROJECT -o name | grep -E "(geofm-|gfm-|gateway-)" | xargs -r $KUBECTL_CMD delete -n $OC_PROJECT 2>/dev/null || echo "No additional Studio jobs found"
 
 echo "----------------------------------------------------------------------"
 echo "--------------------  Deleting Secrets  ------------------------------"
@@ -226,6 +215,21 @@ if [ -f "workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-c
     echo "Deleting IBM Object CSI Driver..."
     $KUBECTL_CMD delete -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/ 2>/dev/null || echo "CSI driver not found or already deleted"
 fi
+
+echo "----------------------------------------------------------------------"
+echo "--------------------  Deleting PVCs  ---------------------------------"
+echo "----------------------------------------------------------------------"
+
+# Delete Redis PVCs
+$KUBECTL_CMD delete pvc redis-data-geofm-redis-master-0 -n $OC_PROJECT 2>/dev/null || echo "Redis master PVC not found"
+$KUBECTL_CMD delete pvc redis-data-geofm-redis-replicas-0 -n $OC_PROJECT 2>/dev/null || echo "Redis replica PVC not found"
+
+# Delete PostgreSQL PVC
+$KUBECTL_CMD delete pvc data-postgresql-0 -n $OC_PROJECT 2>/dev/null || echo "PostgreSQL PVC not found"
+
+# Delete all Studio-related PVCs
+echo "Deleting all Studio-related PVCs..."
+$KUBECTL_CMD get pvc -n $OC_PROJECT -o name | grep -E "(gfm-|geofm-|inference-|generic-)" | xargs -r $KUBECTL_CMD delete -n $OC_PROJECT 2>/dev/null || echo "No additional Studio PVCs found"
 
 echo "----------------------------------------------------------------------"
 echo "--------------------  Removing Node Labels  --------------------------"
