@@ -515,4 +515,4 @@ geospatial-studio-pipelines:
           claimName: generic-python-processor-pvc
           bucket_name: BUCKET_GENERIC_PYTHON_PROCESSOR
           mountPath: /generic_data   
-          create: false  
+          create: true
