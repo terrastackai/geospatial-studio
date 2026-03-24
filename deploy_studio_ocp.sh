@@ -457,7 +457,13 @@ EOF
 
         export POSTGRES_PASSWORD=devPostgresql123
 
-        ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV DO_NOT_SET_SCC
+        # For CRC, we need volume permissions enabled, so don't use DO_NOT_SET_SCC
+        # For other OpenShift environments, storage may be pre-configured
+        if [[ "$DEPLOYMENT_ENV" == "crc" ]] || [[ "$DEPLOYMENT_ENV" == "crc-local" ]]; then
+            ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV
+        else
+            ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV DO_NOT_SET_SCC
+        fi
 
         kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
 
@@ -474,6 +480,10 @@ EOF
         python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
         sed -i -e "s/pg_uri=.*/pg_uri=postgresql.${OC_PROJECT}.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        
+        # Set PgBouncer configuration
+        sed -i -e "s/pgbouncer_host=.*/pgbouncer_host=geofm-pgbouncer.${OC_PROJECT}.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${POSTGRES_PASSWORD}/g" workspace/${DEPLOYMENT_ENV}/env/.env
     else
         echo "**********************************************************************"
         echo "**********************************************************************"
@@ -505,6 +515,10 @@ EOF
         done
 
         python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+        
+        # Set PgBouncer configuration for cloud-managed postgres
+        # Note: User needs to manually set pgbouncer_host if using external PgBouncer
+        sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${pg_password}/g" workspace/${DEPLOYMENT_ENV}/env/.env
     fi
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
@@ -753,6 +767,17 @@ EOF
     ./deployment-scripts/values-file-generate.sh
 
     cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+    # Replace credential placeholders with actual values from .env
+    source workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s|<postgres_host>|${pg_uri}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<postgres_port>|${pg_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_user>|${pg_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_pass>|${pg_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_host>|${pgbouncer_host}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_port>|${pgbouncer_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_user>|${pgbouncer_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_pass>|${pgbouncer_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
     # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
     gpu_configuration_options="GPU-Available No-GPU-Available"

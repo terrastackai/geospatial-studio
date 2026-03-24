@@ -1,0 +1,82 @@
+# PgBouncer configuration values
+# These values are inherited from the parent chart's pgbouncer section
+
+enabled: false
+fullnameOverride: geofm-pgbouncer
+
+# PgBouncer connection details
+host: <pgbouncer_host>
+port: 6432
+
+image:
+  repository: bitnamilegacy/pgbouncer
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Authentication configuration
+auth:
+  # Username for pgbouncer admin
+  username: <pgbouncer_user>
+  # Password for pgbouncer admin (should be set via secret)
+  password: <pgbouncer_pass>
+  # Postgres database credentials
+  database: postgres
+
+# PostgreSQL backend configuration
+postgresql:
+  # Hostname of the PostgreSQL server
+  host: <postgres_host>
+  # Port of the PostgreSQL server
+  port: 5432
+  # Database to connect to
+  database: postgres
+  # Username for PostgreSQL
+  username: <pg_user>
+  # Password for PostgreSQL (should be set via secret)
+  password: <pg_pass>
+
+# PgBouncer pooler configuration
+pooler:
+  # Pool mode: session, transaction, or statement
+  poolMode: transaction
+  # Maximum number of client connections
+  maxClientConnections: 1000
+  # Default pool size (number of server connections per database/user pair)
+  defaultPoolSize: 25
+  # Minimum pool size
+  minPoolSize: 10
+  # Reserve pool size
+  reservePoolSize: 5
+  # Maximum database connections per user
+  maxDbConnections: 50
+  # Maximum user connections
+  maxUserConnections: 50
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 6432
+
+# Resources
+resources:
+  limits:
+    cpu: "1"
+    memory: "1Gi"
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+
+# Security context
+podSecurityContext:
+  enabled: false
+  runAsUser: 'auto'
+
+containerSecurityContext:
+  enabled: false
+
+# Metrics
+metrics:
+  enabled: true
+  service:
+    type: ClusterIP
+    port: 9127

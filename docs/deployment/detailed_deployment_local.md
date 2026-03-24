@@ -6,11 +6,30 @@ Below we provide two different deployment options, which are similar during depl
 
 * Lima VM
 * Minikube
+* OpenShift Local (formerly CodeReady Containers)
+
+## Clone Repository
+
+```bash
+git clone https://github.com/IBM/geospatial-studio.git
+cd geospatial-studio
+```
+
+## Install Python Dependencies
+
+```bash
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
 
 ## VM cluster initialisation
-Here you need to follow either the Lima VM *or* the Minikube instructions.
+Here you need to follow the Lima VM *or* the Minikube  *or* the Openshift local(CRC) instructions.
 
-### Lima VM setup
+### [Option 1] Lima VM setup
 
 **Prerequisites**
 
@@ -26,22 +45,17 @@ Here you need to follow either the Lima VM *or* the Minikube instructions.
 
 1. Install [Lima VM](https://github.com/lima-vm/lima). Needs to be *v1.2.1* (not yet compatible with v2)
 
-2. Install Python dependencies:
-```shell
-pip install -f requirements.txt
-```
-
-3. Start the Lima VM cluster:
+2. Start the Lima VM cluster:
 ```shell
 limactl start --name=studio deployment-scripts/lima/studio.yaml
 ```
 
-4. Set up the kubectl context (*NB: you will need to do this in each terminal prompt where you with to interact with the cluster, i.e. deploy, k9s*):
+3. Set up the kubectl context (*NB: you will need to do this in each terminal prompt where you with to interact with the cluster, i.e. deploy, k9s*):
 ```shell
 export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 ```
 
-5. To monitor subsequent deployment on the cluster you can use a tool such as [k9s](https://k9scli.io).
+4. To monitor subsequent deployment on the cluster you can use a tool such as [k9s](https://k9scli.io).
 
 Other lima commands that you might find useful are:
 
@@ -59,7 +73,7 @@ limactl stop studio
 limactl delete studio --force
 ```
 
-### Minikube setup
+### [Option 2] Minikube setup
 
 **Prerequisites**
 
@@ -107,11 +121,73 @@ kubectl config current-context
 minikube dashboard
 ```
 
+### [Option 3] OpenShift Local setup (formerly CodeReady Containers)
+
+**Prerequisites**
+#### System Requirements
+- **CPU**: 8+ cores (12+ recommended)
+- **Memory**: 32GB RAM minimum (48GB recommended)
+- **Disk**: 100GB free space minimum
+- **OS**: Linux
+
+#### Required Software
+- [Red Hat OpenShift Local (CRC)](https://developers.redhat.com/products/openshift-local/overview)
+- [oc CLI](https://docs.openshift.com/container-platform/latest/cli_reference/openshift_cli/getting-started-cli.html)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [Helm 3](https://helm.sh/docs/intro/install/)
+- [Python 3.9+](https://www.python.org/downloads/)
+- [jq](https://github.com/jqlang/jq) - json command-line processor
+- [yq](https://github.com/mikefarah/yq) - yaml command-line processor
+
+### CRC Cluster setup
+
+```bash
+# Download from https://developers.redhat.com/products/openshift-local/overview
+# Or use package manager (macOS example):
+brew install --cask openshift-local
+
+# Verify installation
+crc version
+
+# Set up your host machine for CRC (one-time operation):
+crc setup
+
+# Start with recommended resources for geospatial workloads
+crc start --cpus 8 --memory 32768 --disk-size 100
+
+# Verify cluster is running
+crc status
+
+# Login to CRC
+# Use the credentials from crc start output
+eval $(crc oc-env)
+oc login -u kubeadmin -p <kubeadmin_password> https://api.crc.testing:6443
+
+# Access the OpenShift Container Platform web console with your default web browser.
+crc console
+
+# Alternatively, you can use a tool such as [k9s](https://k9scli.io).
+k9s
+
+
+
+# Useful commands:
+# stop the instance
+crc stop
+
+# Remove previous cluster (if present)
+crc delete
+
+# view the password for the developer and kubeadmin users
+crc console --credentials
+```
+
 
 ## Geospatial Studio - Deployment instructions (automated)
 
-If you want to use the automated deployment script, run the following command:
+For automated deployment in *Openshift local(CRC)* cluster, checkout [this documentation](crc_deployment.md).
 
+Otherwise for automated deployment in *Lima VM*, run the script below and follow the steps thereafter:
 ```shell
 ./deploy_studio_lima.sh
 ```
@@ -187,11 +263,17 @@ Provide a name for the deployment environment. This will be the name used for a 
 export DEPLOYMENT_ENV=lima
 # or
 export DEPLOYMENT_ENV=minikube
+# or
+export DEPLOYMENT_ENV=crc
 ```
 
-Use the `default` namespace in lima vm cluster
 ```bash
 export OC_PROJECT=default
+```
+
+
+```bash
+export IMAGE_REGISTRY=geospatial-studio
 ```
 
 This step will create two env scripts under the workspace/${DEPLOYMENT_ENV}/env folder.  One script contains just the secret values template, and the other script contains all the other general Geospatial configuration.
@@ -200,14 +282,34 @@ This step will create two env scripts under the workspace/${DEPLOYMENT_ENV}/env 
 ./deployment-scripts/setup-workspace-env.sh
 ```
 
-Update the CLUSTER_URL in `workspace/${DEPLOYMENT_ENV}/env/env.sh` to be:
+Update the DEPLOYMENT_ENV, OC_PROJECT, CLUSTER_URL variables  in `workspace/${DEPLOYMENT_ENV}/env/env.sh` to be:
 ```bash
-# CLUSTER
+# deployment_env
+DEPLOYMENT_ENV=lima
+# or
+DEPLOYMENT_ENV=minikube
+# or
+DEPLOYMENT_ENV=crc
+
+# oc_project
+OC_PROJECT=default
+
+# cluster_url
+# For OpenShift local:
+export CLUSTER_URL='apps-crc.testing'
+
+# Otherwise use:
 export CLUSTER_URL=localhost
+
 ```
 
 ***Note*** Work through each env var in `workspace/${DEPLOYMENT_ENV}/env` and poplulate environment variables as required at this time or as you generate them in the subsequent steps.
 
+
+Source the environment variables set:
+```bash
+source workspace/${DEPLOYMENT_ENV}/env/env.sh
+```
 
 ## 2. Storage setup
 
@@ -225,11 +327,141 @@ source workspace/$DEPLOYMENT_ENV/env/env.sh
 
 ### Set up S3 compatible storage
 
-#### MinIO
-
-Deploy MinIO for S3-compatible object storage:
+#### For Openshift local(CRC):
 ```bash
-# Install MinIO
+# Label the CRC node with required topology labels:
+oc label nodes crc topology.kubernetes.io/region=us-east --overwrite
+oc label nodes crc topology.kubernetes.io/zone=us-east --overwrite
+oc label nodes crc ibm-cloud.kubernetes.io/region=us-east --overwrite
+
+# Add IBM Helm repository:
+helm repo add ibm-helm https://raw.githubusercontent.com/IBM/charts/master/repo/ibm-helm
+helm repo update
+
+# Fetch the IBM Object Storage Plugin:
+helm fetch --untar ibm-helm/ibm-object-storage-plugin
+# Make the plugin script executable
+chmod +x ./ibm-object-storage-plugin/helm-ibmc/ibmc.sh
+# Install Helm plugin
+helm plugin install ./ibm-object-storage-plugin/helm-ibmc
+# Install IBM Object Storage Plugin
+helm ibmc install ibm-object-storage-plugin ibm-helm/ibm-object-storage-plugin \
+    --set license=true \
+    --set workerOS="redhat" \
+    --set region="us-east"
+
+# Wait for the plugin deployment to be ready:
+kubectl wait --for=condition=available deployment/ibmcloud-object-storage-plugin \
+    -n ibm-object-s3fs --timeout=300s
+
+# Create a ConfigMap for OpenShift TLS certificates:   
+kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trusted-ca-bundle
+  namespace: ibm-object-s3fs
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+data: {}
+EOF
+
+# Mount the CA bundle to the plugin deployment:
+oc set volume deployment/ibmcloud-object-storage-plugin \
+    --add \
+    --name=ca-bundle-vol \
+    --type=configmap \
+    --configmap-name=trusted-ca-bundle \
+    --mount-path=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
+    --read-only=true \
+    --sub-path=service-ca.crt \
+    -n ibm-object-s3fs
+
+# Verify the plugin is working:
+# Check plugin pods
+kubectl get pods -n ibm-object-s3fs
+
+# Check storage class
+kubectl get storageclass ibmc-s3fs-cos
+
+# Wait for plugin to initialize
+sleep 10
+
+# Configure Storage Classes
+# Set storage class environment variables
+export COS_STORAGE_CLASS=ibmc-s3fs-cos
+export NON_COS_STORAGE_CLASS=crc-csi-hostpath-provisioner
+# Update workspace env file
+sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+# Deploy MinIO:
+# Generate MinIO deployment YAML
+python ./deployment-scripts/update-deployment-template.py \
+    --disable-pvc \
+    --filename deployment-scripts/minio-deployment.yaml \
+    --storageclass ${NON_COS_STORAGE_CLASS} \
+    > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+
+# Apply MinIO deployment
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
+
+# Wait for MinIO to be ready
+kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
+```
+
+* Update MinIO Connection details:
+  ```bash
+  export MINIO_API_URL="https://minio-api-$OC_PROJECT.$CLUSTER_URL"
+  # Update `workspace/${DEPLOYMENT_ENV}/env/.env` with MinIO details for external connection
+  sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
+  sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
+  sed -i -e "s|endpoint=.*|endpoint=$MINIO_API_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
+  sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
+  ```
+
+* Configure Host Modifier DaemonSet: This step ensures MinIO is accessible from within pods
+  ```bash
+  # Get MinIO cluster IP and internal URL
+  export MINIO_CLUSTER_IP=$(oc get svc minio -n "${OC_PROJECT}" -o jsonpath='{.spec.clusterIP}')
+  export MINIO_INTERNAL_URL="minio.${OC_PROJECT}.svc.cluster.local"
+  export LOCAL_CA_CRT=$(oc get configmap trusted-ca-bundle -n ibm-object-s3fs -o jsonpath='{.data.service-ca\.crt}')
+
+  # Generate hosts modifier DaemonSet
+  cat deployment-scripts/crc-hosts-modifier-daemonset.yaml | \
+      sed -e "s/\$MINIO_CLUSTER_IP/$MINIO_CLUSTER_IP/g" | \
+      sed -e "s/\$MINIO_INTERNAL_URL/$MINIO_INTERNAL_URL/g" \
+      > workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
+
+  # Use common function to inject CA certificate
+  source ./common_functions.sh
+  auto_indent_and_replace \
+      workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml \
+      SELF_CA_CRT \
+      "$LOCAL_CA_CRT" \
+      workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml
+
+  # Apply DaemonSet
+  oc apply -f workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml -n default
+
+  # Clean up temporary file
+  rm workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
+  ```
+
+
+#### Otherwise, for Lima VM and Minikube:
+
+```bash
+### Install cloud object storage drivers in the cluster
+# Ensure node has labels required by drivers
+kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
+
+# Install the drivers
+cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
+kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
+
 # Create TLS for MinIO
 openssl genrsa -out minio-private.key 2048
 mkdir -p workspace/$DEPLOYMENT_ENV/initialisation
@@ -246,64 +478,45 @@ kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.ya
 
 # Install MinIO
 python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+
+# Apply MinIO deployment
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
-```
 
-Wait for MinIO to be ready:
-```bash
+# Wait for MinIO to be ready
 kubectl wait --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
-```
 
-#### Access MinIO Console
-To access the MinIO console:
-```bash
-# Port forward to access MinIO console at http://localhost:9001
+# Access MinIO Console:
+# Port forward to access MinIO console at https://localhost:9001
 kubectl port-forward -n ${OC_PROJECT} svc/minio-console 9001:9001 &
-```
-Login with username: `minioadmin`, password: `minioadmin`
-...
+kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 &
 
-#### Install cloud object storage drivers in the cluster
-```bash
-# Ensure node has labels required by drivers
-kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
+# Login with username: `minioadmin`, password: `minioadmin`
 
-# Install the drivers
-cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
-sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
-sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
-kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
+
+# Also at this point update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with...
+export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc
+export NON_COS_STORAGE_CLASS=local-path
 ```
 
 
-> Note:  This script should be run once only, if run before you should see the `deployment-scripts/.env` file 
 
 * Once the S3 instance has been created, you can add the credentials and endpoint to the `workspace/${DEPLOYMENT_ENV}/env/.env` file as shown below.
 
   ```
   access_key_id=minioadmin
   secret_access_key=minioadmin
-  #endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000
   endpoint=https://localhost:9000
   region=us-east
   ```
 
-* Also at this point update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with...
-  ```bash
-  # Storage classes
-  export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc
-  export NON_COS_STORAGE_CLASS=local-path
-  ```
-
 ### Create the required buckets
-
-Run the following script to create the buckets:
+Source the environment variables:
 
 ```bash
-# Port forward to access MinIO api at https://localhost:9000
-kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 &
+source workspace/${DEPLOYMENT_ENV}/env/env.sh
 ```
 
+Create required S3 buckets
 ```bash
 python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 ```
@@ -315,7 +528,6 @@ Once you create the buckets update the minio endpoint `workspace/${DEPLOYMENT_EN
 
 ```
 endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000
-#endpoint=https://127.0.0.1:9000
 ```
 
 
@@ -343,14 +555,22 @@ Install postgres:
 ***Note*** If you have an instance of postgres already installed, following this guide to [uninstall](postgres-uninstall.md).
 
 ```bash
+# Export postgres password
+export POSTGRES_PASSWORD=devPostgresql123
+
+# For OpenShift local(CRC):
+./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV
+
+# For Lima/Minikube:
 ./deployment-scripts/install-postgres.sh
 ```
 
+Wait for Postgresql to be ready:
+```bash
+kubectl wait --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
+```
+
 Once completed, in terminal you will find some notes on the created postgres database. To prepare for the [create databases](#create-databases) section below, follow these steps..
-* To get the password for "postgres" run:
-  ```bash
-  export POSTGRES_PASSWORD=$(kubectl get secret --namespace ${OC_PROJECT} postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
-  ```
 
 * To connect to your database from outside the cluster for [create databases](#create-databases) section below execute the following commands:
 
@@ -364,14 +584,10 @@ Once completed, in terminal you will find some notes on the created postgres dat
 * Update `workspace/${DEPLOYMENT_ENV}/env/.env` with...
   ```bash
   pg_username=postgres
-  pg_password=<POSTGRES_PASSWORD>
+  pg_password=$POSTGRES_PASSWORD
   pg_uri=127.0.0.1
   pg_port=5432
   pg_original_db_name='postgres'
-  ```
-  > Note: after completing [create databases](#create-databases) section below update   `pg_uri` in `workspace/${DEPLOYMENT_ENV}/env/.env` with...
-  ```bash
-  pg_uri=postgresql.$OC_PROJECT.svc.cluster.local
   ```
 
 ### Create databases
@@ -387,8 +603,7 @@ python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT
 Once you create the databases update the pg_uri in `workspace/${DEPLOYMENT_ENV}/env/.env` with
 
 ```
-pg_uri=postgresql.$OC_PROJECT.svc.cluster.local
-#pg_uri=127.0.0.1
+pg_uri=postgresql.${OC_PROJECT}.svc.cluster.local
 ```
 
 ## 4. Authenticator setup
@@ -405,7 +620,16 @@ source workspace/$DEPLOYMENT_ENV/env/env.sh
 
 Deploy Keycloak for authentication:
 ```bash
+# For Openshift local(CRC):
+python ./deployment-scripts/update-keycloak-deployment.py --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+
+
+
+# Otherwise use:
 python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+
+
+
 kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 ```
 
@@ -413,9 +637,25 @@ Wait for Keycloak to be ready:
 ```bash
 kubectl wait --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
 ```
+Setup Port Forwarding for Keycloak
+```bash
+kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 &
+sleep 5
+```
 
 #### Configure Keycloak Realm and Client
 You can either use the `deployment-scripts/setup-keycloak.sh` script to create the realm, client and test user, or you can follow the instructions below to create them manually through the Keycloak dashboard.
+
+```bash
+# Generate client secret and cookie secret
+export client_secret=$(cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
+export cookie_secret=$(cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
+
+# Run the automated script
+./deployment-scripts/setup-keycloak.sh
+```
+
+OR configure keycloak manually:
 
 ---
 1. **Access Keycloak Admin Console**:
@@ -476,12 +716,15 @@ You can either use the `deployment-scripts/setup-keycloak.sh` script to create t
    - Click "Save"
 ---
 
-Once you setup the authenticator (with either method), update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with...
+Once you setup the authenticator (with either method), update `workspace/${DEPLOYMENT_ENV}/env/env.sh` with...
 ```bash
 # AUTH
 export OAUTH_TYPE=keycloak # for Keycloak
 export OAUTH_CLIENT_ID=geostudio-client
 export OAUTH_ISSUER_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio
+# For Openshift local(crc):
+export OAUTH_URL=https://keycloak-$OC_PROJECT.$CLUSTER_URL/realms/geostudio/protocol/openid-connect/auth
+# Otherwise use:
 export OAUTH_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth
 ```
 
@@ -514,16 +757,48 @@ Update your etc hosts with the local urls
 ```bash
 # Add our internal cluster urls to etc hosts for seamless connectivity since some of the services may call these internal urls on host machine
 
-echo -e "\n#lima\n127.0.0.1 keycloak.$OC_PROJECT.svc.cluster.local postgresql.$OC_PROJECT.svc.cluster.local minio.$OC_PROJECT.svc.cluster.local geofm-ui.$OC_PROJECT.svc.cluster.local geofm-gateway.$OC_PROJECT.svc.cluster.local" >> /etc/hosts
+echo -e "\n#Studio\n127.0.0.1 keycloak.$OC_PROJECT.svc.cluster.local postgresql.$OC_PROJECT.svc.cluster.local minio.$OC_PROJECT.svc.cluster.local geofm-ui.$OC_PROJECT.svc.cluster.local geofm-gateway.$OC_PROJECT.svc.cluster.local" >> /etc/hosts
 ```
 
 ## 5. Geoserver setup
-To deploy Geoserver.  This will deploy geoserver, wait for the deployment to be completed and then start the required port-forwarding:
+This will deploy geoserver, wait for the deployment to be completed and then start the required port-forwarding:
+
+For Openshift Local(CRC):
+```bash
+# Set Geoserver Credentials
+export GEOSERVER_USERNAME="admin"
+export GEOSERVER_PASSWORD="geoserver"
+export GEOSERVER_URL="https://geofm-geoserver-$OC_PROJECT.$CLUSTER_URL/geoserver"
+
+# Configure SCC for Geoserver
+oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
+
+# Generate Geoserver deployment YAML
+python ./deployment-scripts/update-deployment-template.py \
+    --disable-pvc \
+    --filename deployment-scripts/geoserver-deployment.yaml \
+    --storageclass ${NON_COS_STORAGE_CLASS} \
+    --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") \
+    --geoserver-csrf-whitelist ${CLUSTER_URL} \
+    > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+
+# Apply Geoserver deployment
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
+```
+
+For Lima and minikube:
+
 ```bash
 export GEOSERVER_URL=http://localhost:3000/geoserver
 
-python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --disable-route | kubectl apply -f - -n ${OC_PROJECT}
+python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
 
+kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
+
+```
+
+Wait for Geoserver to be ready:
+```bash
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
 
 kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
@@ -575,22 +850,30 @@ redis_password=devPassword
 image_pull_secret_b64=
 ```
 
-Update `workspace/${DEPLOYMENT_ENV}/env/.env.sh`
+Update `workspace/${DEPLOYMENT_ENV}/env/env.sh`
 
 ```bash
 # Environment vars
-export ENVIRONMENT=local
-export ROUTE_ENABLED=false
+export ENVIRONMENT=local # set to 'crc' for Openshift Local(CRC)
+export ROUTE_ENABLED=false # set to true for Openshift Local(CRC)
 
 # storage config
-export SHARE_PIPELINE_PVC=true
+export SHARE_PIPELINE_PVC=true # set to false for Openshift Local(CRC)
 export STORAGE_PVC_ENABLED=true
-export STORAGE_FILESYSTEM_ENABLED=true
-export CREATE_TUNING_FOLDERS_FLAG=false
+export STORAGE_FILESYSTEM_ENABLED=true # set to false for Openshift Local(CRC)
+export CREATE_TUNING_FOLDERS_FLAG=false # set to true for Openshift Local(CRC)
+export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=
+export PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC=false
 
 # switch off oauth config (optional)
-export OAUTH_PROXY_ENABLED=false
-export OAUTH_PROXY_PORT=4180
+export OAUTH_PROXY_ENABLED=false # set to true for Openshift Local(CRC)
+export OAUTH_PROXY_PORT=4180 # set to 8443 for Openshift Local(CRC)
+```
+
+Set image Registry
+```bash
+export IMAGE_REGISTRY=geospatial-studio
+sed -i -e "s/export CONTAINER_IMAGE_REPOSITORY=.*/export CONTAINER_IMAGE_REPOSITORY=${IMAGE_REGISTRY}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 ```
 
 ## 7. Deploy Geospatial Studio services
@@ -600,7 +883,19 @@ export OAUTH_PROXY_PORT=4180
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 ```
 
-At this point, review `workspace/${DEPLOYMENT_ENV}/env/.env` and `workspace/${DEPLOYMENT_ENV}/env/env.sh` to ensure that you have collected all the needed environment variables and secrets. To generate values.yaml for `studio` charts, run the command below.
+At this point, review `workspace/${DEPLOYMENT_ENV}/env/.env` and `workspace/${DEPLOYMENT_ENV}/env/env.sh` to ensure that you have collected all the needed environment variables and secrets. 
+
+Validate all mandatory environment variables are defined:
+```bash
+python deployment-scripts/validate-env-files.py \
+    --env-file workspace/${DEPLOYMENT_ENV}/env/.env \
+    --env-variables "deployment_name,ocp_project,studio_api_key,studio_api_encryption_key,access_key_id,secret_access_key,endpoint,region,pg_username,pg_password,pg_uri,pg_port,pg_original_db_name,pg_studio_db_name,geoserver_username,geoserver_password,oauth_client_secret,oauth_cookie_secret,redis_password,image_pull_secret_b64" \
+    --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
+    --env-sh-variables "DEPLOYMENT_ENV,OC_PROJECT,ROUTE_ENABLED,CONTAINER_IMAGE_REPOSITORY,CLUSTER_URL,COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS,STORAGE_PVC_ENABLED,OAUTH_PROXY_ENABLED,OAUTH_PROXY_PORT,OAUTH_TYPE,OAUTH_CLIENT_ID,OAUTH_ISSUER_URL,OAUTH_URL"
+```
+
+
+To generate values.yaml for `studio` charts, run the command below.
 
 ```bash
 ./deployment-scripts/values-file-generate.sh
@@ -686,11 +981,23 @@ terratorch-inference:
 run-inference:
   enabled: false
   # ... more configurations
+```
 
+Configure GPU Settings
+```bash
+# For CRC without GPU:
+python ./deployment-scripts/remove-pipeline-gpu.py \
+    workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+# For CRC with GPU(remove affinity only):
+python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only \
+    workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+```
 
 Now you need to pull dependecies for dependent charts. Also, in some instances you might need to delete `geospatial-studio/Chart.lock` file when there are conflicts.
 
 ```bash
+helm dep update ./geospatial-studio/
 helm dependency build ./geospatial-studio/
 ```
 
@@ -699,7 +1006,7 @@ To see the helm template you can run the following command:
 helm template -f workspace/$DEPLOYMENT_ENV/values/geospatial-studio/values-deploy.yaml studio ./geospatial-studio/ --debug > dryrun.yaml
 ```
 
-To begin deployment run the two commands to deploy studio core services and the pipelines.
+To begin deployment run the command below to deploy studio core services and the pipelines.
 
 ```bash
 ./deployment-scripts/deploy_studio.sh

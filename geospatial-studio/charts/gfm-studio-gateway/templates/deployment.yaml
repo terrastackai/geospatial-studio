@@ -104,7 +104,7 @@ spec:
           command: ["python", "gfmstudio/fine_tuning/subscribe_new_mlflow_run.py"]
           envFrom:
             - secretRef:
-                name: {{ .Values.global.appNames.gateway }}-secrets
+                name: {{ .Values.global.appNames.gateway }}-jobs-secrets
       serviceAccountName: {{ .Values.serviceAccount.name }}
       volumes:
         {{- if .Values.global.oauth.oauthProxyEnabled }}
