@@ -14,7 +14,7 @@ repos:
     # You are encouraged to use static refs such as tags, instead of branch name
     #
     # Running "pre-commit autoupdate" automatically updates rev to latest tag
-    rev: 0.13.1+ibm.62.dss
+    rev: 0.13.1+ibm.64.dss
     hooks:
       - id: detect-secrets # pragma: whitelist secret
         # Add options for detect-secrets-hook binary. You can run `detect-secrets-hook --help` to list out all possible options.
@@ -25,7 +25,7 @@ repos:
         args: [--baseline, .secrets.baseline, --use-all-plugins]
 
   - repo: https://github.com/hadolint/hadolint
-    rev: v2.13.1-beta
+    rev: v2.14.0
     hooks:
       - id: hadolint
         args: ["--ignore=DL3007", "--ignore=DL4006"]
