@@ -327,7 +327,28 @@ crc status
 crc delete
 crc setup
 crc start
+
+# Errors with libvirt services and inotify file watch limit:
+## Check status
+sudo systemctl status libvirtd
+
+## If you see "Too many open files":
+## Increase the inotify limit temporarily
+sudo sysctl fs.inotify.max_user_instances=512
+sudo sysctl fs.inotify.max_user_watches=524288
+
+## Make it permanent
+echo "fs.inotify.max_user_instances=512" | sudo tee -a /etc/sysctl.conf
+echo "fs.inotify.max_user_watches=524288" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+
+## Then restart libvirtd
+sudo systemctl stop libvirtd
+sudo systemctl restart libvirtd
+
+# Now do crc cleanup, and start
 ```
+
 
 **Network issues:**
 ```bash
