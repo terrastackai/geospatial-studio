@@ -113,7 +113,7 @@ hooks:
       # Wait for gateway service to be ready before seeding
       waitForGateway:
         enabled: true
-        image: busybox:1.36
+        image: docker.io/library/busybox:latest
         sleepTime: 5      # Mount JSON payloads
       volumeMounts:
         - name: sandbox-models-payloads

@@ -211,7 +211,7 @@ spec:
       # Main container - keeps pod running for monitoring
       containers:
       - name: monitor
-        image: busybox:latest
+        image: docker.io/library/busybox:latest
         command: ['sh', '-c', 'echo "All images pulled successfully. Pod will remain running for monitoring." && sleep infinity']
         resources:
           requests:
