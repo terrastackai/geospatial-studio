@@ -877,10 +877,9 @@ if [ "$ans" = "y" ]; then
     read memory_request
     memory_request=${memory_request:-6}
     
-    echo ""
-    echo "Applying configuration:"
+    echo -e "\n Applying configuration:"
     echo "  CPU Limit: ${cpu_limit} cores, CPU Request: ${cpu_request} cores"
-    echo "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB"
+    echo -e "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB \n"
     
     # Call the update script with user-provided values
     python3 ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
@@ -888,11 +887,11 @@ if [ "$ans" = "y" ]; then
         --cpu-request "$cpu_request" \
         --memory-limit "$memory_limit" \
         --memory-request "$memory_request"
-    echo "Updated finetuning resource configurations"
+    echo -e " \n Updated finetuning resource configurations \n"
 else
-    echo "Not updating resource configurations."
+    echo -e "\n Not updating resource configurations."
     echo "You can manually edit workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml"
-    echo "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/"
+    echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
 fi
 
 
