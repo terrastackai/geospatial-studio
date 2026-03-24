@@ -101,11 +101,26 @@ global:
 
   postgres:
     in_cluster_db: false
+    # Direct postgres connection details
+    postgres_host: <postgres_host>
+    postgres_port: 5432
+    postgres_user: <pg_user>
+    postgres_password: <pg_pass>
+    # Database URI will be constructed based on pgbouncer.enabled flag
+    # If pgbouncer.enabled=true: postgresql://<user>:<pass>@<pgbouncer_host>:<pgbouncer_port>
+    # If pgbouncer.enabled=false: postgresql://<user>:<pass>@<postgres_host>:<postgres_port>
     backend_uri_base: postgresql://<pg_user>:<pg_pass>@<host>:<port>
     dbs:
       mlflow: mlflow
       gateway: geostudio
       auth: geostudio_auth
+
+  # PgBouncer configuration - connection pooler for PostgreSQL
+  # When enabled, all services will connect through PgBouncer instead of directly to PostgreSQL
+  pgbouncer:
+    enabled: PGBOUNCER_ENABLED
+    host: <pgbouncer_host>
+    port: 6432
 
   cesium:
     token: token
@@ -282,6 +297,33 @@ redis:
       enabled: true
     persistence:
       annotations: {}
+
+# pgbouncer - PostgreSQL connection pooler subchart
+pgbouncer:
+  enabled: PGBOUNCER_ENABLED
+  fullnameOverride: PGBOUNCER_FULL_NAME_OVERRIDE
+  image:
+    repository: bitnamilegacy/pgbouncer
+    tag: latest
+    pullPolicy: IfNotPresent
+  auth:
+    # Username for pgbouncer admin
+    username: <pgbouncer_user>
+    # Password for pgbouncer admin (should be set via secret)
+    password: <pgbouncer_pass>
+    # Postgres database credentials
+    database: postgres
+  postgresql:
+    # Hostname of the PostgreSQL server
+    host: <postgres_host>
+    # Port of the PostgreSQL server
+    port: 5432
+    # Database to connect to
+    database: postgres
+    # Username for PostgreSQL
+    username: <pg_user>
+    # Password for PostgreSQL (should be set via secret)
+    password: <pg_pass>
 
 # geospatial-studio-pipelines
 geospatial-studio-pipelines:

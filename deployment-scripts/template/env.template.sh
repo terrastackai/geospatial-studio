@@ -33,6 +33,10 @@ export LULC_TILE_ROOT=
 export LULC_TILE_SHAPEFILE=
 export LAND_POLYGON_PATH=https://osmdata.openstreetmap.de/download/land-polygons-complete-4326.zip
 
+# PgBouncer configuration (PostgreSQL connection pooler)
+export PGBOUNCER_ENABLED=true
+export PGBOUNCER_FULL_NAME_OVERRIDE=geofm-pgbouncer
+
 # Redis configuration
 export REDIS_ENABLED=true
 export REDIS_FULL_NAME_OVERRIDE=geofm-redis

@@ -193,6 +193,10 @@ python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT
 
 sed -i -e "s/pg_uri=.*/pg_uri=postgresql.$OC_PROJECT.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
+# Set PgBouncer configuration
+sed -i -e "s/pgbouncer_host=.*/pgbouncer_host=geofm-pgbouncer.$OC_PROJECT.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
+sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${POSTGRES_PASSWORD}/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 echo "----------------------------------------------------------------------"
@@ -310,6 +314,17 @@ echo "----------------------------------------------------------------------"
 ./deployment-scripts/values-file-generate.sh
 
 cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+# Replace credential placeholders with actual values from .env
+source workspace/${DEPLOYMENT_ENV}/env/.env
+sed -i -e "s|<postgres_host>|${pg_uri}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+sed -i -e "s|<postgres_port>|${pg_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+sed -i -e "s|<pg_user>|${pg_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+sed -i -e "s|<pg_pass>|${pg_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+sed -i -e "s|<pgbouncer_host>|${pgbouncer_host}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+sed -i -e "s|<pgbouncer_port>|${pgbouncer_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+sed -i -e "s|<pgbouncer_user>|${pgbouncer_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+sed -i -e "s|<pgbouncer_pass>|${pgbouncer_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
 # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
 NVIDIA_GPUS_AVAILABLE=$(kubectl describe node ${CLUSTER_NODE_NAME} | grep -c "nvidia.com")
