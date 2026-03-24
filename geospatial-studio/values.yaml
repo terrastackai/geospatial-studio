@@ -529,7 +529,7 @@ geospatial-studio-pipelines:
           claimName: gfm-ft-files-pvc
           bucket_name: BUCKET_FINE_TUNING
           mountPath: /tunes
-          create: PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC
+          create: false
       resources:
         limits:
           nvidia.com/gpu: '1'

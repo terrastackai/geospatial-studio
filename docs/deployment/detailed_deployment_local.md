@@ -863,7 +863,6 @@ export STORAGE_PVC_ENABLED=true
 export STORAGE_FILESYSTEM_ENABLED=true # set to false for Openshift Local(CRC)
 export CREATE_TUNING_FOLDERS_FLAG=false # set to true for Openshift Local(CRC)
 export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=
-export PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC=false
 
 # switch off oauth config (optional)
 export OAUTH_PROXY_ENABLED=false # set to true for Openshift Local(CRC)

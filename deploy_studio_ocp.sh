@@ -521,7 +521,7 @@ EOF
         sed -i -e "s/pg_original_db_name=.*/pg_original_db_name='postgres'/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
         python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
-        # After creating dbs; reset pg uri and port
+
         sed -i -e "s/pg_uri=.*/pg_uri=postgresql.${OC_PROJECT}.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
         
         # Set PgBouncer configuration
@@ -767,17 +767,14 @@ EOF
     sed -i -e "s/studio_api_key=.*/studio_api_key=$STUDIO_API_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
     sed -i -e "s/studio_api_encryption_key=.*/studio_api_encryption_key=$API_ENCRYPTION_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
-
     sed -i -e "s/redis_password=.*/redis_password=devPassword/g" workspace/${DEPLOYMENT_ENV}/env/.env
    
-
     sed -i -e "s/export ENVIRONMENT=.*/export ENVIRONMENT=${DEPLOYMENT_ENV}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export ROUTE_ENABLED=.*/export ROUTE_ENABLED=${IS_OPENSHIFT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export SHARE_PIPELINE_PVC=.*/export SHARE_PIPELINE_PVC=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export STORAGE_PVC_ENABLED=.*/export STORAGE_PVC_ENABLED=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export STORAGE_FILESYSTEM_ENABLED=.*/export STORAGE_FILESYSTEM_ENABLED=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export CREATE_TUNING_FOLDERS_FLAG=.*/export CREATE_TUNING_FOLDERS_FLAG=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC=.*/export PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
     sed -i -e "s/export OAUTH_PROXY_ENABLED=.*/export OAUTH_PROXY_ENABLED=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=8443/g" workspace/${DEPLOYMENT_ENV}/env/env.sh

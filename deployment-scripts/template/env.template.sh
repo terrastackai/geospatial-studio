@@ -44,7 +44,6 @@ export REDIS_ARCHITECTURE=replication
 
 # Pipelines configuration
 export PIPELINES_ENABLED=true
-export PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC=true
 
 # AUTH
 export OAUTH_PROXY_ENABLED=true

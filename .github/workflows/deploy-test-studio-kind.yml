@@ -213,6 +213,7 @@ jobs:
             if [[ "$POD_STATUS" == "Running" ]]; then
               echo "✅ pipelines-inference-planner is running!"
               kubectl get pods -n ${OC_PROJECT} | grep "pipelines-inference-planner"
+              break
             elif [[ "$POD_STATUS" == "NotFound" ]]; then
               echo "⚠️  pipelines-inference-planner pod not found yet"
             else
