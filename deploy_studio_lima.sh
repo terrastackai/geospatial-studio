@@ -158,12 +158,11 @@ kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 >> studio-pf.log 2>
 sleep 5
 
 # Keycloak setup
-export client_secret=`cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32`
-export cookie_secret=`cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32`
+export client_secret=$(head -c 32 /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
+export cookie_secret=$(head -c 32 /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
 
 ./deployment-scripts/setup-keycloak.sh
 
-# sed -i -e "s/oauth_client_secret=.*/oauth_client_secret=$client_secret/g" workspace/${DEPLOYMENT_ENV}/env/.env
 sed -i -e "s/oauth_cookie_secret=.*/oauth_cookie_secret=$cookie_secret/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
 sed -i -e "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" workspace/${DEPLOYMENT_ENV}/env/env.sh

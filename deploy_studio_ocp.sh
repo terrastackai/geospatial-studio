@@ -508,7 +508,7 @@ EOF
 
         kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
 
-        kubectl port-forward --namespace ${OC_PROJECT} svc/postgresql 54321:5432 &
+        kubectl port-forward --namespace ${OC_PROJECT} svc/postgresql 54320:5432 &
         sleep 5
 
         # Update .env with the Postgres details for local connection
@@ -516,7 +516,6 @@ EOF
         sed -i -e "s/pg_password=.*/pg_password=${POSTGRES_PASSWORD}/g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s/pg_uri=.*/pg_uri=127.0.0.1/g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s/pg_port=.*/pg_port=5432/g" workspace/${DEPLOYMENT_ENV}/env/.env
-        sed -i -e "s/pg_forwarded_port=.*/pg_forwarded_port=54321/g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s/pg_original_db_name=.*/pg_original_db_name='postgres'/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
         python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
@@ -582,8 +581,8 @@ EOF
         sleep 5
 
         # Keycloak setup
-        export client_secret=`cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32`
-        export cookie_secret=`cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32`
+        export client_secret=$(head -c 32 /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
+        export cookie_secret=$(head -c 32 /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
 
         ./deployment-scripts/setup-keycloak.sh
 
