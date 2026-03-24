@@ -722,6 +722,9 @@ Once you setup the authenticator (with either method), update `workspace/${DEPLO
 export OAUTH_TYPE=keycloak # for Keycloak
 export OAUTH_CLIENT_ID=geostudio-client
 export OAUTH_ISSUER_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio
+# For Openshift local(crc):
+export OAUTH_URL=https://keycloak-$OC_PROJECT.$CLUSTER_URL/realms/geostudio/protocol/openid-connect/auth
+# Otherwise use:
 export OAUTH_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth
 ```
 
