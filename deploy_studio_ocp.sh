@@ -854,13 +854,11 @@ if [ "$ans" = "y" ]; then
     
     echo ""
     echo "Applying configuration:"
-    echo "  GPU Limit: $gpu_limit, GPU Request: $gpu_request"
     echo "  CPU Limit: ${cpu_limit} cores, CPU Request: ${cpu_request} cores"
     echo "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB"
     
     # Call the update script with user-provided values
     python3 ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
-        --gpu-request "$gpu_request" \
         --cpu-limit "$cpu_limit" \
         --cpu-request "$cpu_request" \
         --memory-limit "$memory_limit" \
