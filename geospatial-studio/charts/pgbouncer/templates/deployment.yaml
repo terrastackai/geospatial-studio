@@ -1,0 +1,106 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.fullnameOverride }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.fullnameOverride }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.fullnameOverride }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.fullnameOverride }}
+    spec:
+      {{- if .Values.podSecurityContext.enabled }}
+      securityContext:
+        runAsUser: {{ .Values.podSecurityContext.runAsUser }}
+      {{- end }}
+      initContainers:
+      - name: setup-config
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        command:
+        - sh
+        - -c
+        - |
+          # Copy pgbouncer.ini from ConfigMap to writable location
+          cp /config-source/pgbouncer.ini /opt/bitnami/pgbouncer/conf/pgbouncer.ini
+          chmod 644 /opt/bitnami/pgbouncer/conf/pgbouncer.ini
+          
+          # Create userlist.txt with PostgreSQL credentials
+          # Format: "username" "password"
+          echo "\"$POSTGRESQL_USERNAME\" \"$POSTGRESQL_PASSWORD\"" > /opt/bitnami/pgbouncer/conf/userlist.txt
+          chmod 600 /opt/bitnami/pgbouncer/conf/userlist.txt
+          
+          echo "Configuration files created:"
+          ls -la /opt/bitnami/pgbouncer/conf/
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.fullnameOverride }}-config
+        env:
+        - name: POSTGRESQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.fullnameOverride }}-secret
+              key: postgresql-password
+        volumeMounts:
+        - name: config-source
+          mountPath: /config-source
+        - name: pgbouncer-conf
+          mountPath: /opt/bitnami/pgbouncer/conf
+      containers:
+      - name: pgbouncer
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        {{- if .Values.image.pullPolicy }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- end }}
+        {{- if .Values.containerSecurityContext.enabled }}
+        securityContext:
+          runAsUser: {{ .Values.containerSecurityContext.runAsUser }}
+        {{- end }}
+        # Use custom command to bypass Bitnami's auto-configuration
+        command:
+        - /bin/bash
+        - -c
+        - |
+          # Start PgBouncer with our custom config
+          exec pgbouncer /opt/bitnami/pgbouncer/conf/pgbouncer.ini
+        ports:
+        - name: pgbouncer
+          containerPort: {{ .Values.service.port }}
+          protocol: TCP
+        env:
+        - name: POSTGRESQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.fullnameOverride }}-secret
+              key: postgresql-password
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        livenessProbe:
+          tcpSocket:
+            port: pgbouncer
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: pgbouncer
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: pgbouncer-conf
+          mountPath: /opt/bitnami/pgbouncer/conf
+      volumes:
+      - name: config-source
+        configMap:
+          name: {{ .Values.fullnameOverride }}-config-ini
+          items:
+          - key: pgbouncer.ini
+            path: pgbouncer.ini
+      - name: pgbouncer-conf
+        emptyDir: {}
+{{- end }}
