@@ -276,14 +276,34 @@ echo "----------------------------------------------------------------------"
 
 cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
-# The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
+# The line below removes GPUs from the pipeline components and Finetuning job, to leave GPUs activated, copy out this line
+
+# Call the function
+get_menu_selection \
+    "Select whether you have GPU available in your cluster: " \
+    gpu_configuration_type \
+    "$gpu_configuration_options"
+
 NVIDIA_GPUS_AVAILABLE=$(kubectl describe node ${CLUSTER_NODE_NAME} | grep -c "nvidia.com")
-if [ "$NVIDIA_GPUS_AVAILABLE" -gt 0 ]; then
+
+if [[ "$gpu_configuration_type" == "GPU-Available" && "$NVIDIA_GPUS_AVAILABLE" -gt 0 ]]; then
+    # Get number of GPUs
     echo "Cluster Type: nvkind"
     python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+    # Keep the Job GPU configuration as is. 
+    echo "Keeping GPU configuration for Finetuning job in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
+    echo "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/"
 else
     echo "Cluster Type: standard kind"
     python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+    # remove job GPU request
+    echo "Removing GPU configuration from values.yaml"
+    python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+    --gpu-limit 0 \
+    --gpu-request 0
+    echo "--------------------------- Removed GPUs in the Cluster -------------------"
 fi
 
 echo "**********************************************************************"
@@ -302,27 +322,6 @@ echo "**********************************************************************"
 echo "------  Configure Fine-Tuning Job Resources  -------------------------"
 echo "**********************************************************************"
 echo "**********************************************************************"
-
-# Ask user if they have GPUs in their cluster. If Yes, keep configuration as is. If No, remove GPU configuration via the values.yaml
-if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
-    printf "%s " "Do you have GPUs in your cluster? (y/n): "
-    read ans
-else
-    # Non-interactive mode: use HAS_GPU environment variable (default to "n" for no GPU)
-    ans="${HAS_GPU:-n}"
-    echo "Non-interactive mode: HAS_GPU=$ans"
-fi
-
-if [ "$ans" = "y" ]; then
-    echo "Keeping GPU configuration in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
-    echo "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/"
-else
-    echo "Removing GPU configuration from values.yaml"
-    python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
-      --gpu-limit 0 \
-      --gpu-request 0
-    echo "--------------------------- Removed GPUs in the Cluster -------------------"
-fi
 
 
 # Ask user if they want to alter memory, CPU requests and limits for finetuning.

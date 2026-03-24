@@ -766,8 +766,19 @@ EOF
 
     if [[ "$gpu_configuration_type" == "GPU-Available" ]]; then
         python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+        # Keep the Job GPU configuration as is. 
+        echo "Keeping GPU configuration for Finetuning job in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
+        echo "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/"
     else
         python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+        
+        # remove job GPU request
+        echo "Removing GPU configuration from values.yaml"
+        python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+        --gpu-limit 0 \
+        --gpu-request 0
+        echo "--------------------------- Removed GPUs in the Cluster -------------------"
     fi
 
 else
@@ -794,35 +805,16 @@ echo "-----------  Make any changes to deployment values yaml --------------"
 echo "**********************************************************************"
 echo "**********************************************************************"
 
-printf "%s " "Press enter to continue"
-read ans
+if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+    printf "%s " "Press enter to continue"
+    read ans
+fi
 
 echo "**********************************************************************"
 echo "**********************************************************************"
 echo "------  Configure Fine-Tuning Job Resources  -------------------------"
 echo "**********************************************************************"
 echo "**********************************************************************"
-
-# Ask user if they have GPUs in their cluster. If Yes, keep configuration as is. If No, remove GPU configuration via the values.yaml
-if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
-    printf "%s " "Do you have GPUs in your cluster? (y/n): "
-    read ans
-else
-    # Non-interactive mode: use HAS_GPU environment variable (default to "n" for no GPU)
-    ans="${HAS_GPU:-n}"
-    echo "Non-interactive mode: HAS_GPU=$ans"
-fi
-
-if [ "$ans" = "y" ]; then
-    echo "Keeping GPU configuration in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
-    echo "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/"
-else
-    echo "Removing GPU configuration from values.yaml"
-    python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
-      --gpu-limit 0 \
-      --gpu-request 0
-    echo "--------------------------- Removed GPUs in the Cluster -------------------"
-fi
 
 
 # Ask user if they want to alter memory, CPU requests and limits for finetuning.
