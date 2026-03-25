@@ -960,9 +960,6 @@ export PIPELINES_ENABLED=true
 
 # Inference pipeline root folder
 export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/inference-data
-
-# Create tuning folders automatically
-export CREATE_TUNING_FOLDERS_FLAG=true
 ```
 
 Then regenerate values.yaml:
@@ -1027,9 +1024,6 @@ export NON_COS_STORAGE_CLASS=<your-block-storage-class>
 
 # Enable/disable PVC storage
 export STORAGE_PVC_ENABLED=true
-
-# Enable/disable filesystem storage
-export STORAGE_FILESYSTEM_ENABLED=false
 
 # Share pipeline PVC across pods
 export SHARE_PIPELINE_PVC=false

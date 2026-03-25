@@ -64,7 +64,6 @@ global:
     pvc:
       enabled: STORAGE_PVC_ENABLED
     filesystem:
-      enabled: STORAGE_FILESYSTEM_ENABLED
       dir: /data/
   
   objectStorage:
@@ -156,7 +155,7 @@ gfm-studio-gateway:
     celeryFlower:
   image:
     name: quay.io/geospatial-studio/geostudio-gateway
-    tag: latest
+    tag: uat-noncos-pvc
     # pullPolicy inherited from global.imagePullPolicy
     # Can be overridden here if needed
     pullPolicy: ""
@@ -187,7 +186,6 @@ gfm-studio-gateway:
   extraEnvironment:
     api:
       OBJECT_STORAGE_SIGNATURE_VERSION: s3v4
-      CREATE_TUNING_FOLDERS: CREATE_TUNING_FOLDERS_FLAG
       PIPELINES_V2_INFERENCE_ROOT_FOLDER: PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE
       ENVIRONMENT: ENVIRONMENT_VALUE
       ## Enable or disable GPU node affinity when scheduling fine-tuning jobs.
@@ -372,7 +370,6 @@ geospatial-studio-pipelines:
   nasaEarthBearerToken: nasa_earth_data_bearer_token
   storage:
     filesystem:
-      enabled: STORAGE_FILESYSTEM_ENABLED
       dir: /data/
   route:
     enabled: ROUTE_ENABLED

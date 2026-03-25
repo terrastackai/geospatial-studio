@@ -62,7 +62,6 @@ nasaEarthBearerToken: nasa_earth_data_bearer_token
 
 storage:
   filesystem:
-    enabled: STORAGE_FILESYSTEM_ENABLED
     dir: /data/
 
 route:
