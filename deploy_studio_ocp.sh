@@ -85,9 +85,9 @@ DEPLOY_KEYCLOAK="Deploy"
 DEPLOY_GEOSERVER="Deploy"
 DEPLOY_STUDIO="Deploy"
 
-# Check and prompt for MinIO only if it exists
-if kubectl get deployment minio -n ${OC_PROJECT} &> /dev/null; then
-    echo "⚠️  MinIO deployment already exists"
+# Check workspace config OR deployment existence for MinIO
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || kubectl get deployment minio -n ${OC_PROJECT} &> /dev/null; then
+    echo "⚠️  MinIO deployment or configuration already exists"
     minio_options="Deploy Skip"
     typeset deploy_minio_choice
     get_menu_selection \
@@ -96,12 +96,13 @@ if kubectl get deployment minio -n ${OC_PROJECT} &> /dev/null; then
         "$minio_options"
     DEPLOY_MINIO=$deploy_minio_choice
 else
-    echo "✓ MinIO: Will deploy (no existing deployment)"
+    echo "✓ MinIO: Will deploy (no existing deployment or configuration)"
+    DEPLOY_MINIO="Deploy"
 fi
 
-# Check and prompt for PostgreSQL only if it exists
-if kubectl get statefulset postgresql -n ${OC_PROJECT} &> /dev/null; then
-    echo "⚠️  PostgreSQL deployment already exists"
+# Check workspace config OR deployment existence for PostgreSQL
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || kubectl get statefulset postgresql -n ${OC_PROJECT} &> /dev/null; then
+    echo "⚠️  PostgreSQL deployment or configuration already exists"
     postgres_options="Deploy Skip"
     typeset deploy_postgres_choice
     get_menu_selection \
@@ -110,12 +111,13 @@ if kubectl get statefulset postgresql -n ${OC_PROJECT} &> /dev/null; then
         "$postgres_options"
     DEPLOY_POSTGRES=$deploy_postgres_choice
 else
-    echo "✓ PostgreSQL: Will deploy (no existing deployment)"
+    echo "✓ PostgreSQL: Will deploy (no existing deployment or configuration)"
+    DEPLOY_POSTGRES="Deploy"
 fi
 
-# Check and prompt for Keycloak only if it exists
-if kubectl get deployment keycloak -n ${OC_PROJECT} &> /dev/null; then
-    echo "⚠️  Keycloak deployment already exists"
+# Check workspace config OR deployment existence for Keycloak
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || kubectl get deployment keycloak -n ${OC_PROJECT} &> /dev/null; then
+    echo "⚠️  Keycloak deployment or configuration already exists"
     keycloak_options="Deploy Skip"
     typeset deploy_keycloak_choice
     get_menu_selection \
@@ -124,12 +126,13 @@ if kubectl get deployment keycloak -n ${OC_PROJECT} &> /dev/null; then
         "$keycloak_options"
     DEPLOY_KEYCLOAK=$deploy_keycloak_choice
 else
-    echo "✓ Keycloak: Will deploy (no existing deployment)"
+    echo "✓ Keycloak: Will deploy (no existing deployment or configuration)"
+    DEPLOY_KEYCLOAK="Deploy"
 fi
 
-# Check and prompt for GeoServer only if it exists
-if kubectl get deployment geofm-geoserver -n ${OC_PROJECT} &> /dev/null; then
-    echo "⚠️  GeoServer deployment already exists"
+# Check workspace config OR deployment existence for GeoServer
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || kubectl get deployment geofm-geoserver -n ${OC_PROJECT} &> /dev/null; then
+    echo "⚠️  GeoServer deployment or configuration already exists"
     geoserver_options="Deploy Skip"
     typeset deploy_geoserver_choice
     get_menu_selection \
@@ -138,12 +141,13 @@ if kubectl get deployment geofm-geoserver -n ${OC_PROJECT} &> /dev/null; then
         "$geoserver_options"
     DEPLOY_GEOSERVER=$deploy_geoserver_choice
 else
-    echo "✓ GeoServer: Will deploy (no existing deployment)"
+    echo "✓ GeoServer: Will deploy (no existing deployment or configuration)"
+    DEPLOY_GEOSERVER="Deploy"
 fi
 
-# Check and prompt for Studio only if it exists
-if kubectl get deployment geofm-ui -n ${OC_PROJECT} &> /dev/null; then
-    echo "⚠️  Geospatial Studio deployment already exists"
+# Check workspace config OR deployment existence for Studio
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || kubectl get deployment geofm-ui -n ${OC_PROJECT} &> /dev/null; then
+    echo "⚠️  Geospatial Studio deployment or configuration already exists"
     studio_options="Deploy Skip"
     typeset deploy_studio_choice
     get_menu_selection \
@@ -152,7 +156,8 @@ if kubectl get deployment geofm-ui -n ${OC_PROJECT} &> /dev/null; then
         "$studio_options"
     DEPLOY_STUDIO=$deploy_studio_choice
 else
-    echo "✓ Geospatial Studio: Will deploy (no existing deployment)"
+    echo "✓ Geospatial Studio: Will deploy (no existing deployment or configuration)"
+    DEPLOY_STUDIO="Deploy"
 fi
 
 echo ""
