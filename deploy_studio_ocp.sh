@@ -271,6 +271,8 @@ EOF
     echo "--------------------------  COS_STORAGE_CLASS -------------------------------------"
     echo "------------------------  NON_COS_STORAGE_CLASS ---------------------------------"
     echo "***********************************************************************************"
+    echo "-- Check StorageClasses values in the cluster for COS storage and block storage ---"
+
 
     while true; do
         printf "%s " "Press enter to continue"
@@ -843,17 +845,17 @@ echo "**********************************************************************"
 
 
 # Ask user if they want to alter memory, CPU requests and limits for finetuning.
-if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
-    printf "%s " "Do you want to alter memory, CPU requests and limits for finetuning? (y/n) "
-    read ans
-else
-    # Non-interactive mode: use CONFIGURE_RESOURCES environment variable (default to "n")
-    ans="${CONFIGURE_RESOURCES:-n}"
-    echo "Non-interactive mode: CONFIGURE_RESOURCES=$ans"
-fi
+configure_resources_options="No Yes"
+typeset configure_resources
+
+# Call the function
+get_menu_selection \
+    "Do you want to alter memory, CPU requests and limits for finetuning?" \
+    configure_resources \
+    "$configure_resources_options"
 
 # If yes, prompt user for memory limit, CPU limit, memory request and CPU request.
-if [ "$ans" = "y" ]; then
+if [ "$configure_resources" = "Yes" ]; then
     echo "Updating memory, CPU requests and limits for finetuning."
     echo ""
     
