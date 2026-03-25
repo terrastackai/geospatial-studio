@@ -1,32 +1,10 @@
 # © Copyright IBM Corporation 2025
 # SPDX-License-Identifier: Apache-2.0
 
-{{- if .Values.global.storage.pvc.enabled }}
-{{- if eq .Values.global.storage.storageMode "cloud-object-storage" }}
+{{- if .Values.storage.pvc.enabled }}
+{{- if eq .Values.storage.storageMode "cloud-object-storage" }}
 # handles both ibmc-s3fs-cos and ibmc-s3fs-cos-perf
 {{- if contains "ibmc-s3fs-cos" .Values.objectStorage.cos_storage_class }}
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: {{ .Values.inference_volume.pvc_name }} # Enter the name of the PVC.
-  namespace: {{ .Values.namespace }}
-  annotations:
-    ibm.io/region: {{ .Values.objectStorage.region }}
-    ibm.io/auto-create-bucket: {{ .Values.objectStorage.create_bucket | quote }}
-    ibm.io/auto-delete-bucket: {{ .Values.objectStorage.delete_bucket | quote }}
-    ibm.io/bucket: {{ .Values.objectStorage.buckets.inference }} # Enter the name (not the ID) of the standard class, regional bucket created in a previous step
-    ibm.io/secret-name: studio-cos-secret # Enter the name of the OpenShift Secret created in a previous step
-    ibm.io/endpoint: {{ .Values.objectStorage.endpoint }}
-    ibm.io/tls-cipher-suite: "default"
-spec:
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 50Gi
-  storageClassName: {{ .Values.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
----
 {{- range $v := .Values.processors }}{{ if hasKey $v "extra_volumes"}}{{- range $e := $v.extra_volumes }}{{ if hasKey $e "bucket_name" }}{{ if $e.create }}
 ---
 kind: PersistentVolumeClaim
@@ -51,39 +29,6 @@ spec:
   storageClassName: {{ $.Values.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 --- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
 {{- else if eq .Values.objectStorage.cos_storage_class "cos-s3-csi-s3fs-sc" }}
----
-apiVersion: v1
-kind: Secret
-type: cos-s3-csi-driver
-metadata:
-  name: pipelines-inference-cos-s3fs-secret
-  namespace: {{ .Values.namespace }}
-stringData:
-  uid: "10001"
-  bucketName: {{ .Values.objectStorage.buckets.inference }}
-  cosEndpoint: {{ .Values.objectStorage.endpoint }}
-  accessKey: {{ .Values.objectStorage.access_key }}
-  secretKey: {{ .Values.objectStorage.secret_key }}
-  mountOptions: |
-    dbglevel=info
-    ssl_verify_hostname=0
-    no_check_certificate
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ .Values.inference_volume.pvc_name }}
-  namespace: {{ .Values.namespace }}
-  annotations:
-    cos.csi.driver/secret: "pipelines-inference-cos-s3fs-secret"
-    cos.csi.driver/secret-namespace: {{ .Values.namespace }}
-spec:
-  storageClassName: {{ .Values.objectStorage.cos_storage_class }}
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
 {{- range $v := .Values.processors }}{{ if hasKey $v "extra_volumes"}}{{- range $e := $v.extra_volumes }}{{ if hasKey $e "bucket_name" }}{{ if $e.create }}
 ---
 apiVersion: v1
@@ -121,20 +66,7 @@ spec:
 --- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
 {{- end }}
 
-{{- else if eq .Values.global.storage.storageMode "cluster-block-storage" }}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ .Values.inference_volume.pvc_name }} # Enter the name of the PVC.
-  namespace: {{ .Values.global.namespace }}
-spec:
-  storageClassName: {{ .Values.non_cos_storage_class }}
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
+{{- else if eq .Values.storage.storageMode "cluster-block-storage" }}
 {{- range $v := .Values.processors }}{{ if hasKey $v "extra_volumes"}}{{- range $e := $v.extra_volumes }}{{ if hasKey $e "bucket_name" }}{{ if $e.create }}
 ---
 kind: PersistentVolumeClaim
@@ -151,38 +83,7 @@ spec:
   storageClassName: {{ $.Values.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 --- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
 
-{{- else if eq .Values.global.storage.storageMode "local-hostpath" }}
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: pipelines-inference-pv-volume
-  labels:
-    type: local
-spec:
-  storageClassName: manual
-  capacity:
-    storage: 20Gi
-  accessModes:
-    - ReadWriteMany
-  claimRef:
-    name: {{ .Values.inference_volume.pvc_name }}
-    namespace: {{ .Values.namespace }}
-  hostPath:
-    path: "/data/pipelines-inference-pvc"
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ .Values.inference_volume.pvc_name }}
-  namespace: {{ .Values.namespace }}
-spec:
-  storageClassName: manual
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: 20Gi
+{{- else if eq .Values.storage.storageMode "local-hostpath" }}
 {{- range $v := .Values.processors }}{{ if hasKey $v "extra_volumes"}}{{- range $e := $v.extra_volumes }}{{ if hasKey $e "bucket_name" }}{{ if $e.create }}
 ---
 apiVersion: v1

@@ -9,6 +9,27 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
+  name: {{ .Values.mountLocations.pipelines_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    ibm.io/region: {{ .Values.global.objectStorage.region }}
+    ibm.io/auto-create-bucket: {{ .Values.global.objectStorage.create_bucket | quote }}
+    ibm.io/auto-delete-bucket: {{ .Values.global.objectStorage.delete_bucket | quote }}
+    ibm.io/bucket: {{ .Values.global.objectStorage.buckets.inference }} # Enter the name (not the ID) of the standard class, regional bucket created in a previous step
+    ibm.io/secret-name: studio-cos-secret # Enter the name of the OpenShift Secret created in a previous step
+    ibm.io/endpoint: {{ .Values.global.objectStorage.endpoint }}
+    ibm.io/tls-cipher-suite: "default"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
   name: {{ .Values.mountLocations.files_pvc_name }} # Enter the name of the PVC.
   namespace: {{ .Values.global.namespace }}
   annotations:
@@ -84,6 +105,39 @@ spec:
   storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 
 {{- else if eq .Values.global.objectStorage.cos_storage_class "cos-s3-csi-s3fs-sc" }}
+---
+apiVersion: v1
+kind: Secret
+type: cos-s3-csi-driver
+metadata:
+  name: gateway-inference-cos-s3fs-secret
+  namespace: {{ .Values.global.namespace }}
+stringData:
+  uid: "10001" # Provide uid to run as non root user. This must match runAsUser in SecurityContext of pod spec.
+  bucketName: {{ .Values.global.objectStorage.buckets.inference }}
+  cosEndpoint: {{ .Values.global.objectStorage.endpoint }}
+  accessKey: {{ .Values.global.objectStorage.access_key }}
+  secretKey: {{ .Values.global.objectStorage.secret_key }}
+  mountOptions: |
+    dbglevel=info
+    ssl_verify_hostname=0
+    no_check_certificate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mountLocations.pipelines_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+  annotations:
+    cos.csi.driver/secret: "gateway-inference-cos-s3fs-secret"
+    cos.csi.driver/secret-namespace: {{ .Values.global.namespace }}
+spec:
+  storageClassName: {{ .Values.global.objectStorage.cos_storage_class }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
 ---
 apiVersion: v1
 kind: Secret
@@ -190,6 +244,19 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  name: {{ .Values.mountLocations.pipelines_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+spec:
+  storageClassName: {{ .Values.global.non_cos_storage_class }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
   name: {{ .Values.mountLocations.files_pvc_name }} # Enter the name of the PVC.
   namespace: {{ .Values.global.namespace }}
 spec:
@@ -226,6 +293,37 @@ spec:
     requests:
       storage: 20Gi
 {{- else if eq .Values.global.storage.storageMode "local-hostpath" }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: studio-inference-pv-volume
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 40Gi
+  accessModes:
+    - ReadWriteMany
+  claimRef:
+    name: {{ .Values.mountLocations.pipelines_pvc_name }} # Enter the name of the PVC.
+    namespace: {{ .Values.global.namespace }}
+  hostPath:
+    path: "/data/studio-inference-pvc"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.mountLocations.pipelines_pvc_name }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 40Gi
 ---
 apiVersion: v1
 kind: PersistentVolume

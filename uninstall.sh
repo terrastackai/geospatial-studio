@@ -225,7 +225,11 @@ $KUBECTL_CMD delete pvc redis-data-geofm-redis-master-0 -n $OC_PROJECT 2>/dev/nu
 $KUBECTL_CMD delete pvc redis-data-geofm-redis-replicas-0 -n $OC_PROJECT 2>/dev/null || echo "Redis replica PVC not found"
 
 # Delete PostgreSQL PVC
-$KUBECTL_CMD delete pvc data-postgresql-0 -n $OC_PROJECT 2>/dev/null || echo "PostgreSQL PVC not found"
+if [ -f "workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml" ]; then
+    $KUBECTL_CMD delete -f workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml -n $OC_PROJECT 2>/dev/null || echo "Geoserver docker secret not found"
+else
+    $KUBECTL_CMD delete pvc data-postgresql-0 -n $OC_PROJECT 2>/dev/null || echo "PostgreSQL PVC not found"
+fi
 
 # Delete all Studio-related PVCs
 echo "Deleting all Studio-related PVCs..."

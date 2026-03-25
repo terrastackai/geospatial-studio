@@ -369,6 +369,9 @@ geospatial-studio-pipelines:
     client_secret: sh_client_secret
   nasaEarthBearerToken: nasa_earth_data_bearer_token
   storage:
+    storageMode: STORAGE_MODE
+    pvc:
+      enabled: STORAGE_PVC_ENABLED
     filesystem:
       dir: /data/
   route:
@@ -399,6 +402,7 @@ geospatial-studio-pipelines:
       geoserver: BUCKET_GEOSERVER
       inference_auxdata: BUCKET_INFERENCE_AUXDATA
     cos_storage_class: COS_STORAGE_CLASS
+  non_cos_storage_class: NON_COS_STORAGE_CLASS
   serviceAccount:
     name: 'geostudio-sa'
   processors:
