@@ -461,7 +461,7 @@ EOF
 
         # For CRC, we need volume permissions enabled, so don't use DO_NOT_SET_SCC
         # For other OpenShift environments, storage may be pre-configured
-        if [[ "$DEPLOYMENT_ENV" == "crc" ]] || [[ "$DEPLOYMENT_ENV" == "crc-local" ]]; then
+        if ([[ "$DEPLOYMENT_ENV" == "crc" ]] || [[ "$DEPLOYMENT_ENV" == "crc-local" ]]) && [[ "$OC_PROJECT" == "default" ]]; then
             ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV
         else
             ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV DO_NOT_SET_SCC
