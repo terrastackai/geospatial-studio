@@ -1,0 +1,38 @@
+name: integration-tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      BASE_GATEWAY_URL: ${{ secrets.BASE_GATEWAY_URL }}
+      API_KEY: ${{ secrets.API_KEY }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Verify env injection (non-sensitive)
+        run: |
+          echo "BASE_GATEWAY_URL set? ${BASE_GATEWAY_URL:+yes}"
+          echo "API_KEY set? ${API_KEY:+yes}"
+
+      - name: Run integration tests
+        run: |
+          pytest -q -m integration --no-cov tests/integration/test_inference_models.py
