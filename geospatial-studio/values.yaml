@@ -265,8 +265,8 @@ redis:
         memory: "1Gi"  # 1 GiB RAM (reduced for CRC)
         ephemeral-storage: "2Gi"  # 2 GiB disk for AOF & RDB persistence
       requests:
-        cpu: "250m" # 0.25 CPU guaranteed
-        memory: "256Mi" # 256 MiB RAM guaranteed
+        cpu: "250m"  # 0.25 CPU guaranteed
+        memory: "256Mi"  # 256 MiB RAM guaranteed
         ephemeral-storage: "512Mi"  # 512 MiB guaranteed
     metrics:
       enabled: true
