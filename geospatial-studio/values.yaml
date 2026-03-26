@@ -205,6 +205,17 @@ gfm-studio-gateway:
       ## If multiple values are given, the pod can be scheduled on any node
       ## matching one of them.
       # NODE_GPU_SPEC: NVIDIA-A100-SXM4-80GB
+      # Use defaults in the defined jobs
+      # Resource requests (guaranteed minimum for fine-tuning jobs)
+      RESOURCE_LIMIT_GPU: 1         # Number of GPUs
+      RESOURCE_REQUEST_GPU: 1      # Number of GPUs
+
+      RESOURCE_LIMIT_CPU: 4   # CPU cores
+      RESOURCE_REQUEST_CPU: 2     
+
+      RESOURCE_LIMIT_Memory: 10     # Memory in GB
+      RESOURCE_REQUEST_Memory: 6   # Memory in GB
+
 
 # geofm-ui
 geofm-ui:

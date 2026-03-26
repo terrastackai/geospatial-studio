@@ -268,6 +268,8 @@ EOF
     echo "  - cluster-block-storage: Use in-cluster dynamic provisioning"
     echo "  - local-hostpath: Use local host directories (development/testing)"
     echo "***********************************************************************************"
+    echo "-- Check StorageClasses values in the cluster for COS storage and block storage ---"
+
 
     storage_mode_options="cloud-object-storage cluster-block-storage local-hostpath"
     typeset storage_mode
@@ -831,8 +833,19 @@ EOF
 
     if [[ "$gpu_configuration_type" == "GPU-Available" ]]; then
         python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+        # Keep the Job GPU configuration as is. 
+        echo "Keeping GPU configuration for Finetuning job in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
+        echo "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/"
     else
         python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+        
+        # remove job GPU request
+        echo "Removing GPU configuration from values.yaml"
+        python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+        --gpu-limit 0 \
+        --gpu-request 0
+        echo "--------------------------- Removed GPUs in the Cluster -------------------"
     fi
 
 else
@@ -859,8 +872,70 @@ echo "-----------  Make any changes to deployment values yaml --------------"
 echo "**********************************************************************"
 echo "**********************************************************************"
 
-printf "%s " "Press enter to continue"
-read ans
+if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+    printf "%s " "Press enter to continue"
+    read ans
+fi
+
+echo "**********************************************************************"
+echo "**********************************************************************"
+echo "------  Configure Fine-Tuning Job Resources  -------------------------"
+echo "**********************************************************************"
+echo "**********************************************************************"
+
+
+# Ask user if they want to alter memory, CPU requests and limits for finetuning.
+configure_resources_options="No Yes"
+typeset configure_resources
+
+# Call the function
+get_menu_selection \
+    "Do you want to alter memory, CPU requests and limits for finetuning?" \
+    configure_resources \
+    "$configure_resources_options"
+
+# If yes, prompt user for memory limit, CPU limit, memory request and CPU request.
+if [ "$configure_resources" = "Yes" ]; then
+    echo "Updating memory, CPU requests and limits for finetuning."
+    echo ""
+    
+    # Prompt for CPU limit
+    printf "%s " "CPU limit in cores (default: 4): "
+    read cpu_limit
+    cpu_limit=${cpu_limit:-4}
+    
+    # Prompt for CPU request
+    printf "%s " "CPU request in cores (default: 2): "
+    read cpu_request
+    cpu_request=${cpu_request:-2}
+    
+    # Prompt for Memory limit
+    printf "%s " "Memory limit in GB (default: 10): "
+    read memory_limit
+    memory_limit=${memory_limit:-10}
+    
+    # Prompt for Memory request
+    printf "%s " "Memory request in GB (default: 6): "
+    read memory_request
+    memory_request=${memory_request:-6}
+    
+    echo -e "\n Applying configuration:"
+    echo "  CPU Limit: ${cpu_limit} cores, CPU Request: ${cpu_request} cores"
+    echo -e "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB \n"
+    
+    # Call the update script with user-provided values
+    python3 ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+        --cpu-limit "$cpu_limit" \
+        --cpu-request "$cpu_request" \
+        --memory-limit "$memory_limit" \
+        --memory-request "$memory_request"
+    echo -e " \n Updated finetuning resource configurations \n"
+else
+    echo -e "\n Not updating resource configurations."
+    echo "You can manually edit workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml"
+    echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
+fi
+
 
 echo "----------------------------------------------------------------------"
 echo "----------------  Building Helm dependencies  ------------------------"
