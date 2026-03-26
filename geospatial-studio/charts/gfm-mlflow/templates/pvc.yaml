@@ -76,7 +76,7 @@ metadata:
 spec:
   storageClassName: {{ .Values.global.non_cos_storage_class }}
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 10Gi

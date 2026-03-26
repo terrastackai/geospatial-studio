@@ -249,7 +249,7 @@ metadata:
 spec:
   storageClassName: {{ .Values.global.non_cos_storage_class }}
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 50Gi
@@ -262,7 +262,7 @@ metadata:
 spec:
   storageClassName: {{ .Values.global.non_cos_storage_class }}
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 10Gi
@@ -275,7 +275,7 @@ metadata:
 spec:
   storageClassName: {{ .Values.global.non_cos_storage_class }}
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 10Gi
@@ -288,7 +288,7 @@ metadata:
 spec:
   storageClassName: {{ .Values.global.non_cos_storage_class }}
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   resources:
     requests:
       storage: 20Gi
