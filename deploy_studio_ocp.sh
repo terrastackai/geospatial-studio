@@ -85,8 +85,8 @@ DEPLOY_KEYCLOAK="Deploy"
 DEPLOY_GEOSERVER="Deploy"
 DEPLOY_STUDIO="Deploy"
 
-# Check workspace config OR deployment existence for MinIO
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || kubectl get deployment minio -n ${OC_PROJECT} &> /dev/null; then
+# Check workspace config AND deployment existence for MinIO
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && kubectl get deployment minio -n ${OC_PROJECT} &> /dev/null; then
     echo "⚠️  MinIO deployment or configuration already exists"
     minio_options="Deploy Skip"
     typeset deploy_minio_choice
@@ -100,8 +100,8 @@ else
     DEPLOY_MINIO="Deploy"
 fi
 
-# Check workspace config OR deployment existence for PostgreSQL
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || kubectl get statefulset postgresql -n ${OC_PROJECT} &> /dev/null; then
+# Check workspace config AND deployment existence for PostgreSQL
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && kubectl get statefulset postgresql -n ${OC_PROJECT} &> /dev/null; then
     echo "⚠️  PostgreSQL deployment or configuration already exists"
     postgres_options="Deploy Skip"
     typeset deploy_postgres_choice
@@ -115,8 +115,8 @@ else
     DEPLOY_POSTGRES="Deploy"
 fi
 
-# Check workspace config OR deployment existence for Keycloak
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || kubectl get deployment keycloak -n ${OC_PROJECT} &> /dev/null; then
+# Check workspace config AND deployment existence for Keycloak
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && kubectl get deployment keycloak -n ${OC_PROJECT} &> /dev/null; then
     echo "⚠️  Keycloak deployment or configuration already exists"
     keycloak_options="Deploy Skip"
     typeset deploy_keycloak_choice
@@ -130,8 +130,8 @@ else
     DEPLOY_KEYCLOAK="Deploy"
 fi
 
-# Check workspace config OR deployment existence for GeoServer
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || kubectl get deployment geofm-geoserver -n ${OC_PROJECT} &> /dev/null; then
+# Check workspace config AND deployment existence for GeoServer
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && kubectl get deployment geofm-geoserver -n ${OC_PROJECT} &> /dev/null; then
     echo "⚠️  GeoServer deployment or configuration already exists"
     geoserver_options="Deploy Skip"
     typeset deploy_geoserver_choice
@@ -145,8 +145,8 @@ else
     DEPLOY_GEOSERVER="Deploy"
 fi
 
-# Check workspace config OR deployment existence for Studio
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || kubectl get deployment geofm-ui -n ${OC_PROJECT} &> /dev/null; then
+# Check workspace config AND deployment existence for Studio
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && kubectl get deployment geofm-ui -n ${OC_PROJECT} &> /dev/null; then
     echo "⚠️  Geospatial Studio deployment or configuration already exists"
     studio_options="Deploy Skip"
     typeset deploy_studio_choice
