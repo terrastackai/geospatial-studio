@@ -291,6 +291,14 @@ sed -i -e "s|<pgbouncer_port>|${pgbouncer_port}|g" workspace/${DEPLOYMENT_ENV}/v
 sed -i -e "s|<pgbouncer_user>|${pgbouncer_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 sed -i -e "s|<pgbouncer_pass>|${pgbouncer_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
+# The line below removes GPUs from the pipeline components and Finetuning job, to leave GPUs activated, copy out this line
+
+# Call the function
+get_menu_selection \
+    "Select whether you have GPU available in your cluster: " \
+    gpu_configuration_type \
+    "$gpu_configuration_options"
+
 # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
 NVIDIA_GPUS_AVAILABLE=$(kubectl describe node ${CLUSTER_NODE_NAME} | grep -c "nvidia.com")
 
