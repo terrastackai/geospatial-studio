@@ -261,12 +261,12 @@ redis:
         runAsUser: 'auto'
     resources:
       limits:
-        cpu: "2"  # 2 CPU cores (reduced for CRC)
-        memory: "2Gi"  # 2 GiB RAM (reduced for CRC)
+        cpu: "1"  # 1 CPU core (reduced for CRC)
+        memory: "1Gi"  # 1 GiB RAM (reduced for CRC)
         ephemeral-storage: "2Gi"  # 2 GiB disk for AOF & RDB persistence
       requests:
-        cpu: "1"  # 1 CPU guaranteed
-        memory: "1Gi"  # 1GiB RAM guaranteed
+        cpu: "250m" # 0.25 CPU guaranteed
+        memory: "256Mi" # 256 MiB RAM guaranteed
         ephemeral-storage: "512Mi"  # 512 MiB guaranteed
     metrics:
       enabled: true
