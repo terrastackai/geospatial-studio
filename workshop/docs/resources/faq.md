@@ -40,7 +40,7 @@ By completing this workshop, you will:
 
 ### How long does the workshop take?
 
-**Total time:** 3-4 hours
+**Total time:** 5-6 hours
 
 - **Pre-work (deployment):** 1-1.5 hours
 - **Introduction:** 15 minutes
@@ -48,6 +48,7 @@ By completing this workshop, you will:
 - **Lab 2 (Onboarding Pre-computed Examples):** 20 minutes
 - **Lab 3 (Upload Model Checkpoints and Run Inference):** 30 minutes
 - **Lab 4 (Training a Custom Model for Wildfire Burn Scar Detection):** 60-90 minutes
+- **Lab 5 (Training a Multimodal Model for Flood Detection):** 90-120 minutes
 
 You can complete labs at your own pace and take breaks as needed.
 

@@ -55,6 +55,7 @@ graph LR
     C --> D[Lab 2<br/>Onboard Examples]
     D --> E[Lab 3<br/>Upload & Infer]
     E --> F[Lab 4<br/>Train Model]
+    F --> G[Lab 5<br/>Multimodal AI]
     
     style A fill:#0f62fe,stroke:#fff,color:#fff
     style B fill:#8a3ffc,stroke:#fff,color:#fff
@@ -62,6 +63,7 @@ graph LR
     style D fill:#42be65,stroke:#fff,color:#fff
     style E fill:#ff7eb6,stroke:#fff,color:#fff
     style F fill:#fa4d56,stroke:#fff,color:#fff
+    style G fill:#ee5396,stroke:#fff,color:#fff
 ```
 
 ## ⏱️ Time Breakdown
@@ -74,7 +76,8 @@ graph LR
 | **Lab 2** | 20 minutes | Onboarding Pre-computed Examples (Beginner) |
 | **Lab 3** | 30 minutes | Upload Model Checkpoints and Run Inference (Intermediate) |
 | **Lab 4** | 60-90 minutes | Training a Custom Model for Wildfire Burn Scar Detection (Intermediate) |
-| **Total** | ~3-4 hours | Including breaks |
+| **Lab 5** | 90-120 minutes | Training a Multimodal Model for Flood Detection (Advanced) |
+| **Total** | ~5-6 hours | Including breaks |
 
 ## 🎓 Workshop Format
 

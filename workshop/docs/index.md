@@ -18,7 +18,7 @@ This workshop is designed for beginners who have never heard of Geospatial Studi
 
 ## ⏱️ Workshop Duration
 
-**Total Time:** Approximately 3-4 hours
+**Total Time:** Approximately 5-6 hours
 
 - **Pre-work:** 1-1.5 hours (deployment and setup)
 - **Introduction:** 15 minutes (reading)
@@ -26,6 +26,7 @@ This workshop is designed for beginners who have never heard of Geospatial Studi
 - **Lab 2 - Onboarding Pre-computed Examples:** 20 minutes (Beginner)
 - **Lab 3 - Upload Model Checkpoints and Run Inference:** 30 minutes (Intermediate)
 - **Lab 4 - Training a Custom Model for Wildfire Burn Scar Detection:** 60-90 minutes (Intermediate, includes model training)
+- **Lab 5 - Training a Multimodal Model for Flood Detection:** 90-120 minutes (Advanced, includes multimodal training)
 
 ## 🎓 Target Audience
 
@@ -49,7 +50,7 @@ cd geospatial-studio/workshop/docs/notebooks
 
 This repository includes:
 
-- ✅ All lab notebooks (Lab 1-4)
+- ✅ All lab notebooks (Lab 1-5)
 - ✅ JSON configuration files (model templates, datasets, backbones)
 - ✅ Sample data references
 - ✅ Complete workshop documentation
@@ -108,6 +109,13 @@ Complete an end-to-end workflow: onboard a training dataset, fine-tune a foundat
 **Time:** 60-90 minutes (includes model training) | **Difficulty:** Intermediate
 
 **Note:** This lab requires GPU access for model training. If GPUs are not available, you can use an existing fine-tuned model or train outside Studio using TerraTorch.
+
+### Lab 5: Training a Multimodal Model for Flood Detection with TerraMind
+Advanced multimodal workflow combining Sentinel-1 SAR and Sentinel-2 optical data. Learn to work with TerraMind foundation model, configure multimodal datasets, and run inference with multiple sensor modalities for robust flood detection.
+
+**Time:** 90-120 minutes (includes multimodal training) | **Difficulty:** Advanced
+
+**Note:** This lab uses TerraMind Tiny which can run on CPU (2-4 hours) or GPU (60-90 minutes). Demonstrates real-world disaster response scenarios with complementary sensor data.
 
 ## 🚀 Getting Started
 

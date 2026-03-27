@@ -65,6 +65,23 @@ Complete an end-to-end workflow:
 
 ---
 
+### Lab 5: Training a Multimodal Model for Flood Detection with TerraMind
+**File:** `lab5-flood-multimodal-workflow.ipynb`
+
+Advanced multimodal workflow:
+- Work with multimodal satellite data (Sentinel-1 SAR + Sentinel-2 optical)
+- Onboard and configure multimodal training datasets
+- Register and configure TerraMind foundation model
+- Submit and monitor multimodal fine-tuning
+- Run inference with multiple sensor modalities
+- Understand complementary sensor fusion for robust predictions
+
+**Estimated Time:** 90-120 minutes (includes multimodal training) | **Difficulty:** Advanced
+
+**Note:** Uses TerraMind Tiny which can run on CPU (2-4 hours) or GPU (60-90 minutes). Demonstrates real-world disaster response scenarios.
+
+---
+
 ## How to Use These Notebooks
 
 ### Prerequisites
@@ -93,7 +110,7 @@ jupyter notebook
 
 **Why the full repository is required:**
 
-- ✅ Notebooks reference JSON configs from `populate-studio/payloads/`
+- ✅ Notebooks reference JSON configs from shared directories
 - ✅ Proper directory structure for all file paths
 - ✅ Easy to update with `git pull`
 - ✅ Access to all workshop materials and shared resources
@@ -130,6 +147,7 @@ These notebooks are adapted from the official Geospatial Studio examples:
 - **Lab 2:** Based on [`002-Add-Precomputed-Examples.ipynb`](https://github.com/terrastackai/geospatial-studio-toolkit/blob/main/examples/inference/002-Add-Precomputed-Examples.ipynb)
 - **Lab 3:** Based on [`001-Introduction-to-Inferencing.ipynb`](https://github.com/terrastackai/geospatial-studio-toolkit/blob/main/examples/inference/001-Introduction-to-Inferencing.ipynb)
 - **Lab 4:** Based on [`GeospatialStudio-Walkthrough-BurnScars.ipynb`](https://github.com/terrastackai/geospatial-studio-toolkit/blob/main/examples/e2e-walkthroughs/GeospatialStudio-Walkthrough-BurnScars.ipynb)
+- **Lab 5:** Based on [`GeospatialStudio-Walkthrough-Flooding.ipynb`](https://github.com/terrastackai/geospatial-studio-toolkit/blob/main/examples/e2e-walkthroughs/GeospatialStudio-Walkthrough-Flooding.ipynb)
 
 ---
 

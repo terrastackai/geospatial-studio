@@ -45,7 +45,12 @@ This workshop provides a complete learning path for IBM Geospatial Studio, desig
    - Fine-tuning models
    - Deploying and monitoring
 
-**Total Workshop Time**: 4.5 - 6 hours
+5. **Lab 5: Multimodal Flood Detection with TerraMind** (90-120 minutes)
+   - Working with multimodal satellite data (SAR + Optical)
+   - Training TerraMind foundation model
+   - Advanced multimodal inference workflows
+
+**Total Workshop Time**: 6 - 8 hours
 
 ## 🚀 Quick Start
 
