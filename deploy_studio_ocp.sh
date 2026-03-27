@@ -326,14 +326,35 @@ EOF
             echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
             export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
 
+            # Select PVC access mode
+            echo "***********************************************************************************"
+            echo "----------------------  Configure PVC Access Mode  --------------------------------"
+            echo "-----------------------------------------------------------------------------------"
+            echo "Select the access mode for Persistent Volume Claims:"
+            echo "  - ReadWriteOnce: Volume can be mounted as read-write by a single node"
+            echo "  - ReadWriteMany: Volume can be mounted as read-write by many nodes"
+            echo "***********************************************************************************"
+
+            pvc_access_mode_options="ReadWriteOnce ReadWriteMany"
+            typeset pvc_access_mode
+
+            get_menu_selection \
+                "Select PVC access mode:" \
+                pvc_access_mode \
+                "$pvc_access_mode_options"
+
+            export PVC_ACCESS_MODE=$pvc_access_mode
+            echo "PVC_ACCESS_MODE selected: **$PVC_ACCESS_MODE**"
+
             sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS:-ibmc-s3fs-cos}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
             sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS:-standard}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+            sed -i -e "s/export PVC_ACCESS_MODE=.*/export PVC_ACCESS_MODE=${PVC_ACCESS_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
             python deployment-scripts/validate-env-files.py \
             --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
             --env-variables "" \
             --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-            --env-sh-variables "COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS"
+            --env-sh-variables "COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS,PVC_ACCESS_MODE"
 
             if [ $? -eq 0 ]; then
                 break
@@ -858,7 +879,7 @@ else
         --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
         --env-variables "deployment_name,ocp_project,studio_api_key,studio_api_encryption_key,access_key_id,secret_access_key,endpoint,region,pg_username,pg_password,pg_uri,pg_port,pg_original_db_name,pg_studio_db_name,geoserver_username,geoserver_password,oauth_client_secret,oauth_cookie_secret,redis_password,image_pull_secret_b64" \
         --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-        --env-sh-variables "DEPLOYMENT_ENV,OC_PROJECT,ROUTE_ENABLED,CONTAINER_IMAGE_REPOSITORY,CLUSTER_URL,COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS,STORAGE_PVC_ENABLED,OAUTH_PROXY_ENABLED,OAUTH_PROXY_PORT,OAUTH_TYPE,OAUTH_CLIENT_ID,OAUTH_ISSUER_URL,OAUTH_URL"
+        --env-sh-variables "DEPLOYMENT_ENV,OC_PROJECT,ROUTE_ENABLED,CONTAINER_IMAGE_REPOSITORY,CLUSTER_URL,STORAGE_MODE,PVC_ACCESS_MODE,COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS,STORAGE_PVC_ENABLED,OAUTH_PROXY_ENABLED,OAUTH_PROXY_PORT,OAUTH_TYPE,OAUTH_CLIENT_ID,OAUTH_ISSUER_URL,OAUTH_URL"
 
         if [ $? -eq 0 ]; then
             break
@@ -924,7 +945,7 @@ if [ "$configure_resources" = "Yes" ]; then
     echo -e "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB \n"
     
     # Call the update script with user-provided values
-    python3 ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+    python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
         --cpu-limit "$cpu_limit" \
         --cpu-request "$cpu_request" \
         --memory-limit "$memory_limit" \

@@ -89,6 +89,7 @@ global:
     cos_storage_class: COS_STORAGE_CLASS
 
   non_cos_storage_class: NON_COS_STORAGE_CLASS
+  pvc_access_mode: PVC_ACCESS_MODE
 
   serviceAccount: 
     create: true
@@ -414,6 +415,7 @@ geospatial-studio-pipelines:
       inference_auxdata: BUCKET_INFERENCE_AUXDATA
     cos_storage_class: COS_STORAGE_CLASS
   non_cos_storage_class: NON_COS_STORAGE_CLASS
+  pvc_access_mode: PVC_ACCESS_MODE
   serviceAccount:
     name: 'geostudio-sa'
   processors:

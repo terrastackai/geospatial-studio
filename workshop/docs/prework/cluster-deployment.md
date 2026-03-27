@@ -308,6 +308,7 @@ The script will pause and display:
    
    # For block storage (used by databases, Redis, etc.)
    export NON_COS_STORAGE_CLASS=<your-block-storage-class>
+   export PVC_ACCESS_MODE=<your-access-mode>
    ```
 
 4. Press Enter in the script terminal to continue
@@ -324,7 +325,7 @@ The script will pause and display:
 
 !!! tip "Storage Class Requirements"
     - **COS_STORAGE_CLASS**: Must support S3-compatible storage or file storage
-    - **NON_COS_STORAGE_CLASS**: Must support ReadWriteOnce (RWO) block storage
+    - **NON_COS_STORAGE_CLASS**: Must support ReadWriteOnce (RWO) / ReadWriteMany (RWX) block storage
 
 ### 3. Object Storage Configuration
 
@@ -1021,6 +1022,7 @@ Edit `workspace/${DEPLOYMENT_ENV}/env/env.sh`:
 # Storage classes (already configured during deployment)
 export COS_STORAGE_CLASS=<your-s3-compatible-storage-class>
 export NON_COS_STORAGE_CLASS=<your-block-storage-class>
+export PVC_ACCESS_MODE=<your-access-mode>
 
 # Enable/disable PVC storage
 export STORAGE_PVC_ENABLED=true

@@ -391,6 +391,7 @@ sleep 10
 # Set storage class environment variables
 export COS_STORAGE_CLASS=ibmc-s3fs-cos
 export NON_COS_STORAGE_CLASS=crc-csi-hostpath-provisioner
+export PVC_ACCESS_MODE=ReadWriteOnce
 # Update workspace env file
 sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
@@ -888,7 +889,7 @@ python deployment-scripts/validate-env-files.py \
     --env-file workspace/${DEPLOYMENT_ENV}/env/.env \
     --env-variables "deployment_name,ocp_project,studio_api_key,studio_api_encryption_key,access_key_id,secret_access_key,endpoint,region,pg_username,pg_password,pg_uri,pg_port,pg_original_db_name,pg_studio_db_name,geoserver_username,geoserver_password,oauth_client_secret,oauth_cookie_secret,redis_password,image_pull_secret_b64" \
     --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-    --env-sh-variables "DEPLOYMENT_ENV,OC_PROJECT,ROUTE_ENABLED,CONTAINER_IMAGE_REPOSITORY,CLUSTER_URL,COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS,STORAGE_PVC_ENABLED,OAUTH_PROXY_ENABLED,OAUTH_PROXY_PORT,OAUTH_TYPE,OAUTH_CLIENT_ID,OAUTH_ISSUER_URL,OAUTH_URL"
+    --env-sh-variables "DEPLOYMENT_ENV,OC_PROJECT,ROUTE_ENABLED,CONTAINER_IMAGE_REPOSITORY,CLUSTER_URL,COS_STORAGE_CLASS,PVC_ACCESS_MODE,NON_COS_STORAGE_CLASS,STORAGE_PVC_ENABLED,OAUTH_PROXY_ENABLED,OAUTH_PROXY_PORT,OAUTH_TYPE,OAUTH_CLIENT_ID,OAUTH_ISSUER_URL,OAUTH_URL"
 ```
 
 

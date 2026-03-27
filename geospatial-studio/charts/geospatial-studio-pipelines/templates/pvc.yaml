@@ -76,7 +76,7 @@ metadata:
   namespace: {{ $.Values.namespace }}
 spec:
   accessModes:
-    - ReadWriteMany
+    - {{ $.Values.pvc_access_mode }}
   resources:
     requests:
       storage: 10Gi

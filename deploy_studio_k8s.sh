@@ -102,9 +102,30 @@ if [[ "$STORAGE_MODE" == "cloud-object-storage" ]] || [[ "$STORAGE_MODE" == "clu
         export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
     fi
 
+    # Select PVC access mode
+    echo "***********************************************************************************"
+    echo "----------------------  Configure PVC Access Mode  --------------------------------"
+    echo "-----------------------------------------------------------------------------------"
+    echo "Select the access mode for Persistent Volume Claims:"
+    echo "  - ReadWriteOnce: Volume can be mounted as read-write by a single node"
+    echo "  - ReadWriteMany: Volume can be mounted as read-write by many nodes"
+    echo "***********************************************************************************"
+
+    pvc_access_mode_options="ReadWriteOnce ReadWriteMany"
+    typeset pvc_access_mode
+
+    get_menu_selection \
+        "Select PVC access mode:" \
+        pvc_access_mode \
+        "$pvc_access_mode_options"
+
+    export PVC_ACCESS_MODE=$pvc_access_mode
+    echo "PVC_ACCESS_MODE selected: **$PVC_ACCESS_MODE**"
+
     # Update env.sh
     sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS:-cos-s3-csi-s3fs-sc}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS:-standard}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export PVC_ACCESS_MODE=.*/export PVC_ACCESS_MODE=${PVC_ACCESS_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 else
     echo "Using local-hostpath storage mode - no storage class configuration needed"
     sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
@@ -413,7 +434,7 @@ if [ "$ans" = "y" ]; then
     echo -e "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB \n"
     
     # Call the update script with user-provided values
-    python3 ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+    python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
         --cpu-limit "$cpu_limit" \
         --cpu-request "$cpu_request" \
         --memory-limit "$memory_limit" \
