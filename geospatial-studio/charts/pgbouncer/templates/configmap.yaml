@@ -50,6 +50,9 @@ data:
     auth_file = /opt/bitnami/pgbouncer/conf/userlist.txt
     # High performance tuning
     max_client_conn = 5000
-    default_pool_size = 20
+    default_pool_size = 50
+    reserve_pool_size = 25 
     server_reset_query_always = 1
+    query_wait_timeout = 120  
+    max_db_connections = 100
 {{- end }}
