@@ -201,6 +201,11 @@ jobs:
           kill $MONITOR_PID 2>/dev/null || true
 
           echo "=== Deployment script completed ==="
+      - name: Wait briefly for workloads to appear
+        run: |
+          echo "Waiting for controllers to create workloads..."
+          sleep 45
+          kubectl get all -n ${OC_PROJECT} || true
 
       - name: Verify Deployment
         run: |
