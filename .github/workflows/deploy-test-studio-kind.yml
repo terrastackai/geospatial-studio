@@ -201,11 +201,24 @@ jobs:
           kill $MONITOR_PID 2>/dev/null || true
 
           echo "=== Deployment script completed ==="
-      - name: Wait briefly for workloads to appear
+      - name: Inspect gateway/ui resources
         run: |
-          echo "Waiting for controllers to create workloads..."
-          sleep 45
-          kubectl get all -n ${OC_PROJECT} || true
+          echo "=== All resources in default ==="
+          kubectl get all -n default || true
+
+          echo ""
+          echo "=== Deployments with labels ==="
+          kubectl get deploy -n default --show-labels || true
+
+          echo ""
+          echo "=== Pods with labels ==="
+          kubectl get pods -n default --show-labels || true
+
+          echo ""
+          echo "=== Services with selectors ==="
+          kubectl get svc -n default -o wide || true
+          kubectl describe svc geofm-gateway -n default || true
+          kubectl describe svc geofm-ui -n default || true
 
       - name: Verify Deployment
         run: |
@@ -340,7 +353,7 @@ jobs:
       - name: Run Integration Tests
         env:
           GATEWAY_TLS_VERIFY: "0"
-          BASE_GATEWAY_URL: "https://localhost:4180"
+          BASE_GATEWAY_URL: "https://localhost:4181"
         run: |
           echo "=== Running Integration Tests ==="
           
