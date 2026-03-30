@@ -211,4 +211,26 @@ auto_indent_and_replace() {
   # Export and replace
   export "$var_name"="$indented_content"
   envsubst "\$$var_name" < "$template_file" > "$output_file"
+
+check_deployment_and_prompt() {
+    local deployment_name=$1
+    local namespace=$2
+    local display_name=$3
+    local deploy_var_name=$4
+    
+    # Check if deployment exists
+    if kubectl get deployment "$deployment_name" -n "$namespace" &> /dev/null; then
+        echo "⚠️  $display_name deployment already exists"
+        local options="Deploy Skip"
+        typeset choice
+        get_menu_selection \
+            "Deploy/Redeploy $display_name?" \
+            choice \
+            "$options"
+        eval "$deploy_var_name='$choice'"
+    else
+        echo "✓ $display_name: Will deploy (no existing deployment)"
+        eval "$deploy_var_name='Deploy'"
+    fi
+}
 }

@@ -18,106 +18,44 @@ export GEOSERVER_PASSWORD="geoserver"
 
 export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 
-echo "----------------------------------------------------------------------"
-echo "------  Creating baseline deployment/values files  -------------------"
-echo "----------------------------------------------------------------------"
-
-# Set environment variables and source setup script
+# Set environment variables
 export DEPLOYMENT_ENV=lima
 export OC_PROJECT=default
 export IMAGE_REGISTRY=geospatial-studio
-./deployment-scripts/setup-workspace-env.sh
-
-sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=lima/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 # Component selection for deployment/redeployment
 echo "----------------------------------------------------------------------"
 echo "---------------  Checking Existing Deployments  ----------------------"
 echo "----------------------------------------------------------------------"
 
-# Default: deploy all components
-DEPLOY_MINIO="Deploy"
-DEPLOY_POSTGRES="Deploy"
-DEPLOY_KEYCLOAK="Deploy"
-DEPLOY_GEOSERVER="Deploy"
-DEPLOY_STUDIO="Deploy"
-
-# Check workspace config AND deployment existence for MinIO
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && kubectl get deployment minio -n ${OC_PROJECT} &> /dev/null; then
-    echo "⚠️  MinIO deployment or configuration already exists"
-    minio_options="Deploy Skip"
-    typeset deploy_minio_choice
-    get_menu_selection \
-        "Deploy/Redeploy MinIO (object storage)?" \
-        deploy_minio_choice \
-        "$minio_options"
-    DEPLOY_MINIO=$deploy_minio_choice
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
+    echo "✓ Workspace configuration exists"
+    
+    check_deployment_and_prompt "minio" "${OC_PROJECT}" "MinIO (object storage)" "DEPLOY_MINIO"
+    
+    if kubectl get statefulset postgresql -n ${OC_PROJECT} &> /dev/null; then
+        echo "⚠️  PostgreSQL deployment already exists"
+        postgres_options="Deploy Skip"
+        typeset deploy_postgres_choice
+        get_menu_selection \
+            "Deploy/Redeploy PostgreSQL (database)?" \
+            deploy_postgres_choice \
+            "$postgres_options"
+        DEPLOY_POSTGRES=$deploy_postgres_choice
+    else
+        echo "✓ PostgreSQL: Will deploy (no existing deployment)"
+        DEPLOY_POSTGRES="Deploy"
+    fi
+    
+    check_deployment_and_prompt "keycloak" "${OC_PROJECT}" "Keycloak (authentication)" "DEPLOY_KEYCLOAK"
+    check_deployment_and_prompt "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
+    check_deployment_and_prompt "geofm-ui" "${OC_PROJECT}" "Geospatial Studio" "DEPLOY_STUDIO"
 else
-    echo "✓ MinIO: Will deploy (no existing deployment or configuration)"
+    echo "✓ No existing configuration - will deploy all components"
     DEPLOY_MINIO="Deploy"
-fi
-
-# Check workspace config AND deployment existence for PostgreSQL
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && kubectl get statefulset postgresql -n ${OC_PROJECT} &> /dev/null; then
-    echo "⚠️  PostgreSQL deployment or configuration already exists"
-    postgres_options="Deploy Skip"
-    typeset deploy_postgres_choice
-    get_menu_selection \
-        "Deploy/Redeploy PostgreSQL (database)?" \
-        deploy_postgres_choice \
-        "$postgres_options"
-    DEPLOY_POSTGRES=$deploy_postgres_choice
-else
-    echo "✓ PostgreSQL: Will deploy (no existing deployment or configuration)"
     DEPLOY_POSTGRES="Deploy"
-fi
-
-# Check workspace config AND deployment existence for Keycloak
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && kubectl get deployment keycloak -n ${OC_PROJECT} &> /dev/null; then
-    echo "⚠️  Keycloak deployment or configuration already exists"
-    keycloak_options="Deploy Skip"
-    typeset deploy_keycloak_choice
-    get_menu_selection \
-        "Deploy/Redeploy Keycloak (authentication)?" \
-        deploy_keycloak_choice \
-        "$keycloak_options"
-    DEPLOY_KEYCLOAK=$deploy_keycloak_choice
-else
-    echo "✓ Keycloak: Will deploy (no existing deployment or configuration)"
     DEPLOY_KEYCLOAK="Deploy"
-fi
-
-# Check workspace config AND deployment existence for GeoServer
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && kubectl get deployment geofm-geoserver -n ${OC_PROJECT} &> /dev/null; then
-    echo "⚠️  GeoServer deployment or configuration already exists"
-    geoserver_options="Deploy Skip"
-    typeset deploy_geoserver_choice
-    get_menu_selection \
-        "Deploy/Redeploy GeoServer?" \
-        deploy_geoserver_choice \
-        "$geoserver_options"
-    DEPLOY_GEOSERVER=$deploy_geoserver_choice
-else
-    echo "✓ GeoServer: Will deploy (no existing deployment or configuration)"
     DEPLOY_GEOSERVER="Deploy"
-fi
-
-# Check workspace config AND deployment existence for Studio
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && kubectl get deployment geofm-ui -n ${OC_PROJECT} &> /dev/null; then
-    echo "⚠️  Geospatial Studio deployment or configuration already exists"
-    studio_options="Deploy Skip"
-    typeset deploy_studio_choice
-    get_menu_selection \
-        "Deploy/Redeploy Geospatial Studio?" \
-        deploy_studio_choice \
-        "$studio_options"
-    DEPLOY_STUDIO=$deploy_studio_choice
-else
-    echo "✓ Geospatial Studio: Will deploy (no existing deployment or configuration)"
     DEPLOY_STUDIO="Deploy"
 fi
 
@@ -128,12 +66,25 @@ echo "  PostgreSQL: $DEPLOY_POSTGRES"
 echo "  Keycloak: $DEPLOY_KEYCLOAK"
 echo "  GeoServer: $DEPLOY_GEOSERVER"
 echo "  Studio: $DEPLOY_STUDIO"
+echo "  Note: IBM Storage Plugin deployed automatically with MinIO"
 echo ""
 
 if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
     printf "%s " "Press enter to continue with this deployment plan"
     read ans
 fi
+
+echo "----------------------------------------------------------------------"
+echo "------  Creating baseline deployment/values files  -------------------"
+echo "----------------------------------------------------------------------"
+
+./deployment-scripts/setup-workspace-env.sh
+
+sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=lima/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 echo "----------------------------------------------------------------------"
 echo "--------------------  Add labels to node  ------------------"
