@@ -1,4 +1,4 @@
-#!/bin/bash
+deployment-scripts/deploy_studio.sh#!/bin/bash
 
 # © Copyright IBM Corporation 2025
 # SPDX-License-Identifier: Apache-2.0
@@ -12,6 +12,7 @@ helm upgrade -f workspace/$DEPLOYMENT_ENV/values/geospatial-studio/values-deploy
             --install \
             --namespace ${OC_PROJECT} \
             --wait \
+            --wait-for-resources=deployments,statefulsets,daemonsets,replicasets,pods,jobs \
             --timeout 30m \
             --history-max 5 \
             --set "global.imagePullPolicy=${image_pull_policy}" \
