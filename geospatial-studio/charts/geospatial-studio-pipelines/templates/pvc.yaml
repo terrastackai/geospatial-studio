@@ -1,7 +1,6 @@
 # © Copyright IBM Corporation 2025
 # SPDX-License-Identifier: Apache-2.0
 
-{{- if .Values.storage.pvc.enabled }}
 {{- if eq .Values.storage.storageMode "cloud-object-storage" }}
 # handles both ibmc-s3fs-cos and ibmc-s3fs-cos-perf
 {{- if contains "ibmc-s3fs-cos" .Values.objectStorage.cos_storage_class }}
@@ -118,5 +117,4 @@ spec:
       storage: 10Gi
 --- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
 
-{{- end }}
 {{- end }}

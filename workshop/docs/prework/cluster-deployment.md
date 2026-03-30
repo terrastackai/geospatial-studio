@@ -1024,9 +1024,6 @@ export COS_STORAGE_CLASS=<your-s3-compatible-storage-class>
 export NON_COS_STORAGE_CLASS=<your-block-storage-class>
 export PVC_ACCESS_MODE=<your-access-mode>
 
-# Enable/disable PVC storage
-export STORAGE_PVC_ENABLED=true
-
 # Share pipeline PVC across pods
 export SHARE_PIPELINE_PVC=false
 ```

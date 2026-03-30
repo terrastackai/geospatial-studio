@@ -62,8 +62,6 @@ nasaEarthBearerToken: nasa_earth_data_bearer_token
 
 storage:
   storageMode: STORAGE_MODE
-  pvc:
-    enabled: STORAGE_PVC_ENABLED
   filesystem:
     dir: /data/
 

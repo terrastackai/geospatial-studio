@@ -24,7 +24,6 @@ export SHARE_PIPELINE_PVC=false
 export COS_STORAGE_CLASS=
 export NON_COS_STORAGE_CLASS=
 export PVC_ACCESS_MODE=ReadWriteOnce
-export STORAGE_PVC_ENABLED=true
 export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=
 
 # Populate buckets with data

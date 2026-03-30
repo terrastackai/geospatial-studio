@@ -116,15 +116,8 @@ spec:
             name: {{ .Values.global.appNames.gateway }}-trusted-certificates-ca
         {{- end }}
         - name: mount-files
-          {{- if .Values.global.storage.pvc.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Values.mountLocations.files_pvc_name }}
-          {{- else }}
-          # mount directory from the host node's filesystem into the Pod.
-          hostPath:
-            path: {{ .Values.global.storage.filesystem.dir }}{{ .Values.mountLocations.files_pvc_name }}
-            type: DirectoryOrCreate
-          {{- end }}
         {{- if .Values.global.sharePipelinePvc }}
         - name: pipelines-inference-pvc
           persistentVolumeClaim:

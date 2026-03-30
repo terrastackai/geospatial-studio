@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-{{- if .Values.global.storage.pvc.enabled }}
 {{- if eq .Values.global.storage.storageMode "cloud-object-storage" }}
 {{- if contains "ibmc-s3fs-cos" .Values.global.objectStorage.cos_storage_class }}
 ---
@@ -418,5 +417,4 @@ spec:
     requests:
       storage: 40Gi
 ---
-{{- end }}
 {{- end }}
