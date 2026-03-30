@@ -53,6 +53,11 @@ spec:
                 --allowed-hosts "*" \
                 --backend-store-uri $(BACKEND_URI) \
                 --artifacts-destination file:///mlruns
+          env:
+          - name: MLFLOW_SQLALCHEMYSTORE_POOL_SIZE
+            value: "1"
+          - name: MLFLOW_SQLALCHEMYSTORE_MAX_OVERFLOW
+            value: "0"
           envFrom:
           - secretRef:
               name: {{ .Values.global.appNames.mlflow }}-secrets
