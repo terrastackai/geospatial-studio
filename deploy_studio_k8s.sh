@@ -478,51 +478,39 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     # Deploy Geospatial Studio
     ./deployment-scripts/deploy_studio.sh
 
-    echo "----------------------------------------------------------------------"
-    echo "---------  Set up Port Forwarding for UI and API  --------------------"
-    echo "----------------------------------------------------------------------"
-
-    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=geofm-gateway -n $OC_PROJECT --timeout=300s
-
-    kubectl port-forward deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
-    kubectl port-forward deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
-    kubectl port-forward deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
-
-    echo "----------------------------------------------------------------------"
-    echo "-----------------------  Deployment summary  -------------------------"
-    echo "----------------------------------------------------------------------"
-
-    printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed to k8s! \n"
-    printf "\U1F5FA   Access the Geospatial Studio UI at: https://localhost:4180\n"
-    printf "\U1F4BB   Access the Geospatial Studio API at: https://localhost:4181\n"
-    printf "K8S \U2388   To access the k8s cluster dashboard, run: minikube dashboard\n\n"
-
-    CONFIGURE_HOSTS_CMD="echo -e \"127.0.0.1 keycloak.$OC_PROJECT.svc.cluster.local postgresql.$OC_PROJECT.svc.cluster.local minio.$OC_PROJECT.svc.cluster.local geofm-ui.$OC_PROJECT.svc.cluster.local geofm-gateway.$OC_PROJECT.svc.cluster.local geofm-geoserver.$OC_PROJECT.svc.cluster.local\" >> /etc/hosts"
-    printf "\U1F4E1 Configure your etc hosts with the local urls:\n"
-    printf "Add our internal cluster urls to etc hosts for seamless connectivity since some of the services may call these internal urls on host machine \n"
-    printf "Use: %s\n\n" "$CONFIGURE_HOSTS_CMD"
-
-    printf "Dev Studio API Key: %s\n" $STUDIO_API_KEY
-    printf "Dev Postgres Password: %s\n\n" $POSTGRES_PASSWORD
-
-    echo "----------------------------------------------------------------------"
-    echo "----------------------------------------------------------------------"
-    echo "----------------------------------------------------------------------"
 else
     echo "----------------------------------------------------------------------"
     echo "------------------  Skipping Studio Deployment  ----------------------"
     echo "----------------------------------------------------------------------"
-    echo "✓ Infrastructure components deployed successfully"
-    echo "  - MinIO: $DEPLOY_MINIO"
-    echo "  - PostgreSQL: $DEPLOY_POSTGRES"
-    echo "  - Keycloak: $DEPLOY_KEYCLOAK"
-    echo "  - GeoServer: $DEPLOY_GEOSERVER"
-    echo ""
-    echo "Note: Geospatial Studio was not deployed."
-    echo "To deploy Studio later, re-run this script and select 'Deploy' for Studio."
-    echo ""
-    printf "Dev Postgres Password: %s\n\n" $POSTGRES_PASSWORD
-    echo "----------------------------------------------------------------------"
-    echo "----------------------------------------------------------------------"
-    echo "----------------------------------------------------------------------"
 fi
+
+echo "----------------------------------------------------------------------"
+echo "---------  Set up Port Forwarding for UI and API  --------------------"
+echo "----------------------------------------------------------------------"
+
+kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=geofm-gateway -n $OC_PROJECT --timeout=300s
+
+kubectl port-forward deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
+kubectl port-forward deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
+
+echo "----------------------------------------------------------------------"
+echo "-----------------------  Deployment summary  -------------------------"
+echo "----------------------------------------------------------------------"
+
+printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed to k8s! \n"
+printf "\U1F5FA   Access the Geospatial Studio UI at: https://localhost:4180\n"
+printf "\U1F4BB   Access the Geospatial Studio API at: https://localhost:4181\n"
+printf "K8S \U2388   To access the k8s cluster dashboard, run: minikube dashboard\n\n"
+
+CONFIGURE_HOSTS_CMD="echo -e \"127.0.0.1 keycloak.$OC_PROJECT.svc.cluster.local postgresql.$OC_PROJECT.svc.cluster.local minio.$OC_PROJECT.svc.cluster.local geofm-ui.$OC_PROJECT.svc.cluster.local geofm-gateway.$OC_PROJECT.svc.cluster.local geofm-geoserver.$OC_PROJECT.svc.cluster.local\" >> /etc/hosts"
+printf "\U1F4E1 Configure your etc hosts with the local urls:\n"
+printf "Add our internal cluster urls to etc hosts for seamless connectivity since some of the services may call these internal urls on host machine \n"
+printf "Use: %s\n\n" "$CONFIGURE_HOSTS_CMD"
+
+printf "Dev Studio API Key: %s\n" $STUDIO_API_KEY
+printf "Dev Postgres Password: %s\n\n" $POSTGRES_PASSWORD
+
+echo "----------------------------------------------------------------------"
+echo "----------------------------------------------------------------------"
+echo "----------------------------------------------------------------------"

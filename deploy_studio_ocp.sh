@@ -968,22 +968,22 @@ else
     echo "----------------------------------------------------------------------"
 fi
 
-    echo "----------------------------------------------------------------------"
-    echo "-----------------------  Deployment summary  -------------------------"
-    echo "----------------------------------------------------------------------"
-    export UI_ROUTE_URL=$(kubectl get route geofm-ui -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}') && \
-    echo "Opening $UI_ROUTE_URL..." && \
-    (open $UI_ROUTE_URL || xdg-open $UI_ROUTE_URL || start $UI_ROUTE_URL)
+echo "----------------------------------------------------------------------"
+echo "-----------------------  Deployment summary  -------------------------"
+echo "----------------------------------------------------------------------"
+export UI_ROUTE_URL=$(kubectl get route geofm-ui -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}') && \
+echo "Opening $UI_ROUTE_URL..." && \
+(open $UI_ROUTE_URL || xdg-open $UI_ROUTE_URL || start $UI_ROUTE_URL)
 
-    export API_ROUTE_URL=$(kubectl get route geofm-gateway -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}')
+export API_ROUTE_URL=$(kubectl get route geofm-gateway -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}')
 
-    printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed in an OpenShift Cluster! \n"
-    printf "\U1F5FA   Access the Geospatial Studio UI at: ${UI_ROUTE_URL}\n"
-    printf "\U1F4BB   Access the Geospatial Studio API at: ${API_ROUTE_URL}\n"
+printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed in an OpenShift Cluster! \n"
+printf "\U1F5FA   Access the Geospatial Studio UI at: ${UI_ROUTE_URL}\n"
+printf "\U1F4BB   Access the Geospatial Studio API at: ${API_ROUTE_URL}\n"
 
-    printf "Dev Studio API Key: %s\n" $STUDIO_API_KEY
-    printf "Dev Postgres Password: %s\n\n" $POSTGRES_PASSWORD
+printf "Dev Studio API Key: %s\n" $STUDIO_API_KEY
+printf "Dev Postgres Password: %s\n\n" $POSTGRES_PASSWORD
 
-    echo "----------------------------------------------------------------------"
-    echo "----------------------------------------------------------------------"
-    echo "----------------------------------------------------------------------"
+echo "----------------------------------------------------------------------"
+echo "----------------------------------------------------------------------"
+echo "----------------------------------------------------------------------"
