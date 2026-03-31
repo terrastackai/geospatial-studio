@@ -211,6 +211,7 @@ auto_indent_and_replace() {
   # Export and replace
   export "$var_name"="$indented_content"
   envsubst "\$$var_name" < "$template_file" > "$output_file"
+}
 
 check_deployment_and_prompt() {
     local workload_type=$1
