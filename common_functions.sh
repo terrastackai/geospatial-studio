@@ -220,8 +220,22 @@ check_deployment_and_prompt() {
     local display_name=$4
     local deploy_var_name=$5
     
-    # Check if workload exists
-    if kubectl get "$workload_type" "$workload_name" -n "$namespace" &> /dev/null; then
+    local exists=false
+    
+    # Check if workload exists based on type
+    if [[ "$workload_type" == "helm" ]]; then
+        # Check if Helm release exists
+        if helm status "$workload_name" -n "$namespace" &> /dev/null; then
+            exists=true
+        fi
+    else
+        # Check Kubernetes resources (deployment, statefulset, etc.)
+        if kubectl get "$workload_type" "$workload_name" -n "$namespace" &> /dev/null; then
+            exists=true
+        fi
+    fi
+    
+    if $exists; then
         echo "⚠️  $display_name already exists"
         local options="Deploy Skip"
         typeset choice

@@ -35,7 +35,7 @@ if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
     check_deployment_and_prompt "statefulset" "postgresql" "${OC_PROJECT}" "PostgreSQL (database)" "DEPLOY_POSTGRES"
     check_deployment_and_prompt "deployment" "keycloak" "${OC_PROJECT}" "Keycloak (authentication)" "DEPLOY_KEYCLOAK"
     check_deployment_and_prompt "deployment" "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
-    check_deployment_and_prompt "deployment" "geofm-ui" "${OC_PROJECT}" "Geospatial Studio" "DEPLOY_STUDIO"
+    check_deployment_and_prompt "helm" "studio" "${OC_PROJECT}" "Geospatial Studio" "DEPLOY_STUDIO"
 else
     echo "✓ No existing configuration - will deploy all components"
     DEPLOY_MINIO="Deploy"
