@@ -1025,7 +1025,7 @@ export NON_COS_STORAGE_CLASS=<your-block-storage-class>
 export PVC_ACCESS_MODE=<your-access-mode>
 
 # Share pipeline PVC across pods
-export SHARE_PIPELINE_PVC=false
+export SHARE_PIPELINE_PVC=true
 ```
 
 ### Redis Configuration

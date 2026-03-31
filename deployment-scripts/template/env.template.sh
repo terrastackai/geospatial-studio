@@ -20,7 +20,7 @@ export CLUSTER_URL=
 
 # Storage
 export STORAGE_MODE=cloud-object-storage
-export SHARE_PIPELINE_PVC=false
+export SHARE_PIPELINE_PVC=true
 export COS_STORAGE_CLASS=
 export NON_COS_STORAGE_CLASS=
 export PVC_ACCESS_MODE=ReadWriteOnce
