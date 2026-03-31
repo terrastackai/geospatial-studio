@@ -82,26 +82,12 @@ if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
     echo "✓ Workspace configuration exists"
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
         
-    check_deployment_and_prompt "minio" "${OC_PROJECT}" "MinIO (object storage)" "DEPLOY_MINIO"
-    
-    if kubectl get statefulset postgresql -n ${OC_PROJECT} &> /dev/null; then
-        echo "⚠️  PostgreSQL deployment already exists"
-        postgres_options="Deploy Skip"
-        typeset deploy_postgres_choice
-        get_menu_selection \
-            "Deploy/Redeploy PostgreSQL (database)?" \
-            deploy_postgres_choice \
-            "$postgres_options"
-        DEPLOY_POSTGRES=$deploy_postgres_choice
-    else
-        echo "✓ PostgreSQL: Will deploy (no existing deployment)"
-        DEPLOY_POSTGRES="Deploy"
-    fi
-    
-    check_deployment_and_prompt "keycloak" "${OC_PROJECT}" "Keycloak (authentication)" "DEPLOY_KEYCLOAK"
-    check_deployment_and_prompt "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
-    check_deployment_and_prompt "geofm-ui" "${OC_PROJECT}" "Geospatial Studio" "DEPLOY_STUDIO"
-    check_deployment_and_prompt "ibmcloud-object-storage-plugin" "ibm-object-s3fs" "IBM Object Storage Plugin" "DEPLOY_IBM_STORAGE"
+    check_deployment_and_prompt "deployment" "minio" "${OC_PROJECT}" "MinIO (object storage)" "DEPLOY_MINIO"
+    check_deployment_and_prompt "statefulset" "postgresql" "${OC_PROJECT}" "PostgreSQL (database)" "DEPLOY_POSTGRES"
+    check_deployment_and_prompt "deployment" "keycloak" "${OC_PROJECT}" "Keycloak (authentication)" "DEPLOY_KEYCLOAK"
+    check_deployment_and_prompt "deployment" "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
+    check_deployment_and_prompt "deployment" "geofm-ui" "${OC_PROJECT}" "Geospatial Studio" "DEPLOY_STUDIO"
+    check_deployment_and_prompt "deployment" "ibmcloud-object-storage-plugin" "ibm-object-s3fs" "IBM Object Storage Plugin" "DEPLOY_IBM_STORAGE"
 else
     echo "✓ No existing configuration - will deploy all components"
     DEPLOY_MINIO="Deploy"

@@ -213,14 +213,15 @@ auto_indent_and_replace() {
   envsubst "\$$var_name" < "$template_file" > "$output_file"
 
 check_deployment_and_prompt() {
-    local deployment_name=$1
-    local namespace=$2
-    local display_name=$3
-    local deploy_var_name=$4
+    local workload_type=$1
+    local workload_name=$2
+    local namespace=$3
+    local display_name=$4
+    local deploy_var_name=$5
     
-    # Check if deployment exists
-    if kubectl get deployment "$deployment_name" -n "$namespace" &> /dev/null; then
-        echo "⚠️  $display_name deployment already exists"
+    # Check if workload exists
+    if kubectl get "$workload_type" "$workload_name" -n "$namespace" &> /dev/null; then
+        echo "⚠️  $display_name already exists"
         local options="Deploy Skip"
         typeset choice
         get_menu_selection \
@@ -229,8 +230,7 @@ check_deployment_and_prompt() {
             "$options"
         eval "$deploy_var_name='$choice'"
     else
-        echo "✓ $display_name: Will deploy (no existing deployment)"
+        echo "✓ $display_name: Will deploy (no existing $workload_type)"
         eval "$deploy_var_name='Deploy'"
     fi
-}
 }
