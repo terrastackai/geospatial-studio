@@ -51,7 +51,6 @@ typeset deployment_env
 get_user_input "Provide a name for the deployment environment, maybe cluster name e.g. fmaas-dev, cimf-staging, rosa-prod, local... This will be the name used for a local folder created under workspace directory." deployment_env
 echo "DEPLOYMENT_ENV accepted: **$deployment_env**"
 export DEPLOYMENT_ENV=$deployment_env
-JUMP_TO_DEPLOYMENT="No"
 
 # Check if the workspace file exists and if it does not request user for namespace
 if [ ! -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
@@ -60,16 +59,7 @@ if [ ! -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
     echo "OC_PROJECT accepted: **$namespace**"
     export OC_PROJECT=$namespace
 else
-    jump_to_deployment_options="Yes No"
-    typeset jump_to_deployment
-
-    # Call the function
-    get_menu_selection \
-        "Jump to Deployment? Select 'YES' to jump to deployment (this assumes you have defined all the environment variables and deployed Oauth, Database, Storage and Geoserver), select 'NO' to set/reset environment variables and/or update Oauth, Database, Storage and Geoserver deployments  " \
-        jump_to_deployment \
-        "$jump_to_deployment_options"
-
-    JUMP_TO_DEPLOYMENT=$jump_to_deployment
+    # Workspace exists, load existing configuration
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 fi
 
@@ -111,28 +101,31 @@ echo ""
 printf "%s " "Press enter to continue with this deployment plan"
 read ans
 
-if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
+# Setup workspace environment if it doesn't exist
+if [ ! -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || [ ! -f "workspace/${DEPLOYMENT_ENV}/env/.env" ]; then
+    echo "Setting up workspace environment..."
     # Below step will create two env scripts under the workspace/${DEPLOYMENT_ENV}/env folder.
     # One script contains just the secret values template, and the other script contains all the other general Geospatial configuration.
     ./deployment-scripts/setup-workspace-env.sh
 
-    # Update the workspave env file with deployment env and namespace
+    # Update the workspace env file with deployment env and namespace
     sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=${DEPLOYMENT_ENV}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=${OC_PROJECT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+fi
 
-    # Update cluster url
-    if [[ -n "$CLUSTER_URL" ]]; then
-        cluster_url_defined_options="Yes No"
-        typeset cluster_url_defined
+# Update cluster url
+if [[ -n "$CLUSTER_URL" ]]; then
+    cluster_url_defined_options="Yes No"
+    typeset cluster_url_defined
 
-        # Call the function
-        get_menu_selection \
-            "Use CLUSTER_URL = ${CLUSTER_URL} " \
-            cluster_url_defined \
-            "$cluster_url_defined_options"
-    else 
-        cluster_url_defined="No"
-    fi
+    # Call the function
+    get_menu_selection \
+        "Use CLUSTER_URL = ${CLUSTER_URL} " \
+        cluster_url_defined \
+        "$cluster_url_defined_options"
+else
+    cluster_url_defined="No"
+fi
 
     if [[ "$cluster_url_defined" == "No" ]]; then
         # Try to extract the cluster url for OCP else request the user
@@ -782,6 +775,11 @@ EOF
         source workspace/${DEPLOYMENT_ENV}/env/env.sh
     fi
 
+if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "-------------  Configuring Geospatial Studio  ------------------------"
+    echo "----------------------------------------------------------------------"
+
     # Additional setup
 
     file=./.studio-api-key
@@ -880,104 +878,84 @@ EOF
         echo "--------------------------- Removed GPUs in the Cluster -------------------"
     fi
 
-else
-    while true 
-    do
-        printf "%s " "Press enter to confirm all mandatory environment variables are defined"
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+    echo "-----------  Make any changes to deployment values yaml --------------"
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        printf "%s " "Press enter to continue"
         read ans
+    fi
 
-        python deployment-scripts/validate-env-files.py \
-        --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
-        --env-variables "deployment_name,ocp_project,studio_api_key,studio_api_encryption_key,access_key_id,secret_access_key,endpoint,region,pg_username,pg_password,pg_uri,pg_port,pg_original_db_name,pg_studio_db_name,geoserver_username,geoserver_password,oauth_client_secret,oauth_cookie_secret,redis_password,image_pull_secret_b64" \
-        --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-        --env-sh-variables "DEPLOYMENT_ENV,OC_PROJECT,ROUTE_ENABLED,CONTAINER_IMAGE_REPOSITORY,CLUSTER_URL,COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS,STORAGE_PVC_ENABLED,OAUTH_PROXY_ENABLED,OAUTH_PROXY_PORT,OAUTH_TYPE,OAUTH_CLIENT_ID,OAUTH_ISSUER_URL,OAUTH_URL"
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+    echo "------  Configure Fine-Tuning Job Resources  -------------------------"
+    echo "**********************************************************************"
+    echo "**********************************************************************"
 
-        if [ $? -eq 0 ]; then
-            break
-        fi
-    done
-fi
+    # Ask user if they want to alter memory, CPU requests and limits for finetuning.
+    configure_resources_options="No Yes"
+    typeset configure_resources
 
-echo "**********************************************************************"
-echo "**********************************************************************"
-echo "-----------  Make any changes to deployment values yaml --------------"
-echo "**********************************************************************"
-echo "**********************************************************************"
+    # Call the function
+    get_menu_selection \
+        "Do you want to alter memory, CPU requests and limits for finetuning?" \
+        configure_resources \
+        "$configure_resources_options"
 
-if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
-    printf "%s " "Press enter to continue"
-    read ans
-fi
-
-echo "**********************************************************************"
-echo "**********************************************************************"
-echo "------  Configure Fine-Tuning Job Resources  -------------------------"
-echo "**********************************************************************"
-echo "**********************************************************************"
-
-
-# Ask user if they want to alter memory, CPU requests and limits for finetuning.
-configure_resources_options="No Yes"
-typeset configure_resources
-
-# Call the function
-get_menu_selection \
-    "Do you want to alter memory, CPU requests and limits for finetuning?" \
-    configure_resources \
-    "$configure_resources_options"
-
-# If yes, prompt user for memory limit, CPU limit, memory request and CPU request.
-if [ "$configure_resources" = "Yes" ]; then
-    echo "Updating memory, CPU requests and limits for finetuning."
-    echo ""
-    
-    # Prompt for CPU limit
-    printf "%s " "CPU limit in cores (default: 4): "
-    read cpu_limit
-    cpu_limit=${cpu_limit:-4}
-    
-    # Prompt for CPU request
-    printf "%s " "CPU request in cores (default: 2): "
-    read cpu_request
-    cpu_request=${cpu_request:-2}
-    
-    # Prompt for Memory limit
-    printf "%s " "Memory limit in GB (default: 10): "
-    read memory_limit
-    memory_limit=${memory_limit:-10}
-    
-    # Prompt for Memory request
-    printf "%s " "Memory request in GB (default: 6): "
-    read memory_request
-    memory_request=${memory_request:-6}
-    
-    echo -e "\n Applying configuration:"
-    echo "  CPU Limit: ${cpu_limit} cores, CPU Request: ${cpu_request} cores"
-    echo -e "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB \n"
-    
-    # Call the update script with user-provided values
-    python3 ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
-        --cpu-limit "$cpu_limit" \
-        --cpu-request "$cpu_request" \
-        --memory-limit "$memory_limit" \
-        --memory-request "$memory_request"
-    echo -e " \n Updated finetuning resource configurations \n"
-else
-    echo -e "\n Not updating resource configurations."
-    echo "You can manually edit workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml"
-    echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
-fi
+    # If yes, prompt user for memory limit, CPU limit, memory request and CPU request.
+    if [ "$configure_resources" = "Yes" ]; then
+        echo "Updating memory, CPU requests and limits for finetuning."
+        echo ""
+        
+        # Prompt for CPU limit
+        printf "%s " "CPU limit in cores (default: 4): "
+        read cpu_limit
+        cpu_limit=${cpu_limit:-4}
+        
+        # Prompt for CPU request
+        printf "%s " "CPU request in cores (default: 2): "
+        read cpu_request
+        cpu_request=${cpu_request:-2}
+        
+        # Prompt for Memory limit
+        printf "%s " "Memory limit in GB (default: 10): "
+        read memory_limit
+        memory_limit=${memory_limit:-10}
+        
+        # Prompt for Memory request
+        printf "%s " "Memory request in GB (default: 6): "
+        read memory_request
+        memory_request=${memory_request:-6}
+        
+        echo -e "\n Applying configuration:"
+        echo "  CPU Limit: ${cpu_limit} cores, CPU Request: ${cpu_request} cores"
+        echo -e "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB \n"
+        
+        # Call the update script with user-provided values
+        python3 ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+            --cpu-limit "$cpu_limit" \
+            --cpu-request "$cpu_request" \
+            --memory-limit "$memory_limit" \
+            --memory-request "$memory_request"
+        echo -e " \n Updated finetuning resource configurations \n"
+    else
+        echo -e "\n Not updating resource configurations."
+        echo "You can manually edit workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml"
+        echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
+    fi
 
 
-echo "----------------------------------------------------------------------"
-echo "----------------  Building Helm dependencies  ------------------------"
-echo "----------------------------------------------------------------------"
+    echo "----------------------------------------------------------------------"
+    echo "----------------  Building Helm dependencies  ------------------------"
+    echo "----------------------------------------------------------------------"
 
-# Build Helm dependencies
-helm dep update ./geospatial-studio/
-helm dependency build ./geospatial-studio/
+    # Build Helm dependencies
+    helm dep update ./geospatial-studio/
+    helm dependency build ./geospatial-studio/
 
-if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     echo "----------------------------------------------------------------------"
     echo "--------------------  Deploying the Studio  --------------------------"
     echo "----------------------------------------------------------------------"
@@ -990,22 +968,22 @@ else
     echo "----------------------------------------------------------------------"
 fi
 
-echo "----------------------------------------------------------------------"
-echo "-----------------------  Deployment summary  -------------------------"
-echo "----------------------------------------------------------------------"
-export UI_ROUTE_URL=$(kubectl get route geofm-ui -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}') && \
-echo "Opening $UI_ROUTE_URL..." && \
-(open $UI_ROUTE_URL || xdg-open $UI_ROUTE_URL || start $UI_ROUTE_URL)
+    echo "----------------------------------------------------------------------"
+    echo "-----------------------  Deployment summary  -------------------------"
+    echo "----------------------------------------------------------------------"
+    export UI_ROUTE_URL=$(kubectl get route geofm-ui -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}') && \
+    echo "Opening $UI_ROUTE_URL..." && \
+    (open $UI_ROUTE_URL || xdg-open $UI_ROUTE_URL || start $UI_ROUTE_URL)
 
-export API_ROUTE_URL=$(kubectl get route geofm-gateway -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}')
+    export API_ROUTE_URL=$(kubectl get route geofm-gateway -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}')
 
-printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed in an OpenShift Cluster! \n"
-printf "\U1F5FA   Access the Geospatial Studio UI at: ${UI_ROUTE_URL}\n"
-printf "\U1F4BB   Access the Geospatial Studio API at: ${API_ROUTE_URL}\n"
+    printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed in an OpenShift Cluster! \n"
+    printf "\U1F5FA   Access the Geospatial Studio UI at: ${UI_ROUTE_URL}\n"
+    printf "\U1F4BB   Access the Geospatial Studio API at: ${API_ROUTE_URL}\n"
 
-printf "Dev Studio API Key: %s\n" $STUDIO_API_KEY
-printf "Dev Postgres Password: %s\n\n" $POSTGRES_PASSWORD
+    printf "Dev Studio API Key: %s\n" $STUDIO_API_KEY
+    printf "Dev Postgres Password: %s\n\n" $POSTGRES_PASSWORD
 
-echo "----------------------------------------------------------------------"
-echo "----------------------------------------------------------------------"
-echo "----------------------------------------------------------------------"
+    echo "----------------------------------------------------------------------"
+    echo "----------------------------------------------------------------------"
+    echo "----------------------------------------------------------------------"

@@ -303,175 +303,174 @@ else
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 fi
 
-# Additional setup
-
-file=./.studio-api-key
-if [ -e "$file" ]; then
-    echo "File exists"
-    source $file
-else 
-    export STUDIO_API_KEY=$(echo "pak-$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 32)")
-    export API_ENCRYPTION_KEY=$(echo "$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '\n')")
-    echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > ./.studio-api-key
-    echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> ./.studio-api-key
-fi
-
-# export STUDIO_API_KEY=$(echo "pak-$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 32)")
-# export API_ENCRYPTION_KEY=$(echo "$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '\n')")
-
-sed -i -e "s/studio_api_key=.*/studio_api_key=$STUDIO_API_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/studio_api_encryption_key=.*/studio_api_encryption_key=$API_ENCRYPTION_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-
-sed -i -e "s/redis_password=.*/redis_password=devPassword/g" workspace/${DEPLOYMENT_ENV}/env/.env
-# Set image pull secret (empty for public images)
-sed -i -e "s/image_pull_secret_b64=.*/image_pull_secret_b64=\"${STUDIO_IMAGE_PULL_SECRET}\"/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-sed -i -e "s/export ENVIRONMENT=.*/export ENVIRONMENT=local/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export ROUTE_ENABLED=.*/export ROUTE_ENABLED=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export SHARE_PIPELINE_PVC=.*/export SHARE_PIPELINE_PVC=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export STORAGE_PVC_ENABLED=.*/export STORAGE_PVC_ENABLED=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export STORAGE_FILESYSTEM_ENABLED=.*/export STORAGE_FILESYSTEM_ENABLED=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export CREATE_TUNING_FOLDERS_FLAG=.*/export CREATE_TUNING_FOLDERS_FLAG=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=.*|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/data|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-sed -i -e "s/export OAUTH_PROXY_ENABLED=.*/export OAUTH_PROXY_ENABLED=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-sed -i -e "s/export CONTAINER_IMAGE_REPOSITORY=.*/export CONTAINER_IMAGE_REPOSITORY=${IMAGE_REGISTRY}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-source workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-echo "----------------------------------------------------------------------"
-echo "----------------  Generating deployment scripts  ---------------------"
-echo "----------------------------------------------------------------------"
-
-# Create deployment values files
-./deployment-scripts/values-file-generate.sh
-
-cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-
-# Replace credential placeholders with actual values from .env
-source workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s|<postgres_host>|${pg_uri}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<postgres_port>|${pg_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<pg_user>|${pg_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<pg_pass>|${pg_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<pgbouncer_host>|${pgbouncer_host}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<pgbouncer_port>|${pgbouncer_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<pgbouncer_user>|${pgbouncer_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<pgbouncer_pass>|${pgbouncer_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-
-# The line below removes GPUs from the pipeline components and Finetuning job, to leave GPUs activated, copy out this line
-
-# Call the function
-get_menu_selection \
-    "Select whether you have GPU available in your cluster: " \
-    gpu_configuration_type \
-    "$gpu_configuration_options"
-
-# The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
-NVIDIA_GPUS_AVAILABLE=$(kubectl describe node ${CLUSTER_NODE_NAME} | grep -c "nvidia.com")
-
-if [[ "$gpu_configuration_type" == "GPU-Available" && "$NVIDIA_GPUS_AVAILABLE" -gt 0 ]]; then
-    # Get number of GPUs
-    echo "Cluster Type: nvkind"
-    python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-
-    # Keep the Job GPU configuration as is. 
-    echo -e "\n Keeping GPU configuration for Finetuning job in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
-    echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
-else
-    echo "Cluster Type: standard kind"
-    python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-
-    # remove job GPU request
-    echo -e "\n Removing GPU configuration from values.yaml"
-    python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
-    --gpu-limit 0 \
-    --gpu-request 0
-    echo -e "--------------------------- Removed GPUs in the Cluster ------------------- \n"
-fi
-
-echo "**********************************************************************"
-echo "**********************************************************************"
-echo "-----------  Make any changes to deployment values yaml --------------"
-echo "**********************************************************************"
-echo "**********************************************************************"
-
-if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
-    printf "%s " "Press enter to continue"
-    read ans
-fi
-
-echo "**********************************************************************"
-echo "**********************************************************************"
-echo "------  Configure Fine-Tuning Job Resources  -------------------------"
-echo "**********************************************************************"
-echo "**********************************************************************"
-
-
-# Ask user if they want to alter memory, CPU requests and limits for finetuning.
-if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
-    printf "%s " "Do you want to alter memory, CPU requests and limits for finetuning? (y/n) "
-    read ans
-else
-    # Non-interactive mode: use CONFIGURE_RESOURCES environment variable (default to "n")
-    ans="${CONFIGURE_RESOURCES:-n}"
-    echo "Non-interactive mode: CONFIGURE_RESOURCES=$ans"
-fi
-
-# If yes, prompt user for memory limit, CPU limit, memory request and CPU request.
-if [ "$ans" = "y" ]; then
-    echo "Updating memory, CPU requests and limits for finetuning."
-    echo ""
-    
-    # Prompt for CPU limit
-    printf "%s " "CPU limit in cores (default: 4): "
-    read cpu_limit
-    cpu_limit=${cpu_limit:-4}
-    
-    # Prompt for CPU request
-    printf "%s " "CPU request in cores (default: 2): "
-    read cpu_request
-    cpu_request=${cpu_request:-2}
-    
-    # Prompt for Memory limit
-    printf "%s " "Memory limit in GB (default: 10): "
-    read memory_limit
-    memory_limit=${memory_limit:-10}
-    
-    # Prompt for Memory request
-    printf "%s " "Memory request in GB (default: 6): "
-    read memory_request
-    memory_request=${memory_request:-6}
-    
-    echo -e "\n Applying configuration:"
-    echo "  CPU Limit: ${cpu_limit} cores, CPU Request: ${cpu_request} cores"
-    echo -e "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB \n"
-    
-    # Call the update script with user-provided values
-    python3 ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
-        --cpu-limit "$cpu_limit" \
-        --cpu-request "$cpu_request" \
-        --memory-limit "$memory_limit" \
-        --memory-request "$memory_request"
-    echo -e "\n Updated finetuning resource configurations \n"
-else
-    echo -e "\n Not updating resource configurations."
-    echo "You can manually edit workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml"
-    echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
-fi
-
-echo "----------------------------------------------------------------------"
-echo "----------------  Building Helm dependencies  ------------------------"
-echo "----------------------------------------------------------------------"
-
-# Build Helm dependencies
-helm dep update ./geospatial-studio/
-helm dependency build ./geospatial-studio/
-
+# Check if Studio deployment is needed
 if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "-------------  Configuring Geospatial Studio  ------------------------"
+    echo "----------------------------------------------------------------------"
+
+    # Additional setup
+    file=./.studio-api-key
+    if [ -e "$file" ]; then
+        echo "File exists"
+        source $file
+    else
+        export STUDIO_API_KEY=$(echo "pak-$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 32)")
+        export API_ENCRYPTION_KEY=$(echo "$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '\n')")
+        echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > ./.studio-api-key
+        echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> ./.studio-api-key
+    fi
+
+    sed -i -e "s/studio_api_key=.*/studio_api_key=$STUDIO_API_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/studio_api_encryption_key=.*/studio_api_encryption_key=$API_ENCRYPTION_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+    sed -i -e "s/redis_password=.*/redis_password=devPassword/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    # Set image pull secret (empty for public images)
+    sed -i -e "s/image_pull_secret_b64=.*/image_pull_secret_b64=\"${STUDIO_IMAGE_PULL_SECRET}\"/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+    sed -i -e "s/export ENVIRONMENT=.*/export ENVIRONMENT=local/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export ROUTE_ENABLED=.*/export ROUTE_ENABLED=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export SHARE_PIPELINE_PVC=.*/export SHARE_PIPELINE_PVC=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export STORAGE_PVC_ENABLED=.*/export STORAGE_PVC_ENABLED=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export STORAGE_FILESYSTEM_ENABLED=.*/export STORAGE_FILESYSTEM_ENABLED=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export CREATE_TUNING_FOLDERS_FLAG=.*/export CREATE_TUNING_FOLDERS_FLAG=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=.*|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/data|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    sed -i -e "s/export OAUTH_PROXY_ENABLED=.*/export OAUTH_PROXY_ENABLED=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    sed -i -e "s/export CONTAINER_IMAGE_REPOSITORY=.*/export CONTAINER_IMAGE_REPOSITORY=${IMAGE_REGISTRY}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    echo "----------------------------------------------------------------------"
+    echo "----------------  Generating deployment scripts  ---------------------"
+    echo "----------------------------------------------------------------------"
+
+    # Create deployment values files
+    ./deployment-scripts/values-file-generate.sh
+
+    cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+    # Replace credential placeholders with actual values from .env
+    source workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s|<postgres_host>|${pg_uri}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<postgres_port>|${pg_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_user>|${pg_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_pass>|${pg_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_host>|${pgbouncer_host}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_port>|${pgbouncer_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_user>|${pgbouncer_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_pass>|${pgbouncer_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+    # The line below removes GPUs from the pipeline components and Finetuning job, to leave GPUs activated, copy out this line
+
+    # Call the function
+    get_menu_selection \
+        "Select whether you have GPU available in your cluster: " \
+        gpu_configuration_type \
+        "$gpu_configuration_options"
+
+    # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
+    NVIDIA_GPUS_AVAILABLE=$(kubectl describe node ${CLUSTER_NODE_NAME} | grep -c "nvidia.com")
+
+    if [[ "$gpu_configuration_type" == "GPU-Available" && "$NVIDIA_GPUS_AVAILABLE" -gt 0 ]]; then
+        # Get number of GPUs
+        echo "Cluster Type: nvkind"
+        python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+        # Keep the Job GPU configuration as is.
+        echo -e "\n Keeping GPU configuration for Finetuning job in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
+        echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
+    else
+        echo "Cluster Type: standard kind"
+        python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+        # remove job GPU request
+        echo -e "\n Removing GPU configuration from values.yaml"
+        python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+        --gpu-limit 0 \
+        --gpu-request 0
+        echo -e "--------------------------- Removed GPUs in the Cluster ------------------- \n"
+    fi
+
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+    echo "-----------  Make any changes to deployment values yaml --------------"
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        printf "%s " "Press enter to continue"
+        read ans
+    fi
+
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+    echo "------  Configure Fine-Tuning Job Resources  -------------------------"
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+
+    # Ask user if they want to alter memory, CPU requests and limits for finetuning.
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        printf "%s " "Do you want to alter memory, CPU requests and limits for finetuning? (y/n) "
+        read ans
+    else
+        # Non-interactive mode: use CONFIGURE_RESOURCES environment variable (default to "n")
+        ans="${CONFIGURE_RESOURCES:-n}"
+        echo "Non-interactive mode: CONFIGURE_RESOURCES=$ans"
+    fi
+
+    # If yes, prompt user for memory limit, CPU limit, memory request and CPU request.
+    if [ "$ans" = "y" ]; then
+        echo "Updating memory, CPU requests and limits for finetuning."
+        echo ""
+        
+        # Prompt for CPU limit
+        printf "%s " "CPU limit in cores (default: 4): "
+        read cpu_limit
+        cpu_limit=${cpu_limit:-4}
+        
+        # Prompt for CPU request
+        printf "%s " "CPU request in cores (default: 2): "
+        read cpu_request
+        cpu_request=${cpu_request:-2}
+        
+        # Prompt for Memory limit
+        printf "%s " "Memory limit in GB (default: 10): "
+        read memory_limit
+        memory_limit=${memory_limit:-10}
+        
+        # Prompt for Memory request
+        printf "%s " "Memory request in GB (default: 6): "
+        read memory_request
+        memory_request=${memory_request:-6}
+        
+        echo -e "\n Applying configuration:"
+        echo "  CPU Limit: ${cpu_limit} cores, CPU Request: ${cpu_request} cores"
+        echo -e "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB \n"
+        
+        # Call the update script with user-provided values
+        python3 ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+            --cpu-limit "$cpu_limit" \
+            --cpu-request "$cpu_request" \
+            --memory-limit "$memory_limit" \
+            --memory-request "$memory_request"
+        echo -e "\n Updated finetuning resource configurations \n"
+    else
+        echo -e "\n Not updating resource configurations."
+        echo "You can manually edit workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml"
+        echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
+    fi
+
+    echo "----------------------------------------------------------------------"
+    echo "----------------  Building Helm dependencies  ------------------------"
+    echo "----------------------------------------------------------------------"
+
+    # Build Helm dependencies
+    helm dep update ./geospatial-studio/
+    helm dependency build ./geospatial-studio/
+
     echo "----------------------------------------------------------------------"
     echo "--------------------  Deploying the Studio  --------------------------"
     echo "----------------------------------------------------------------------"
@@ -488,30 +487,42 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     kubectl port-forward deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
     kubectl port-forward deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
     kubectl port-forward deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
+
+    echo "----------------------------------------------------------------------"
+    echo "-----------------------  Deployment summary  -------------------------"
+    echo "----------------------------------------------------------------------"
+
+    printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed to k8s! \n"
+    printf "\U1F5FA   Access the Geospatial Studio UI at: https://localhost:4180\n"
+    printf "\U1F4BB   Access the Geospatial Studio API at: https://localhost:4181\n"
+    printf "K8S \U2388   To access the k8s cluster dashboard, run: minikube dashboard\n\n"
+
+    CONFIGURE_HOSTS_CMD="echo -e \"127.0.0.1 keycloak.$OC_PROJECT.svc.cluster.local postgresql.$OC_PROJECT.svc.cluster.local minio.$OC_PROJECT.svc.cluster.local geofm-ui.$OC_PROJECT.svc.cluster.local geofm-gateway.$OC_PROJECT.svc.cluster.local geofm-geoserver.$OC_PROJECT.svc.cluster.local\" >> /etc/hosts"
+    printf "\U1F4E1 Configure your etc hosts with the local urls:\n"
+    printf "Add our internal cluster urls to etc hosts for seamless connectivity since some of the services may call these internal urls on host machine \n"
+    printf "Use: %s\n\n" "$CONFIGURE_HOSTS_CMD"
+
+    printf "Dev Studio API Key: %s\n" $STUDIO_API_KEY
+    printf "Dev Postgres Password: %s\n\n" $POSTGRES_PASSWORD
+
+    echo "----------------------------------------------------------------------"
+    echo "----------------------------------------------------------------------"
+    echo "----------------------------------------------------------------------"
 else
     echo "----------------------------------------------------------------------"
     echo "------------------  Skipping Studio Deployment  ----------------------"
     echo "----------------------------------------------------------------------"
-    echo "Note: Port forwarding not set up. Run manually if needed."
+    echo "✓ Infrastructure components deployed successfully"
+    echo "  - MinIO: $DEPLOY_MINIO"
+    echo "  - PostgreSQL: $DEPLOY_POSTGRES"
+    echo "  - Keycloak: $DEPLOY_KEYCLOAK"
+    echo "  - GeoServer: $DEPLOY_GEOSERVER"
+    echo ""
+    echo "Note: Geospatial Studio was not deployed."
+    echo "To deploy Studio later, re-run this script and select 'Deploy' for Studio."
+    echo ""
+    printf "Dev Postgres Password: %s\n\n" $POSTGRES_PASSWORD
+    echo "----------------------------------------------------------------------"
+    echo "----------------------------------------------------------------------"
+    echo "----------------------------------------------------------------------"
 fi
-
-echo "----------------------------------------------------------------------"
-echo "-----------------------  Deployment summary  -------------------------"
-echo "----------------------------------------------------------------------"
-
-printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed to k8s! \n"
-printf "\U1F5FA   Access the Geospatial Studio UI at: https://localhost:4180\n"
-printf "\U1F4BB   Access the Geospatial Studio API at: https://localhost:4181\n"
-printf "K8S \U2388   To access the k8s cluster dashboard, run: minikube dashboard\n\n"
-
-CONFIGURE_HOSTS_CMD="echo -e \"127.0.0.1 keycloak.$OC_PROJECT.svc.cluster.local postgresql.$OC_PROJECT.svc.cluster.local minio.$OC_PROJECT.svc.cluster.local geofm-ui.$OC_PROJECT.svc.cluster.local geofm-gateway.$OC_PROJECT.svc.cluster.local geofm-geoserver.$OC_PROJECT.svc.cluster.local\" >> /etc/hosts"
-printf "\U1F4E1 Configure your etc hosts with the local urls:\n"
-printf "Add our internal cluster urls to etc hosts for seamless connectivity since some of the services may call these internal urls on host machine \n"
-printf "Use: %s\n\n" "$CONFIGURE_HOSTS_CMD"
-
-printf "Dev Studio API Key: %s\n" $STUDIO_API_KEY
-printf "Dev Postgres Password: %s\n\n" $POSTGRES_PASSWORD
-
-echo "----------------------------------------------------------------------"
-echo "----------------------------------------------------------------------"
-echo "----------------------------------------------------------------------"
