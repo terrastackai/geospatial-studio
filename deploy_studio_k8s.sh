@@ -371,14 +371,14 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
 
     if [[ "$gpu_configuration_type" == "GPU-Available" && "$NVIDIA_GPUS_AVAILABLE" -gt 0 ]]; then
         # Get number of GPUs
-        echo "Cluster Type: nvkind"
+        echo "Cluster with GPUs"
         python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
         # Keep the Job GPU configuration as is.
         echo -e "\n Keeping GPU configuration for Finetuning job in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
         echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
     else
-        echo "Cluster Type: standard kind"
+        echo "Cluster without GPUs"
         python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
         # remove job GPU request
