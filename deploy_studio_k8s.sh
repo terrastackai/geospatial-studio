@@ -357,6 +357,8 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     sed -i -e "s|<pgbouncer_pass>|${pgbouncer_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
     # The line below removes GPUs from the pipeline components and Finetuning job, to leave GPUs activated, copy out this line
+    gpu_configuration_options="GPU-Available No-GPU-Available"
+    typeset gpu_configuration_type
 
     # Call the function
     get_menu_selection \
