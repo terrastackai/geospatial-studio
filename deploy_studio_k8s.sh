@@ -346,6 +346,10 @@ sed -i -e "s|<pgbouncer_pass>|${pgbouncer_password}|g" workspace/${DEPLOYMENT_EN
 
 # The line below removes GPUs from the pipeline components and Finetuning job, to leave GPUs activated, copy out this line
 
+# The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
+gpu_configuration_options="GPU-Available No-GPU-Available"
+typeset gpu_configuration_type
+
 # Call the function
 get_menu_selection \
     "Select whether you have GPU available in your cluster: " \
@@ -357,14 +361,14 @@ NVIDIA_GPUS_AVAILABLE=$(kubectl describe node ${CLUSTER_NODE_NAME} | grep -c "nv
 
 if [[ "$gpu_configuration_type" == "GPU-Available" && "$NVIDIA_GPUS_AVAILABLE" -gt 0 ]]; then
     # Get number of GPUs
-    echo "Cluster Type: nvkind"
+    echo "Cluster with GPUs"
     python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
     # Keep the Job GPU configuration as is. 
     echo -e "\n Keeping GPU configuration for Finetuning job in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
     echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
 else
-    echo "Cluster Type: standard kind"
+    echo "Cluster without GPUs"
     python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
     # remove job GPU request
