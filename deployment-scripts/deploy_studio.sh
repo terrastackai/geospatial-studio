@@ -1,4 +1,4 @@
-deployment-scripts/deploy_studio.sh#!/bin/bash
+#!/bin/bash
 
 # © Copyright IBM Corporation 2025
 # SPDX-License-Identifier: Apache-2.0
