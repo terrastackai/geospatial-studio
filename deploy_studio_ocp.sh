@@ -225,10 +225,10 @@ if [[ "$DEPLOY_IBM_STORAGE" == "Deploy" ]]; then
 apiVersion: v1
 kind: ConfigMap
 metadata:
-name: trusted-ca-bundle
-namespace: ibm-object-s3fs
-annotations:
-service.beta.openshift.io/inject-cabundle: "true"
+  name: trusted-ca-bundle
+  namespace: ibm-object-s3fs
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
 data: {}
 EOF
 
