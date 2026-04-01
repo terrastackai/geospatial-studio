@@ -88,7 +88,7 @@
       "layer_name": "pred",
       "file_suffix": "",
       "display_name": "Model prediction",
-      "filepath_key": "model_output_image",
+      "filepath_key": "model_output_image_masked",
       "geoserver_style": {
         "segmentation": [
           {
@@ -130,6 +130,6 @@
     "cloud_masking": "False",
     "ocean_masking": "False",
     "snow_ice_masking": null,
-    "permanent_water_masking": "False"
+    "permanent_water_masking": "True"
   }
 }
