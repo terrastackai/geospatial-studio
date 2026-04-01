@@ -95,8 +95,11 @@ echo "  Studio: $DEPLOY_STUDIO"
 echo "  IBM Storage Plugin: $DEPLOY_IBM_STORAGE"
 echo ""
 
-printf "%s " "Press enter to continue with this deployment plan"
-read ans
+if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+    printf "%s " "Press enter to continue with this deployment plan"
+    read ans
+fi
+
 
 # Setup workspace environment if it doesn't exist
 if [ ! -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || [ ! -f "workspace/${DEPLOYMENT_ENV}/env/.env" ]; then
