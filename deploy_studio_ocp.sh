@@ -328,99 +328,94 @@ if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
         "Select whether to deploy a cloud object storage in cluster or use a cloud managed instance that you have externally subscribed to: " \
         cloud_object_storage_type \
         "$cloud_object_storage_type_options"
-else
-    # If skipping MinIO, assume cloud-managed to skip deployment
-    cloud_object_storage_type="Cloud-managed-instance"
-fi
 
-if [[ "$cloud_object_storage_type" == "Cluster-deployment" ]]; then
+    if [[ "$cloud_object_storage_type" == "Cluster-deployment" ]]; then
 
-    echo "----------------------------------------------------------------------"
-    echo "--------------------  Deploying Minio  -------------------------------"
-    echo "----------------------------------------------------------------------"
+        echo "----------------------------------------------------------------------"
+        echo "--------------------  Deploying Minio  -------------------------------"
+        echo "----------------------------------------------------------------------"
 
-    source workspace/${DEPLOYMENT_ENV}/env/env.sh
-    
-    python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
-    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
-
-    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
-
-    MINIO_API_URL="https://minio-api-$OC_PROJECT.$CLUSTER_URL"
-
-    # Update .env with the MinIO details for connection
-    sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s|endpoint=.*|endpoint=$MINIO_API_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s/region=.*/region=us-east/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-    # Wait for MinIO service to be ready (pod ready doesn't mean service is accepting connections)
-    echo "Waiting for MinIO service to be ready..."
-    MAX_RETRIES=6
-    RETRY_DELAY=10
-    
-    for i in $(seq 1 $MAX_RETRIES); do
-        # Try internal service first
-        if kubectl exec -n ${OC_PROJECT} $(kubectl get pod -n ${OC_PROJECT} -l app=minio -o jsonpath='{.items[0].metadata.name}') -- curl -ks -f "https://localhost:9000/minio/health/live" > /dev/null 2>&1; then
-            echo "✓ MinIO service is ready via localhost (attempt $i/$MAX_RETRIES)"
-            break
-        fi
+        source workspace/${DEPLOYMENT_ENV}/env/env.sh
         
-        # If internal check fails, show diagnostics
-        if [ $i -eq $MAX_RETRIES ]; then
-            echo "✗ MinIO service failed to become ready after $MAX_RETRIES attempts"
-            echo "Diagnostics:"
-            echo "- Pod status:"
-            kubectl get pods -n ${OC_PROJECT} -l app=minio
-            echo "- Pod logs (last 20 lines):"
-            kubectl logs -n ${OC_PROJECT} -l app=minio --tail=20
-            echo "- Service status:"
-            kubectl get svc -n ${OC_PROJECT} minio
-            echo "- Route status:"
-            kubectl get route -n ${OC_PROJECT} minio-api
-            exit 1
-        fi
+        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+        kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
+
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
+
+        MINIO_API_URL="https://minio-api-$OC_PROJECT.$CLUSTER_URL"
+
+        # Update .env with the MinIO details for connection
+        sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s|endpoint=.*|endpoint=$MINIO_API_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/region=.*/region=us-east/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+        # Wait for MinIO service to be ready (pod ready doesn't mean service is accepting connections)
+        echo "Waiting for MinIO service to be ready..."
+        MAX_RETRIES=6
+        RETRY_DELAY=10
         
-        echo "MinIO not ready yet (attempt $i/$MAX_RETRIES), waiting ${RETRY_DELAY}s..."
-        
-        # Show pod status every 5 attempts
-        if [ $((i % 2)) -eq 0 ]; then
-            echo "$(date +%H:%M:%S) - Pod status:"
-            kubectl get pods -n ${OC_PROJECT} -l app=minio -o custom-columns=NAME:.metadata.name,STATUS:.status.phase --no-headers
-        fi
-        
-        sleep $RETRY_DELAY
-    done
-    
-    # Now verify the Route is accessible (this might take longer due to SSL/routing)
-    echo "Verifying MinIO Route accessibility..."
-    for i in $(seq 1 5); do
-        if curl -k -s -f "$MINIO_API_URL/minio/health/live" > /dev/null 2>&1; then
-            echo "✓ MinIO Route is accessible"
-            break
-        else
-            if [ $i -eq 10 ]; then
-                echo "⚠ Warning: MinIO Route not accessible, but service is running. This may be a Route/SSL issue."
-                echo "Continuing deployment - MinIO is accessible internally."
+        for i in $(seq 1 $MAX_RETRIES); do
+            # Try internal service first
+            if kubectl exec -n ${OC_PROJECT} $(kubectl get pod -n ${OC_PROJECT} -l app=minio -o jsonpath='{.items[0].metadata.name}') -- curl -ks -f "https://localhost:9000/minio/health/live" > /dev/null 2>&1; then
+                echo "✓ MinIO service is ready via localhost (attempt $i/$MAX_RETRIES)"
+                break
             fi
-            echo "Route check attempt $i/10..."
-            sleep 5
+            
+            # If internal check fails, show diagnostics
+            if [ $i -eq $MAX_RETRIES ]; then
+                echo "✗ MinIO service failed to become ready after $MAX_RETRIES attempts"
+                echo "Diagnostics:"
+                echo "- Pod status:"
+                kubectl get pods -n ${OC_PROJECT} -l app=minio
+                echo "- Pod logs (last 20 lines):"
+                kubectl logs -n ${OC_PROJECT} -l app=minio --tail=20
+                echo "- Service status:"
+                kubectl get svc -n ${OC_PROJECT} minio
+                echo "- Route status:"
+                kubectl get route -n ${OC_PROJECT} minio-api
+                exit 1
+            fi
+            
+            echo "MinIO not ready yet (attempt $i/$MAX_RETRIES), waiting ${RETRY_DELAY}s..."
+            
+            # Show pod status every 5 attempts
+            if [ $((i % 2)) -eq 0 ]; then
+                echo "$(date +%H:%M:%S) - Pod status:"
+                kubectl get pods -n ${OC_PROJECT} -l app=minio -o custom-columns=NAME:.metadata.name,STATUS:.status.phase --no-headers
+            fi
+            
+            sleep $RETRY_DELAY
+        done
+        
+        # Now verify the Route is accessible (this might take longer due to SSL/routing)
+        echo "Verifying MinIO Route accessibility..."
+        for i in $(seq 1 5); do
+            if curl -k -s -f "$MINIO_API_URL/minio/health/live" > /dev/null 2>&1; then
+                echo "✓ MinIO Route is accessible"
+                break
+            else
+                if [ $i -eq 10 ]; then
+                    echo "⚠ Warning: MinIO Route not accessible, but service is running. This may be a Route/SSL issue."
+                    echo "Continuing deployment - MinIO is accessible internally."
+                fi
+                echo "Route check attempt $i/10..."
+                sleep 5
+            fi
+        done
+
+        if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+            MINIO_CLUSTER_IP=$(oc get svc minio -n "${OC_PROJECT}" -o jsonpath='{.spec.clusterIP}')
+            MINIO_INTERNAL_URL="minio.${OC_PROJECT}.svc.cluster.local"
+            export LOCAL_CA_CRT=$(oc get configmap trusted-ca-bundle -n ibm-object-s3fs -o jsonpath='{.data.service-ca\.crt}')
+
+            cat deployment-scripts/crc-hosts-modifier-daemonset.yaml | sed -e "s/\$MINIO_CLUSTER_IP/$MINIO_CLUSTER_IP/g" | sed -e "s/\$MINIO_INTERNAL_URL/$MINIO_INTERNAL_URL/g" > workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
+            auto_indent_and_replace workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml SELF_CA_CRT "$LOCAL_CA_CRT" workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml
+            rm workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
+            oc apply -f workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml -n default
         fi
-    done
 
-    if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
-        MINIO_CLUSTER_IP=$(oc get svc minio -n "${OC_PROJECT}" -o jsonpath='{.spec.clusterIP}')
-        MINIO_INTERNAL_URL="minio.${OC_PROJECT}.svc.cluster.local"
-        export LOCAL_CA_CRT=$(oc get configmap trusted-ca-bundle -n ibm-object-s3fs -o jsonpath='{.data.service-ca\.crt}')
-
-        cat deployment-scripts/crc-hosts-modifier-daemonset.yaml | sed -e "s/\$MINIO_CLUSTER_IP/$MINIO_CLUSTER_IP/g" | sed -e "s/\$MINIO_INTERNAL_URL/$MINIO_INTERNAL_URL/g" > workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
-        auto_indent_and_replace workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml SELF_CA_CRT "$LOCAL_CA_CRT" workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml
-        rm workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
-        oc apply -f workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml -n default
-    fi
-
-else
-    if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
+    else
         echo "**********************************************************************"
         echo "**********************************************************************"
         echo "-----------  Configure s3 storage and update the values --------------"
@@ -448,22 +443,21 @@ else
                 break
             fi
         done
-    else
-        echo "----------------------------------------------------------------------"
-        echo "-------------------  Skipping Minio Deployment  ----------------------"
-        echo "----------------------------------------------------------------------"
-        echo "Loading existing MinIO/S3 configuration..."
     fi
-fi
 
-source workspace/${DEPLOYMENT_ENV}/env/env.sh
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-# Create buckets
-python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+    # Create buckets
+    python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
-# For crc we set the endpoint for the cos pvc to internal cluster url since at the driver s3fuse level the routes don't resolve
-if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
-    sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+    # For crc we set the endpoint for the cos pvc to internal cluster url since at the driver s3fuse level the routes don't resolve
+    if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+        sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+    fi
+else
+    echo "----------------------------------------------------------------------"
+    echo "-------------------  Skipping Minio Deployment  ----------------------"
+    echo "----------------------------------------------------------------------"
 fi
 
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
@@ -478,51 +472,46 @@ if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
         "Select whether to deploy postgres in cluster or use a cloud managed instance that you have externally subscribed to: " \
         postgres_type \
         "$postgres_type_options"
-else
-    # If skipping PostgreSQL, assume cloud-managed to skip deployment
-    postgres_type="Cloud-managed-instance"
-fi
 
-if [[ "$postgres_type" == "Cluster-deployment" ]]; then
-    echo "----------------------------------------------------------------------"
-    echo "--------------------  Deploying Postgres  ----------------------------"
-    echo "----------------------------------------------------------------------"
+    if [[ "$postgres_type" == "Cluster-deployment" ]]; then
+        echo "----------------------------------------------------------------------"
+        echo "--------------------  Deploying Postgres  ----------------------------"
+        echo "----------------------------------------------------------------------"
 
-    # Install Postgres
-    helm repo add bitnami  https://charts.bitnami.com/bitnami
-    helm repo update
+        # Install Postgres
+        helm repo add bitnami  https://charts.bitnami.com/bitnami
+        helm repo update
 
-    export POSTGRES_PASSWORD=devPostgresql123
+        export POSTGRES_PASSWORD=devPostgresql123
 
-    # For CRC, we need volume permissions enabled, so don't use DO_NOT_SET_SCC
-    # For other OpenShift environments, storage may be pre-configured
-    if ([[ "$DEPLOYMENT_ENV" == "crc" ]] || [[ "$DEPLOYMENT_ENV" == "crc-local" ]]) && [[ "$OC_PROJECT" == "default" ]]; then
-        ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV
+        # For CRC, we need volume permissions enabled, so don't use DO_NOT_SET_SCC
+        # For other OpenShift environments, storage may be pre-configured
+        if ([[ "$DEPLOYMENT_ENV" == "crc" ]] || [[ "$DEPLOYMENT_ENV" == "crc-local" ]]) && [[ "$OC_PROJECT" == "default" ]]; then
+            ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV
+        else
+            ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV DO_NOT_SET_SCC
+        fi
+
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
+
+        kubectl port-forward --namespace ${OC_PROJECT} svc/postgresql 54320:5432 &
+        sleep 5
+
+        # Update .env with the Postgres details for local connection
+        sed -i -e "s/pg_username=.*/pg_username=postgres/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/pg_password=.*/pg_password=${POSTGRES_PASSWORD}/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/pg_uri=.*/pg_uri=127.0.0.1/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/pg_port=.*/pg_port=5432/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/pg_original_db_name=.*/pg_original_db_name='postgres'/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+        python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+
+        sed -i -e "s/pg_uri=.*/pg_uri=postgresql.${OC_PROJECT}.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        
+        # Set PgBouncer configuration
+        sed -i -e "s/pgbouncer_host=.*/pgbouncer_host=geofm-pgbouncer.${OC_PROJECT}.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${POSTGRES_PASSWORD}/g" workspace/${DEPLOYMENT_ENV}/env/.env
     else
-        ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV DO_NOT_SET_SCC
-    fi
-
-    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
-
-    kubectl port-forward --namespace ${OC_PROJECT} svc/postgresql 54320:5432 &
-    sleep 5
-
-    # Update .env with the Postgres details for local connection
-    sed -i -e "s/pg_username=.*/pg_username=postgres/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s/pg_password=.*/pg_password=${POSTGRES_PASSWORD}/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s/pg_uri=.*/pg_uri=127.0.0.1/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s/pg_port=.*/pg_port=5432/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s/pg_original_db_name=.*/pg_original_db_name='postgres'/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-    python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
-
-    sed -i -e "s/pg_uri=.*/pg_uri=postgresql.${OC_PROJECT}.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    
-    # Set PgBouncer configuration
-    sed -i -e "s/pgbouncer_host=.*/pgbouncer_host=geofm-pgbouncer.${OC_PROJECT}.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${POSTGRES_PASSWORD}/g" workspace/${DEPLOYMENT_ENV}/env/.env
-else
-    if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
         echo "**********************************************************************"
         echo "**********************************************************************"
         echo "-----------  Configure cloud based posgtres and update the values ----"
@@ -550,20 +539,18 @@ else
             if [ $? -eq 0 ]; then
                 break
             fi
-        done
+        done   
+    fi
+    python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
-        python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
-
-        # Set PgBouncer configuration for cloud-managed postgres
-        # Note: User needs to manually set pgbouncer_host if using external PgBouncer
-        sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${pg_password}/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    else
-        echo "----------------------------------------------------------------------"
-        echo "-----------------  Skipping Postgres Deployment  ---------------------"
-        echo "----------------------------------------------------------------------"
-        echo "Loading existing PostgreSQL configuration..."
-    fi      
-fi
+    # Set PgBouncer configuration for cloud-managed postgres
+    # Note: User needs to manually set pgbouncer_host if using external PgBouncer
+    sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${pg_password}/g" workspace/${DEPLOYMENT_ENV}/env/.env  
+else
+    echo "----------------------------------------------------------------------"
+    echo "-----------------  Skipping Postgres Deployment  ---------------------"
+    echo "----------------------------------------------------------------------"
+fi 
 
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
@@ -576,46 +563,39 @@ if [[ "$DEPLOY_KEYCLOAK" == "Deploy" ]]; then
         "Select whether to use incluster Keycloak of an instance of IBM Verify that you have provisioned externally: " \
         oauth_type \
         "$oauth_type_options"
-else
-    # If skipping Keycloak, assume ISV to skip deployment
-    oauth_type="ISV"
-fi
 
-if [[ "$oauth_type" == "Keycloak" ]]; then
-
-    echo "----------------------------------------------------------------------"
-    echo "--------------------  Deploying Keycloak  ----------------------------"
-    echo "----------------------------------------------------------------------"
+    if [[ "$oauth_type" == "Keycloak" ]]; then
+        echo "----------------------------------------------------------------------"
+        echo "--------------------  Deploying Keycloak  ----------------------------"
+        echo "----------------------------------------------------------------------"
 
 
-    python ./deployment-scripts/update-keycloak-deployment.py --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
-    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
+        python ./deployment-scripts/update-keycloak-deployment.py --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+        kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 
-    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
 
-    kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 &
-    sleep 5
+        kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 &
+        sleep 5
 
-    # Keycloak setup
-    export client_secret=`cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32`
-    export cookie_secret=`cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32`
+        # Keycloak setup
+        export client_secret=`cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32`
+        export cookie_secret=`cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32`
 
-    ./deployment-scripts/setup-keycloak.sh
+        ./deployment-scripts/setup-keycloak.sh
 
-    sed -i -e "s/oauth_cookie_secret=.*/oauth_cookie_secret=$cookie_secret/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/oauth_cookie_secret=.*/oauth_cookie_secret=$cookie_secret/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
-    sed -i -e "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
-        sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "http://%s.%s.svc.cluster.local:8080/realms/geostudio" "keycloak" "$OC_PROJECT")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+            sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "http://%s.%s.svc.cluster.local:8080/realms/geostudio" "keycloak" "$OC_PROJECT")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        else
+            sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "https://%s-%s.%s/realms/geostudio" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        fi
+        sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=$(printf "https://%s-%s.%s/realms/geostudio/protocol/openid-connect/auth" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=${OAUTH_PROXY_PORT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     else
-        sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "https://%s-%s.%s/realms/geostudio" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    fi
-    sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=$(printf "https://%s-%s.%s/realms/geostudio/protocol/openid-connect/auth" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=${OAUTH_PROXY_PORT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-else
-    if [[ "$DEPLOY_KEYCLOAK" == "Deploy" ]]; then
         echo "**********************************************************************"
         echo "**********************************************************************"
         echo "-----------  Configure IBM Verify and update the values --------------"
@@ -648,12 +628,11 @@ else
                 break
             fi
         done
-    else
-        echo "----------------------------------------------------------------------"
-        echo "-----------------  Skipping Keycloak Deployment  ---------------------"
-        echo "----------------------------------------------------------------------"
-        echo "Loading existing Keycloak/OAuth configuration..."
     fi
+else
+    echo "----------------------------------------------------------------------"
+    echo "-----------------  Skipping Keycloak Deployment  ---------------------"
+    echo "----------------------------------------------------------------------"
 fi
 
 
@@ -696,64 +675,64 @@ if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
     echo "----------------------------------------------------------------------"
 
     if [[ "$IS_OPENSHIFT" == "false" ]]; then
-    python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
-    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
-else
-    geoserver_install_options="Configure-SCC Use-Custom-Image"
-    typeset geoserver_install_type
-
-    # Call the function
-    get_menu_selection \
-        "Select whether to deploy default geoserver which requires admin privileges by configuring scc anyuid or use a custom geoserver image: " \
-        geoserver_install_type \
-        "$geoserver_install_options"
-
-    if [[ "$geoserver_install_type" == "Configure-SCC" ]]; then
-        oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
         python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
     else
-        printf "\n\n#Use this dockerfile to create a custom image\n\nFROM --platform=linux/amd64 docker.osgeo.org/geoserver:2.28.1\nRUN chmod -R 777 /tmp\nRUN addgroup --system geoserver && adduser --system -gid 101 geoserver\nRUN chown -R geoserver:geoserver /opt\nRUN chmod -R 777 /opt\nRUN chmod -R 777 /usr/local/tomcat\nUSER geoserver:geoserver\n"
-        printf "\n\nBuild and push your image to your registry of choice. You'll be prompted to input configuration for the image pull secret:\n image registry uri. e.g. myimage.io\n image registry email. e.g. myemail@example.com\n image registry password\n geoserver image uri. e.g myimages.io/geostudio/patched_geoserver:v0\n\n"
-        sleep 5
-        while true; do
-            printf "%s " "Press enter to if you have pushed the custom geoserver image to a registry"
-            read ans
+        geoserver_install_options="Configure-SCC Use-Custom-Image"
+        typeset geoserver_install_type
 
-            printf "\n\nCreating the geoserver image pull secret using \n kubectl create secret docker-registry <secret-name> --docker-server=<docker-registry-uri> --docker-username=iamapikey --docker-password=<docker-password> --docker-email=email@example.com --namespace ${OC_PROJECT}\n\n"
-            geoserver_image_pull_secret_name="geoserver-image-pull-secret"
-            typeset geoserver_image_registry_uri
-            get_user_input "Provide the geoserver image registry uri: " geoserver_image_registry_uri
-            echo "geoserver image registry uri accepted: **$geoserver_image_registry_uri**"
+        # Call the function
+        get_menu_selection \
+            "Select whether to deploy default geoserver which requires admin privileges by configuring scc anyuid or use a custom geoserver image: " \
+            geoserver_install_type \
+            "$geoserver_install_options"
 
-            typeset geoserver_image_registry_email
-            get_user_input "Provide the geoserver image registry email: " geoserver_image_registry_email
-            echo "geoserver image email accepted: **$geoserver_image_registry_email**"
-
-            typeset geoserver_image_registry_password
-            get_user_input "Provide the geoserver image registry password: " geoserver_image_registry_password
-            echo "geoserver image registry password accepted"
-
-            kubectl create secret docker-registry ${geoserver_image_pull_secret_name} --docker-server=${geoserver_image_registry_uri} --docker-username=iamapikey --docker-password=${geoserver_image_registry_password} --docker-email=${geoserver_image_registry_email} --namespace ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
-            kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
-
-            if [ $? -ne 0 ]; then
-                continue
-            fi
-
-            typeset geoserver_image_uri
-            get_user_input "Provide the geoserver image uri: " geoserver_image_uri
-            echo "geoserver image uri accepted: **$geoserver_image_uri**"
-
-            python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} --geoserver-run-unprivileged "false" --geoserver-image-pull-secret ${geoserver_image_pull_secret_name} --geoserver-image-uri ${geoserver_image_uri} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+        if [[ "$geoserver_install_type" == "Configure-SCC" ]]; then
+            oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
+            python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
             kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
+        else
+            printf "\n\n#Use this dockerfile to create a custom image\n\nFROM --platform=linux/amd64 docker.osgeo.org/geoserver:2.28.1\nRUN chmod -R 777 /tmp\nRUN addgroup --system geoserver && adduser --system -gid 101 geoserver\nRUN chown -R geoserver:geoserver /opt\nRUN chmod -R 777 /opt\nRUN chmod -R 777 /usr/local/tomcat\nUSER geoserver:geoserver\n"
+            printf "\n\nBuild and push your image to your registry of choice. You'll be prompted to input configuration for the image pull secret:\n image registry uri. e.g. myimage.io\n image registry email. e.g. myemail@example.com\n image registry password\n geoserver image uri. e.g myimages.io/geostudio/patched_geoserver:v0\n\n"
+            sleep 5
+            while true; do
+                printf "%s " "Press enter to if you have pushed the custom geoserver image to a registry"
+                read ans
 
-            if [ $? -eq 0 ]; then
-                break
-            fi
-        done
+                printf "\n\nCreating the geoserver image pull secret using \n kubectl create secret docker-registry <secret-name> --docker-server=<docker-registry-uri> --docker-username=iamapikey --docker-password=<docker-password> --docker-email=email@example.com --namespace ${OC_PROJECT}\n\n"
+                geoserver_image_pull_secret_name="geoserver-image-pull-secret"
+                typeset geoserver_image_registry_uri
+                get_user_input "Provide the geoserver image registry uri: " geoserver_image_registry_uri
+                echo "geoserver image registry uri accepted: **$geoserver_image_registry_uri**"
+
+                typeset geoserver_image_registry_email
+                get_user_input "Provide the geoserver image registry email: " geoserver_image_registry_email
+                echo "geoserver image email accepted: **$geoserver_image_registry_email**"
+
+                typeset geoserver_image_registry_password
+                get_user_input "Provide the geoserver image registry password: " geoserver_image_registry_password
+                echo "geoserver image registry password accepted"
+
+                kubectl create secret docker-registry ${geoserver_image_pull_secret_name} --docker-server=${geoserver_image_registry_uri} --docker-username=iamapikey --docker-password=${geoserver_image_registry_password} --docker-email=${geoserver_image_registry_email} --namespace ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
+                kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
+
+                if [ $? -ne 0 ]; then
+                    continue
+                fi
+
+                typeset geoserver_image_uri
+                get_user_input "Provide the geoserver image uri: " geoserver_image_uri
+                echo "geoserver image uri accepted: **$geoserver_image_uri**"
+
+                python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} --geoserver-run-unprivileged "false" --geoserver-image-pull-secret ${geoserver_image_pull_secret_name} --geoserver-image-uri ${geoserver_image_uri} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+                kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
+
+                if [ $? -eq 0 ]; then
+                    break
+                fi
+            done
+        fi
     fi
-fi
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
 
