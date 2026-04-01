@@ -252,31 +252,13 @@ else
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 fi
 
-
-echo "----------------------------------------------------------------------"
-echo "--------------------  Updating other values  -------------------------"
-echo "----------------------------------------------------------------------"
-# Kubernetes tls secret setup
-# create tls.key and tls.crt
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=$OC_PROJECT.svc.cluster.local"
-
-# extract the cert and key into env vars
-
-export TLS_CRT_B64=$(openssl base64 -in tls.crt -A)
-export TLS_KEY_B64=$(openssl base64 -in tls.key -A)
-
-sed -i -e "s/tls_crt_b64=.*/tls_crt_b64=$TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-# Geoserver setup
-
-export GEOSERVER_URL=http://localhost:3000/geoserver
-
-sed -i -e "s/geoserver_username=.*/geoserver_username=$GEOSERVER_USERNAME/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/geoserver_password=.*/geoserver_password=$GEOSERVER_PASSWORD/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
 if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
+    # Geoserver setup
+
+    export GEOSERVER_URL=http://localhost:3000/geoserver
+
+    sed -i -e "s/geoserver_username=.*/geoserver_username=$GEOSERVER_USERNAME/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/geoserver_password=.*/geoserver_password=$GEOSERVER_PASSWORD/g" workspace/${DEPLOYMENT_ENV}/env/.env
     echo "----------------------------------------------------------------------"
     echo "--------------------  Deploying Geoserver  ----------------------------"
     echo "----------------------------------------------------------------------"
@@ -307,6 +289,18 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     echo "----------------------------------------------------------------------"
     echo "-------------  Configuring Geospatial Studio  ------------------------"
     echo "----------------------------------------------------------------------"
+    # Kubernetes tls secret setup
+    # create tls.key and tls.crt
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=$OC_PROJECT.svc.cluster.local"
+
+    # extract the cert and key into env vars
+
+    export TLS_CRT_B64=$(openssl base64 -in tls.crt -A)
+    export TLS_KEY_B64=$(openssl base64 -in tls.key -A)
+
+    sed -i -e "s/tls_crt_b64=.*/tls_crt_b64=$TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
     # Additional setup
     file=./.studio-api-key

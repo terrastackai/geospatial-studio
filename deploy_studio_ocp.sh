@@ -177,10 +177,14 @@ source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 # Install IBM Object Storage Plugin based on deployment decision
 if [[ "$DEPLOY_IBM_STORAGE" == "Deploy" ]]; then
-    # label node
-    oc label nodes crc topology.kubernetes.io/region=us-east --overwrite
-    oc label nodes crc topology.kubernetes.io/zone=us-east --overwrite
-    oc label nodes crc ibm-cloud.kubernetes.io/region=us-east --overwrite
+    # Set the cluster node name where the application will be deployed
+    # CLUSTER_NODE_NAME
+    typeset cluster_node_name
+    get_user_input "Provide a name for the cluster node for deployment, e.g. studio-worker, studio-node... Run 'oc get nodes' to get the nodes available in the cluster" cluster_node_name
+    echo "CLUSTER_NODE_NAME accepted: **$cluster_node_name**"
+    export CLUSTER_NODE_NAME=$cluster_node_name
+    oc label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
+
 
     echo "----------------------------------------------------------------------"
     echo "------  Installing IBM Object Storage Plugin (Helm-based)  ----------"
@@ -638,41 +642,14 @@ else
     echo "----------------------------------------------------------------------"
 fi
 
-
-echo "----------------------------------------------------------------------"
-echo "--------------------  Updating other values  -------------------------"
-echo "----------------------------------------------------------------------"
-
-if [[ "$IS_OPENSHIFT" == "false" ]]; then
-    # Kubernetes tls secret setup
-
-    # request for CNAME
-    typeset cname
-    get_user_input "Provide the CNAME of your cluster: e.g. default.svc.cluster.local, example.com " cname
-    echo "CNAME accepted: **$cname**"
-
-    # create tls.key and tls.crt
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=$cname"
-
-    # extract the cert and key into env vars
-
-    export TLS_CRT_B64=$(openssl base64 -in tls.crt -A)
-    export TLS_KEY_B64=$(openssl base64 -in tls.key -A)
-
-    sed -i -e "s/tls_crt_b64=.*/tls_crt_b64=$TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-fi
-
-# Geoserver setup
-export GEOSERVER_USERNAME="admin"
-export GEOSERVER_PASSWORD="geoserver"
-export GEOSERVER_URL="https://geofm-geoserver-$OC_PROJECT.$CLUSTER_URL/geoserver"
-
-sed -i -e "s/geoserver_username=.*/geoserver_username=$GEOSERVER_USERNAME/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/geoserver_password=.*/geoserver_password=$GEOSERVER_PASSWORD/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
 if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
+    # Geoserver setup
+    export GEOSERVER_USERNAME="admin"
+    export GEOSERVER_PASSWORD="geoserver"
+    export GEOSERVER_URL="https://geofm-geoserver-$OC_PROJECT.$CLUSTER_URL/geoserver"
+
+    sed -i -e "s/geoserver_username=.*/geoserver_username=$GEOSERVER_USERNAME/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/geoserver_password=.*/geoserver_password=$GEOSERVER_PASSWORD/g" workspace/${DEPLOYMENT_ENV}/env/.env
     echo "----------------------------------------------------------------------"
     echo "--------------------  Deploying Geoserver  ----------------------------"
     echo "----------------------------------------------------------------------"
@@ -755,6 +732,26 @@ else
 fi
 
 if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
+    if [[ "$IS_OPENSHIFT" == "false" ]]; then
+        # Kubernetes tls secret setup
+
+        # request for CNAME
+        typeset cname
+        get_user_input "Provide the CNAME of your cluster: e.g. default.svc.cluster.local, example.com " cname
+        echo "CNAME accepted: **$cname**"
+
+        # create tls.key and tls.crt
+        openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=$cname"
+
+        # extract the cert and key into env vars
+
+        export TLS_CRT_B64=$(openssl base64 -in tls.crt -A)
+        export TLS_KEY_B64=$(openssl base64 -in tls.key -A)
+
+        sed -i -e "s/tls_crt_b64=.*/tls_crt_b64=$TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    fi
     echo "----------------------------------------------------------------------"
     echo "-------------  Configuring Geospatial Studio  ------------------------"
     echo "----------------------------------------------------------------------"

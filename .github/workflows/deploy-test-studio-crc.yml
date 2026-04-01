@@ -129,6 +129,7 @@ jobs:
           # CSI driver requires topology labels on nodes
           NODE_NAME=$(oc get nodes -o jsonpath='{.items[0].metadata.name}')
           echo "Labeling node: $NODE_NAME"
+          export cluster_node_name=$NODE_NAME
           
           oc label nodes ${NODE_NAME} topology.kubernetes.io/region=us-east --overwrite
           oc label nodes ${NODE_NAME} topology.kubernetes.io/zone=us-east --overwrite
