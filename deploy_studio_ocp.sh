@@ -4,21 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-echo "----------------------------------------------------------------------"
-echo "----------------------  Confirm OpenShift  ---------------------------"
-echo "----------------------------------------------------------------------"
-
-IS_OPENSHIFT="false"
-
-if kubectl get routes.route.openshift.io --ignore-not-found -o name &> /dev/null; then
-    IS_OPENSHIFT="true"
-fi
-
-printf "\n\n--- Is this cluster openshift? $IS_OPENSHIFT ---\n"
-
-
-# Functions
-
 # Source (import) common_functions.sh
 source ./common_functions.sh
 
@@ -654,64 +639,59 @@ if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
     echo "--------------------  Deploying Geoserver  ----------------------------"
     echo "----------------------------------------------------------------------"
 
-    if [[ "$IS_OPENSHIFT" == "false" ]]; then
+    geoserver_install_options="Configure-SCC Use-Custom-Image"
+    typeset geoserver_install_type
+
+    # Call the function
+    get_menu_selection \
+        "Select whether to deploy default geoserver which requires admin privileges by configuring scc anyuid or use a custom geoserver image: " \
+        geoserver_install_type \
+        "$geoserver_install_options"
+
+    if [[ "$geoserver_install_type" == "Configure-SCC" ]]; then
+        oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
         python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
     else
-        geoserver_install_options="Configure-SCC Use-Custom-Image"
-        typeset geoserver_install_type
+        printf "\n\n#Use this dockerfile to create a custom image\n\nFROM --platform=linux/amd64 docker.osgeo.org/geoserver:2.28.1\nRUN chmod -R 777 /tmp\nRUN addgroup --system geoserver && adduser --system -gid 101 geoserver\nRUN chown -R geoserver:geoserver /opt\nRUN chmod -R 777 /opt\nRUN chmod -R 777 /usr/local/tomcat\nUSER geoserver:geoserver\n"
+        printf "\n\nBuild and push your image to your registry of choice. You'll be prompted to input configuration for the image pull secret:\n image registry uri. e.g. myimage.io\n image registry email. e.g. myemail@example.com\n image registry password\n geoserver image uri. e.g myimages.io/geostudio/patched_geoserver:v0\n\n"
+        sleep 5
+        while true; do
+            printf "%s " "Press enter to if you have pushed the custom geoserver image to a registry"
+            read ans
 
-        # Call the function
-        get_menu_selection \
-            "Select whether to deploy default geoserver which requires admin privileges by configuring scc anyuid or use a custom geoserver image: " \
-            geoserver_install_type \
-            "$geoserver_install_options"
+            printf "\n\nCreating the geoserver image pull secret using \n kubectl create secret docker-registry <secret-name> --docker-server=<docker-registry-uri> --docker-username=iamapikey --docker-password=<docker-password> --docker-email=email@example.com --namespace ${OC_PROJECT}\n\n"
+            geoserver_image_pull_secret_name="geoserver-image-pull-secret"
+            typeset geoserver_image_registry_uri
+            get_user_input "Provide the geoserver image registry uri: " geoserver_image_registry_uri
+            echo "geoserver image registry uri accepted: **$geoserver_image_registry_uri**"
 
-        if [[ "$geoserver_install_type" == "Configure-SCC" ]]; then
-            oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
-            python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+            typeset geoserver_image_registry_email
+            get_user_input "Provide the geoserver image registry email: " geoserver_image_registry_email
+            echo "geoserver image email accepted: **$geoserver_image_registry_email**"
+
+            typeset geoserver_image_registry_password
+            get_user_input "Provide the geoserver image registry password: " geoserver_image_registry_password
+            echo "geoserver image registry password accepted"
+
+            kubectl create secret docker-registry ${geoserver_image_pull_secret_name} --docker-server=${geoserver_image_registry_uri} --docker-username=iamapikey --docker-password=${geoserver_image_registry_password} --docker-email=${geoserver_image_registry_email} --namespace ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
+            kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
+
+            if [ $? -ne 0 ]; then
+                continue
+            fi
+
+            typeset geoserver_image_uri
+            get_user_input "Provide the geoserver image uri: " geoserver_image_uri
+            echo "geoserver image uri accepted: **$geoserver_image_uri**"
+
+            python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} --geoserver-run-unprivileged "false" --geoserver-image-pull-secret ${geoserver_image_pull_secret_name} --geoserver-image-uri ${geoserver_image_uri} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
             kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
-        else
-            printf "\n\n#Use this dockerfile to create a custom image\n\nFROM --platform=linux/amd64 docker.osgeo.org/geoserver:2.28.1\nRUN chmod -R 777 /tmp\nRUN addgroup --system geoserver && adduser --system -gid 101 geoserver\nRUN chown -R geoserver:geoserver /opt\nRUN chmod -R 777 /opt\nRUN chmod -R 777 /usr/local/tomcat\nUSER geoserver:geoserver\n"
-            printf "\n\nBuild and push your image to your registry of choice. You'll be prompted to input configuration for the image pull secret:\n image registry uri. e.g. myimage.io\n image registry email. e.g. myemail@example.com\n image registry password\n geoserver image uri. e.g myimages.io/geostudio/patched_geoserver:v0\n\n"
-            sleep 5
-            while true; do
-                printf "%s " "Press enter to if you have pushed the custom geoserver image to a registry"
-                read ans
 
-                printf "\n\nCreating the geoserver image pull secret using \n kubectl create secret docker-registry <secret-name> --docker-server=<docker-registry-uri> --docker-username=iamapikey --docker-password=<docker-password> --docker-email=email@example.com --namespace ${OC_PROJECT}\n\n"
-                geoserver_image_pull_secret_name="geoserver-image-pull-secret"
-                typeset geoserver_image_registry_uri
-                get_user_input "Provide the geoserver image registry uri: " geoserver_image_registry_uri
-                echo "geoserver image registry uri accepted: **$geoserver_image_registry_uri**"
-
-                typeset geoserver_image_registry_email
-                get_user_input "Provide the geoserver image registry email: " geoserver_image_registry_email
-                echo "geoserver image email accepted: **$geoserver_image_registry_email**"
-
-                typeset geoserver_image_registry_password
-                get_user_input "Provide the geoserver image registry password: " geoserver_image_registry_password
-                echo "geoserver image registry password accepted"
-
-                kubectl create secret docker-registry ${geoserver_image_pull_secret_name} --docker-server=${geoserver_image_registry_uri} --docker-username=iamapikey --docker-password=${geoserver_image_registry_password} --docker-email=${geoserver_image_registry_email} --namespace ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
-                kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
-
-                if [ $? -ne 0 ]; then
-                    continue
-                fi
-
-                typeset geoserver_image_uri
-                get_user_input "Provide the geoserver image uri: " geoserver_image_uri
-                echo "geoserver image uri accepted: **$geoserver_image_uri**"
-
-                python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} --geoserver-run-unprivileged "false" --geoserver-image-pull-secret ${geoserver_image_pull_secret_name} --geoserver-image-uri ${geoserver_image_uri} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
-                kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
-
-                if [ $? -eq 0 ]; then
-                    break
-                fi
-            done
-        fi
+            if [ $? -eq 0 ]; then
+                break
+            fi
+        done
     fi
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
@@ -732,26 +712,6 @@ else
 fi
 
 if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
-    if [[ "$IS_OPENSHIFT" == "false" ]]; then
-        # Kubernetes tls secret setup
-
-        # request for CNAME
-        typeset cname
-        get_user_input "Provide the CNAME of your cluster: e.g. default.svc.cluster.local, example.com " cname
-        echo "CNAME accepted: **$cname**"
-
-        # create tls.key and tls.crt
-        openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=$cname"
-
-        # extract the cert and key into env vars
-
-        export TLS_CRT_B64=$(openssl base64 -in tls.crt -A)
-        export TLS_KEY_B64=$(openssl base64 -in tls.key -A)
-
-        sed -i -e "s/tls_crt_b64=.*/tls_crt_b64=$TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-        sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-        sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    fi
     echo "----------------------------------------------------------------------"
     echo "-------------  Configuring Geospatial Studio  ------------------------"
     echo "----------------------------------------------------------------------"
@@ -777,7 +737,7 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
    
 
     sed -i -e "s/export ENVIRONMENT=.*/export ENVIRONMENT=${DEPLOYMENT_ENV}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export ROUTE_ENABLED=.*/export ROUTE_ENABLED=${IS_OPENSHIFT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export ROUTE_ENABLED=.*/export ROUTE_ENABLED=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export SHARE_PIPELINE_PVC=.*/export SHARE_PIPELINE_PVC=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export STORAGE_PVC_ENABLED=.*/export STORAGE_PVC_ENABLED=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export STORAGE_FILESYSTEM_ENABLED=.*/export STORAGE_FILESYSTEM_ENABLED=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
