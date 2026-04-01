@@ -164,10 +164,12 @@ source workspace/${DEPLOYMENT_ENV}/env/env.sh
 if [[ "$DEPLOY_IBM_STORAGE" == "Deploy" ]]; then
     # Set the cluster node name where the application will be deployed
     # CLUSTER_NODE_NAME
-    typeset cluster_node_name
-    get_user_input "Provide a name for the cluster node for deployment, e.g. studio-worker, studio-node... Run 'oc get nodes' to get the nodes available in the cluster" cluster_node_name
-    echo "CLUSTER_NODE_NAME accepted: **$cluster_node_name**"
-    export CLUSTER_NODE_NAME=$cluster_node_name
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        typeset cluster_node_name
+        get_user_input "Provide a name for the cluster node for deployment, e.g. studio-worker, studio-node... Run 'oc get nodes' to get the nodes available in the cluster" cluster_node_name
+        echo "CLUSTER_NODE_NAME accepted: **$cluster_node_name**"
+        export CLUSTER_NODE_NAME=$cluster_node_name
+    fi
     oc label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
 
 
