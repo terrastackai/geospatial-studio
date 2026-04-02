@@ -170,7 +170,7 @@ gfm-studio-gateway:
       tag: latest
     dataset_pipeline:
       name: quay.io/geospatial-studio/geostudio-pipelines
-      tag: uat-noncos-pvc
+      tag: latest
     amo_pipeline:
       name: linuxserver/yq
       tag: latest
