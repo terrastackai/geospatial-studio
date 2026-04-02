@@ -212,3 +212,40 @@ auto_indent_and_replace() {
   export "$var_name"="$indented_content"
   envsubst "\$$var_name" < "$template_file" > "$output_file"
 }
+
+check_deployment_and_prompt() {
+    local workload_type=$1
+    local workload_name=$2
+    local namespace=$3
+    local display_name=$4
+    local deploy_var_name=$5
+    
+    local exists=false
+    
+    # Check if workload exists based on type
+    if [[ "$workload_type" == "helm" ]]; then
+        # Check if Helm release exists
+        if helm status "$workload_name" -n "$namespace" &> /dev/null; then
+            exists=true
+        fi
+    else
+        # Check Kubernetes resources (deployment, statefulset, etc.)
+        if kubectl get "$workload_type" "$workload_name" -n "$namespace" &> /dev/null; then
+            exists=true
+        fi
+    fi
+    
+    if $exists; then
+        echo "⚠️  $display_name already exists"
+        local options="Deploy Skip"
+        typeset choice
+        get_menu_selection \
+            "Deploy/Redeploy $display_name?" \
+            choice \
+            "$options"
+        eval "$deploy_var_name='$choice'"
+    else
+        echo "✓ $display_name: Will deploy (no existing $workload_type)"
+        eval "$deploy_var_name='Deploy'"
+    fi
+}
