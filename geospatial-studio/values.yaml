@@ -154,7 +154,7 @@ gfm-studio-gateway:
     celeryFlower:
   image:
     name: quay.io/geospatial-studio/geostudio-gateway
-    tag: uat-noncos-pvc
+    tag: latest
     # pullPolicy inherited from global.imagePullPolicy
     # Can be overridden here if needed
     pullPolicy: ""
