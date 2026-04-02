@@ -533,13 +533,14 @@ if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
             if [ $? -eq 0 ]; then
                 break
             fi
-        done   
-    fi
-    python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+        done
 
-    # Set PgBouncer configuration for cloud-managed postgres
-    # Note: User needs to manually set pgbouncer_host if using external PgBouncer
-    sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${pg_password}/g" workspace/${DEPLOYMENT_ENV}/env/.env  
+        python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+
+        # Set PgBouncer configuration for cloud-managed postgres
+        # Note: User needs to manually set pgbouncer_host if using external PgBouncer
+        sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${pg_password}/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    fi
 else
     echo "----------------------------------------------------------------------"
     echo "-----------------  Skipping Postgres Deployment  ---------------------"
