@@ -67,7 +67,11 @@ else
     DEPLOY_KEYCLOAK="Deploy"
     DEPLOY_GEOSERVER="Deploy"
     DEPLOY_STUDIO="Deploy"
-    DEPLOY_IBM_STORAGE="Deploy"
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        check_deployment_and_prompt "deployment" "ibmcloud-object-storage-plugin" "ibm-object-s3fs" "IBM Object Storage Plugin" "DEPLOY_IBM_STORAGE"
+    else
+        DEPLOY_IBM_STORAGE="Deploy"
+    fi
 fi
 
 echo ""
