@@ -473,7 +473,8 @@ def run_lab2(client, studio_url: str) -> dict:
         inference_id = response["id"]
         ok(f"Inference submitted – ID: {inference_id}")
     except Exception as exc:
-        fail(f"submit_inference failed: {exc}")
+        import traceback
+        fail(f"submit_inference failed: {type(exc).__name__}: {exc}\n{traceback.format_exc()}")
         write_github_summary(
             "\n## 🧪 Lab 2 – Onboarding Examples\n\n❌ Failed to submit inference\n"
         )

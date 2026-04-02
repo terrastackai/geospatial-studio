@@ -61,8 +61,8 @@ sentinelhub:
 nasaEarthBearerToken: nasa_earth_data_bearer_token
 
 storage:
+  storageMode: STORAGE_MODE
   filesystem:
-    enabled: STORAGE_FILESYSTEM_ENABLED
     dir: /data/
 
 route:
@@ -97,6 +97,8 @@ objectStorage:
     inference_auxdata: BUCKET_INFERENCE_AUXDATA
     generic_python_processor: BUCKET_GENERIC_PYTHON_PROCESSOR
   cos_storage_class: COS_STORAGE_CLASS
+non_cos_storage_class: NON_COS_STORAGE_CLASS
+pvc_access_mode: PVC_ACCESS_MODE
 
 serviceAccount:
   # Specifies serviceaccount to be used
@@ -229,7 +231,7 @@ processors:
         claimName: gfm-ft-files-pvc
         bucket_name: BUCKET_FINE_TUNING
         mountPath: /tunes
-        create: PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC
+        create: false
     # Resources for the container
     # Note: Shared memory (/dev/shm) is automatically mounted when GPU resources are requested
     # To explicitly enable shared memory without GPU, add: shm: true (at the same level as limits/requests)
@@ -262,4 +264,4 @@ processors:
         claimName: generic-python-processor-pvc
         bucket_name: BUCKET_GENERIC_PYTHON_PROCESSOR
         mountPath: /generic_data   
-        create: false  
+        create: true

@@ -2,8 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-{{- if .Values.global.storage.pvc.enabled }}
-{{- if and (hasKey .Values.global "environment") (ne .Values.global.environment "local") }}
+{{- if eq .Values.global.storage.storageMode "cloud-object-storage" }}
+{{- if contains "ibmc-s3fs-cos" .Values.global.objectStorage.cos_storage_class }}
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -28,8 +29,7 @@ spec:
     requests:
       storage: {{ .Values.persistence.gfmMlflowCOSPVC.capacity }}
   storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
-{{- else if contains "cos-s3-csi-s3fs-sc" .Values.global.objectStorage.cos_storage_class }}
-
+{{- else if eq .Values.global.objectStorage.cos_storage_class "cos-s3-csi-s3fs-sc" }}
 ---
 apiVersion: v1
 kind: Secret
@@ -63,36 +63,24 @@ spec:
   resources:
     requests:
       storage: 10Gi
----
+{{- end }}
 
-{{- else }}
-# kind: PersistentVolumeClaim
-# apiVersion: v1
-# metadata:
-#   name: {{ .Values.persistence.gfmMlflowCOSPVC.claimName }} # Enter the name of the PVC.
-#   namespace: {{ .Values.global.namespace }}
-# spec:
-#   accessModes:
-#     - ReadWriteOnce
-#   resources:
-#     requests:
-#       storage: 20Gi
-#   storageClassName: {{ .Values.global.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
-# apiVersion: datashim.io/v1alpha1
-# kind: Dataset
-# metadata:
-#   # name: gfm-mlflow-cos-pvc
-#   name: {{ .Values.persistence.gfmMlflowCOSPVC.claimName }} # Enter the name of the PVC.
-#   namespace: {{ .Values.global.namespace }}
-# spec:
-#   local:
-#     type: "COS"
-#     accessKeyID: {{ .Values.global.objectStorage.access_key }}
-#     secretAccessKey: {{ .Values.global.objectStorage.secret_key }}
-#     endpoint: {{ .Values.global.objectStorage.endpoint }}
-#     bucket: {{ .Values.global.objectStorage.buckets.mlflow }}
-#     readonly: "false"
-#     region: {{ .Values.global.objectStorage.region }}
+{{- else if eq .Values.global.storage.storageMode "cluster-block-storage" }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.persistence.gfmMlflowCOSPVC.claimName }} # Enter the name of the PVC.
+  namespace: {{ .Values.global.namespace }}
+spec:
+  storageClassName: {{ .Values.global.non_cos_storage_class }}
+  accessModes:
+    - {{ .Values.global.pvc_access_mode }}
+  resources:
+    requests:
+      storage: 10Gi
+
+{{- else if eq .Values.global.storage.storageMode "local-hostpath" }}
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -103,7 +91,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 60Gi
+    storage: 10Gi
   accessModes:
     - ReadWriteMany
   claimRef:
@@ -123,10 +111,6 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 60Gi
+      storage: 10Gi
 ---
-
-
-
-{{- end }}
 {{- end }}

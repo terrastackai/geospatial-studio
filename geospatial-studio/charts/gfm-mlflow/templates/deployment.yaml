@@ -67,25 +67,13 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.global.storage.pvc.enabled }}
           {{- with .Values.volumeMounts }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- else }}
-          volumeMounts:
-            - name: mount-mlflow
-              mountPath: /mlruns
-          {{- end }}
-      {{- if .Values.global.storage.pvc.enabled }}
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- else }}
-      hostPath:
-        path: /mlruns
-        type: DirectoryOrCreate
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

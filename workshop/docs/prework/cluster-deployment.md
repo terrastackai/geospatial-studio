@@ -308,6 +308,7 @@ The script will pause and display:
    
    # For block storage (used by databases, Redis, etc.)
    export NON_COS_STORAGE_CLASS=<your-block-storage-class>
+   export PVC_ACCESS_MODE=<your-access-mode>
    ```
 
 4. Press Enter in the script terminal to continue
@@ -324,7 +325,7 @@ The script will pause and display:
 
 !!! tip "Storage Class Requirements"
     - **COS_STORAGE_CLASS**: Must support S3-compatible storage or file storage
-    - **NON_COS_STORAGE_CLASS**: Must support ReadWriteOnce (RWO) block storage
+    - **NON_COS_STORAGE_CLASS**: Must support ReadWriteOnce (RWO) / ReadWriteMany (RWX) block storage
 
 ### 3. Object Storage Configuration
 
@@ -960,9 +961,6 @@ export PIPELINES_ENABLED=true
 
 # Inference pipeline root folder
 export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/inference-data
-
-# Create tuning folders automatically
-export CREATE_TUNING_FOLDERS_FLAG=true
 ```
 
 Then regenerate values.yaml:
@@ -1024,15 +1022,10 @@ Edit `workspace/${DEPLOYMENT_ENV}/env/env.sh`:
 # Storage classes (already configured during deployment)
 export COS_STORAGE_CLASS=<your-s3-compatible-storage-class>
 export NON_COS_STORAGE_CLASS=<your-block-storage-class>
-
-# Enable/disable PVC storage
-export STORAGE_PVC_ENABLED=true
-
-# Enable/disable filesystem storage
-export STORAGE_FILESYSTEM_ENABLED=false
+export PVC_ACCESS_MODE=<your-access-mode>
 
 # Share pipeline PVC across pods
-export SHARE_PIPELINE_PVC=false
+export SHARE_PIPELINE_PVC=true
 ```
 
 ### Redis Configuration
