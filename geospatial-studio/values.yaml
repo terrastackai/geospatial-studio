@@ -513,7 +513,7 @@ geospatial-studio-pipelines:
       process_exec: 'python postprocess-generic-single.py'
       extra_envs:
         - name: LULC_TILE_ROOT
-          value: /auxdata/lulc/lc2021/
+          value: /auxdata/lulc/
         - name: LULC_TILE_SHAPEFILE
           value: /auxdata/lulc/tiles.shp
         - name: LAND_POLYGON_PATH

@@ -20,6 +20,7 @@ export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 
 # Set environment variables
 export DEPLOYMENT_ENV=lima
+export ENVIRONMENT=local
 export OC_PROJECT=default
 export IMAGE_REGISTRY=geospatial-studio
 
@@ -138,6 +139,33 @@ if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
     sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    # populate buckets
+    if [[ "${NON_INTERACTIVE:-false}" == "true" ]]; then
+        echo "Skipping auxiliary data download."
+    else
+        populate_data_options="Yes No"
+        typeset populate_data_choice
+
+        # Call the function
+        get_menu_selection \
+            "Do you want to download auxiliary data to populate buckets?" \
+            populate_data_choice \
+            "$populate_data_options"
+
+        if [[ "$populate_data_choice" == "Yes" ]]; then
+            echo "Downloading auxiliary data..."
+            sed -i -e "s/export LULC_TILE_ROOT=.*/export LULC_TILE_ROOT=https:\/\/lulctimeseries.blob.core.windows.net\/lulctimeseriesv003\/lc2024\/lulc2024.zip/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+            source workspace/${DEPLOYMENT_ENV}/env/env.sh
+            
+            ./deployment-scripts/populate-buckets-with-auxiliary-data.sh
+        else
+            echo "Skipping auxiliary data download."
+        fi
+    fi
+
+
+
 else
     echo "----------------------------------------------------------------------"
     echo "-------------------  Skipping Minio Deployment  ----------------------"
