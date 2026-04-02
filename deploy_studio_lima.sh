@@ -18,14 +18,52 @@ export GEOSERVER_PASSWORD="geoserver"
 
 export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 
+# Set environment variables
+export DEPLOYMENT_ENV=lima
+export OC_PROJECT=default
+export IMAGE_REGISTRY=geospatial-studio
+
+# Component selection for deployment/redeployment
+echo "----------------------------------------------------------------------"
+echo "---------------  Checking Existing Deployments  ----------------------"
+echo "----------------------------------------------------------------------"
+
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
+    echo "✓ Workspace configuration exists"
+    
+    check_deployment_and_prompt "deployment" "minio" "${OC_PROJECT}" "MinIO (object storage)" "DEPLOY_MINIO"
+    check_deployment_and_prompt "statefulset" "postgresql" "${OC_PROJECT}" "PostgreSQL (database)" "DEPLOY_POSTGRES"
+    check_deployment_and_prompt "deployment" "keycloak" "${OC_PROJECT}" "Keycloak (authentication)" "DEPLOY_KEYCLOAK"
+    check_deployment_and_prompt "deployment" "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
+    check_deployment_and_prompt "helm" "studio" "${OC_PROJECT}" "Geospatial Studio" "DEPLOY_STUDIO"
+else
+    echo "✓ No existing configuration - will deploy all components"
+    DEPLOY_MINIO="Deploy"
+    DEPLOY_POSTGRES="Deploy"
+    DEPLOY_KEYCLOAK="Deploy"
+    DEPLOY_GEOSERVER="Deploy"
+    DEPLOY_STUDIO="Deploy"
+fi
+
+echo ""
+echo "Deployment plan:"
+echo "  MinIO: $DEPLOY_MINIO"
+echo "  PostgreSQL: $DEPLOY_POSTGRES"
+echo "  Keycloak: $DEPLOY_KEYCLOAK"
+echo "  GeoServer: $DEPLOY_GEOSERVER"
+echo "  Studio: $DEPLOY_STUDIO"
+echo "  Note: IBM Storage Plugin deployed automatically with MinIO"
+echo ""
+
+if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+    printf "%s " "Press enter to continue with this deployment plan"
+    read ans
+fi
+
 echo "----------------------------------------------------------------------"
 echo "------  Creating baseline deployment/values files  -------------------"
 echo "----------------------------------------------------------------------"
 
-# Set environment variables and source setup script
-export DEPLOYMENT_ENV=lima
-export OC_PROJECT=default
-export IMAGE_REGISTRY=geospatial-studio
 ./deployment-scripts/setup-workspace-env.sh
 
 sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
@@ -38,372 +76,399 @@ echo "----------------------------------------------------------------------"
 echo "--------------------  Add labels to node  ------------------"
 echo "----------------------------------------------------------------------"
 
-kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a
+kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
 
-# echo "----------------------------------------------------------------------"
-# echo "--------------------  Create local Storage Classes  ------------------"
-# echo "----------------------------------------------------------------------"
+if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "----------------------  Deploying Minio  -----------------------------"
+    echo "----------------------------------------------------------------------"
 
-# kubectl apply -f deployment-scripts/create_local_storage_class.yaml -n ${OC_PROJECT}
+    # Install MinIO
+    # Create TLS for minio
+    openssl genrsa -out minio-private.key 2048
+    sed -e "s/default/$OC_PROJECT/g" deployment-scripts/minio-openssl.conf > workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
+    openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
 
-echo "----------------------------------------------------------------------"
-echo "----------------------  Deploying Minio  -----------------------------"
-echo "----------------------------------------------------------------------"
+    kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml
+    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml -n ${OC_PROJECT}
 
-# Install MinIO
-# Create TLS for minio
-openssl genrsa -out minio-private.key 2048
-sed -e "s/default/$OC_PROJECT/g" deployment-scripts/minio-openssl.conf > workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
-openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
+    kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
+    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
 
-kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml
-kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml -n ${OC_PROJECT}
 
-kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
-kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
+    python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
+    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
 
-python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
-kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
+    sleep 5
+    kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 >> studio-pf.log 2>&1 &
+    sleep 5
 
-kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
+    cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
+    sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
+    sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
+    kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
 
-sleep 5
-kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 >> studio-pf.log 2>&1 &
-sleep 5
+    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s
+    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=300s
 
-cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
-sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
-sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
-kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
+    # # # Update .env with the MinIO details for local connection
+    sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s|endpoint=.*|endpoint=https://localhost:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
-kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s
-kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=300s
+    echo "***********************************************************************************"
+    echo "----------------------  Configure Storage Mode  -----------------------------------"
+    echo "***********************************************************************************"
+    echo "Lima deployment uses cloud-object-storage mode with MinIO (default)"
+    echo "***********************************************************************************"
 
+    export STORAGE_MODE="cloud-object-storage"
+    echo "STORAGE_MODE set to: **$STORAGE_MODE**"
 
-# # # Update .env with the MinIO details for local connection
-sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s|endpoint=.*|endpoint=https://localhost:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    # Update env.sh with storage mode
+    sed -i -e "s/export STORAGE_MODE=.*/export STORAGE_MODE=${STORAGE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-echo "***********************************************************************************"
-echo "----------------------  Configure Storage Mode  -----------------------------------"
-echo "***********************************************************************************"
-echo "Lima deployment uses cloud-object-storage mode with MinIO (default)"
-echo "***********************************************************************************"
+    ## Setup storage class for minio and default in cluster storage class
+    sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=local-path/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-export STORAGE_MODE="cloud-object-storage"
-echo "STORAGE_MODE set to: **$STORAGE_MODE**"
+    if [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
+        # Select PVC access mode
+        echo "***********************************************************************************"
+        echo "----------------------  Configure PVC Access Mode  --------------------------------"
+        echo "-----------------------------------------------------------------------------------"
+        echo "Select the access mode for Persistent Volume Claims:"
+        echo "  - ReadWriteOnce: Volume can be mounted as read-write by a single node"
+        echo "  - ReadWriteMany: Volume can be mounted as read-write by many nodes"
+        echo "***********************************************************************************"
 
-# Update env.sh with storage mode
-sed -i -e "s/export STORAGE_MODE=.*/export STORAGE_MODE=${STORAGE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        pvc_access_mode_options="ReadWriteOnce ReadWriteMany"
+        typeset pvc_access_mode
 
-## Setup storage class for minio and default in cluster storage class
-sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=local-path/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        get_menu_selection \
+            "Select PVC access mode:" \
+            pvc_access_mode \
+            "$pvc_access_mode_options"
 
-# Select PVC access mode
-echo "***********************************************************************************"
-echo "----------------------  Configure PVC Access Mode  --------------------------------"
-echo "-----------------------------------------------------------------------------------"
-echo "Select the access mode for Persistent Volume Claims:"
-echo "  - ReadWriteOnce: Volume can be mounted as read-write by a single node"
-echo "  - ReadWriteMany: Volume can be mounted as read-write by many nodes"
-echo "***********************************************************************************"
+        export PVC_ACCESS_MODE=$pvc_access_mode
+        echo "PVC_ACCESS_MODE selected: **$PVC_ACCESS_MODE**"
+    fi
 
-pvc_access_mode_options="ReadWriteOnce ReadWriteMany"
-typeset pvc_access_mode
+    sed -i -e "s/export PVC_ACCESS_MODE=.*/export PVC_ACCESS_MODE=${PVC_ACCESS_MODE:-ReadWriteOnce}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-get_menu_selection \
-    "Select PVC access mode:" \
-    pvc_access_mode \
-    "$pvc_access_mode_options"
+    kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 >> studio-pf.log 2>&1 &
+    sleep 5
 
-export PVC_ACCESS_MODE=$pvc_access_mode
-echo "PVC_ACCESS_MODE selected: **$PVC_ACCESS_MODE**"
+    python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
-sed -i -e "s/export PVC_ACCESS_MODE=.*/export PVC_ACCESS_MODE=${PVC_ACCESS_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
 
-kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 >> studio-pf.log 2>&1 &
-sleep 5
-
-python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
-
-sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-source workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-
-echo "----------------------------------------------------------------------"
-echo "--------------------  Deploying Postgres  ----------------------------"
-echo "----------------------------------------------------------------------"
-
-# Install Postgres
-helm repo add bitnami  https://charts.bitnami.com/bitnami
-helm repo update
-
-export POSTGRES_PASSWORD=devPostgresql123
-
-./deployment-scripts/install-postgres.sh
-
-kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
-
-# export POSTGRES_PASSWORD=$(kubectl get secret --namespace ${OC_PROJECT} postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
-
-kubectl port-forward --namespace ${OC_PROJECT} svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
-sleep 5
-
-# Update .env with the Postgres details for local connection
-sed -i -e "s/pg_username=.*/pg_username=postgres/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/pg_password=.*/pg_password=${POSTGRES_PASSWORD}/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/pg_uri=.*/pg_uri=127.0.0.1/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/pg_port=.*/pg_port=5432/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/pg_original_db_name=.*/pg_original_db_name='postgres'/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
-
-sed -i -e "s/pg_uri=.*/pg_uri=postgresql.$OC_PROJECT.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-# Set PgBouncer configuration
-sed -i -e "s/pgbouncer_host=.*/pgbouncer_host=geofm-pgbouncer.$OC_PROJECT.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${POSTGRES_PASSWORD}/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-source workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-echo "----------------------------------------------------------------------"
-echo "--------------------  Deploying Keycloak  ----------------------------"
-echo "----------------------------------------------------------------------"
-
-python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
-kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
-
-kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
-
-kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
-sleep 5
-
-# Keycloak setup
-export client_secret=$(head -c 32 /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
-export cookie_secret=$(head -c 32 /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
-
-./deployment-scripts/setup-keycloak.sh
-
-sed -i -e "s/oauth_cookie_secret=.*/oauth_cookie_secret=$cookie_secret/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-sed -i -e "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-
-echo "----------------------------------------------------------------------"
-echo "--------------------  Updating other values  -------------------------"
-echo "----------------------------------------------------------------------"
-# Kubernetes tls secret setup
-# create tls.key and tls.crt
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=$OC_PROJECT.svc.cluster.local"
-
-# extract the cert and key into env vars
-
-export TLS_CRT_B64=$(openssl base64 -in tls.crt -A)
-export TLS_KEY_B64=$(openssl base64 -in tls.key -A)
-
-sed -i -e "s/tls_crt_b64=.*/tls_crt_b64=$TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-# Geoserver setup
-
-export GEOSERVER_URL=http://localhost:3000/geoserver
-
-sed -i -e "s/geoserver_username=.*/geoserver_username=$GEOSERVER_USERNAME/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/geoserver_password=.*/geoserver_password=$GEOSERVER_PASSWORD/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-echo "----------------------------------------------------------------------"
-echo "--------------------  Deploying Geoserver  ----------------------------"
-echo "----------------------------------------------------------------------"
-
-python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
-kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
-
-kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
-
-kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
-sleep 5
-
-echo "----------------------------------------------------------------------"
-echo "--------------------  Configuring Geoserver  ----------------------------"
-echo "----------------------------------------------------------------------"
-./deployment-scripts/setup_geoserver.sh
-
-# Additional setup
-
-file=./.studio-api-key
-if [ -e "$file" ]; then
-    echo "File exists"
-    source $file
-else 
-    export STUDIO_API_KEY=$(echo "pak-$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 32)")
-    export API_ENCRYPTION_KEY=$(echo "$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '\n')")
-    echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > ./.studio-api-key
-    echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> ./.studio-api-key
-fi
-
-# export STUDIO_API_KEY=$(echo "pak-$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 32)")
-# export API_ENCRYPTION_KEY=$(echo "$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '\n')")
-
-sed -i -e "s/studio_api_key=.*/studio_api_key=$STUDIO_API_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s/studio_api_encryption_key=.*/studio_api_encryption_key=$API_ENCRYPTION_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-
-sed -i -e "s/redis_password=.*/redis_password=devPassword/g" workspace/${DEPLOYMENT_ENV}/env/.env
-# Set image pull secret (empty for public images)
-sed -i -e "s/image_pull_secret_b64=.*/image_pull_secret_b64=\"${STUDIO_IMAGE_PULL_SECRET}\"/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-sed -i -e "s/export ENVIRONMENT=.*/export ENVIRONMENT=local/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export ROUTE_ENABLED=.*/export ROUTE_ENABLED=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export SHARE_PIPELINE_PVC=.*/export SHARE_PIPELINE_PVC=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=.*|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/data|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-sed -i -e "s/export OAUTH_PROXY_ENABLED=.*/export OAUTH_PROXY_ENABLED=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-sed -i -e "s/export CONTAINER_IMAGE_REPOSITORY=.*/export CONTAINER_IMAGE_REPOSITORY=${IMAGE_REGISTRY}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-source workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-echo "----------------------------------------------------------------------"
-echo "----------------  Generating deployment scripts  ---------------------"
-echo "----------------------------------------------------------------------"
-
-# Create deployment values files
-./deployment-scripts/values-file-generate.sh
-
-cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-
-# Replace credential placeholders with actual values from .env
-source workspace/${DEPLOYMENT_ENV}/env/.env
-sed -i -e "s|<postgres_host>|${pg_uri}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<postgres_port>|${pg_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<pg_user>|${pg_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<pg_pass>|${pg_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<pgbouncer_host>|${pgbouncer_host}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<pgbouncer_port>|${pgbouncer_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<pgbouncer_user>|${pgbouncer_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-sed -i -e "s|<pgbouncer_pass>|${pgbouncer_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-
-# The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
-python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
-
-echo "**********************************************************************"
-echo "**********************************************************************"
-echo "-----------  Make any changes to deployment values yaml --------------"
-echo "**********************************************************************"
-echo "**********************************************************************"
-
-if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
-    printf "%s " "Press enter to continue"
-    read ans
-fi
-
-echo "**********************************************************************"
-echo "**********************************************************************"
-echo "------  Configure Fine-Tuning Job Resources  -------------------------"
-echo "**********************************************************************"
-echo "**********************************************************************"
-
-# Ask user if they have GPUs in their cluster. If Yes, keep configuration as is. If No, remove GPU configuration via the values.yaml
-if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
-    printf "%s " "Do you have GPUs in your cluster? (y/n): "
-    read ans
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
 else
-    # Non-interactive mode: use HAS_GPU environment variable (default to "n" for no GPU)
-    ans="${HAS_GPU:-n}"
-    echo "Non-interactive mode: HAS_GPU=$ans"
+    echo "----------------------------------------------------------------------"
+    echo "-------------------  Skipping Minio Deployment  ----------------------"
+    echo "----------------------------------------------------------------------"
+    echo "Loading existing MinIO configuration..."
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
 fi
 
-if [ "$ans" = "y" ]; then
-    echo -e "\n Keeping GPU configuration in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
-    echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
+if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Deploying Postgres  ----------------------------"
+    echo "----------------------------------------------------------------------"
+
+    # Install Postgres
+    helm repo add bitnami  https://charts.bitnami.com/bitnami
+    helm repo update
+
+    export POSTGRES_PASSWORD=devPostgresql123
+
+    ./deployment-scripts/install-postgres.sh
+
+    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
+
+    # export POSTGRES_PASSWORD=$(kubectl get secret --namespace ${OC_PROJECT} postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
+
+    kubectl port-forward --namespace ${OC_PROJECT} svc/postgresql 54320:5432 >> studio-pf.log 2>&1 &
+    sleep 5
+
+    # Update .env with the Postgres details for local connection
+    sed -i -e "s/pg_username=.*/pg_username=postgres/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/pg_password=.*/pg_password=${POSTGRES_PASSWORD}/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/pg_uri=.*/pg_uri=127.0.0.1/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/pg_port=.*/pg_port=5432/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/pg_original_db_name=.*/pg_original_db_name='postgres'/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+    python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+
+    sed -i -e "s/pg_uri=.*/pg_uri=postgresql.$OC_PROJECT.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+    # Set PgBouncer configuration
+    sed -i -e "s/pgbouncer_host=.*/pgbouncer_host=geofm-pgbouncer.$OC_PROJECT.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${POSTGRES_PASSWORD}/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
 else
-    echo -e "\n Removing GPU configuration from values.yaml"
-    python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
-      --gpu-limit 0 \
-      --gpu-request 0
-    echo -e "\n --------------------------- Removed GPUs in the Cluster ------------------- \n"
+    echo "----------------------------------------------------------------------"
+    echo "-----------------  Skipping Postgres Deployment  ---------------------"
+    echo "----------------------------------------------------------------------"
+    echo "Loading existing PostgreSQL configuration..."
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
 fi
 
+if [[ "$DEPLOY_KEYCLOAK" == "Deploy" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Deploying Keycloak  ----------------------------"
+    echo "----------------------------------------------------------------------"
 
-# Ask user if they want to alter memory, CPU requests and limits for finetuning.
-if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
-    printf "%s " "Do you want to alter memory, CPU requests and limits for finetuning? (y/n) "
-    read ans
+    python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
+
+    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
+
+    kubectl port-forward -n ${OC_PROJECT} svc/keycloak 8080:8080 >> studio-pf.log 2>&1 &
+    sleep 5
+
+    # Keycloak setup
+    export client_secret=$(head -c 32 /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
+    export cookie_secret=$(head -c 32 /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
+
+    ./deployment-scripts/setup-keycloak.sh
+
+    sed -i -e "s/oauth_cookie_secret=.*/oauth_cookie_secret=$cookie_secret/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+    sed -i -e "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=http://keycloak.$OC_PROJECT.svc.cluster.local:8080/realms/geostudio/protocol/openid-connect/auth|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 else
-    # Non-interactive mode: use CONFIGURE_RESOURCES environment variable (default to "n")
-    ans="${CONFIGURE_RESOURCES:-n}"
-    echo "Non-interactive mode: CONFIGURE_RESOURCES=$ans"
+    echo "----------------------------------------------------------------------"
+    echo "-----------------  Skipping Keycloak Deployment  ---------------------"
+    echo "----------------------------------------------------------------------"
+    echo "Loading existing Keycloak configuration..."
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
 fi
 
-# If yes, prompt user for memory limit, CPU limit, memory request and CPU request.
-if [ "$ans" = "y" ]; then
-    echo "Updating memory, CPU requests and limits for finetuning."
-    echo ""
-    
-    # Prompt for CPU limit
-    printf "%s " "CPU limit in cores (default: 4): "
-    read cpu_limit
-    cpu_limit=${cpu_limit:-4}
-    
-    # Prompt for CPU request
-    printf "%s " "CPU request in cores (default: 2): "
-    read cpu_request
-    cpu_request=${cpu_request:-2}
-    
-    # Prompt for Memory limit
-    printf "%s " "Memory limit in GB (default: 10): "
-    read memory_limit
-    memory_limit=${memory_limit:-10}
-    
-    # Prompt for Memory request
-    printf "%s " "Memory request in GB (default: 6): "
-    read memory_request
-    memory_request=${memory_request:-6}
-    
-    echo -e "\n Applying configuration:"
-    echo "  CPU Limit: ${cpu_limit} cores, CPU Request: ${cpu_request} cores"
-    echo -e "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB \n"
-    
-    # Call the update script with user-provided values
-    python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
-        --cpu-limit "$cpu_limit" \
-        --cpu-request "$cpu_request" \
-        --memory-limit "$memory_limit" \
-        --memory-request "$memory_request"
-    echo -e " \n Updated finetuning resource configurations \n"
+if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
+    # Geoserver setup
+
+    export GEOSERVER_URL=http://localhost:3000/geoserver
+
+    sed -i -e "s/geoserver_username=.*/geoserver_username=$GEOSERVER_USERNAME/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/geoserver_password=.*/geoserver_password=$GEOSERVER_PASSWORD/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Deploying Geoserver  ----------------------------"
+    echo "----------------------------------------------------------------------"
+
+    python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
+
+    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
+
+    kubectl port-forward -n ${OC_PROJECT} svc/geofm-geoserver 3000:3000 >> studio-pf.log 2>&1 &
+    sleep 5
+
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Configuring Geoserver  ----------------------------"
+    echo "----------------------------------------------------------------------"
+    ./deployment-scripts/setup_geoserver.sh
+
 else
-    echo -e "\n Not updating resource configurations"
-    echo  "You can manually edit workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml"
-    echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
+    echo "----------------------------------------------------------------------"
+    echo "-----------------  Skipping Geoserver Deployment  --------------------"
+    echo "----------------------------------------------------------------------"
+    echo "Loading existing GeoServer configuration..."
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
 fi
 
+# Check if Studio deployment is needed
+if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "-------------  Configuring Geospatial Studio  ------------------------"
+    echo "----------------------------------------------------------------------"
+    # Kubernetes tls secret setup
+    # create tls.key and tls.crt
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=$OC_PROJECT.svc.cluster.local"
+
+    # extract the cert and key into env vars
+
+    export TLS_CRT_B64=$(openssl base64 -in tls.crt -A)
+    export TLS_KEY_B64=$(openssl base64 -in tls.key -A)
+
+    sed -i -e "s/tls_crt_b64=.*/tls_crt_b64=$TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    # Additional setup
+
+    file=./.studio-api-key
+    if [ -e "$file" ]; then
+        echo "File exists"
+        source $file
+    else 
+        export STUDIO_API_KEY=$(echo "pak-$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 32)")
+        export API_ENCRYPTION_KEY=$(echo "$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '\n')")
+        echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > ./.studio-api-key
+        echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> ./.studio-api-key
+    fi
+
+    sed -i -e "s/studio_api_key=.*/studio_api_key=$STUDIO_API_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s/studio_api_encryption_key=.*/studio_api_encryption_key=$API_ENCRYPTION_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+    sed -i -e "s/redis_password=.*/redis_password=devPassword/g" workspace/${DEPLOYMENT_ENV}/env/.env
+    # Set image pull secret (empty for public images)
+    sed -i -e "s/image_pull_secret_b64=.*/image_pull_secret_b64=\"${STUDIO_IMAGE_PULL_SECRET}\"/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+    sed -i -e "s/export ENVIRONMENT=.*/export ENVIRONMENT=local/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export ROUTE_ENABLED=.*/export ROUTE_ENABLED=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export SHARE_PIPELINE_PVC=.*/export SHARE_PIPELINE_PVC=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=.*|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/data|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    sed -i -e "s/export OAUTH_PROXY_ENABLED=.*/export OAUTH_PROXY_ENABLED=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    sed -i -e "s/export CONTAINER_IMAGE_REPOSITORY=.*/export CONTAINER_IMAGE_REPOSITORY=${IMAGE_REGISTRY}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    echo "----------------------------------------------------------------------"
+    echo "----------------  Generating deployment scripts  ---------------------"
+    echo "----------------------------------------------------------------------"
+
+    # Create deployment values files
+    ./deployment-scripts/values-file-generate.sh
+
+    cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+    # Replace credential placeholders with actual values from .env
+    source workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s|<postgres_host>|${pg_uri}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<postgres_port>|${pg_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_user>|${pg_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_pass>|${pg_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_host>|${pgbouncer_host}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_port>|${pgbouncer_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_user>|${pgbouncer_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_pass>|${pgbouncer_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+    # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
+    python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+    echo "-----------  Make any changes to deployment values yaml --------------"
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        printf "%s " "Press enter to continue"
+        read ans
+    fi
+
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+    echo "------  Configure Fine-Tuning Job Resources  -------------------------"
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+
+    # Ask user if they have GPUs in their cluster. If Yes, keep configuration as is. If No, remove GPU configuration via the values.yaml
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        printf "%s " "Do you have GPUs in your cluster? (y/n): "
+        read ans
+    else
+        # Non-interactive mode: use HAS_GPU environment variable (default to "n" for no GPU)
+        ans="${HAS_GPU:-n}"
+        echo "Non-interactive mode: HAS_GPU=$ans"
+    fi
+
+    if [ "$ans" = "y" ]; then
+        echo -e "\n Keeping GPU configuration in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
+        echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
+    else
+        echo -e "\n Removing GPU configuration from values.yaml"
+        python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+        --gpu-limit 0 \
+        --gpu-request 0
+        echo -e "\n --------------------------- Removed GPUs in the Cluster ------------------- \n"
+    fi
+
+    # Ask user if they want to alter memory, CPU requests and limits for finetuning.
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        printf "%s " "Do you want to alter memory, CPU requests and limits for finetuning? (y/n) "
+        read ans
+    else
+        # Non-interactive mode: use CONFIGURE_RESOURCES environment variable (default to "n")
+        ans="${CONFIGURE_RESOURCES:-n}"
+        echo "Non-interactive mode: CONFIGURE_RESOURCES=$ans"
+    fi
+
+    # If yes, prompt user for memory limit, CPU limit, memory request and CPU request.
+    if [ "$ans" = "y" ]; then
+        echo "Updating memory, CPU requests and limits for finetuning."
+        echo ""
+        
+        # Prompt for CPU limit
+        printf "%s " "CPU limit in cores (default: 4): "
+        read cpu_limit
+        cpu_limit=${cpu_limit:-4}
+        
+        # Prompt for CPU request
+        printf "%s " "CPU request in cores (default: 2): "
+        read cpu_request
+        cpu_request=${cpu_request:-2}
+        
+        # Prompt for Memory limit
+        printf "%s " "Memory limit in GB (default: 10): "
+        read memory_limit
+        memory_limit=${memory_limit:-10}
+        
+        # Prompt for Memory request
+        printf "%s " "Memory request in GB (default: 6): "
+        read memory_request
+        memory_request=${memory_request:-6}
+        
+        echo -e "\n Applying configuration:"
+        echo "  CPU Limit: ${cpu_limit} cores, CPU Request: ${cpu_request} cores"
+        echo -e "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB \n"
+        
+        # Call the update script with user-provided values
+        python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+            --cpu-limit "$cpu_limit" \
+            --cpu-request "$cpu_request" \
+            --memory-limit "$memory_limit" \
+            --memory-request "$memory_request"
+        echo -e " \n Updated finetuning resource configurations \n"
+    else
+        echo -e "\n Not updating resource configurations"
+        echo  "You can manually edit workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml"
+        echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
+    fi
 
 
-echo "----------------------------------------------------------------------"
-echo "----------------  Building Helm dependencies  ------------------------"
-echo "----------------------------------------------------------------------"
 
-# Build Helm dependencies
-helm dep update ./geospatial-studio/
-helm dependency build ./geospatial-studio/
+    echo "----------------------------------------------------------------------"
+    echo "----------------  Building Helm dependencies  ------------------------"
+    echo "----------------------------------------------------------------------"
 
-echo "----------------------------------------------------------------------"
-echo "--------------------  Deploying the Studio  --------------------------"
-echo "----------------------------------------------------------------------"
+    # Build Helm dependencies
+    helm dep update ./geospatial-studio/
+    helm dependency build ./geospatial-studio/
 
-# Deploy Geospatial Studio
-./deployment-scripts/deploy_studio.sh
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Deploying the Studio  --------------------------"
+    echo "----------------------------------------------------------------------"
+
+    # Deploy Geospatial Studio
+    ./deployment-scripts/deploy_studio.sh
+else
+    echo "----------------------------------------------------------------------"
+    echo "------------------  Skipping Studio Deployment  ----------------------"
+    echo "----------------------------------------------------------------------"
+fi
 
 echo "----------------------------------------------------------------------"
 echo "---------  Set up Port Forwarding for UI and API  --------------------"
