@@ -103,6 +103,7 @@ export OC_PROJECT="geostudio-test"
 # Storage configuration
 export COS_STORAGE_CLASS="ibmc-s3fs-cos"
 export NON_COS_STORAGE_CLASS="crc-csi-hostpath-provisioner"
+export PVC_ACCESS_MODE="ReadWriteOnce"
 
 # Deployment options
 export cloud_object_storage_type="Cluster-deployment"

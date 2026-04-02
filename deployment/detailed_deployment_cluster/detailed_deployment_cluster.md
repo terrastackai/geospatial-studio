@@ -119,6 +119,7 @@ This section assumes you wish to use a cluster-installed instance of MinIO to pr
   # Verify the available storage classes in your cluster and set the following env vars
   export COS_STORAGE_CLASS=
   export NON_COS_STORAGE_CLASS=
+  export PVC_ACCESS_MODE=
   ```
 
 > Note:  Source the variables to export any newly added variables.
