@@ -31,7 +31,7 @@ spec:
         helm.sh/chart: "{{ $chart.Name }}-{{ $chart.Version }}"
     spec:
       restartPolicy: Never
-      {{- if $values.global.imagePullSecret }}
+      {{- if $values.global.imagePullSecret.b64secret }}
       imagePullSecrets:
         - name: {{ $values.global.imagePullSecret.name }}
       {{- end }}
@@ -58,7 +58,24 @@ spec:
           - configMapRef:
               name: {{ $values.global.appNames.gateway }}-cm
           - secretRef:
-              name: {{ $values.global.appNames.gateway }}-secrets
+              name: {{ $values.global.appNames.gateway }}-jobs-secrets
+      {{- end }}
+      {{- end }}
+      # Init container to wait for gateway service to be ready
+      {{- if hasKey $config "waitForGateway" }}
+      {{- if $config.waitForGateway.enabled }}
+      - name: wait-for-gateway
+        image: {{ $config.waitForGateway.image | default "docker.io/library/busybox:latest" }}
+        imagePullPolicy: {{ $values.image.pullPolicy | default $values.global.imagePullPolicy }}
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Waiting for gateway service to be ready..."
+          until nc -z {{ $values.global.appNames.ui }}.{{ $values.global.namespace }}.svc.cluster.local {{ $config.waitForGateway.port | default $values.global.oauth.oauthProxyPort }}; do
+            echo "Gateway service not ready yet, retrying in {{ $config.waitForGateway.sleepTime | default 5 }} seconds..."
+            sleep {{ $config.waitForGateway.sleepTime | default 5 }}
+          done
+          echo "Gateway service is ready!"
       {{- end }}
       {{- end }}
       # Init container to wait for gateway service to be ready
@@ -101,7 +118,7 @@ spec:
           - configMapRef:
               name: {{ $values.global.appNames.gateway }}-cm
           - secretRef:
-              name: {{ $values.global.appNames.gateway }}-secrets
+              name: {{ $values.global.appNames.gateway }}-jobs-secrets
         {{- if hasKey $config "volumeMounts" }}
         volumeMounts:
         {{- range $config.volumeMounts }}

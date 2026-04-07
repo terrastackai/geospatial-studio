@@ -37,7 +37,7 @@ global:
 
   oauth:
     image:
-      name: bitnamilegacy/oauth2-proxy
+      name: docker.io/bitnamilegacy/oauth2-proxy
       tag: latest
     oauthProxyEnabled: OAUTH_PROXY_ENABLED
     oauthProxyPort: "OAUTH_PROXY_PORT"
@@ -60,10 +60,8 @@ global:
     tlsKeyB64: tlsKeyB64
   
   storage:
-    pvc:
-      enabled: STORAGE_PVC_ENABLED
+    storageMode: STORAGE_MODE
     filesystem:
-      enabled: STORAGE_FILESYSTEM_ENABLED
       dir: /data/
   
   objectStorage:
@@ -89,6 +87,7 @@ global:
     cos_storage_class: COS_STORAGE_CLASS
 
   non_cos_storage_class: NON_COS_STORAGE_CLASS
+  pvc_access_mode: PVC_ACCESS_MODE
 
   serviceAccount: 
     create: true
@@ -100,11 +99,26 @@ global:
 
   postgres:
     in_cluster_db: false
+    # Direct postgres connection details
+    postgres_host: <postgres_host>
+    postgres_port: 5432
+    postgres_user: <pg_user>
+    postgres_password: <pg_pass>
+    # Database URI will be constructed based on pgbouncer.enabled flag
+    # If pgbouncer.enabled=true: postgresql://<user>:<pass>@<pgbouncer_host>:<pgbouncer_port>
+    # If pgbouncer.enabled=false: postgresql://<user>:<pass>@<postgres_host>:<postgres_port>
     backend_uri_base: postgresql://<pg_user>:<pg_pass>@<host>:<port>
     dbs:
       mlflow: mlflow
       gateway: geostudio
       auth: geostudio_auth
+
+  # PgBouncer configuration - connection pooler for PostgreSQL
+  # When enabled, all services will connect through PgBouncer instead of directly to PostgreSQL
+  pgbouncer:
+    enabled: PGBOUNCER_ENABLED
+    host: <pgbouncer_host>
+    port: 6432
 
   cesium:
     token: cesium_token
@@ -283,7 +297,7 @@ gfm-studio-gateway:
     pullPolicy: ""
   images:
     cleanup_cronjob:
-      name: bitnamilegacy/kubectl
+      name: docker.io/bitnamilegacy/kubectl
       tag: latest
     tt_caikit:
       name: quay.io/geospatial-studio/geospatial-model-inference-service
@@ -308,7 +322,6 @@ gfm-studio-gateway:
   extraEnvironment:
     api:
       OBJECT_STORAGE_SIGNATURE_VERSION: s3v4
-      CREATE_TUNING_FOLDERS: CREATE_TUNING_FOLDERS_FLAG
       PIPELINES_V2_INFERENCE_ROOT_FOLDER: PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE
       ENVIRONMENT: ENVIRONMENT_VALUE
       ## Enable or disable GPU node affinity when scheduling fine-tuning jobs.
@@ -328,6 +341,17 @@ gfm-studio-gateway:
       ## If multiple values are given, the pod can be scheduled on any node
       ## matching one of them.
       # NODE_GPU_SPEC: NVIDIA-A100-SXM4-80GB
+      # Use defaults in the defined jobs
+      # Resource requests (guaranteed minimum for fine-tuning jobs)
+      RESOURCE_LIMIT_GPU: 1         # Number of GPUs
+      RESOURCE_REQUEST_GPU: 1      # Number of GPUs
+
+      RESOURCE_LIMIT_CPU: 4   # CPU cores
+      RESOURCE_REQUEST_CPU: 2     
+
+      RESOURCE_LIMIT_Memory: 10     # Memory in GB
+      RESOURCE_REQUEST_Memory: 6   # Memory in GB
+
 
 # geofm-ui
 geofm-ui:
@@ -389,13 +413,13 @@ redis:
         runAsUser: 'auto'
     resources:
       limits:
-        cpu: "2"  # 2 full CPU cores
-        memory: "2Gi"  # 4 GiB RAM
-        ephemeral-storage: "4Gi"  # 8 GiB disk for AOF & RDB persistence
+        cpu: "1"  # 1 CPU core (reduced for CRC)
+        memory: "1Gi"  # 1 GiB RAM (reduced for CRC)
+        ephemeral-storage: "2Gi"  # 2 GiB disk for AOF & RDB persistence
       requests:
-        cpu: "500m"  # 0.25 CPU guaranteed
-        memory: "500Mi"  # 2 GiB RAM guaranteed
-        ephemeral-storage: "1Gi"  # 4 GiB guaranteed
+        cpu: "250m"  # 0.25 CPU guaranteed
+        memory: "256Mi"  # 256 MiB RAM guaranteed
+        ephemeral-storage: "512Mi"  # 512 MiB guaranteed
     metrics:
       enabled: true
     persistence:
@@ -413,17 +437,44 @@ redis:
         runAsUser: 'auto'
     resources:
       limits:
-        cpu: "2"  # 2 full CPU cores
-        memory: "2Gi"  # 4 GiB RAM
-        ephemeral-storage: "4Gi"  # 8 GiB disk for AOF & RDB persistence
+        cpu: "1"  # 1 CPU core (reduced for CRC)
+        memory: "1Gi"  # 1 GiB RAM (reduced for CRC)
+        ephemeral-storage: "2Gi"  # 2 GiB disk for AOF & RDB persistence
       requests:
-        cpu: "500m"  # 0.25 CPU guaranteed
-        memory: "500Mi"  # 1 GiB RAM guaranteed
-        ephemeral-storage: "1Gi"  # 4 GiB guaranteed
+        cpu: "250m"  # 0.25 CPU guaranteed
+        memory: "256Mi"  # 256 MiB RAM guaranteed
+        ephemeral-storage: "512Mi"  # 512 MiB guaranteed
     metrics:
       enabled: true
     persistence:
       annotations: {}
+
+# pgbouncer - PostgreSQL connection pooler subchart
+pgbouncer:
+  enabled: PGBOUNCER_ENABLED
+  fullnameOverride: PGBOUNCER_FULL_NAME_OVERRIDE
+  image:
+    repository: bitnamilegacy/pgbouncer
+    tag: latest
+    pullPolicy: IfNotPresent
+  auth:
+    # Username for pgbouncer admin
+    username: <pgbouncer_user>
+    # Password for pgbouncer admin (should be set via secret)
+    password: <pgbouncer_pass>
+    # Postgres database credentials
+    database: postgres
+  postgresql:
+    # Hostname of the PostgreSQL server
+    host: <postgres_host>
+    # Port of the PostgreSQL server
+    port: 5432
+    # Database to connect to
+    database: postgres
+    # Username for PostgreSQL
+    username: <pg_user>
+    # Password for PostgreSQL (should be set via secret)
+    password: <pg_pass>
 
 # geospatial-studio-pipelines
 geospatial-studio-pipelines:
@@ -434,7 +485,7 @@ geospatial-studio-pipelines:
     pullPolicy: ""
   waitForGateway:
     enabled: true
-    image: busybox:1.36
+    image: docker.io/library/busybox:1.36
     port: OAUTH_PROXY_PORT
     sleepTime: 5
   namePrefix: pipelines
@@ -471,8 +522,8 @@ geospatial-studio-pipelines:
     client_secret: sh_client_secret
   nasaEarthBearerToken: nasa_earth_data_bearer_token
   storage:
+    storageMode: STORAGE_MODE
     filesystem:
-      enabled: STORAGE_FILESYSTEM_ENABLED
       dir: /data/
   route:
     enabled: ROUTE_ENABLED
@@ -502,6 +553,8 @@ geospatial-studio-pipelines:
       geoserver: BUCKET_GEOSERVER
       inference_auxdata: BUCKET_INFERENCE_AUXDATA
     cos_storage_class: COS_STORAGE_CLASS
+  non_cos_storage_class: NON_COS_STORAGE_CLASS
+  pvc_access_mode: PVC_ACCESS_MODE
   serviceAccount:
     name: 'geostudio-sa'
   processors:
@@ -629,7 +682,7 @@ geospatial-studio-pipelines:
           claimName: gfm-ft-files-pvc
           bucket_name: BUCKET_FINE_TUNING
           mountPath: /tunes
-          create: PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC
+          create: false
       resources:
         limits:
           nvidia.com/gpu: '1'
@@ -658,4 +711,4 @@ geospatial-studio-pipelines:
           claimName: generic-python-processor-pvc
           bucket_name: BUCKET_GENERIC_PYTHON_PROCESSOR
           mountPath: /generic_data   
-          create: false  
+          create: true

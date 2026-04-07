@@ -42,7 +42,7 @@ spec:
       
       # 1. OAuth Proxy (~100MB)
       - name: prepull-01-oauth-proxy
-        image: bitnamilegacy/oauth2-proxy:latest
+        image: docker.io/bitnamilegacy/oauth2-proxy:latest
         command: ['sh', '-c', 'echo "✓ OAuth proxy image pulled" && sleep 1']
         resources:
           requests:
@@ -66,7 +66,7 @@ spec:
       
       # 3. Kubectl (~50MB)
       - name: prepull-03-kubectl
-        image: bitnamilegacy/kubectl:latest
+        image: docker.io/bitnamilegacy/kubectl:latest
         command: ['sh', '-c', 'echo "✓ Kubectl image pulled" && sleep 1']
         resources:
           requests:
@@ -211,7 +211,7 @@ spec:
       # Main container - keeps pod running for monitoring
       containers:
       - name: monitor
-        image: busybox:latest
+        image: docker.io/library/busybox:latest
         command: ['sh', '-c', 'echo "All images pulled successfully. Pod will remain running for monitoring." && sleep infinity']
         resources:
           requests:

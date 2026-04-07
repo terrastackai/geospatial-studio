@@ -29,13 +29,36 @@ spec:
         app: {{ .Values.global.appNames.gateway }}-celery
         app.kubernetes.io/component: {{ .Values.celery.worker.componentName }}
     spec:
-      {{- if .Values.global.imagePullSecret }}
+      {{- if .Values.global.imagePullSecret.b64secret }}
       imagePullSecrets:
         - name: {{ .Values.global.imagePullSecret.name }}
       {{- end }}
       serviceAccountName: {{ .Values.serviceAccount.name }}
       securityContext:
-        {{- toYaml .Values.securityContext.api | nindent 12 }}
+        {{- toYaml .Values.securityContext.api | nindent 8 }}
+      initContainers:
+        - name: wait-for-redis
+          image: docker.io/library/busybox:1.36
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for Redis to be ready..."
+              {{- if .Values.global.redis.enabled }}
+              {{- if eq .Values.global.redis.architecture "standalone" }}
+              REDIS_HOST="{{ .Release.Name }}-redis-headless.{{ .Release.Namespace }}.svc"
+              {{- else }}
+              REDIS_HOST="{{ .Values.global.redis.fullnameOverride }}-master.{{ .Release.Namespace }}.svc"
+              {{- end }}
+              REDIS_PORT="6379"
+              until nc -z $REDIS_HOST $REDIS_PORT; do
+                echo "Redis is unavailable - sleeping"
+                sleep 2
+              done
+              echo "Redis is up - proceeding"
+              {{- else }}
+              echo "Redis is not enabled, skipping wait"
+              {{- end }}
       containers:
         - resources:
             limits:
@@ -46,7 +69,7 @@ spec:
               memory: 1Gi
           name: {{ .Chart.Name }}-{{ .Values.celery.worker.componentName }}
           securityContext:
-            {{- toYaml .Values.securityContext.api | nindent 16 }}
+            {{- toYaml .Values.securityContext.api | nindent 12 }}
           image: {{ .Values.image.name }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
           {{-  with .Values.celery.worker.command }}
@@ -76,15 +99,8 @@ spec:
             {{- end }}
       volumes:
         - name: mount-files
-          {{- if .Values.global.storage.pvc.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Values.mountLocations.files_pvc_name }}
-          {{- else }}
-          # mount directory from the host node's filesystem into the Pod.
-          hostPath:
-            path: {{ .Values.global.storage.filesystem.dir }}{{ .Values.mountLocations.files_pvc_name }}
-            type: DirectoryOrCreate
-          {{- end }}
         {{- if .Values.global.sharePipelinePvc }}
         - name: pipelines-inference-pvc
           persistentVolumeClaim:
@@ -95,3 +111,4 @@ spec:
         - name: data-pipeline-logs
           emptyDir: {}
 {{- end -}}
+

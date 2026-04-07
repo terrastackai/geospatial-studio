@@ -34,7 +34,7 @@ data:
   OBJECT_STORAGE_REGION: {{ .Values.global.objectStorage.region }}
   SERVER_TYPE: {{ .Values.serverType.type }}
   DATASET_PIPELINE_IMAGE: {{ .Values.images.dataset_pipeline.name }}:{{ .Values.images.dataset_pipeline.tag }}
-  {{- if .Values.global.imagePullSecret }}
+  {{- if .Values.global.imagePullSecret.b64secret }}
   FT_IMAGE_PULL_SECRETS: {{ .Values.global.imagePullSecret.name }}
   {{- end }}
   {{- if eq .Values.global.environment "local" }}

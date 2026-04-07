@@ -28,8 +28,10 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
+      {{- if .Values.global.imagePullSecret.b64secret }}
       imagePullSecrets:
         - name: {{ .Values.global.imagePullSecret.name }}
+      {{- end }}
       serviceAccountName: {{ include "gfm-mlflow.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -51,6 +53,11 @@ spec:
                 --allowed-hosts "*" \
                 --backend-store-uri $(BACKEND_URI) \
                 --artifacts-destination file:///mlruns
+          env:
+          - name: MLFLOW_SQLALCHEMYSTORE_POOL_SIZE
+            value: "1"
+          - name: MLFLOW_SQLALCHEMYSTORE_MAX_OVERFLOW
+            value: "0"
           envFrom:
           - secretRef:
               name: {{ .Values.global.appNames.mlflow }}-secrets
@@ -60,25 +67,13 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.global.storage.pvc.enabled }}
           {{- with .Values.volumeMounts }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- else }}
-          volumeMounts:
-            - name: mount-mlflow
-              mountPath: /mlruns
-          {{- end }}
-      {{- if .Values.global.storage.pvc.enabled }}
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- else }}
-      hostPath:
-        path: /mlruns
-        type: DirectoryOrCreate
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

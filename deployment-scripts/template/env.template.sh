@@ -19,18 +19,21 @@ export PG_VERSION=18.2.0
 export CLUSTER_URL=
 
 # Storage
-export SHARE_PIPELINE_PVC=false
+export STORAGE_MODE=cloud-object-storage
+export SHARE_PIPELINE_PVC=true
 export COS_STORAGE_CLASS=
 export NON_COS_STORAGE_CLASS=
-export STORAGE_PVC_ENABLED=true
-export STORAGE_FILESYSTEM_ENABLED=false
-export CREATE_TUNING_FOLDERS_FLAG=true
+export PVC_ACCESS_MODE=ReadWriteOnce
 export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=
 
 # Populate buckets with data
 export LULC_TILE_ROOT=
 export LULC_TILE_SHAPEFILE=
 export LAND_POLYGON_PATH=https://osmdata.openstreetmap.de/download/land-polygons-complete-4326.zip
+
+# PgBouncer configuration (PostgreSQL connection pooler)
+export PGBOUNCER_ENABLED=true
+export PGBOUNCER_FULL_NAME_OVERRIDE=geofm-pgbouncer
 
 # Redis configuration
 export REDIS_ENABLED=true
@@ -45,7 +48,6 @@ export MINIO_STORAGE_SIZE=100Gi
 
 # Pipelines configuration
 export PIPELINES_ENABLED=true
-export PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC=true
 
 # AUTH
 export OAUTH_PROXY_ENABLED=true

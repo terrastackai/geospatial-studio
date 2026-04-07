@@ -4,21 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-echo "----------------------------------------------------------------------"
-echo "----------------------  Confirm OpenShift  ---------------------------"
-echo "----------------------------------------------------------------------"
-
-IS_OPENSHIFT="false"
-
-if kubectl get routes.route.openshift.io --ignore-not-found -o name &> /dev/null; then
-    IS_OPENSHIFT="true"
-fi
-
-printf "\n\n--- Is this cluster openshift? $IS_OPENSHIFT ---\n"
-
-
-# Functions
-
 # Source (import) common_functions.sh
 source ./common_functions.sh
 
@@ -51,7 +36,6 @@ typeset deployment_env
 get_user_input "Provide a name for the deployment environment, maybe cluster name e.g. fmaas-dev, cimf-staging, rosa-prod, local... This will be the name used for a local folder created under workspace directory." deployment_env
 echo "DEPLOYMENT_ENV accepted: **$deployment_env**"
 export DEPLOYMENT_ENV=$deployment_env
-JUMP_TO_DEPLOYMENT="No"
 
 # Check if the workspace file exists and if it does not request user for namespace
 if [ ! -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
@@ -59,127 +43,340 @@ if [ ! -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
     get_user_input "Provide the namespace/project name: " namespace
     echo "OC_PROJECT accepted: **$namespace**"
     export OC_PROJECT=$namespace
-else
-    jump_to_deployment_options="Yes No"
-    typeset jump_to_deployment
-
-    # Call the function
-    get_menu_selection \
-        "Jump to Deployment? Select 'YES' to jump to deployment (this assumes you have defined all the environment variables and deployed Oauth, Database, Storage and Geoserver), select 'NO' to set/reset environment variables and/or update Oauth, Database, Storage and Geoserver deployments  " \
-        jump_to_deployment \
-        "$jump_to_deployment_options"
-
-    JUMP_TO_DEPLOYMENT=$jump_to_deployment
-    source workspace/${DEPLOYMENT_ENV}/env/env.sh
 fi
 
+# Component selection for deployment/redeployment
+echo "----------------------------------------------------------------------"
+echo "---------------  Checking Existing Deployments  ----------------------"
+echo "----------------------------------------------------------------------"
 
-if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
+    echo "✓ Workspace configuration exists"
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+        
+    check_deployment_and_prompt "deployment" "minio" "${OC_PROJECT}" "MinIO (object storage)" "DEPLOY_MINIO"
+    check_deployment_and_prompt "statefulset" "postgresql" "${OC_PROJECT}" "PostgreSQL (database)" "DEPLOY_POSTGRES"
+    check_deployment_and_prompt "deployment" "keycloak" "${OC_PROJECT}" "Keycloak (authentication)" "DEPLOY_KEYCLOAK"
+    check_deployment_and_prompt "deployment" "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
+    check_deployment_and_prompt "helm" "studio" "${OC_PROJECT}" "Geospatial Studio" "DEPLOY_STUDIO"
+    check_deployment_and_prompt "deployment" "ibmcloud-object-storage-plugin" "ibm-object-s3fs" "IBM Object Storage Plugin" "DEPLOY_IBM_STORAGE"
+else
+    echo "✓ No existing configuration - will deploy all components"
+    DEPLOY_MINIO="Deploy"
+    DEPLOY_POSTGRES="Deploy"
+    DEPLOY_KEYCLOAK="Deploy"
+    DEPLOY_GEOSERVER="Deploy"
+    DEPLOY_STUDIO="Deploy"
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        check_deployment_and_prompt "deployment" "ibmcloud-object-storage-plugin" "ibm-object-s3fs" "IBM Object Storage Plugin" "DEPLOY_IBM_STORAGE"
+    else
+        DEPLOY_IBM_STORAGE="Deploy"
+    fi
+fi
+
+echo ""
+echo "Deployment plan:"
+echo "  MinIO: $DEPLOY_MINIO"
+echo "  PostgreSQL: $DEPLOY_POSTGRES"
+echo "  Keycloak: $DEPLOY_KEYCLOAK"
+echo "  GeoServer: $DEPLOY_GEOSERVER"
+echo "  Studio: $DEPLOY_STUDIO"
+echo "  IBM Storage Plugin: $DEPLOY_IBM_STORAGE"
+echo ""
+
+if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+    printf "%s " "Press enter to continue with this deployment plan"
+    read ans
+fi
+
+# Setup workspace environment if it doesn't exist
+if [ ! -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || [ ! -f "workspace/${DEPLOYMENT_ENV}/env/.env" ]; then
+    echo "Setting up workspace environment..."
     # Below step will create two env scripts under the workspace/${DEPLOYMENT_ENV}/env folder.
     # One script contains just the secret values template, and the other script contains all the other general Geospatial configuration.
     ./deployment-scripts/setup-workspace-env.sh
 
-    # Update the workspave env file with deployment env and namespace
+    # Update the workspace env file with deployment env and namespace
     sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=${DEPLOYMENT_ENV}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=${OC_PROJECT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+fi
 
-    # Update cluster url
-    if [[ -n "$CLUSTER_URL" ]]; then
-        cluster_url_defined_options="Yes No"
-        typeset cluster_url_defined
+# Update cluster url
+if [[ -n "$CLUSTER_URL" ]]; then
+    cluster_url_defined_options="Yes No"
+    typeset cluster_url_defined
 
-        # Call the function
-        get_menu_selection \
-            "Use CLUSTER_URL = ${CLUSTER_URL} " \
-            cluster_url_defined \
-            "$cluster_url_defined_options"
-    else 
-        cluster_url_defined="No"
+    # Call the function
+    get_menu_selection \
+        "Use CLUSTER_URL = ${CLUSTER_URL} " \
+        cluster_url_defined \
+        "$cluster_url_defined_options"
+else 
+    cluster_url_defined="No"
+fi
+
+if [[ "$cluster_url_defined" == "No" ]]; then
+    # Try to extract the cluster url for OCP else request the user
+    set_cluster_url
+fi
+# Update the workspace env file with CLUSTER_URL
+sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=${CLUSTER_URL}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+
+# Update image pull secret
+python deployment-scripts/validate-env-files.py \
+    --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
+    --env-variables "image_pull_secret_b64" \
+    --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
+    --env-sh-variables ""
+
+if [ $? -ne 0 ]; then
+    echo "***********************************************************************************"
+    echo "-----------------------  Configure image pull secret ------------------------------"
+    echo "-----------------------------------------------------------------------------------"
+    echo "Image pull secrets are only required for private container registries."
+    echo "Leave empty if your images are publicly accessible."
+    echo "-----------------------------------------------------------------------------------"
+    image_pull_secret_config_options="Skip-for-public-images Provide-secret"
+    typeset image_pull_secret_config_type
+
+    get_menu_selection \
+    "Select image pull secret configuration: " \
+    image_pull_secret_config_type \
+    "$image_pull_secret_config_options"
+
+    if [[ "$image_pull_secret_config_type" == "Skip-for-public-images" ]]; then
+        export STUDIO_IMAGE_PULL_SECRET=""
+        echo "ℹ️  Image pull secret not configured (using public images)"
+    else
+        typeset ips
+        get_user_input "Enter base64-encoded image pull secret: " ips
+        echo "STUDIO_IMAGE_PULL_SECRET accepted: **$ips**"
+        export STUDIO_IMAGE_PULL_SECRET=$ips
     fi
 
-    if [[ "$cluster_url_defined" == "No" ]]; then
-        # Try to extract the cluster url for OCP else request the user
-        set_cluster_url
+    # Update the workspace env file with STUDIO_IMAGE_PULL_SECRET
+    sed -i -e "s/image_pull_secret_b64=.*/image_pull_secret_b64=\"${STUDIO_IMAGE_PULL_SECRET}\"/g" workspace/${DEPLOYMENT_ENV}/env/.env
+fi
+
+oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
+
+source workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+if [[ "$DEPLOY_IBM_STORAGE" == "Deploy" ]]; then
+    # Set the cluster node name where the application will be deployed
+    # CLUSTER_NODE_NAME
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        typeset cluster_node_name
+        get_user_input "Provide a name for the cluster node for deployment, e.g. studio-worker, studio-node... Run 'oc get nodes' to get the nodes available in the cluster" cluster_node_name
+        echo "CLUSTER_NODE_NAME accepted: **$cluster_node_name**"
+        export CLUSTER_NODE_NAME=$cluster_node_name
     fi
-    # Update the workspace env file with CLUSTER_URL
-    sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=${CLUSTER_URL}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    oc label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
 
 
-    # Update imge pull secret
-    python deployment-scripts/validate-env-files.py \
-        --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
-        --env-variables "image_pull_secret_b64" \
-        --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-        --env-sh-variables ""
+    echo "----------------------------------------------------------------------"
+    echo "------  Installing IBM Object Storage Plugin (Helm-based)  ----------"
+    echo "----------------------------------------------------------------------"
 
+    # Add IBM Helm repo
+    helm repo add ibm-helm https://raw.githubusercontent.com/IBM/charts/master/repo/ibm-helm
+    helm repo update
+
+    # Fetch and install Helm plugin with proper permissions
+    echo "Fetching IBM Object Storage Plugin chart..."
+    helm fetch --untar ibm-helm/ibm-object-storage-plugin
+
+    # Make the plugin script executable
+    if [ -f "./ibm-object-storage-plugin/helm-ibmc/ibmc.sh" ]; then
+        chmod +x ./ibm-object-storage-plugin/helm-ibmc/ibmc.sh
+        echo "Made helm-ibmc plugin executable"
+    fi
+
+    # Install Helm plugin (suppress error if already installed)
+    if ! helm plugin list | grep -q ibmc; then
+        echo "Installing helm-ibmc plugin..."
+        helm plugin install ./ibm-object-storage-plugin/helm-ibmc
+    else
+        echo "Helm plugin 'ibmc' already installed"
+    fi
+
+    # Install IBM Object Storage Plugin
+    echo "Installing IBM Object Storage Plugin via Helm..."
+    # crc runs on a redhat vm
+    helm ibmc install ibm-object-storage-plugin ibm-helm/ibm-object-storage-plugin \
+        --set license=true \
+        --set workerOS="redhat" \
+        --set region="us-east"
+
+    # Check if installation succeeded
     if [ $? -ne 0 ]; then
-        echo "***********************************************************************************"
-        echo "-----------------------  Configure image pull secret ------------------------------"
-        echo "-----------------------------------------------------------------------------------"
-        image_pull_secret_config_options="Default User-Generated"
-        typeset image_pull_secret_config_type
-
-        get_menu_selection \
-        "Select whether to use the default image pull secret or to provide your own: " \
-        image_pull_secret_config_type \
-        "$image_pull_secret_config_options"
-
-        if [[ "$image_pull_secret_config_type" == "Default" ]]; then
-            export STUDIO_IMAGE_PULL_SECRET="eyJhdXRocyI6eyJleGFtcGxlLmlvIjp7InVzZXJuYW1lIjoiZXhhbXBsZSIsInBhc3N3b3JkIjoiZXhhbXBsZSIsImVtYWlsIjoiZXhhbXBsZUBleGFtcGxlLmNvbSIsImF1dGgiOiJaWGhoYlhCc1pUcGxlR0Z0Y0d4bCJ9fX0="
-        else
-            typeset ips
-            get_user_input "Enter Image pull secret: " ips
-            echo "STUDIO_IMAGE_PULL_SECRET accepted: **$ips**"
-            export STUDIO_IMAGE_PULL_SECRET=$ips
-        fi
-
-        # Update the workspace env file with STUDIO_IMAGE_PULL_SECRET
-        sed -i -e "s/image_pull_secret_b64=.*/image_pull_secret_b64=\"${STUDIO_IMAGE_PULL_SECRET}\"/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        echo "✗ Failed to install IBM Object Storage Plugin"
+        exit 1
     fi
-    
-    source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
+    echo "Waiting for plugin deployment to be ready..."
+    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY \
+        --for=condition=available deployment/ibmcloud-object-storage-plugin \
+        -n ibm-object-s3fs --timeout=300s
+
+    # Create trusted CA bundle ConfigMap for OpenShift TLS
+    if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+        echo "Creating trusted CA bundle for TLS..."
+        kubectl apply -f - <<EOF
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trusted-ca-bundle
+  namespace: ibm-object-s3fs
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
+data: {}
+EOF
+
+        # Mount CA bundle to plugin deployment
+        oc set volume deployment/ibmcloud-object-storage-plugin \
+            --add \
+            --name=ca-bundle-vol \
+            --type=configmap \
+            --configmap-name=trusted-ca-bundle \
+            --mount-path=/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
+            --read-only=true \
+            --sub-path=service-ca.crt \
+            -n ibm-object-s3fs
+    fi
+
+    echo "✅ IBM Object Storage Plugin installed successfully"
+    echo "   Storage class 'ibmc-s3fs-cos' is now available"
+    
+    # Verify the plugin is working
+    echo ""
+    echo "Verifying IBM Object Storage Plugin..."
+    echo "Checking plugin pods:"
+    kubectl get pods -n ibm-object-s3fs
+    
+    echo ""
+    echo "Checking storage class:"
+    kubectl get storageclass ibmc-s3fs-cos -o yaml
+    
+    echo ""
+    echo "Checking plugin logs for any errors:"
+    kubectl logs -n ibm-object-s3fs deployment/ibmcloud-object-storage-plugin --tail=20 --all-containers=true || echo "No logs available yet"
+    
+    echo ""
+    echo "Waiting 10 seconds for plugin to fully initialize..."
+    sleep 10
+else
+    echo "----------------------------------------------------------------------"
+    echo "------ Skipping IBM Object Storage Plugin installation ---------------"
+    echo "----------------------------------------------------------------------"
+fi
+
+echo "***********************************************************************************"
+echo "----------------------  Configure Storage Mode  -----------------------------------"
+echo "-----------------------------------------------------------------------------------"
+echo "***********************************************************************************"
+echo "Select the storage mode for your deployment:"
+echo "  - cloud-object-storage: Use Cloud Object Storage (production) [DEFAULT]"
+echo "  - cluster-block-storage: Use in-cluster dynamic provisioning"
+echo "  - local-hostpath: Use local host directories (development/testing)"
+echo "***********************************************************************************"
+echo "-- Check StorageClasses values in the cluster for COS storage and block storage ---"
+
+
+storage_mode_options="cloud-object-storage cluster-block-storage local-hostpath"
+typeset storage_mode
+
+get_menu_selection \
+"Select storage mode for your deployment:" \
+storage_mode \
+"$storage_mode_options"
+
+export STORAGE_MODE=$storage_mode
+echo "STORAGE_MODE selected: **$STORAGE_MODE**"
+
+# Update env.sh with storage mode
+sed -i -e "s/export STORAGE_MODE=.*/export STORAGE_MODE=${STORAGE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+if [[ "$STORAGE_MODE" == "cloud-object-storage" ]] || [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
     echo "***********************************************************************************"
     echo "-----------------------  Configure s3 storage classes -----------------------------"
     echo "-----------------------------------------------------------------------------------"
     echo "---------------- Verify the available storage classes in your cluster -------------"
     echo "-----------------------------------------------------------------------------------"
-    echo "---------- You should already have setup the cloud object storage drivers ---------"
-    echo "-- See: https://cloud.ibm.com/docs/openshift?topic=openshift-storage_cos_install --"
+
+    if [[ "$STORAGE_MODE" == "cloud-object-storage" ]]; then
+        echo "---------- You should already have setup the cloud object storage drivers ---------"
+        echo "-- See: https://cloud.ibm.com/docs/openshift?topic=openshift-storage_cos_install --"
+    fi
+
     echo "***********************************************************************************"
     echo "************************  You will enter the following  ***************************"
-    echo "--------------------------  COS_STORAGE_CLASS -------------------------------------"
-    echo "------------------------  NON_COS_STORAGE_CLASS ---------------------------------"
+    echo "------------------------  NON_COS_STORAGE_CLASS -----------------------------------"
+    if [[ "$STORAGE_MODE" == "cloud-object-storage" ]]; then
+        echo "--------------------------  COS_STORAGE_CLASS -------------------------------------"
+    fi
     echo "***********************************************************************************"
 
     while true; do
         printf "%s " "Press enter to continue"
         read ans
 
-        typeset user_cos_storage_class
-        get_user_input "Enter COS_STORAGE_CLASS: " user_cos_storage_class
-        echo "COS_STORAGE_CLASS accepted: **$user_cos_storage_class**"
-        export COS_STORAGE_CLASS=$user_cos_storage_class
+        if [[ "$STORAGE_MODE" == "cloud-object-storage" ]]; then
+            typeset user_cos_storage_class
+            get_user_input "Enter COS_STORAGE_CLASS (cos-s3-csi-s3fs-sc or ibmc-s3fs-cos or ibmc-s3fs-cos-perf): " user_cos_storage_class
+            echo "COS_STORAGE_CLASS accepted: **$user_cos_storage_class**"
+            export COS_STORAGE_CLASS=$user_cos_storage_class
+        fi
 
         typeset user_non_cos_storage_class
         get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
         echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
         export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
 
-        sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-        sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        if [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
+            # Select PVC access mode
+            echo "***********************************************************************************"
+            echo "----------------------  Configure PVC Access Mode  --------------------------------"
+            echo "-----------------------------------------------------------------------------------"
+            echo "Select the access mode for Persistent Volume Claims:"
+            echo "  - ReadWriteOnce: Volume can be mounted as read-write by a single node"
+            echo "  - ReadWriteMany: Volume can be mounted as read-write by many nodes"
+            echo "***********************************************************************************"
+
+            pvc_access_mode_options="ReadWriteOnce ReadWriteMany"
+            typeset pvc_access_mode
+
+            get_menu_selection \
+                "Select PVC access mode:" \
+                pvc_access_mode \
+                "$pvc_access_mode_options"
+
+            export PVC_ACCESS_MODE=$pvc_access_mode
+            echo "PVC_ACCESS_MODE selected: **$PVC_ACCESS_MODE**"
+        fi
+
+        sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS:-ibmc-s3fs-cos}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS:-standard}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export PVC_ACCESS_MODE=.*/export PVC_ACCESS_MODE=${PVC_ACCESS_MODE:-ReadWriteOnce}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
         python deployment-scripts/validate-env-files.py \
         --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
         --env-variables "" \
         --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-        --env-sh-variables "COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS"
+        --env-sh-variables "COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS,PVC_ACCESS_MODE"
 
         if [ $? -eq 0 ]; then
             break
         fi
     done
+else
+    echo "Using local-hostpath storage mode - no storage class configuration needed"
+    sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+fi
 
+if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
     cloud_object_storage_type_options="Cluster-deployment Cloud-managed-instance"
     typeset cloud_object_storage_type
 
@@ -195,6 +392,7 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         echo "----------------------------------------------------------------------"
 
         source workspace/${DEPLOYMENT_ENV}/env/env.sh
+        
         python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
@@ -206,7 +404,72 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
         sed -i -e "s|endpoint=.*|endpoint=$MINIO_API_URL|g" workspace/${DEPLOYMENT_ENV}/env/.env
-        sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/region=.*/region=us-east/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+        # Wait for MinIO service to be ready (pod ready doesn't mean service is accepting connections)
+        echo "Waiting for MinIO service to be ready..."
+        MAX_RETRIES=6
+        RETRY_DELAY=10
+        
+        for i in $(seq 1 $MAX_RETRIES); do
+            # Try internal service first
+            if kubectl exec -n ${OC_PROJECT} $(kubectl get pod -n ${OC_PROJECT} -l app=minio -o jsonpath='{.items[0].metadata.name}') -- curl -ks -f "https://localhost:9000/minio/health/live" > /dev/null 2>&1; then
+                echo "✓ MinIO service is ready via localhost (attempt $i/$MAX_RETRIES)"
+                break
+            fi
+            
+            # If internal check fails, show diagnostics
+            if [ $i -eq $MAX_RETRIES ]; then
+                echo "✗ MinIO service failed to become ready after $MAX_RETRIES attempts"
+                echo "Diagnostics:"
+                echo "- Pod status:"
+                kubectl get pods -n ${OC_PROJECT} -l app=minio
+                echo "- Pod logs (last 20 lines):"
+                kubectl logs -n ${OC_PROJECT} -l app=minio --tail=20
+                echo "- Service status:"
+                kubectl get svc -n ${OC_PROJECT} minio
+                echo "- Route status:"
+                kubectl get route -n ${OC_PROJECT} minio-api
+                exit 1
+            fi
+            
+            echo "MinIO not ready yet (attempt $i/$MAX_RETRIES), waiting ${RETRY_DELAY}s..."
+            
+            # Show pod status every 5 attempts
+            if [ $((i % 2)) -eq 0 ]; then
+                echo "$(date +%H:%M:%S) - Pod status:"
+                kubectl get pods -n ${OC_PROJECT} -l app=minio -o custom-columns=NAME:.metadata.name,STATUS:.status.phase --no-headers
+            fi
+            
+            sleep $RETRY_DELAY
+        done
+        
+        # Now verify the Route is accessible (this might take longer due to SSL/routing)
+        echo "Verifying MinIO Route accessibility..."
+        for i in $(seq 1 5); do
+            if curl -k -s -f "$MINIO_API_URL/minio/health/live" > /dev/null 2>&1; then
+                echo "✓ MinIO Route is accessible"
+                break
+            else
+                if [ $i -eq 10 ]; then
+                    echo "⚠ Warning: MinIO Route not accessible, but service is running. This may be a Route/SSL issue."
+                    echo "Continuing deployment - MinIO is accessible internally."
+                fi
+                echo "Route check attempt $i/10..."
+                sleep 5
+            fi
+        done
+
+        if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+            MINIO_CLUSTER_IP=$(oc get svc minio -n "${OC_PROJECT}" -o jsonpath='{.spec.clusterIP}')
+            MINIO_INTERNAL_URL="minio.${OC_PROJECT}.svc.cluster.local"
+            export LOCAL_CA_CRT=$(oc get configmap trusted-ca-bundle -n ibm-object-s3fs -o jsonpath='{.data.service-ca\.crt}')
+
+            cat deployment-scripts/crc-hosts-modifier-daemonset.yaml | sed -e "s/\$MINIO_CLUSTER_IP/$MINIO_CLUSTER_IP/g" | sed -e "s/\$MINIO_INTERNAL_URL/$MINIO_INTERNAL_URL/g" > workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
+            auto_indent_and_replace workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml SELF_CA_CRT "$LOCAL_CA_CRT" workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml
+            rm workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset-tmp.yaml
+            oc apply -f workspace/$DEPLOYMENT_ENV/initialisation/crc-hosts-modifier-daemonset.yaml -n default
+        fi
 
     else
         echo "**********************************************************************"
@@ -243,12 +506,19 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     # Create buckets
     python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
-    # Populate buckets with initial data
-    ./deployment-scripts/populate-buckets-with-auxiliary-data.sh
+    # For crc we set the endpoint for the cos pvc to internal cluster url since at the driver s3fuse level the routes don't resolve
+    if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+        sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+    fi
+else
+    echo "----------------------------------------------------------------------"
+    echo "-------------------  Skipping Minio Deployment  ----------------------"
+    echo "----------------------------------------------------------------------"
+fi
 
-    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-
+if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
     postgres_type_options="Cluster-deployment Cloud-managed-instance"
     typeset postgres_type
 
@@ -269,7 +539,13 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
         export POSTGRES_PASSWORD=devPostgresql123
 
-        ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV DO_NOT_SET_SCC
+        # For CRC and default namespace, we need volume permissions enabled, so don't use DO_NOT_SET_SCC
+        # For other OpenShift environments, storage may be pre-configured
+        if ([[ "$DEPLOYMENT_ENV" == "crc" ]] || [[ "$DEPLOYMENT_ENV" == "crc-local" ]]) && [[ "$OC_PROJECT" == "default" ]]; then
+            ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV
+        else
+            ./deployment-scripts/install-postgres.sh UPDATE_STORAGE DISABLE_PV DO_NOT_SET_SCC
+        fi
 
         kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
 
@@ -286,6 +562,10 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
         sed -i -e "s/pg_uri=.*/pg_uri=postgresql.${OC_PROJECT}.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        
+        # Set PgBouncer configuration
+        sed -i -e "s/pgbouncer_host=.*/pgbouncer_host=geofm-pgbouncer.${OC_PROJECT}.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${POSTGRES_PASSWORD}/g" workspace/${DEPLOYMENT_ENV}/env/.env
     else
         echo "**********************************************************************"
         echo "**********************************************************************"
@@ -317,10 +597,20 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         done
 
         python deployment-scripts/create_studio_dbs.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+        
+        # Set PgBouncer configuration for cloud-managed postgres
+        # Note: User needs to manually set pgbouncer_host if using external PgBouncer
+        sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${pg_password}/g" workspace/${DEPLOYMENT_ENV}/env/.env
     fi
+else
+    echo "----------------------------------------------------------------------"
+    echo "-----------------  Skipping Postgres Deployment  ---------------------"
+    echo "----------------------------------------------------------------------"
+fi 
 
-    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
+if [[ "$DEPLOY_KEYCLOAK" == "Deploy" ]]; then
     oauth_type_options="Keycloak ISV"
     typeset oauth_type
 
@@ -346,8 +636,8 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         sleep 5
 
         # Keycloak setup
-        export client_secret=`cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32`
-        export cookie_secret=`cat /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32`
+        export client_secret=$(head -c 32 /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
+        export cookie_secret=$(head -c 32 /dev/urandom | base64 | tr -dc '0-9a-zA-Z' | head -c32)
 
         ./deployment-scripts/setup-keycloak.sh
 
@@ -355,10 +645,13 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
         sed -i -e "s/export OAUTH_TYPE=.*/export OAUTH_TYPE=keycloak/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s/export OAUTH_CLIENT_ID=.*/export OAUTH_CLIENT_ID=geostudio-client/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-        sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "https://%s-%s.%s/realms/geostudio" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
+            sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "http://%s.%s.svc.cluster.local:8080/realms/geostudio" "keycloak" "$OC_PROJECT")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        else
+            sed -i -e "s|export OAUTH_ISSUER_URL=.*|export OAUTH_ISSUER_URL=$(printf "https://%s-%s.%s/realms/geostudio" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        fi
         sed -i -e "s|export OAUTH_URL=.*|export OAUTH_URL=$(printf "https://%s-%s.%s/realms/geostudio/protocol/openid-connect/auth" "keycloak" "$OC_PROJECT" "$CLUSTER_URL")|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=${OAUTH_PROXY_PORT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
     else
         echo "**********************************************************************"
         echo "**********************************************************************"
@@ -393,33 +686,13 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
             fi
         done
     fi
-
-
+else
     echo "----------------------------------------------------------------------"
-    echo "--------------------  Updating other values  -------------------------"
+    echo "-----------------  Skipping Keycloak Deployment  ---------------------"
     echo "----------------------------------------------------------------------"
+fi
 
-    if [[ "$IS_OPENSHIFT" == "false" ]]; then
-        # Kubernetes tls secret setup
-
-        # request for CNAME
-        typeset cname
-        get_user_input "Provide the CNAME of your cluster: e.g. default.svc.cluster.local, example.com " cname
-        echo "CNAME accepted: **$cname**"
-
-        # create tls.key and tls.crt
-        openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=$cname"
-
-        # extract the cert and key into env vars
-
-        export TLS_CRT_B64=$(openssl base64 -in tls.crt -A)
-        export TLS_KEY_B64=$(openssl base64 -in tls.key -A)
-
-        sed -i -e "s/tls_crt_b64=.*/tls_crt_b64=$TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-        sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-        sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    fi
-
+if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
     # Geoserver setup
     export GEOSERVER_USERNAME="admin"
     export GEOSERVER_PASSWORD="geoserver"
@@ -427,69 +700,63 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
     sed -i -e "s/geoserver_username=.*/geoserver_username=$GEOSERVER_USERNAME/g" workspace/${DEPLOYMENT_ENV}/env/.env
     sed -i -e "s/geoserver_password=.*/geoserver_password=$GEOSERVER_PASSWORD/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
     echo "----------------------------------------------------------------------"
     echo "--------------------  Deploying Geoserver  ----------------------------"
     echo "----------------------------------------------------------------------"
 
-    if [[ "$IS_OPENSHIFT" == "false" ]]; then
+    geoserver_install_options="Configure-SCC Use-Custom-Image"
+    typeset geoserver_install_type
+
+    # Call the function
+    get_menu_selection \
+        "Select whether to deploy default geoserver which requires admin privileges by configuring scc anyuid or use a custom geoserver image: " \
+        geoserver_install_type \
+        "$geoserver_install_options"
+
+    if [[ "$geoserver_install_type" == "Configure-SCC" ]]; then
+        oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
         python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
     else
-        geoserver_install_options="Configure-SCC Use-Custom-Image"
-        typeset geoserver_install_type
+        printf "\n\n#Use this dockerfile to create a custom image\n\nFROM --platform=linux/amd64 docker.osgeo.org/geoserver:2.28.1\nRUN chmod -R 777 /tmp\nRUN addgroup --system geoserver && adduser --system -gid 101 geoserver\nRUN chown -R geoserver:geoserver /opt\nRUN chmod -R 777 /opt\nRUN chmod -R 777 /usr/local/tomcat\nUSER geoserver:geoserver\n"
+        printf "\n\nBuild and push your image to your registry of choice. You'll be prompted to input configuration for the image pull secret:\n image registry uri. e.g. myimage.io\n image registry email. e.g. myemail@example.com\n image registry password\n geoserver image uri. e.g myimages.io/geostudio/patched_geoserver:v0\n\n"
+        sleep 5
+        while true; do
+            printf "%s " "Press enter to if you have pushed the custom geoserver image to a registry"
+            read ans
 
-        # Call the function
-        get_menu_selection \
-            "Select whether to deploy default geoserver which requires admin privileges by configuring scc anyuid or use a custom geoserver image: " \
-            geoserver_install_type \
-            "$geoserver_install_options"
+            printf "\n\nCreating the geoserver image pull secret using \n kubectl create secret docker-registry <secret-name> --docker-server=<docker-registry-uri> --docker-username=iamapikey --docker-password=<docker-password> --docker-email=email@example.com --namespace ${OC_PROJECT}\n\n"
+            geoserver_image_pull_secret_name="geoserver-image-pull-secret"
+            typeset geoserver_image_registry_uri
+            get_user_input "Provide the geoserver image registry uri: " geoserver_image_registry_uri
+            echo "geoserver image registry uri accepted: **$geoserver_image_registry_uri**"
 
-        if [[ "$geoserver_install_type" == "Configure-SCC" ]]; then
-            oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
-            python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+            typeset geoserver_image_registry_email
+            get_user_input "Provide the geoserver image registry email: " geoserver_image_registry_email
+            echo "geoserver image email accepted: **$geoserver_image_registry_email**"
+
+            typeset geoserver_image_registry_password
+            get_user_input "Provide the geoserver image registry password: " geoserver_image_registry_password
+            echo "geoserver image registry password accepted"
+
+            kubectl create secret docker-registry ${geoserver_image_pull_secret_name} --docker-server=${geoserver_image_registry_uri} --docker-username=iamapikey --docker-password=${geoserver_image_registry_password} --docker-email=${geoserver_image_registry_email} --namespace ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
+            kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
+
+            if [ $? -ne 0 ]; then
+                continue
+            fi
+
+            typeset geoserver_image_uri
+            get_user_input "Provide the geoserver image uri: " geoserver_image_uri
+            echo "geoserver image uri accepted: **$geoserver_image_uri**"
+
+            python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} --geoserver-run-unprivileged "false" --geoserver-image-pull-secret ${geoserver_image_pull_secret_name} --geoserver-image-uri ${geoserver_image_uri} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
             kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
-        else
-            printf "\n\n#Use this dockerfile to create a custom image\n\nFROM --platform=linux/amd64 docker.osgeo.org/geoserver:2.28.1\nRUN chmod -R 777 /tmp\nRUN addgroup --system geoserver && adduser --system -gid 101 geoserver\nRUN chown -R geoserver:geoserver /opt\nRUN chmod -R 777 /opt\nRUN chmod -R 777 /usr/local/tomcat\nUSER geoserver:geoserver\n"
-            printf "\n\nBuild and push your image to your registry of choice. You'll be prompted to input configuration for the image pull secret:\n image registry uri. e.g. myimage.io\n image registry email. e.g. myemail@example.com\n image registry password\n geoserver image uri. e.g myimages.io/geostudio/patched_geoserver:v0\n\n"
-            sleep 5
-            while true; do
-                printf "%s " "Press enter to if you have pushed the custom geoserver image to a registry"
-                read ans
 
-                printf "\n\nCreating the geoserver image pull secret using \n kubectl create secret docker-registry <secret-name> --docker-server=<docker-registry-uri> --docker-username=iamapikey --docker-password=<docker-password> --docker-email=email@example.com --namespace ${OC_PROJECT}\n\n"
-                geoserver_image_pull_secret_name="geoserver-image-pull-secret"
-                typeset geoserver_image_registry_uri
-                get_user_input "Provide the geoserver image registry uri: " geoserver_image_registry_uri
-                echo "geoserver image registry uri accepted: **$geoserver_image_registry_uri**"
-
-                typeset geoserver_image_registry_email
-                get_user_input "Provide the geoserver image registry email: " geoserver_image_registry_email
-                echo "geoserver image email accepted: **$geoserver_image_registry_email**"
-
-                typeset geoserver_image_registry_password
-                get_user_input "Provide the geoserver image registry password: " geoserver_image_registry_password
-                echo "geoserver image registry password accepted"
-
-                kubectl create secret docker-registry ${geoserver_image_pull_secret_name} --docker-server=${geoserver_image_registry_uri} --docker-username=iamapikey --docker-password=${geoserver_image_registry_password} --docker-email=${geoserver_image_registry_email} --namespace ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
-                kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver_docker_secret.yaml
-
-                if [ $? -ne 0 ]; then
-                    continue
-                fi
-
-                typeset geoserver_image_uri
-                get_user_input "Provide the geoserver image uri: " geoserver_image_uri
-                echo "geoserver image uri accepted: **$geoserver_image_uri**"
-
-                python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} --geoserver-run-unprivileged "false" --geoserver-image-pull-secret ${geoserver_image_pull_secret_name} --geoserver-image-uri ${geoserver_image_uri} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
-                kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
-
-                if [ $? -eq 0 ]; then
-                    break
-                fi
-            done
-        fi
+            if [ $? -eq 0 ]; then
+                break
+            fi
+        done
     fi
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
@@ -501,9 +768,19 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     echo "--------------------  Configuring Geoserver  ----------------------------"
     echo "----------------------------------------------------------------------"
     ./deployment-scripts/setup_geoserver.sh
+else
+    echo "----------------------------------------------------------------------"
+    echo "-----------------  Skipping Geoserver Deployment  --------------------"
+    echo "----------------------------------------------------------------------"
+    echo "Loading existing GeoServer configuration..."
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+fi
 
+if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "-------------  Configuring Geospatial Studio  ------------------------"
+    echo "----------------------------------------------------------------------"
     # Additional setup
-
     file=./.studio-api-key
     if [ -e "$file" ]; then
         echo "File exists"
@@ -518,17 +795,12 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
     sed -i -e "s/studio_api_key=.*/studio_api_key=$STUDIO_API_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
     sed -i -e "s/studio_api_encryption_key=.*/studio_api_encryption_key=$API_ENCRYPTION_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
-
     sed -i -e "s/redis_password=.*/redis_password=devPassword/g" workspace/${DEPLOYMENT_ENV}/env/.env
    
-
     sed -i -e "s/export ENVIRONMENT=.*/export ENVIRONMENT=${DEPLOYMENT_ENV}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export ROUTE_ENABLED=.*/export ROUTE_ENABLED=${IS_OPENSHIFT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export SHARE_PIPELINE_PVC=.*/export SHARE_PIPELINE_PVC=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export STORAGE_PVC_ENABLED=.*/export STORAGE_PVC_ENABLED=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export STORAGE_FILESYSTEM_ENABLED=.*/export STORAGE_FILESYSTEM_ENABLED=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export CREATE_TUNING_FOLDERS_FLAG=.*/export CREATE_TUNING_FOLDERS_FLAG=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC=.*/export PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC=false/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export ROUTE_ENABLED=.*/export ROUTE_ENABLED=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export SHARE_PIPELINE_PVC=.*/export SHARE_PIPELINE_PVC=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=.*|export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=/data|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
     sed -i -e "s/export OAUTH_PROXY_ENABLED=.*/export OAUTH_PROXY_ENABLED=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=8443/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
@@ -544,7 +816,7 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
         --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
         --env-variables "deployment_name,ocp_project,studio_api_key,studio_api_encryption_key,access_key_id,secret_access_key,endpoint,region,pg_username,pg_password,pg_uri,pg_port,pg_original_db_name,pg_studio_db_name,geoserver_username,geoserver_password,oauth_client_secret,oauth_cookie_secret,redis_password,image_pull_secret_b64" \
         --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-        --env-sh-variables "DEPLOYMENT_ENV,OC_PROJECT,ROUTE_ENABLED,CONTAINER_IMAGE_REPOSITORY,CLUSTER_URL,COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS,STORAGE_PVC_ENABLED,OAUTH_PROXY_ENABLED,OAUTH_PROXY_PORT,OAUTH_TYPE,OAUTH_CLIENT_ID,OAUTH_ISSUER_URL,OAUTH_URL"
+        --env-sh-variables "DEPLOYMENT_ENV,OC_PROJECT,ROUTE_ENABLED,CONTAINER_IMAGE_REPOSITORY,CLUSTER_URL,COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS,OAUTH_PROXY_ENABLED,OAUTH_PROXY_PORT,OAUTH_TYPE,OAUTH_CLIENT_ID,OAUTH_ISSUER_URL,OAUTH_URL"
 
         if [ $? -eq 0 ]; then
             break
@@ -562,7 +834,17 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
     cp workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values.yaml workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
-    # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
+    # Replace credential placeholders with actual values from .env
+    source workspace/${DEPLOYMENT_ENV}/env/.env
+    sed -i -e "s|<postgres_host>|${pg_uri}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<postgres_port>|${pg_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_user>|${pg_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_pass>|${pg_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_host>|${pgbouncer_host}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_port>|${pgbouncer_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_user>|${pgbouncer_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pgbouncer_pass>|${pgbouncer_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
     gpu_configuration_options="GPU-Available No-GPU-Available"
     typeset gpu_configuration_type
 
@@ -574,60 +856,120 @@ if [[ "$JUMP_TO_DEPLOYMENT" == "No" ]]; then
 
     if [[ "$gpu_configuration_type" == "GPU-Available" ]]; then
         python ./deployment-scripts/remove-pipeline-gpu.py --remove-affinity-only workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+
+        # Keep the Job GPU configuration as is. 
+        echo "Keeping GPU configuration for Finetuning job in values.yaml. You can update these later in workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml "
+        echo "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/"
     else
         python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+        
+        # remove job GPU request
+        echo "Removing GPU configuration from values.yaml"
+        python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+        --gpu-limit 0 \
+        --gpu-request 0
+        echo "--------------------------- Removed GPUs in the Cluster -------------------"
     fi
 
-else
-    while true 
-    do
-        printf "%s " "Press enter to confirm all mandatory environment variables are defined"
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+    echo "-----------  Make any changes to deployment values yaml --------------"
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        printf "%s " "Press enter to continue"
         read ans
+    fi
 
-        python deployment-scripts/validate-env-files.py \
-        --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
-        --env-variables "deployment_name,ocp_project,studio_api_key,studio_api_encryption_key,access_key_id,secret_access_key,endpoint,region,pg_username,pg_password,pg_uri,pg_port,pg_original_db_name,pg_studio_db_name,geoserver_username,geoserver_password,oauth_client_secret,oauth_cookie_secret,redis_password,image_pull_secret_b64" \
-        --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-        --env-sh-variables "DEPLOYMENT_ENV,OC_PROJECT,ROUTE_ENABLED,CONTAINER_IMAGE_REPOSITORY,CLUSTER_URL,COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS,STORAGE_PVC_ENABLED,OAUTH_PROXY_ENABLED,OAUTH_PROXY_PORT,OAUTH_TYPE,OAUTH_CLIENT_ID,OAUTH_ISSUER_URL,OAUTH_URL"
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+    echo "------  Configure Fine-Tuning Job Resources  -------------------------"
+    echo "**********************************************************************"
+    echo "**********************************************************************"
 
-        if [ $? -eq 0 ]; then
-            break
-        fi
-    done
+
+    # Ask user if they want to alter memory, CPU requests and limits for finetuning.
+    configure_resources_options="No Yes"
+    typeset configure_resources
+
+    # Call the function
+    get_menu_selection \
+        "Do you want to alter memory, CPU requests and limits for finetuning?" \
+        configure_resources \
+        "$configure_resources_options"
+
+    # If yes, prompt user for memory limit, CPU limit, memory request and CPU request.
+    if [ "$configure_resources" = "Yes" ]; then
+        echo "Updating memory, CPU requests and limits for finetuning."
+        echo ""
+        
+        # Prompt for CPU limit
+        printf "%s " "CPU limit in cores (default: 4): "
+        read cpu_limit
+        cpu_limit=${cpu_limit:-4}
+        
+        # Prompt for CPU request
+        printf "%s " "CPU request in cores (default: 2): "
+        read cpu_request
+        cpu_request=${cpu_request:-2}
+        
+        # Prompt for Memory limit
+        printf "%s " "Memory limit in GB (default: 10): "
+        read memory_limit
+        memory_limit=${memory_limit:-10}
+        
+        # Prompt for Memory request
+        printf "%s " "Memory request in GB (default: 6): "
+        read memory_request
+        memory_request=${memory_request:-6}
+        
+        echo -e "\n Applying configuration:"
+        echo "  CPU Limit: ${cpu_limit} cores, CPU Request: ${cpu_request} cores"
+        echo -e "  Memory Limit: ${memory_limit}GB, Memory Request: ${memory_request}GB \n"
+        
+        # Call the update script with user-provided values
+        python ./deployment-scripts/update_jobs_gpu.py --filename workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml \
+            --cpu-limit "$cpu_limit" \
+            --cpu-request "$cpu_request" \
+            --memory-limit "$memory_limit" \
+            --memory-request "$memory_request"
+        echo -e " \n Updated finetuning resource configurations \n"
+    else
+        echo -e "\n Not updating resource configurations."
+        echo "You can manually edit workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml"
+        echo -e "and update the cluster later using: helm upgrade geospatial-studio ./geospatial-studio/ \n"
+    fi
+
+
+    echo "----------------------------------------------------------------------"
+    echo "----------------  Building Helm dependencies  ------------------------"
+    echo "----------------------------------------------------------------------"
+
+    # Build Helm dependencies
+    helm dep update ./geospatial-studio/
+    helm dependency build ./geospatial-studio/
+
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Deploying the Studio  --------------------------"
+    echo "----------------------------------------------------------------------"
+
+    # Deploy Geospatial Studio
+    ./deployment-scripts/deploy_studio.sh
+else
+    echo "----------------------------------------------------------------------"
+    echo "------------------  Skipping Studio Deployment  ----------------------"
+    echo "----------------------------------------------------------------------"
 fi
-
-echo "**********************************************************************"
-echo "**********************************************************************"
-echo "-----------  Make any changes to deployment values yaml --------------"
-echo "**********************************************************************"
-echo "**********************************************************************"
-
-printf "%s " "Press enter to continue"
-read ans
-
-echo "----------------------------------------------------------------------"
-echo "----------------  Building Helm dependencies  ------------------------"
-echo "----------------------------------------------------------------------"
-
-# Build Helm dependencies
-helm dep update ./geospatial-studio/
-helm dependency build ./geospatial-studio/
-
-echo "----------------------------------------------------------------------"
-echo "--------------------  Deploying the Studio  --------------------------"
-echo "----------------------------------------------------------------------"
-
-# Deploy Geospatial Studio
-./deployment-scripts/deploy_studio.sh
 
 echo "----------------------------------------------------------------------"
 echo "-----------------------  Deployment summary  -------------------------"
 echo "----------------------------------------------------------------------"
-export UI_ROUTE_URL=$(kubectl get route geofm-ui -o jsonpath='{"https://"}{.spec.host}') && \
+export UI_ROUTE_URL=$(kubectl get route geofm-ui -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}') && \
 echo "Opening $UI_ROUTE_URL..." && \
 (open $UI_ROUTE_URL || xdg-open $UI_ROUTE_URL || start $UI_ROUTE_URL)
 
-export API_ROUTE_URL=$(kubectl get route geofm-gateway -o jsonpath='{"https://"}{.spec.host}')
+export API_ROUTE_URL=$(kubectl get route geofm-gateway -n "${OC_PROJECT}" -o jsonpath='{"https://"}{.spec.host}')
 
 printf "\n\U1F30D\U1F30E\U1F30F   Geospatial Studio deployed in an OpenShift Cluster! \n"
 printf "\U1F5FA   Access the Geospatial Studio UI at: ${UI_ROUTE_URL}\n"

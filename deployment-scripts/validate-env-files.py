@@ -84,13 +84,19 @@ def check_config_file(filepath: str, required_vars: List[str]) -> Tuple[bool, Di
     all_valid = True
     status_map: Dict[str, str] = {}
     
+    # Variables that are allowed to be empty (optional)
+    optional_vars = ['image_pull_secret_b64']
+    
     for var in required_vars:
         if var not in file_vars:
             status_map[var] = f"❌ ERROR: **{var}** is NOT found."
             all_valid = False
         elif not file_vars[var]:
-            status_map[var] = f"⚠️ WARNING: **{var}** is defined but EMPTY."
-            all_valid = False
+            if var in optional_vars:
+                status_map[var] = f"ℹ️  INFO: **{var}** is empty (optional - for public images)."
+            else:
+                status_map[var] = f"⚠️ WARNING: **{var}** is defined but EMPTY."
+                all_valid = False
         else:
             status_map[var] = f"✅ Success: **{var}** is set."
 

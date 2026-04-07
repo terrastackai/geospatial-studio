@@ -8,40 +8,40 @@
       "bands": [
         {
           "index": 0,
-          "RGB_band": "R",
-          "band_name": "B02",
+          "RGB_band": "B",
+          "band_name": "blue",
           "scaling_factor": 1
         },
         {
           "index": 1,
           "RGB_band": "G",
-          "band_name": "B03",
+          "band_name": "green",
           "scaling_factor": 1
         },
         {
           "index": 2,
-          "RGB_band": "B",
-          "band_name": "B04",
+          "RGB_band": "R",
+          "band_name": "red",
           "scaling_factor": 1
         },
         {
           "index": 3,
-          "band_name": "B8A",
+          "band_name": "nir08",
           "scaling_factor": 1
         },
         {
           "index": 4,
-          "band_name": "B11",
+          "band_name": "swir16",
           "scaling_factor": 1
         },
         {
           "index": 5,
-          "band_name": "B12",
+          "band_name": "swir22",
           "scaling_factor": 1
         },
         {
           "index": 6,
-          "band_name": "SCL",
+          "band_name": "scl",
           "scaling_factor": 1
         }
       ],
