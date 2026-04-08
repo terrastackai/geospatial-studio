@@ -402,6 +402,7 @@ while True:
 - [Lab 2: Onboarding Pre-computed Examples](../notebooks/lab2-onboarding-examples.ipynb)
 - [Lab 3: Upload Model Checkpoints and Run Inference](../notebooks/lab3-running-inference.ipynb)
 - [Lab 4: Training a Custom Model for Wildfire Burn Scar Detection](../notebooks/lab4-burnscars-workflow.ipynb)
+- [Lab 5: Training a Multimodal Model for Flood Detection](../notebooks/lab5-flood-multimodal-workflow.ipynb)
 
 ## 🚀 Your Journey Continues
 
