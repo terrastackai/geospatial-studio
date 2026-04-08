@@ -114,12 +114,12 @@ spec:
           
           # Create ConfigMap with CA certificate for CSI driver in kube-system
           echo "Creating ConfigMap with CA certificate in kube-system namespace for CSI driver..."
-          kubectl create configmap minio-ca-cert \
-            --from-file=ca.crt=/tmp/tls.crt \
+          kubectl create configmap minio-public-config \
+            --from-file=minio-public.crt=/tmp/tls.crt \
             --namespace=kube-system \
             --dry-run=client -o yaml | kubectl apply -f -
           
-          echo "✓ ConfigMap minio-ca-cert created in kube-system namespace"
+          echo "✓ ConfigMap minio-public-config created in kube-system namespace"
         volumeMounts:
         - name: tmp
           mountPath: /tmp

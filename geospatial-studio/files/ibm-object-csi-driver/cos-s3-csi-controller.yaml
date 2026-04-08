@@ -77,11 +77,11 @@ spec:
               mkdir -p /etc-ssl-certs
               
               # Copy MinIO CA certificate
-              if [ -f /tmp/minio-ca/ca.crt ]; then
-                cp /tmp/minio-ca/ca.crt /ca-certs/minio-ca.crt
+              if [ -f /tmp/minio-ca/minio-public.crt ]; then
+                cp /tmp/minio-ca/minio-public.crt /ca-certs/minio-ca.crt
                 echo "✓ Copied MinIO CA certificate"
               else
-                echo "Warning: MinIO CA certificate not found at /tmp/minio-ca/ca.crt"
+                echo "Warning: MinIO CA certificate not found at /tmp/minio-ca/minio-public.crt"
                 exit 1
               fi
               
@@ -195,7 +195,7 @@ spec:
           name: socket-dir
         - name: trusted-ca-certs
           configMap:
-            name: minio-ca-cert
+            name: minio-public-config
         - name: ca-certificates
           emptyDir: {}
         - name: etc-ssl-certs
