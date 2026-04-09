@@ -170,7 +170,7 @@ gfm-studio-gateway:
       tag: latest
     dataset_pipeline:
       name: quay.io/geospatial-studio/geostudio-pipelines
-      tag: latest
+      tag: feat-update-task-priorities
     amo_pipeline:
       name: linuxserver/yq
       tag: latest
@@ -419,7 +419,7 @@ geospatial-studio-pipelines:
       enabled: true
       image:
         name: quay.io/geospatial-studio/geostudio-pipelines
-        tag: latest
+        tag: feat-update-task-priorities
       process_id: inference-planner
       process_exec: 'python inference_planner.py'
       extra_envs:
@@ -444,7 +444,7 @@ geospatial-studio-pipelines:
       enabled: true
       image:
         name: quay.io/geospatial-studio/geostudio-pipelines
-        tag: latest
+        tag: feat-update-task-priorities
       process_id: terrakit-data-fetch
       process_exec: 'python terrakit_data_fetch.py'
       extra_envs:
@@ -467,7 +467,7 @@ geospatial-studio-pipelines:
       enabled: true
       image:
         name: quay.io/geospatial-studio/geostudio-pipelines
-        tag: latest
+        tag: feat-update-task-priorities
       process_id: push-to-geoserver
       process_exec: 'python push_to_geoserver.py'
       extra_envs:
@@ -485,7 +485,7 @@ geospatial-studio-pipelines:
       enabled: true
       image:
         name: quay.io/geospatial-studio/geostudio-pipelines
-        tag: latest
+        tag: feat-update-task-priorities
       process_id: url-connector
       process_exec: 'python url_connector_single.py'
       extra_envs:
@@ -495,7 +495,7 @@ geospatial-studio-pipelines:
       enabled: true
       image:
         name: quay.io/geospatial-studio/geostudio-pipelines
-        tag: latest
+        tag: feat-update-task-priorities
       process_id: run-inference
       process_exec: 'python run-inference.py'
       extra_envs:
@@ -507,7 +507,7 @@ geospatial-studio-pipelines:
       enabled: true
       image:
         name: quay.io/geospatial-studio/geostudio-pipelines
-        tag: latest
+        tag: feat-update-task-priorities
       replicas: 1
       process_id: postprocess-generic
       process_exec: 'python postprocess-generic-single.py'
@@ -558,7 +558,7 @@ geospatial-studio-pipelines:
       enabled: true
       image:
         name: quay.io/geospatial-studio/geostudio-pipelines
-        tag: latest
+        tag: feat-update-task-priorities
       replicas: 1
       process_id: generic-python-processor
       process_exec: ''
