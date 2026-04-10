@@ -30,10 +30,10 @@ data:
   {{- end }}
   {{- end }}
   {{- /* Always use internal Kubernetes service URLs regardless of route.enabled */ -}}
-  MLFLOW_URL: {{ printf "%s.%s.svc.cluster.local:5000" .Values.global.appNames.mlflow .Values.global.backends.namespace }}
-  GEOFM_GEOSERVER: {{ printf "%s.%s.svc.cluster.local:3000" .Values.global.appNames.geoserver .Values.global.backends.namespace }}
+  MLFLOW_URL: {{ printf "%s.%s.svc.cluster.local:5000" .Values.global.appNames.mlflow .Values.global.backends.namespace | quote }}
+  GEOFM_GEOSERVER: {{ printf "%s.%s.svc.cluster.local:3000" .Values.global.appNames.geoserver .Values.global.backends.namespace | quote }}
   {{- if .Values.global.oauth.oauthProxyEnabled }}
-  STUDIO_GATEWAY_API_URL: {{ printf "%s.%s.svc.cluster.local:%s" .Values.global.appNames.gateway .Values.global.backends.namespace .Values.global.oauth.oauthProxyPort }}
+  STUDIO_GATEWAY_API_URL: {{ printf "%s.%s.svc.cluster.local:%s" .Values.global.appNames.gateway .Values.global.backends.namespace .Values.global.oauth.oauthProxyPort | quote }}
   {{- else }}
-  STUDIO_GATEWAY_API_URL: {{ printf "%s.%s.svc.cluster.local:8000" .Values.global.appNames.gateway .Values.global.backends.namespace }}
+  STUDIO_GATEWAY_API_URL: {{ printf "%s.%s.svc.cluster.local:8000" .Values.global.appNames.gateway .Values.global.backends.namespace | quote }}
   {{- end }}
