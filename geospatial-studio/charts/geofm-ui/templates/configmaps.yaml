@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-{{ if .Values.global.oauth.oauthProxyEnabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,8 +9,6 @@ metadata:
     config.openshift.io/inject-trusted-cabundle: "true"
   name: {{ .Values.global.appNames.ui }}-trusted-certificates-ca
   namespace: {{ .Values.global.namespace }}
-data: {}
-{{ end }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -23,18 +20,7 @@ data:
   {{- range $name, $value := .Values.extraEnvironment }}
   {{ $name }}: {{ quote $value }}
   {{- end }}
-  {{- if eq .Values.global.environment "local" }}
-  {{- if .Values.global.oauth.oauthProxyEnabled }}
-  LOCAL_DEPLOYMENT: "true_with_ssl"
-  {{- else }}
-  LOCAL_DEPLOYMENT: "true"
-  {{- end }}
-  {{- end }}
   # Always use internal Kubernetes service URLs regardless of route.enabled
   MLFLOW_URL: {{ printf "%s.%s.svc.cluster.local:5000" .Values.global.appNames.mlflow .Values.global.backends.namespace | quote }}
   GEOFM_GEOSERVER: {{ printf "%s.%s.svc.cluster.local:3000" .Values.global.appNames.geoserver .Values.global.backends.namespace | quote }}
-  {{- if .Values.global.oauth.oauthProxyEnabled }}
-  STUDIO_GATEWAY_API_URL: {{ printf "%s.%s.svc.cluster.local:%s" .Values.global.appNames.gateway .Values.global.backends.namespace .Values.global.oauth.oauthProxyPort }}
-  {{- else }}
-  STUDIO_GATEWAY_API_URL: {{ printf "%s.%s.svc.cluster.local:8000" .Values.global.appNames.gateway .Values.global.backends.namespace }}
-  {{- end }}
+  STUDIO_GATEWAY_API_URL: {{ printf "%s.%s.svc.cluster.local:%s" .Values.global.appNames.gateway .Values.global.backends.namespace .Values.global.oauth.oauthProxyPort | quote }}

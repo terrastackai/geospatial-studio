@@ -12,11 +12,7 @@ metadata:
 data:
   inference_task_table: {{ .Values.orchestrate_db.inference_task_table }}
   geoserver_url: {{ printf "http://%s.%s.svc.cluster.local:3000/geoserver" .Values.geoserver.appName .Values.namespace }}
-  {{- if .Values.gateway.oauthProxyEnabled }}
   gfmaas_api_base_url: {{ printf "https://%s.%s.svc.cluster.local:%s/v2/" .Values.gateway.appName .Values.namespace .Values.gateway.oauthProxyPort }}
-  {{- else }}
-  gfmaas_api_base_url: {{ printf "http://%s.%s.svc.cluster.local:8000/v2/" .Values.gateway.appName .Values.namespace }}
-  {{- end }}
 
 ---
 {{- if and (hasKey .Values "observability") (hasKey .Values.observability "enabled") .Values.observability.enabled }}

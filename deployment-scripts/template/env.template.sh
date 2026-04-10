@@ -44,7 +44,6 @@ export REDIS_ARCHITECTURE=replication
 export PIPELINES_ENABLED=true
 
 # AUTH
-export OAUTH_PROXY_ENABLED=true
 export OAUTH_PROXY_PORT=8443
 export OAUTH_TYPE=isv
 export OAUTH_CLIENT_ID=
