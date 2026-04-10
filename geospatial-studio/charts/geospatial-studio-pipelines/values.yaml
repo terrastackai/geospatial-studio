@@ -44,7 +44,6 @@ orchestrate_db:
   secret_name: pipelines-orchestration-db
 
 gateway:
-  oauthProxyEnabled: OAUTH_PROXY_ENABLED
   oauthProxyPort: "OAUTH_PROXY_PORT"
   api_key: studio_api_key
   appName: geofm-gateway
