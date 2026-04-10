@@ -29,7 +29,7 @@ data:
   LOCAL_DEPLOYMENT: "true"
   {{- end }}
   {{- end }}
-  {{- /* Always use internal Kubernetes service URLs regardless of route.enabled */ -}}
+  # Always use internal Kubernetes service URLs regardless of route.enabled
   MLFLOW_URL: {{ printf "%s.%s.svc.cluster.local:5000" .Values.global.appNames.mlflow .Values.global.backends.namespace | quote }}
   GEOFM_GEOSERVER: {{ printf "%s.%s.svc.cluster.local:3000" .Values.global.appNames.geoserver .Values.global.backends.namespace | quote }}
   {{- if .Values.global.oauth.oauthProxyEnabled }}
