@@ -39,7 +39,6 @@ global:
     image:
       name: docker.io/bitnamilegacy/oauth2-proxy
       tag: latest
-    oauthProxyEnabled: OAUTH_PROXY_ENABLED
     oauthProxyPort: "OAUTH_PROXY_PORT"
     type: OAUTH_TYPE # other supported types include keycloak
     clientId: OAUTH_CLIENT_ID
@@ -224,7 +223,7 @@ geofm-ui:
     oauth:
   image:
     name: quay.io/geospatial-studio/geostudio-ui
-    tag: latest
+    tag: uat-ref-nginx-conf
     # pullPolicy inherited from global.imagePullPolicy
     # Can be overridden here if needed
     pullPolicy: ""
@@ -366,7 +365,6 @@ geospatial-studio-pipelines:
     inference_task_table: inf_task
     secret_name: pipelines-orchestration-db
   gateway:
-    oauthProxyEnabled: OAUTH_PROXY_ENABLED
     oauthProxyPort: "OAUTH_PROXY_PORT"
     api_key: studio_api_key
     appName: geofm-gateway

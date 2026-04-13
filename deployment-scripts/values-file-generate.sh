@@ -42,7 +42,6 @@ do
         -e "s|COS_STORAGE_CLASS|${COS_STORAGE_CLASS}|" \
         -e "s|SHARE_PIPELINE_PVC|${SHARE_PIPELINE_PVC}|" \
         -e "s|OAUTH_TYPE|${OAUTH_TYPE}|" \
-        -e "s|OAUTH_PROXY_ENABLED|${OAUTH_PROXY_ENABLED}|" \
         -e "s|OAUTH_PROXY_PORT|${OAUTH_PROXY_PORT}|" \
         -e "s|OAUTH_CLIENT_ID|${OAUTH_CLIENT_ID}|" \
         -e "s|OAUTH_ISSUER_URL|${OAUTH_ISSUER_URL}|" \

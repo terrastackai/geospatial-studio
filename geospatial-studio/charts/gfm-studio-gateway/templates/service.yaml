@@ -13,16 +13,9 @@ metadata:
 spec:
   type: {{ .Values.services.api.type }}
   ports:
-    {{- if .Values.global.oauth.oauthProxyEnabled }}
     - name: oauth
       port: {{ .Values.global.oauth.oauthProxyPort }}
       protocol: TCP
       targetPort: {{ .Values.global.oauth.oauthProxyPort }}
-    {{- else }}
-    - name: http
-      port: 8000
-      protocol: TCP
-      targetPort: 8000
-    {{- end }}
   selector:
     app: {{ .Values.global.appNames.gateway }} 
