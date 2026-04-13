@@ -39,7 +39,6 @@ global:
     image:
       name: docker.io/bitnamilegacy/oauth2-proxy
       tag: latest
-    oauthProxyEnabled: OAUTH_PROXY_ENABLED
     oauthProxyPort: "OAUTH_PROXY_PORT"
     type: OAUTH_TYPE # other supported types include keycloak
     clientId: OAUTH_CLIENT_ID
@@ -60,10 +59,8 @@ global:
     tlsKeyB64: tlsKeyB64
   
   storage:
-    pvc:
-      enabled: STORAGE_PVC_ENABLED
+    storageMode: STORAGE_MODE
     filesystem:
-      enabled: STORAGE_FILESYSTEM_ENABLED
       dir: /data/
   
   objectStorage:
@@ -89,6 +86,7 @@ global:
     cos_storage_class: COS_STORAGE_CLASS
 
   non_cos_storage_class: NON_COS_STORAGE_CLASS
+  pvc_access_mode: PVC_ACCESS_MODE
 
   serviceAccount: 
     create: true
@@ -186,7 +184,6 @@ gfm-studio-gateway:
   extraEnvironment:
     api:
       OBJECT_STORAGE_SIGNATURE_VERSION: s3v4
-      CREATE_TUNING_FOLDERS: CREATE_TUNING_FOLDERS_FLAG
       PIPELINES_V2_INFERENCE_ROOT_FOLDER: PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE
       ENVIRONMENT: ENVIRONMENT_VALUE
       ## Enable or disable GPU node affinity when scheduling fine-tuning jobs.
@@ -368,7 +365,6 @@ geospatial-studio-pipelines:
     inference_task_table: inf_task
     secret_name: pipelines-orchestration-db
   gateway:
-    oauthProxyEnabled: OAUTH_PROXY_ENABLED
     oauthProxyPort: "OAUTH_PROXY_PORT"
     api_key: studio_api_key
     appName: geofm-gateway
@@ -381,8 +377,8 @@ geospatial-studio-pipelines:
     client_secret: sh_client_secret
   nasaEarthBearerToken: nasa_earth_data_bearer_token
   storage:
+    storageMode: STORAGE_MODE
     filesystem:
-      enabled: STORAGE_FILESYSTEM_ENABLED
       dir: /data/
   route:
     enabled: ROUTE_ENABLED
@@ -412,6 +408,8 @@ geospatial-studio-pipelines:
       geoserver: BUCKET_GEOSERVER
       inference_auxdata: BUCKET_INFERENCE_AUXDATA
     cos_storage_class: COS_STORAGE_CLASS
+  non_cos_storage_class: NON_COS_STORAGE_CLASS
+  pvc_access_mode: PVC_ACCESS_MODE
   serviceAccount:
     name: 'geostudio-sa'
   processors:
@@ -539,7 +537,7 @@ geospatial-studio-pipelines:
           claimName: gfm-ft-files-pvc
           bucket_name: BUCKET_FINE_TUNING
           mountPath: /tunes
-          create: PIPELINES_TERRATORCH_INFERENCE_CREATE_FT_PVC
+          create: false
       resources:
         limits:
           nvidia.com/gpu: '1'
@@ -567,4 +565,4 @@ geospatial-studio-pipelines:
           claimName: generic-python-processor-pvc
           bucket_name: BUCKET_GENERIC_PYTHON_PROCESSOR
           mountPath: /generic_data   
-          create: false  
+          create: true

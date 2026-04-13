@@ -232,6 +232,17 @@ check_deployment_and_prompt() {
         # Check Kubernetes resources (deployment, statefulset, etc.)
         if kubectl get "$workload_type" "$workload_name" -n "$namespace" &> /dev/null; then
             exists=true
+        # For ibm cloud object storage plugin special case where we need to prompt the user to deploy or skip
+        elif [[ "$workload_type" == "deployment" ]] && [[ "$workload_name" == "ibmcloud-object-storage-plugin" ]]; then
+            echo "⚠️  Do you want to deploy $display_name COS Driver"
+            local options="Deploy Skip"
+            typeset choice
+            get_menu_selection \
+                "Deploy/Skip $display_name?" \
+                choice \
+                "$options"
+            eval "$deploy_var_name='$choice'"
+            return 0
         fi
     fi
     

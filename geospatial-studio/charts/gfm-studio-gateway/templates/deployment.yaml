@@ -53,10 +53,8 @@ spec:
             - secretRef:
                 name: {{ .Values.global.appNames.gateway }}-secrets
           volumeMounts:
-            {{- if .Values.global.oauth.oauthProxyEnabled }}
             - name: secret-tls
               mountPath: /etc/tls/private
-            {{- end }}
             - name: mount-files
               mountPath: {{ .Values.mountLocations.files_mount }}
             - name: data-pipeline-jobs
@@ -76,7 +74,6 @@ spec:
             # Skipping {{ $name }} from gateway deployment
             {{- end }}
             {{- end }}
-        {{- if .Values.global.oauth.oauthProxyEnabled }}
         - name: oauth-proxy
           {{- include "oauth.args" . | trim | nindent 10 }}
             - --upstream=http://localhost:8000
@@ -95,7 +92,6 @@ spec:
               mountPath: /etc/tls/openshift-certificate/
           resources:
             {{- toYaml .Values.resources.oauth | nindent 12 }}
-        {{- end }}
         - name: {{ .Values.global.appNames.gateway }}-mlflow-notify
           resources:
             {{- toYaml .Values.resources.mlflowNotify | nindent 12 }}
@@ -107,24 +103,15 @@ spec:
                 name: {{ .Values.global.appNames.gateway }}-jobs-secrets
       serviceAccountName: {{ .Values.serviceAccount.name }}
       volumes:
-        {{- if .Values.global.oauth.oauthProxyEnabled }}
         - name: secret-tls
           secret:
             secretName: {{ .Values.global.appNames.gateway }}-authentication-tls
         - name: trusted-certificates-ca
           configMap:
             name: {{ .Values.global.appNames.gateway }}-trusted-certificates-ca
-        {{- end }}
         - name: mount-files
-          {{- if .Values.global.storage.pvc.enabled }}
           persistentVolumeClaim:
             claimName: {{ .Values.mountLocations.files_pvc_name }}
-          {{- else }}
-          # mount directory from the host node's filesystem into the Pod.
-          hostPath:
-            path: {{ .Values.global.storage.filesystem.dir }}{{ .Values.mountLocations.files_pvc_name }}
-            type: DirectoryOrCreate
-          {{- end }}
         {{- if .Values.global.sharePipelinePvc }}
         - name: pipelines-inference-pvc
           persistentVolumeClaim:

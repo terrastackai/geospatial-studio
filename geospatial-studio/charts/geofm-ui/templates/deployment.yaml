@@ -46,7 +46,6 @@ spec:
                 name: {{ .Values.global.appNames.ui }}-secrets
             - configMapRef:
                 name: {{ .Values.global.appNames.ui }}-configmap
-        {{ if .Values.global.oauth.oauthProxyEnabled }}
         - name: oauth-proxy
           resources:
             {{- toYaml .Values.resources.oauth | nindent 12 }}
@@ -69,8 +68,6 @@ spec:
               mountPath: /etc/tls/private
             - name: trusted-certificates-ca
               mountPath: /etc/tls/openshift-certificate/
-        {{- end }}
-      {{- if .Values.global.oauth.oauthProxyEnabled }}
       volumes:
         - name: secret-tls
           secret:
@@ -80,7 +77,6 @@ spec:
           configMap:
             name: {{ .Values.global.appNames.ui }}-trusted-certificates-ca
             defaultMode: 420
-      {{- end }}
       {{- if .Values.global.imagePullSecret.b64secret }}
       imagePullSecrets:
         - name: {{ .Values.global.imagePullSecret.name }}

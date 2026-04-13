@@ -79,7 +79,7 @@ resources:
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   limits:
-    cpu: 2
+    cpu: 1
     memory: 8G
   requests:
     cpu: 1
@@ -107,7 +107,7 @@ persistence:
   gfmMlflowCOSPVC:
     create: false
     claimName: gfm-mlflow-cos-pvc
-    capacity: 200Gi
+    capacity: 50Gi
     # customStorageClass: ibmc-s3fs-cos-perf
 # objectStorage:
 #   endpoint: http://s3.us-south.cloud-object-storage.appdomain.cloud
