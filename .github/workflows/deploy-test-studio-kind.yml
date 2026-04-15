@@ -41,7 +41,7 @@ jobs:
           # populate-studio, or this workflow file.
           # Explicitly skip docs-only changes.
           if echo "$CHANGED_FILES" | grep -qE \
-            "^(operators/|deployment-scripts/|populate-studio/|geospatial-studio/|deploy_studio_k8s\.sh|requirements\.txt|\.github/workflows/deploy-test-studio\.yml)"; then
+            "^(operators/|deployment-scripts/|populate-studio/|geospatial-studio/|deploy_studio_k8s\.sh|requirements\.txt|\.github/workflows/deploy-test-studio(-kind)?\.yml)"; then
             echo "deploy=true" >> $GITHUB_OUTPUT
             echo "Deployment-relevant files changed – deployment will proceed"
           else
