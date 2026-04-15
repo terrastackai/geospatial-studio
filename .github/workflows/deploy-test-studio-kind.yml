@@ -370,6 +370,30 @@ jobs:
             exit 1
           fi
 
+      - name: Run Integration Tests
+        env:
+          GATEWAY_TLS_VERIFY: "0"
+          BASE_GATEWAY_URL: "https://localhost:4181"
+        run: |
+          echo "=== Running Integration Tests ==="
+          
+          # Extract API key
+          if [[ -f ".studio-api-key" ]]; then
+            source .studio-api-key
+            export API_KEY=$STUDIO_API_KEY
+            echo "✅ Loaded API key"
+          else
+            echo "❌ Error: .studio-api-key file not found"
+            exit 1
+          fi
+          
+          # Install test dependencies if not already installed
+          pip install -r requirements-dev.txt
+          
+          # Run integration tests
+          python -m pytest -q -m integration --no-cov --log-file=run.log --log-file-level=INFO tests/integration/test_inference_models.py
+
+
       - name: Run Workshop Labs
         if: success()
         env:
