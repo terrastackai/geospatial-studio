@@ -62,16 +62,27 @@ if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
     check_deployment_and_prompt "deployment" "ibmcloud-object-storage-plugin" "ibm-object-s3fs" "IBM Object Storage Plugin" "DEPLOY_IBM_STORAGE"
 else
     echo "✓ No existing configuration - will deploy all components"
-    DEPLOY_MINIO="Deploy"
     DEPLOY_POSTGRES="Deploy"
     DEPLOY_KEYCLOAK="Deploy"
-    DEPLOY_GEOSERVER="Deploy"
-    DEPLOY_STUDIO="Deploy"
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        check_deployment_and_prompt "deployment" "minio" "${OC_PROJECT}" "MinIO (object storage) or configure existing object storage" "DEPLOY_MINIO"
+    else
+        DEPLOY_MINIO="Deploy"
+    fi
+
     if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
         check_deployment_and_prompt "deployment" "ibmcloud-object-storage-plugin" "ibm-object-s3fs" "IBM Object Storage Plugin" "DEPLOY_IBM_STORAGE"
     else
         DEPLOY_IBM_STORAGE="Deploy"
     fi
+
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        check_deployment_and_prompt "deployment" "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
+    else
+        DEPLOY_GEOSERVER="Deploy"
+    fi
+
+    DEPLOY_STUDIO="Deploy"
 fi
 
 echo ""

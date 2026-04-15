@@ -221,6 +221,8 @@ check_deployment_and_prompt() {
     local deploy_var_name=$5
     
     local exists=false
+    local prompt_workloads=("ibmcloud-object-storage-plugin" "geofm-geoserver", "minio")
+    local should_prompt=false
     
     # Check if workload exists based on type
     if [[ "$workload_type" == "helm" ]]; then
@@ -232,17 +234,25 @@ check_deployment_and_prompt() {
         # Check Kubernetes resources (deployment, statefulset, etc.)
         if kubectl get "$workload_type" "$workload_name" -n "$namespace" &> /dev/null; then
             exists=true
-        # For ibm cloud object storage plugin special case where we need to prompt the user to deploy or skip
-        elif [[ "$workload_type" == "deployment" ]] && [[ "$workload_name" == "ibmcloud-object-storage-plugin" ]]; then
-            echo "⚠️  Do you want to deploy $display_name COS Driver"
-            local options="Deploy Skip"
-            typeset choice
-            get_menu_selection \
-                "Deploy/Skip $display_name?" \
-                choice \
-                "$options"
-            eval "$deploy_var_name='$choice'"
-            return 0
+        elif [[ "$workload_type" == "deployment" ]]; then
+            for prompt_workload in "${prompt_workloads[@]}"; do
+                if [[ "$workload_name" == "$prompt_workload" ]]; then
+                    should_prompt=true
+                    break
+                fi
+            done
+
+            if $should_prompt; then
+                echo "⚠️  Do you want to deploy $display_name?"
+                local options="Deploy Skip"
+                typeset choice
+                get_menu_selection \
+                    "Deploy/Skip $display_name?" \
+                    choice \
+                    "$options"
+                eval "$deploy_var_name='$choice'"
+                return 0
+            fi
         fi
     fi
     
