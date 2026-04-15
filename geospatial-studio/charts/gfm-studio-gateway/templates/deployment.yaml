@@ -44,6 +44,24 @@ spec:
           ports:
             - containerPort: 8000
               protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           command:
             {{- toYaml .Values.command.api | nindent 12 }}
           imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
@@ -85,6 +103,24 @@ spec:
             - name: oauth-proxy
               containerPort: {{ .Values.global.oauth.oauthProxyPort }}
               protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /oauth/healthz
+              port: {{ .Values.global.oauth.oauthProxyPort }}
+              scheme: HTTPS
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /oauth/healthz
+              port: {{ .Values.global.oauth.oauthProxyPort }}
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           volumeMounts:
             - name: secret-tls
               mountPath: /etc/tls/private
@@ -98,6 +134,26 @@ spec:
           image: {{ .Values.image.name }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
           command: ["python", "gfmstudio/fine_tuning/subscribe_new_mlflow_run.py"]
+          livenessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - pgrep -f "subscribe_new_mlflow_run.py" || exit 1
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - pgrep -f "subscribe_new_mlflow_run.py" || exit 1
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           envFrom:
             - secretRef:
                 name: {{ .Values.global.appNames.gateway }}-jobs-secrets

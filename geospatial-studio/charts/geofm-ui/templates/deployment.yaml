@@ -39,6 +39,24 @@ spec:
           ports:
             - containerPort: {{ .Values.services.api.port }}
               protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.services.api.port }}
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: {{ .Values.services.api.port }}
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           resources:
             {{- toYaml .Values.resources.ui | nindent 12 }}
           envFrom:
@@ -59,6 +77,24 @@ spec:
             - name: oauth-proxy
               containerPort: {{ .Values.global.oauth.oauthProxyPort }}
               protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /oauth/healthz
+              port: {{ .Values.global.oauth.oauthProxyPort }}
+              scheme: HTTPS
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /oauth/healthz
+              port: {{ .Values.global.oauth.oauthProxyPort }}
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
           terminationMessagePolicy: File
           {{- include "oauth.args" . | trim | nindent 10 }}
             - --upstream=http://localhost:8090
@@ -85,3 +121,4 @@ spec:
       terminationGracePeriodSeconds: 30
       tolerations:
         {{- toYaml .Values.tolerations | nindent 10 }}
+

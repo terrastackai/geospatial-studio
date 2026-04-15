@@ -69,9 +69,29 @@ spec:
               - >-
                   {{ . }}
           {{- end }}
+          livenessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - pgrep -f "celery.*beat" || exit 1
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - pgrep -f "celery.*beat" || exit 1
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           envFrom:
             - configMapRef:
-                name: {{ .Values.global.appNames.gateway }}-cm 
+                name: {{ .Values.global.appNames.gateway }}-cm
             - secretRef:
                 name: {{ .Values.global.appNames.gateway }}-secrets
           resources:
