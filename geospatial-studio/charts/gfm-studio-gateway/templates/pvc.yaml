@@ -48,7 +48,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: {{ .Values.mountLocations.files_pvc_name.capacity }}
+      storage: {{ .Values.persistence.files_pvc_name.capacity }}
   storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 
 ---
