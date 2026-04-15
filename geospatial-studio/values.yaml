@@ -460,7 +460,7 @@ geospatial-studio-pipelines:
       enabled: true
       image:
         name: quay.io/geospatial-studio/geostudio-pipelines
-        tag: uat-df
+        tag: latest
       process_id: terrakit-data-fetch
       process_exec: 'python terrakit_data_fetch.py'
       extra_envs:
