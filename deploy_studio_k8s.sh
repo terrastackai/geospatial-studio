@@ -70,13 +70,6 @@ sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${D
 sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=k8s/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-export MINIO_STORAGE="${MINIO_STORAGE:-80Gi}"
-export GEOSERVER_STORAGE="${GEOSERVER_STORAGE:-20Gi}"
-export POSTGRES_STORAGE="${POSTGRES_STORAGE:-2Gi}"
-sed -i -e "s/export MINIO_STORAGE=.*/export MINIO_STORAGE=$MINIO_STORAGE/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export GEOSERVER_STORAGE=.*/export GEOSERVER_STORAGE=$GEOSERVER_STORAGE/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export POSTGRES_STORAGE=.*/export POSTGRES_STORAGE=$POSTGRES_STORAGE/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 echo "----------------------------------------------------------------------"

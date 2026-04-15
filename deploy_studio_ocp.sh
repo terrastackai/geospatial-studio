@@ -96,13 +96,6 @@ if [ ! -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || [ ! -f "workspace/${DEPL
     # One script contains just the secret values template, and the other script contains all the other general Geospatial configuration.
     ./deployment-scripts/setup-workspace-env.sh
 
-    export MINIO_STORAGE="${MINIO_STORAGE:-40Gi}"
-    export GEOSERVER_STORAGE="${GEOSERVER_STORAGE:-2Gi}"
-    export POSTGRES_STORAGE="${POSTGRES_STORAGE:-2Gi}"
-    sed -i -e "s/export MINIO_STORAGE=.*/export MINIO_STORAGE=$MINIO_STORAGE/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export GEOSERVER_STORAGE=.*/export GEOSERVER_STORAGE=$GEOSERVER_STORAGE/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export POSTGRES_STORAGE=.*/export POSTGRES_STORAGE=$POSTGRES_STORAGE/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
     # Update the workspace env file with deployment env and namespace
     sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=${DEPLOYMENT_ENV}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=${OC_PROJECT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
