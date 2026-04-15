@@ -213,6 +213,15 @@ gfm-studio-gateway:
 
       RESOURCE_LIMIT_Memory: 10     # Memory in GB
       RESOURCE_REQUEST_Memory: 6   # Memory in GB
+  persistence:
+    files_pvc_name:
+      capacity: GFM_FT_FILES_STORAGE
+    data_pvc_name:
+      capacity: GFM_FT_DATA_STORAGE
+    models_pvc_name:
+      capacity: GFM_FT_MODELS_STORAGE
+    pipelines_pvc_name:
+      capacity: INFERENCE_SHARED_STORAGE
 
 
 # geofm-ui
@@ -248,6 +257,9 @@ gfm-mlflow:
     tag: latest
   route:
     enabled: ROUTE_ENABLED
+  persistence:
+    gfmMlflowCOSPVC:
+      capacity: GFM_MLFLOW_STORAGE
 
 # redis
 redis:
@@ -279,6 +291,9 @@ redis:
     metrics:
       enabled: true
     persistence:
+      enabled: true
+      size: REDIS_MASTER_STORAGE
+      storageClass: NON_COS_STORAGE_CLASS
       annotations: {}
   replica:
     replicaCount: 1
@@ -303,6 +318,9 @@ redis:
     metrics:
       enabled: true
     persistence:
+      enabled: true
+      size: REDIS_REPLICAS_STORAGE
+      storageClass: NON_COS_STORAGE_CLASS
       annotations: {}
 
 # pgbouncer - PostgreSQL connection pooler subchart
@@ -442,7 +460,7 @@ geospatial-studio-pipelines:
       enabled: true
       image:
         name: quay.io/geospatial-studio/geostudio-pipelines
-        tag: latest
+        tag: uat-df
       process_id: terrakit-data-fetch
       process_exec: 'python terrakit_data_fetch.py'
       extra_envs:
@@ -522,6 +540,8 @@ geospatial-studio-pipelines:
           bucket_name: BUCKET_INFERENCE_AUXDATA
           mountPath: /auxdata
           create: true
+          persistence:
+            capacity: INFERENCE_AUXDATA_STORAGE
     - name: terratorch-inference
       enabled: true
       image:
@@ -566,3 +586,5 @@ geospatial-studio-pipelines:
           bucket_name: BUCKET_GENERIC_PYTHON_PROCESSOR
           mountPath: /generic_data   
           create: true
+          persistence:
+            capacity: GENERIC_PYTHON_PROCESSOR_STORAGE

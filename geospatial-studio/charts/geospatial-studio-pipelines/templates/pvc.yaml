@@ -24,7 +24,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 50Gi
+      storage: {{ $e.persistence.capacity }}
   storageClassName: {{ $.Values.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 --- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
 {{- else if eq .Values.objectStorage.cos_storage_class "cos-s3-csi-s3fs-sc" }}
@@ -61,7 +61,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ $e.persistence.capacity }}
 --- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
 {{- end }}
 
@@ -78,7 +78,7 @@ spec:
     - {{ $.Values.pvc_access_mode }}
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ $e.persistence.capacity }}
   storageClassName: {{ $.Values.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 --- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
 
@@ -94,7 +94,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 10Gi
+    storage: {{ $e.persistence.capacity }}
   accessModes:
     - ReadWriteMany
   claimRef:
@@ -114,7 +114,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ $e.persistence.capacity }}
 --- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
 
 {{- end }}

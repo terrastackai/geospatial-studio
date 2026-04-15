@@ -96,6 +96,13 @@ if [ ! -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || [ ! -f "workspace/${DEPL
     # One script contains just the secret values template, and the other script contains all the other general Geospatial configuration.
     ./deployment-scripts/setup-workspace-env.sh
 
+    export MINIO_STORAGE="${MINIO_STORAGE:-80Gi}"
+    export GEOSERVER_STORAGE="${GEOSERVER_STORAGE:-20Gi}"
+    export POSTGRES_STORAGE="${POSTGRES_STORAGE:-2Gi}"
+    sed -i -e "s/export MINIO_STORAGE=.*/export MINIO_STORAGE=$MINIO_STORAGE/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GEOSERVER_STORAGE=.*/export GEOSERVER_STORAGE=$GEOSERVER_STORAGE/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export POSTGRES_STORAGE=.*/export POSTGRES_STORAGE=$POSTGRES_STORAGE/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
     # Update the workspace env file with deployment env and namespace
     sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=${DEPLOYMENT_ENV}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=${OC_PROJECT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
@@ -393,7 +400,7 @@ if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
 
         source workspace/${DEPLOYMENT_ENV}/env/env.sh
         
-        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --storage $MINIO_STORAGE > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
         kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
@@ -715,7 +722,7 @@ if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
 
     if [[ "$geoserver_install_type" == "Configure-SCC" ]]; then
         oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
-        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} --storage $GEOSERVER_STORAGE > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
     else
         printf "\n\n#Use this dockerfile to create a custom image\n\nFROM --platform=linux/amd64 docker.osgeo.org/geoserver:2.28.1\nRUN chmod -R 777 /tmp\nRUN addgroup --system geoserver && adduser --system -gid 101 geoserver\nRUN chown -R geoserver:geoserver /opt\nRUN chmod -R 777 /opt\nRUN chmod -R 777 /usr/local/tomcat\nUSER geoserver:geoserver\n"
@@ -750,7 +757,7 @@ if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
             get_user_input "Provide the geoserver image uri: " geoserver_image_uri
             echo "geoserver image uri accepted: **$geoserver_image_uri**"
 
-            python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} --geoserver-run-unprivileged "false" --geoserver-image-pull-secret ${geoserver_image_pull_secret_name} --geoserver-image-uri ${geoserver_image_uri} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+            python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} --geoserver-run-unprivileged "false" --geoserver-image-pull-secret ${geoserver_image_pull_secret_name} --geoserver-image-uri ${geoserver_image_uri} --storage $GEOSERVER_STORAGE > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
             kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
 
             if [ $? -eq 0 ]; then

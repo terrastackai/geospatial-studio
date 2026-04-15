@@ -70,6 +70,13 @@ sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${D
 sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=k8s/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
+export MINIO_STORAGE="${MINIO_STORAGE:-80Gi}"
+export GEOSERVER_STORAGE="${GEOSERVER_STORAGE:-20Gi}"
+export POSTGRES_STORAGE="${POSTGRES_STORAGE:-2Gi}"
+sed -i -e "s/export MINIO_STORAGE=.*/export MINIO_STORAGE=$MINIO_STORAGE/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export GEOSERVER_STORAGE=.*/export GEOSERVER_STORAGE=$GEOSERVER_STORAGE/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+sed -i -e "s/export POSTGRES_STORAGE=.*/export POSTGRES_STORAGE=$POSTGRES_STORAGE/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
 echo "----------------------------------------------------------------------"
@@ -192,7 +199,7 @@ if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
 
 
-    python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+    python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --storage $MINIO_STORAGE > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
@@ -320,7 +327,7 @@ if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
     echo "--------------------  Deploying Geoserver  ----------------------------"
     echo "----------------------------------------------------------------------"
 
-    python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+    python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --storage $GEOSERVER_STORAGE --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n $OC_PROJECT --timeout=900s

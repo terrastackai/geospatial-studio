@@ -16,13 +16,13 @@ set +a
 source workspace/$DEPLOYMENT_ENV/env/env.sh
 
 if [[ -n "$UPDATE_STORAGE" ]] && [[ -n "$ENABLE_PV" ]] && [[ "$ENABLE_PV" == "ENABLE_PV" ]]; then
-    python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/create_postgres_local_pvc.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml
+    python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/create_postgres_local_pvc.yaml --storageclass ${NON_COS_STORAGE_CLASS} --storage $POSTGRES_STORAGE > workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml -n ${OC_PROJECT}
 elif [[ -n "$UPDATE_STORAGE" ]]; then
-    python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/create_postgres_local_pvc.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml
+    python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/create_postgres_local_pvc.yaml --storageclass ${NON_COS_STORAGE_CLASS} --storage $POSTGRES_STORAGE > workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml -n ${OC_PROJECT}
 else
-    cp deployment-scripts/create_postgres_local_pvc.yaml workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml
+    python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/create_postgres_local_pvc.yaml --storage $POSTGRES_STORAGE > workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml -n ${OC_PROJECT}
 fi
 

@@ -298,6 +298,16 @@ mountLocations:
   files_mount: /geotunes/
   generic_python-processor_mount: /generic_data/
 
+persistence:
+  files_pvc_name:
+    capacity: 5Gi
+  data_pvc_name:
+    capacity: 15Gi
+  models_pvc_name:
+    capacity: 5Gi
+  pipelines_pvc_name:
+    capacity: 5Gi
+
 services:
   # baseName: gfm-studio-gateway
   api:

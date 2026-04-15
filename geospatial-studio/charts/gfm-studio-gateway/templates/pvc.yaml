@@ -23,7 +23,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 50Gi
+      storage: {{ .Values.persistence.pipelines_pvc_name.capacity }}
   storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 ---
 kind: PersistentVolumeClaim
@@ -48,7 +48,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 50Gi
+      storage: {{ .Values.mountLocations.files_pvc_name.capacity }}
   storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 
 ---
@@ -74,7 +74,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 50Gi
+      storage: {{ .Values.persistence.models_pvc_name.capacity }}
   storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 
 ---
@@ -100,7 +100,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 50Gi
+      storage: {{ .Values.persistence.data_pvc_name.capacity }}
   storageClassName: {{ .Values.global.objectStorage.cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 
 {{- else if eq .Values.global.objectStorage.cos_storage_class "cos-s3-csi-s3fs-sc" }}
@@ -136,7 +136,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ .Values.persistence.pipelines_pvc_name.capacity }}
 ---
 apiVersion: v1
 kind: Secret
@@ -169,7 +169,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ .Values.persistence.files_pvc_name.capacity }}
 ---
 apiVersion: v1
 kind: Secret
@@ -202,7 +202,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ .Values.persistence.models_pvc_name.capacity }}
 ---
 apiVersion: v1
 kind: Secret
@@ -235,7 +235,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
+      storage: {{ .Values.persistence.data_pvc_name.capacity }}
 {{- end }}
 
 {{- else if eq .Values.global.storage.storageMode "cluster-block-storage" }}
@@ -251,7 +251,7 @@ spec:
     - {{ .Values.global.pvc_access_mode }}
   resources:
     requests:
-      storage: 50Gi
+      storage: {{ .Values.persistence.pipelines_pvc_name.capacity }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -264,7 +264,7 @@ spec:
     - {{ .Values.global.pvc_access_mode }}
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ .Values.persistence.files_pvc_name.capacity }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -277,7 +277,7 @@ spec:
     - {{ .Values.global.pvc_access_mode }}
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ .Values.persistence.models_pvc_name.capacity }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -290,7 +290,7 @@ spec:
     - {{ .Values.global.pvc_access_mode }}
   resources:
     requests:
-      storage: 20Gi
+      storage: {{ .Values.persistence.data_pvc_name.capacity }}
 {{- else if eq .Values.global.storage.storageMode "local-hostpath" }}
 ---
 apiVersion: v1
@@ -302,7 +302,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 40Gi
+    storage: {{ .Values.persistence.pipelines_pvc_name.capacity }}
   accessModes:
     - ReadWriteMany
   claimRef:
@@ -322,7 +322,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 40Gi
+      storage: {{ .Values.persistence.pipelines_pvc_name.capacity }}
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -333,7 +333,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 40Gi
+    storage: {{ .Values.persistence.files_pvc_name.capacity }}
   accessModes:
     - ReadWriteMany
   claimRef:
@@ -353,7 +353,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 40Gi
+      storage: {{ .Values.persistence.files_pvc_name.capacity }}
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -364,7 +364,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 40Gi
+    storage: {{ .Values.persistence.models_pvc_name.capacity }}
   accessModes:
     - ReadWriteMany
   claimRef:
@@ -384,7 +384,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 40Gi
+      storage: {{ .Values.persistence.models_pvc_name.capacity  }}
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -395,7 +395,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 40Gi
+    storage: {{ .Values.persistence.data_pvc_name.capacity }}
   accessModes:
     - ReadWriteMany
   claimRef:
@@ -415,6 +415,6 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 40Gi
+      storage: {{ .Values.persistence.data_pvc_name.capacity }}
 ---
 {{- end }}

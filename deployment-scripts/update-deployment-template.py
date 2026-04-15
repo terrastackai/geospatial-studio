@@ -9,6 +9,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--filename", help="The postgres/geoserver pvc yaml filename", type=str)
 parser.add_argument("--storageclass", help="Storage class name", type=str)
+parser.add_argument("--storage", help="Storage size for PV and PVC (e.g., 100Gi, 50Gi)", type=str)
 parser.add_argument("--disable-route", action="store_true", help="Disable route")
 parser.add_argument("--disable-pvc", action="store_true", help="Disable pvc")
 parser.add_argument("--proxy-base-url", help="Geoserver proxy base url", type=str)
@@ -49,6 +50,15 @@ try:
         data = file.get('spec', {}).get('storageClassName')
         if args.storageclass and data:
             file['spec']['storageClassName'] = args.storageclass
+        # Update storage size for PersistentVolume and PersistentVolumeClaim
+        if args.storage and file.get('kind') == 'PersistentVolume':
+            capacity = file.get('spec', {}).get('capacity')
+            if capacity:
+                file['spec']['capacity']['storage'] = args.storage
+        if args.storage and file.get('kind') == 'PersistentVolumeClaim':
+            requests = file.get('spec', {}).get('resources', {}).get('requests')
+            if requests:
+                file['spec']['resources']['requests']['storage'] = args.storage
 
         updated_files.append(file)
 
