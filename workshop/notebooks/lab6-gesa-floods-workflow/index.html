@@ -9,13 +9,13 @@
         <meta name="author" content="IBM Research">
       
       
-        <link rel="canonical" href="https://terrastackai.github.io/geospatial-studio/workshop/notebooks/lab4-burnscars-workflow/">
+        <link rel="canonical" href="https://terrastackai.github.io/geospatial-studio/workshop/notebooks/lab6-gesa-floods-workflow/">
       
       
-        <link rel="prev" href="../lab3-running-inference/">
+        <link rel="prev" href="../lab5-gesa-burnscars-workflow/">
       
       
-        <link rel="next" href="../lab5-gesa-burnscars-workflow/">
+        <link rel="next" href="../lab7-gesa-buildings-workflow/">
       
       
         
@@ -26,7 +26,7 @@
     
     
       
-        <title>Lab 4 - IBM Geospatial Studio Workshop</title>
+        <title>Lab 6 - IBM Geospatial Studio Workshop</title>
       
     
     
@@ -91,7 +91,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#lab-4" class="md-skip">
+        <a href="#lab-6" class="md-skip">
           Skip to content
         </a>
       
@@ -130,7 +130,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Lab 4
+              Lab 6
             
           </span>
         </div>
@@ -356,11 +356,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="./" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../lab4-burnscars-workflow/" class="md-tabs__link">
         
   
   
@@ -396,9 +394,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../lab6-gesa-floods-workflow/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -1016,37 +1016,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Lab 4
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../lab4-burnscars-workflow/" class="md-nav__link">
         
   
   
@@ -1062,397 +1035,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#what-youll-learn" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What You'll Learn
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prerequisites
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Prerequisites">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#required-resources" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Required Resources
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#about-the-dataset" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        About the Dataset
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#important-gpu-requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ⚠️ Important: GPU Requirements
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#1-setup-and-imports" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Setup and Imports
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-connect-to-geospatial-studio" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Connect to Geospatial Studio
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-understanding-the-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Understanding the Workflow
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-step-1-register-the-foundation-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Step 1: Register the Foundation Model
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-step-2-onboard-the-training-dataset" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Step 2: Onboard the Training Dataset
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Step 2: Onboard the Training Dataset">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#monitor-dataset-onboarding" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Monitor Dataset Onboarding
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-step-3-submit-fine-tuning-job" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Step 3: Submit Fine-Tuning Job
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Step 3: Submit Fine-Tuning Job">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#gpu-resource-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ⚠️ GPU Resource Management
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-step-4-monitor-training-progress" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Step 4: Monitor Training Progress
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-step-5-run-inference-with-trained-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Step 5: Run Inference with Trained Model
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-viewing-results-in-the-ui" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. Viewing Results in the UI
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-advanced-topics-customizing-your-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. Advanced Topics: Customizing Your Workflow
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="9. Advanced Topics: Customizing Your Workflow">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#91-preparing-your-own-dataset" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.1 Preparing Your Own Dataset
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#92-available-foundation-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.2 Available Foundation Models
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#93-task-templates-and-hyperparameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.3 Task Templates and Hyperparameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#94-comparing-models-and-experiments" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.4 Comparing Models and Experiments
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#95-running-inference-on-custom-data" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.5 Running Inference on Custom Data
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#96-best-practices-summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.6 Best Practices Summary
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#10-summary-and-key-takeaways" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. Summary and Key Takeaways
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="10. Summary and Key Takeaways">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#what-you-accomplished" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What You Accomplished
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#key-concepts-learned" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Key Concepts Learned
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#real-world-applications" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Real-World Applications
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#resources" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Resources
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#workshop-complete" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        🎓 Workshop Complete!
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1488,10 +1070,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../lab6-gesa-floods-workflow/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 6
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1507,6 +1116,370 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+      
+        <li class="md-nav__item">
+  <a href="#geospatial-exploration-and-orchestration-studio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🌍 Geospatial Exploration and Orchestration Studio
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#training-a-custom-model-for-floods-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Training a Custom Model for Floods Detection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.0 Introduction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0 Introduction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-understanding-the-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.0.1 Understanding the Workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-example-floods-detection-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.0.2 Example: floods Detection Workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.0.2 Example: floods Detection Workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#input-satellite-imagery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Satellite Imagery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-prediction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model Prediction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prediction-overlay" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prediction Overlay
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-set-up-and-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Set up and Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1.1 Set up and Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#110-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.0 Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#111-import-required-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1.1 Import required packages
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-connecting-to-the-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Connecting to the platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20-multimodal-floods-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.0 Multimodal Floods dataset
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.0 Multimodal Floods dataset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-reviewing-already-prepared-and-onboarded-multimodal-floods-dataset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Reviewing already prepared and onboarded Multimodal floods dataset
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#30-run-a-model-training-job" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.0 Run a model training job
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.0 Run a model training job">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-select-a-base-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Select a Base Model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-select-a-task-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Select a task template
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-do-we-need-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Do We Need It?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#available-task-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Task Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-submit-the-training-job" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Submit the training job
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#40-monitor-training-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.0: Monitor Training Progress
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#50-run-inference-with-trained-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.0: Run Inference with Trained Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#51-viewing-results-in-the-ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1. Viewing Results in the UI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#60-advanced-run-inference-on-a-previously-trained-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.0 Advanced : Run inference on a previously trained model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-summary-and-key-takeaways" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Summary and Key Takeaways
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Summary and Key Takeaways">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-you-accomplished" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What You Accomplished
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resources
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2461,83 +2434,209 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="false" data-jp-theme-name="JupyterLab Dark">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ad8926e6-99fc-4043-8bc5-49e28170749e">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0a454ed8">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="lab-4">Lab 4<a class="anchor-link" href="#lab-4">¶</a></h1><p><strong>Training a Custom Model for Wildfire Burn Scar Detection</strong></p>
-<p>⏱️ <strong>Estimated Duration:</strong> 60-90 minutes<br>
-📊 <strong>Difficulty Level:</strong> Intermediate</p>
-<p>📥 <strong>Getting the Lab Materials</strong></p>
-<p><strong>Getting the Lab Materials:</strong> Clone the repository:</p>
-<div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/terrastackai/geospatial-studio.git
-<span class="nb">cd</span><span class="w"> </span>geospatial-studio/workshop/docs/notebooks
-jupyter<span class="w"> </span>notebook<span class="w"> </span>lab4-burnscars-workflow.ipynb
-</pre></div>
-<p>⚠️ <strong>Note:</strong> This lab requires multiple JSON configuration files. Cloning the repository ensures you have all necessary files.</p>
+<h1 id="lab-6">Lab 6<a class="anchor-link" href="#lab-6">¶</a></h1><a href="https://colab.research.google.com/github/terrastackai/geospatial-studio/blob/gesa-workshop-notebooks/workshop/docs/notebooks/lab6-gesa-floods-workflow.ipynb" rel="noopener noreferrer" target="_blank">
+<img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg">
+</a>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d61fa1ff">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p><a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://raw.githubusercontent.com/terrastackai/geospatial-studio/gesa-workshop-notebooks/workshop/docs/assets/banner.png" data-desc-position="bottom"><img alt="Geospatial Studio banner" src="https://raw.githubusercontent.com/terrastackai/geospatial-studio/gesa-workshop-notebooks/workshop/docs/assets/banner.png"></a></p>
+<h2 id="geospatial-exploration-and-orchestration-studio">🌍 Geospatial Exploration and Orchestration Studio<a class="anchor-link" href="#geospatial-exploration-and-orchestration-studio">¶</a></h2><h2 id="training-a-custom-model-for-floods-detection">Training a Custom Model for Floods Detection<a class="anchor-link" href="#training-a-custom-model-for-floods-detection">¶</a></h2><table>
+<tbody><tr>
+<td><strong>License</strong></td>
+<td>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/License-Apache_2.0-blue.svg" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/License-Apache_2.0-blue.svg"></a>
+</td>
+</tr>
+<tr>
+<td><strong>TerraStackAI</strong></td>
+<td>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/TerraTorch-a3b18a" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/TerraTorch-a3b18a"></a>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/TerraKit-588157" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/TerraKit-588157"></a>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/Iterate-3a5a40" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/Iterate-3a5a40"></a>
+</td>
+</tr>
+<tr>
+<td><strong>Built With</strong></td>
+<td>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/Python-3.11-blue.svg?logo=python&amp;logoColor=white" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/Python-3.11-blue.svg?logo=python&amp;logoColor=white"></a>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/code%20style-black-000000.svg" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&amp;logoColor=white" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&amp;logoColor=white"></a>
+</td>
+</tr>
+<tr>
+<td><strong>Deployment</strong></td>
+<td>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/Helm-0F1689?style=flat&amp;logo=helm" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/Helm-0F1689?style=flat&amp;logo=helm"></a>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/-Red_Hat_OpenShift-EE0000?logo=redhatopenshift&amp;logoColor=white" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/-Red_Hat_OpenShift-EE0000?logo=redhatopenshift&amp;logoColor=white"></a>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/kubernetes-326CE5?&amp;logo=kubernetes&amp;logoColor=white" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/kubernetes-326CE5?&amp;logo=kubernetes&amp;logoColor=white"></a>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/Auth-OAuth_2.0-purple" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/Auth-OAuth_2.0-purple"></a>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/PostgreSQL-316192?logo=postgresql&amp;logoColor=white" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/PostgreSQL-316192?logo=postgresql&amp;logoColor=white"></a>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/Keycloak-111921?logo=keycloak&amp;logoColor=white" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/Keycloak-111921?logo=keycloak&amp;logoColor=white"></a>
+<a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://img.shields.io/badge/-MinIO-C72E49?logo=minio&amp;logoColor=white" data-desc-position="bottom"><img alt="No description has been provided for this image" src="https://img.shields.io/badge/-MinIO-C72E49?logo=minio&amp;logoColor=white"></a>
+</td>
+</tr>
+</tbody></table>
+<p><a href="https://terrastackai.github.io/geospatial-studio"><img alt="Studio Documentation" src="https://img.shields.io/badge/Studio_Documentation-526CFE?style=for-the-badge&amp;logo=MaterialForMkDocs&amp;logoColor=white"></a></p>
 <hr>
-<h2 id="overview">Overview<a class="anchor-link" href="#overview">¶</a></h2><p>In this lab, you'll complete an <strong>end-to-end machine learning workflow</strong> for detecting wildfire burn scars from satellite imagery. This represents a real-world disaster response scenario where you need to:</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=64fcacae">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="10-introduction">1.0 Introduction<a class="anchor-link" href="#10-introduction">¶</a></h2>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4952c193">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Welcome to this hands-on workshop on <strong>floods detection</strong> using the Geospatial Studio! This tutorial will guide you through the complete workflow of fine-tuning a geospatial foundation model and running inference to detect floods from satellite imagery.</p>
+<p><strong>What you'll learn:</strong></p>
+<ul>
+<li>Setting up and connecting to the Geospatial Studio platform</li>
+<li>Fine-tuning models for floods segmentation tasks with pre-trained foundation models and datasets</li>
+<li>Running inference on real-world wildfire data (Park Fire, California)</li>
+<li>Visualizing and analyzing results in the Studio UI</li>
+<li>Comparing results with a better trained model</li>
+</ul>
+<p><strong>Prerequisites:</strong></p>
+<ul>
+<li>A deployed instance of the Geospatial Studio</li>
+<li>Access to GPU resources (for fine-tuning section)</li>
+<li>Basic familiarity with Python and Jupyter notebooks</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=c5111ff0">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="101-understanding-the-workflow">1.0.1 Understanding the Workflow<a class="anchor-link" href="#101-understanding-the-workflow">¶</a></h3>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=workflow-overview">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Before we begin, the complete workflow will be as follows:</p>
+<p><strong>Key Components:</strong></p>
 <ol>
-<li><strong>Onboard training data</strong> - Upload and configure a labeled dataset</li>
-<li><strong>Register a foundation model</strong> - Set up the base model for fine-tuning</li>
-<li><strong>Submit a fine-tuning job</strong> - Train a custom model on your dataset</li>
-<li><strong>Monitor training progress</strong> - Track the training process</li>
-<li><strong>Run inference</strong> - Test your trained model on new data</li>
-<li><strong>Visualize results</strong> - View predictions in the UI</li>
+<li><strong>Foundation Model (Backbone)</strong>: Pre-trained model with general geospatial understanding</li>
+<li><strong>Training Dataset</strong>: Labeled data for your specific task</li>
+<li><strong>Task Template</strong>: Configuration defining the learning task</li>
+<li><strong>Fine-tuning Job</strong>: Training process that customizes the model</li>
+<li><strong>Trained Model (Tune)</strong>: Your custom model checkpoint</li>
+<li><strong>Inference</strong>: Running predictions on new data</li>
 </ol>
-<p><a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="./assets/burn-scars-examples.png" data-desc-position="bottom"><img alt="Burn Scars Example" src="./assets/burn-scars-examples.png"></a></p>
-<h2 id="what-youll-learn">What You'll Learn<a class="anchor-link" href="#what-youll-learn">¶</a></h2><ul>
-<li>How to onboard a custom training dataset</li>
-<li>How to register foundation models as base models</li>
-<li>How to configure and submit fine-tuning jobs</li>
-<li>How to monitor training progress</li>
-<li>How to run inference with your trained model</li>
-<li>Best practices for GPU resource management</li>
-</ul>
-<h2 id="prerequisites">Prerequisites<a class="anchor-link" href="#prerequisites">¶</a></h2><h3 id="required-resources">Required Resources<a class="anchor-link" href="#required-resources">¶</a></h3><ul>
-<li><strong>GPU Access</strong>: This lab requires GPU resources for model training</li>
-<li><strong>Training Data</strong>: Download from <a href="https://s3.us-east.cloud-object-storage.appdomain.cloud/geospatial-studio-example-data/burn-scar-training-data.zip">here</a></li>
-<li><strong>Completed Labs</strong>: Labs 1-3 (for SDK familiarity)</li>
-</ul>
-<h3 id="about-the-dataset">About the Dataset<a class="anchor-link" href="#about-the-dataset">¶</a></h3><p>We'll use the <strong>HLS Burn Scars dataset</strong> from <a href="https://huggingface.co/datasets/ibm-nasa-geospatial/hls_burn_scars">Hugging Face</a>:</p>
-<ul>
-<li><strong>804 scenes</strong> of 512x512 pixels</li>
-<li><strong>6 spectral bands</strong> from Harmonized Landsat Sentinel-2 (HLS)</li>
-<li><strong>Years</strong>: 2018-2021</li>
-<li><strong>Location</strong>: Contiguous United States</li>
-<li><strong>Purpose</strong>: Segmentation (pixel-level classification)</li>
-</ul>
-<h3 id="important-gpu-requirements">⚠️ Important: GPU Requirements<a class="anchor-link" href="#important-gpu-requirements">¶</a></h3><p><strong>Training requires GPU resources:</strong></p>
-<ul>
-<li>Fine-tuning <strong>requires NVIDIA GPUs</strong> for optimal performance</li>
-<li>Training on CPU is <strong>not recommended</strong> and has not been tested</li>
-<li>If you have a <strong>single GPU</strong> in your cluster, you may need to scale down the <code>terratorch-inference</code> deployment to release the GPU for training</li>
-<li>Training time varies based on GPU type (typically 30-60 minutes on modern GPUs)</li>
-</ul>
-<p><strong>For Mac users with Apple Silicon:</strong></p>
-<ul>
-<li>Mac GPU support is currently in development</li>
-<li>You can train externally and upload the resulting checkpoint (see section 1.5.1 in the getting-started notebook)</li>
-</ul>
 <hr>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=setup-section">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=953f450c">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="1-setup-and-imports">1. Setup and Imports<a class="anchor-link" href="#1-setup-and-imports">¶</a></h2><p>First, let's import the required libraries and set up our connection to Geospatial Studio.</p>
+<h3 id="102-example-floods-detection-workflow">1.0.2 Example: floods Detection Workflow<a class="anchor-link" href="#102-example-floods-detection-workflow">¶</a></h3>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ea27965b">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Below is an example of what you'll achieve in this workshop - detecting floodss from satellite imagery using fine-tuned geospatial foundation models.</p>
+<h4 id="input-satellite-imagery">Input Satellite Imagery<a class="anchor-link" href="#input-satellite-imagery">¶</a></h4><p>Raw satellite data showing the area affected by wildfire:</p>
+<p><a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://raw.githubusercontent.com/terrastackai/geospatial-studio/gesa-workshop-notebooks/workshop/docs/assets/floods-input.png" data-desc-position="bottom"><img alt="Fire Input" src="https://raw.githubusercontent.com/terrastackai/geospatial-studio/gesa-workshop-notebooks/workshop/docs/assets/floods-input.png"></a></p>
+<h4 id="model-prediction">Model Prediction<a class="anchor-link" href="#model-prediction">¶</a></h4><p>The fine-tuned model identifies floods areas:</p>
+<p><a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://raw.githubusercontent.com/terrastackai/geospatial-studio/gesa-workshop-notebooks/workshop/docs/assets/floods-prediction.png" data-desc-position="bottom"><img alt="Fire Prediction" src="https://raw.githubusercontent.com/terrastackai/geospatial-studio/gesa-workshop-notebooks/workshop/docs/assets/floods-prediction.png"></a></p>
+<h4 id="prediction-overlay">Prediction Overlay<a class="anchor-link" href="#prediction-overlay">¶</a></h4><p>floods predictions overlaid on the original imagery for validation:</p>
+<p><a class="glightbox" data-type="image" data-width="100%" data-height="auto" href="https://raw.githubusercontent.com/terrastackai/geospatial-studio/gesa-workshop-notebooks/workshop/docs/assets/floods-prediction-overlayed.png" data-desc-position="bottom"><img alt="Fire Prediction Overlayed" src="https://raw.githubusercontent.com/terrastackai/geospatial-studio/gesa-workshop-notebooks/workshop/docs/assets/floods-prediction-overlayed.png"></a></p>
+<p>This workflow demonstrates the power of geospatial foundation models in identifying and mapping wildfire-affected areas, which is crucial for disaster response, environmental monitoring, and recovery planning.</p>
+<p>Let's get started by setting up your environment and connecting to the platform!</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=3edbb151">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="11-set-up-and-installation">1.1 Set up and  Installation<a class="anchor-link" href="#11-set-up-and-installation">¶</a></h3>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ad58c9da">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h4 id="110-prerequisites">1.1.0 Prerequisites<a class="anchor-link" href="#110-prerequisites">¶</a></h4><p>Create a python environment</p>
+<div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv<span class="w"> </span>
+OR<span class="w"> </span><span class="c1"># depending on your available python version</span>
+python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
+<span class="nb">source</span><span class="w"> </span>venv/bin/activate
+</pre></div>
+<p>Install geostudio sdk</p>
+<div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>geostudio
+</pre></div>
+<p>Set the jupyter notebook kernel to point to the above created python environment.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8deea9ed">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h4 id="111-import-required-packages">1.1.1 Import required packages<a class="anchor-link" href="#111-import-required-packages">¶</a></h4>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=2a2322ba-9fb7-47d2-bf7f-eb7f142bcd7c">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=cb564338">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2555,43 +2654,18 @@ jupyter<span class="w"> </span>notebook<span class="w"> </span>lab4-burnscars-wo
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Import required packages</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">Markdown</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">urllib3</span>
-<span class="n">urllib3</span><span class="o">.</span><span class="n">disable_warnings</span><span class="p">(</span><span class="n">urllib3</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">InsecureRequestWarning</span><span class="p">)</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">geostudio</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="o">%</span><span class="n">load_ext</span> <span class="n">autoreload</span>
+<span class="o">%</span><span class="n">autoreload</span> <span class="mi">2</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1"># Import required packages
-import json
-import time
-from IPython.display import display, Markdown
-
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-from geostudio import Client</div>
+<div class="clipboard-copy-txt" id="cell-1">%load_ext autoreload
+%autoreload 2</div>
 </div>
 </div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a1f8f898-61de-4a9c-a510-16ff93cf9a1a">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="2-connect-to-geospatial-studio">2. Connect to Geospatial Studio<a class="anchor-link" href="#2-connect-to-geospatial-studio">¶</a></h2><p>Use the same configuration file from Lab 1:</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=4237a518-45d6-4dd8-ad05-6b391953b0e9">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=28a20849">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2609,81 +2683,45 @@ from geostudio import Client</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Initialize the client</span>
-<span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">geostudio_config_file</span><span class="o">=</span><span class="s2">".geostudio_config_file"</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"✅ Connected to Geospatial Studio!"</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Import the required packages</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib3</span>
+<span class="n">urllib3</span><span class="o">.</span><span class="n">disable_warnings</span><span class="p">(</span><span class="n">urllib3</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">InsecureRequestWarning</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">geostudio</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2"># Initialize the client
-client = Client(geostudio_config_file=".geostudio_config_file")
-
-print("✅ Connected to Geospatial Studio!")</div>
+<div class="clipboard-copy-txt" id="cell-2"># Import the required packages
+import json
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from geostudio import Client</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=workflow-overview">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=7ac06574">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="3-understanding-the-workflow">3. Understanding the Workflow<a class="anchor-link" href="#3-understanding-the-workflow">¶</a></h2><p>Before we begin, let's understand the complete workflow:</p>
-<div class="jp-Mermaid"><pre class="mermaid">graph LR
-    A[Foundation Model] --&gt; D[Fine-tuning Job]
-    B[Training Dataset] --&gt; D
-    C[Task Template] --&gt; D
-    D --&gt; E[Trained Model]
-    E --&gt; F[Inference]
-    F --&gt; G[Results]
-    
-    style A fill:#1f77b4,stroke:#333,stroke-width:2px,color:#fff
-    style B fill:#1f77b4,stroke:#333,stroke-width:2px,color:#fff
-    style C fill:#1f77b4,stroke:#333,stroke-width:2px,color:#fff
-    style D fill:#ff7f0e,stroke:#333,stroke-width:2px,color:#fff
-    style E fill:#2ca02c,stroke:#333,stroke-width:2px,color:#fff
-    style F fill:#d62728,stroke:#333,stroke-width:2px,color:#fff
-    style G fill:#9467bd,stroke:#333,stroke-width:2px,color:#fff
-</pre></div><p><strong>Key Components:</strong></p>
+<h3 id="12-connecting-to-the-platform">1.2 Connecting to the platform<a class="anchor-link" href="#12-connecting-to-the-platform">¶</a></h3><p>First, we set up the connection to the platform backend.  To do this we need the base url for the studio UI and an API key.</p>
+<p>To get an API Key:</p>
 <ol>
-<li><strong>Foundation Model (Backbone)</strong>: Pre-trained model with general geospatial understanding</li>
-<li><strong>Training Dataset</strong>: Labeled data for your specific task</li>
-<li><strong>Task Template</strong>: Configuration defining the learning task (from Lab 3)</li>
-<li><strong>Fine-tuning Job</strong>: Training process that customizes the model</li>
-<li><strong>Trained Model (Tune)</strong>: Your custom model checkpoint</li>
-<li><strong>Inference</strong>: Running predictions on new data</li>
+<li>Go to the provided cluster url of the deployed version of the Geospatial Studio UI page <uhere>[hrl to be provided here] and navigate to the Manage your API keys link.</uhere></li>
+<li>This should pop-up a window where you can generate, access and delete your api keys. NB: every user is limited to a maximum of two activate api keys at any one time.</li>
 </ol>
-<hr>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=step1-backbone">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="4-step-1-register-the-foundation-model">4. Step 1: Register the Foundation Model<a class="anchor-link" href="#4-step-1-register-the-foundation-model">¶</a></h2><p>First, we need to register the <strong>Prithvi-EO-V2-300M</strong> foundation model as our base model. This is a 300-million parameter geospatial foundation model pre-trained on satellite imagery.</p>
-<p><strong>About Prithvi-EO-V2:</strong></p>
-<ul>
-<li>Pre-trained on multi-spectral satellite data</li>
-<li>Understands spatial and temporal patterns in Earth observation data</li>
-<li>Serves as the starting point for fine-tuning</li>
-</ul>
-<p>The backbone configuration includes:</p>
-<ul>
-<li>Model architecture parameters (embed_dim, num_heads, etc.)</li>
-<li>Checkpoint file location</li>
-<li>Model category and type</li>
-</ul>
+<p>Store the API key and geostudio ui base url in a credentials file locally, for example in /User/bob/.geostudio_config_file. You can do this by:</p>
+<div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s2">"GEOSTUDIO_API_KEY=&lt;paste_api_key_here&gt;"</span><span class="w"> </span>&gt;<span class="w"> </span>.geostudio_config_file
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"BASE_STUDIO_UI_URL=&lt;paste_ui_base_url_here&gt;"</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.geostudio_config_file
+</pre></div>
+<p>Copy and paste the file path to this credentials file in call below. You will need to ensure that the <code>geostudio_config_file</code> is accessible and correctly configured. If you encounter any issues, please verify the file path and contents of the <code>.geostudio_config_file</code> to ensure they are accurate and up-to-date.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=onboard-backbone">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=ed691924">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2701,26 +2739,54 @@ print("✅ Connected to Geospatial Studio!")</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Load the backbone configuration</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"../../../populate-studio/payloads/backbones/backbone-Prithvi_EO_V2_300M.json"</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">backbone</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"📋 Backbone Configuration:"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">backbone</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1">#############################################################</span>
+<span class="c1"># Initialize Geostudio client using a geostudio config file</span>
+<span class="c1">#############################################################</span>
+<span class="n">gfm_client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">geostudio_config_file</span><span class="o">=</span><span class="s2">".geostudio_config_file"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3"># Load the backbone configuration
-with open("../../../populate-studio/payloads/backbones/backbone-Prithvi_EO_V2_300M.json", "r") as f:
-    backbone = json.load(f)
-
-print("📋 Backbone Configuration:")
-print(json.dumps(backbone, indent=2))</div>
+<div class="clipboard-copy-txt" id="cell-3">#############################################################
+# Initialize Geostudio client using a geostudio config file
+#############################################################
+gfm_client = Client(geostudio_config_file=".geostudio_config_file")</div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=0eae6739">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="20-multimodal-floods-dataset">2.0 Multimodal Floods dataset<a class="anchor-link" href="#20-multimodal-floods-dataset">¶</a></h2>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=fedd1c9f">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h3 id="21-reviewing-already-prepared-and-onboarded-multimodal-floods-dataset">2.1 Reviewing already prepared and onboarded Multimodal floods dataset<a class="anchor-link" href="#21-reviewing-already-prepared-and-onboarded-multimodal-floods-dataset">¶</a></h3><p>In this section, we'll explore how to review datasets that have already been prepared and onboarded to the Geospatial Studio. This is useful for understanding what data is available before starting a fine-tuning task.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ae7d34b9">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=create-backbone">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=34a035d2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2738,57 +2804,24 @@ print(json.dumps(backbone, indent=2))</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Register the backbone model</span>
-<span class="n">onboard_backbone_response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">create_base_model</span><span class="p">(</span><span class="n">backbone</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrame</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">✅ Foundation model registered successfully!"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">onboard_backbone_response</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
-
-<span class="c1"># Save the base model ID for later use</span>
-<span class="n">base_model_id</span> <span class="o">=</span> <span class="n">onboard_backbone_response</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">📌 Base Model ID: </span><span class="si">{</span><span class="n">base_model_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># List all available datasets in the studio</span>
+<span class="n">datasets</span> <span class="o">=</span> <span class="n">gfm_client</span><span class="o">.</span><span class="n">list_datasets</span><span class="p">()[</span><span class="s1">'results'</span><span class="p">]</span>
+<span class="n">display</span><span class="p">(</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">datasets</span><span class="p">))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-4"># Register the backbone model
-onboard_backbone_response = client.create_base_model(backbone)
+<div class="clipboard-copy-txt" id="cell-4">from pandas import DataFrame
 
-print("\n✅ Foundation model registered successfully!")
-print(json.dumps(onboard_backbone_response, indent=2))
-
-# Save the base model ID for later use
-base_model_id = onboard_backbone_response['id']
-print(f"\n📌 Base Model ID: {base_model_id}")</div>
+# List all available datasets in the studio
+datasets = gfm_client.list_datasets()['results']
+display(DataFrame(datasets))</div>
 </div>
 </div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=step2-dataset">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="5-step-2-onboard-the-training-dataset">5. Step 2: Onboard the Training Dataset<a class="anchor-link" href="#5-step-2-onboard-the-training-dataset">¶</a></h2><p>Now we'll onboard the burn scars training dataset. This process:</p>
-<ol>
-<li><strong>Downloads</strong> the dataset from a remote URL</li>
-<li><strong>Validates</strong> the data structure and labels</li>
-<li><strong>Indexes</strong> the dataset for training</li>
-<li><strong>Stores</strong> metadata in the Studio catalog</li>
-</ol>
-<p><strong>Dataset Configuration:</strong></p>
-<ul>
-<li><strong>6 spectral bands</strong>: Blue, Green, Red, NIR, SWIR1, SWIR2</li>
-<li><strong>3 label categories</strong>: Fire Scar (1), No Data (0), Ignore (-1)</li>
-<li><strong>File format</strong>: GeoTIFF with <code>.mask.tif</code> suffix for labels</li>
-<li><strong>Purpose</strong>: Segmentation (pixel-level classification)</li>
-</ul>
-<p>⚠️ <strong>Note</strong>: This process may take several minutes depending on network speed and cluster resources.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=load-dataset-config">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=b33be55a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2806,26 +2839,22 @@ print(f"\n📌 Base Model ID: {base_model_id}")</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Load the dataset configuration</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">"../../../populate-studio/payloads/datasets/dataset-burn_scars.json"</span><span class="p">,</span> <span class="s2">"r"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">wild_fire_dataset</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"📋 Dataset Configuration:"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">wild_fire_dataset</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Get detailed information about a specific floodss dataset</span>
+<span class="c1"># If you know the dataset name or ID, you can retrieve its details</span>
+<span class="n">floods_dataset_id</span> <span class="o">=</span> <span class="s2">"geodata-4vdk3x6pyfvr59zxki6kcc"</span>
+<span class="n">floods_dataset_id</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-5"># Load the dataset configuration
-with open("../../../populate-studio/payloads/datasets/dataset-burn_scars.json", "r") as f:
-    wild_fire_dataset = json.load(f)
-
-print("📋 Dataset Configuration:")
-print(json.dumps(wild_fire_dataset, indent=2))</div>
+<div class="clipboard-copy-txt" id="cell-5"># Get detailed information about a specific floodss dataset
+# If you know the dataset name or ID, you can retrieve its details
+floods_dataset_id = "geodata-4vdk3x6pyfvr59zxki6kcc"
+floods_dataset_id</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=onboard-dataset">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=99397eed">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2843,62 +2872,100 @@ print(json.dumps(wild_fire_dataset, indent=2))</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Onboard the dataset</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"🚀 Starting dataset onboarding..."</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"This may take several minutes to download and process the data.</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
-
-<span class="n">onboard_dataset_response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">onboard_dataset</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">wild_fire_dataset</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"✅ Dataset onboarding initiated!"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">onboard_dataset_response</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
-
-<span class="c1"># Save the dataset ID for later use</span>
-<span class="n">dataset_id</span> <span class="o">=</span> <span class="n">onboard_dataset_response</span><span class="p">[</span><span class="s1">'dataset_id'</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">📌 Dataset ID: </span><span class="si">{</span><span class="n">dataset_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Get detailed metadata for a specific dataset</span>
+<span class="c1"># Replace with your actual dataset_id from the list above</span>
+<span class="n">dataset_details</span> <span class="o">=</span> <span class="n">gfm_client</span><span class="o">.</span><span class="n">get_dataset</span><span class="p">(</span><span class="n">floods_dataset_id</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">dataset_details</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6"># Onboard the dataset
-print("🚀 Starting dataset onboarding...")
-print("This may take several minutes to download and process the data.\n")
-
-onboard_dataset_response = client.onboard_dataset(data=wild_fire_dataset)
-
-print("✅ Dataset onboarding initiated!")
-print(json.dumps(onboard_dataset_response, indent=2))
-
-# Save the dataset ID for later use
-dataset_id = onboard_dataset_response['dataset_id']
-print(f"\n📌 Dataset ID: {dataset_id}")</div>
+<div class="clipboard-copy-txt" id="cell-6"># Get detailed metadata for a specific dataset
+# Replace with your actual dataset_id from the list above
+dataset_details = gfm_client.get_dataset(floods_dataset_id)
+print(json.dumps(dataset_details, indent=2))
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=monitor-dataset">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d2964fd1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="monitor-dataset-onboarding">Monitor Dataset Onboarding<a class="anchor-link" href="#monitor-dataset-onboarding">¶</a></h3><p>The onboarding process runs as a background job. We'll poll the status until completion.</p>
-<p><strong>What's happening:</strong></p>
+<p><strong>From the above output, the dataset Configuration is:</strong></p>
 <ul>
-<li>Downloading dataset from remote storage</li>
-<li>Extracting and validating files</li>
-<li>Creating dataset index</li>
-<li>Generating metadata</li>
+<li><strong>Data Sources</strong>: 2 modalities (S2L2A and S1GRD)<ul>
+<li>Sentinel-2 L2A (S2L2A): 13 spectral bands (B01-B12, CLD)</li>
+<li>Sentinel-1 GRD (S1GRD): 2 SAR bands (VV, VH)</li>
 </ul>
-<p><strong>Troubleshooting:</strong></p>
+</li>
+<li><strong>2 label categories</strong>: No Floods (0) Floods (1)</li>
+<li><strong>File format</strong>: GeoTIFF with <code>._LabelHand.tif</code> suffix for labels</li>
+<li><strong>Purpose</strong>: Segmentation (pixel-level classification)</li>
+<li><strong>Size</strong>: 1.8GB</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=step1-backbone">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="30-run-a-model-training-job">3.0 Run a model training job<a class="anchor-link" href="#30-run-a-model-training-job">¶</a></h2>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=79ccfb4d">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>To ran a Finetuning job, we need:</p>
 <ul>
-<li>If polling fails due to port-forwarding issues, wait a moment and re-establish port forwarding</li>
-<li>Monitor the onboarding job pod logs in your cluster: <code>kubectl logs -f &lt;onboarding-job-pod&gt;</code></li>
-<li>On resource-constrained systems, other services may be temporarily affected</li>
+<li>A <strong>base model</strong></li>
+<li>A <strong>dataset</strong></li>
+<li>A <strong>task template</strong></li>
+</ul>
+<hr>
+<h3 id="31-select-a-base-model">3.1 Select a Base Model<a class="anchor-link" href="#31-select-a-base-model">¶</a></h3><hr>
+<p>For this task, we will use the <strong>TerraMind-1.0-tiny</strong> foundation model as our base model.</p>
+<p><strong>About TerraMind-1.0-tiny:</strong></p>
+<ul>
+<li>Large-scale generative multimodal model for Earth observation</li>
+<li>Symmetric Transformer-based encoder-decoder architecture</li>
+<li>Trained on multiple modalities:<ul>
+<li>Optical imagery (Sentinel-2)</li>
+<li>Radar data (Sentinel-1 SAR)</li>
+<li>Digital Elevation Model (DEM)</li>
+<li>Land Use/Land Cover (LULC)</li>
+<li>Vegetation indices (NDVI)</li>
+<li>Geographic metadata and text captions</li>
+</ul>
+</li>
+<li>Uses dual-scale pretraining on both pixel-level and token-level representations</li>
+<li>Trained on 9 million samples from Copernicus Sentinel missions</li>
+<li>Supports any-to-any generation and multi-scale features</li>
+<li>Optimized for zero-shot and fine-tuning on downstream tasks</li>
+</ul>
+<p>The backbone configuration includes:</p>
+<ul>
+<li>Model architecture: Symmetric Transformer encoder-decoder</li>
+<li>Tokenization: Discrete tokens for multimodal inputs</li>
+<li>Pre-training: Dual-scale (pixel + token level)</li>
+<li>Model family: TerraMind by IBM Research &amp; ESA</li>
 </ul>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=poll-dataset">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=210fcfc2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2916,62 +2983,58 @@ print(f"\n📌 Dataset ID: {dataset_id}")</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Poll until dataset onboarding is complete</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"⏳ Monitoring dataset onboarding progress...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># List all the base models onboarded in the cluster</span>
+<span class="n">base_models</span> <span class="o">=</span> <span class="n">gfm_client</span><span class="o">.</span><span class="n">list_base_models</span><span class="p">()[</span><span class="s1">'results'</span><span class="p">]</span>
+<span class="n">display</span><span class="p">(</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">base_models</span><span class="p">))</span>
 
-<span class="n">client</span><span class="o">.</span><span class="n">poll_onboard_dataset_until_finished</span><span class="p">(</span><span class="n">dataset_id</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">✅ Dataset onboarding completed successfully!"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"You can now view the dataset in the Studio UI under 'Data Catalog'."</span><span class="p">)</span>
+<span class="c1"># Select Terramind Tiny model</span>
+<span class="n">terramind_tiny_base_model_id</span> <span class="o">=</span> <span class="s2">"fdf47e1e-aa27-42c2-b5da-b82e8f608c9d"</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-7"># Poll until dataset onboarding is complete
-print("⏳ Monitoring dataset onboarding progress...\n")
+<div class="clipboard-copy-txt" id="cell-7"># List all the base models onboarded in the cluster
+base_models = gfm_client.list_base_models()['results']
+display(DataFrame(base_models))
 
-client.poll_onboard_dataset_until_finished(dataset_id)
-
-print("\n✅ Dataset onboarding completed successfully!")
-print("You can now view the dataset in the Studio UI under 'Data Catalog'.")</div>
+# Select Terramind Tiny model
+terramind_tiny_base_model_id = "fdf47e1e-aa27-42c2-b5da-b82e8f608c9d"</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=step3-tune">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=36150dd3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="6-step-3-submit-fine-tuning-job">6. Step 3: Submit Fine-Tuning Job<a class="anchor-link" href="#6-step-3-submit-fine-tuning-job">¶</a></h2><p>Now that we have:</p>
+<hr>
+<h3 id="32-select-a-task-template">3.2 Select a task template<a class="anchor-link" href="#32-select-a-task-template">¶</a></h3><hr>
+<p>A <strong>task template</strong> defines:</p>
 <ul>
-<li>✅ Foundation model registered</li>
-<li>✅ Training dataset onboarded</li>
-<li>✅ Task template created (from Lab 3)</li>
+<li>The type of ML task (segmentation, regression, classification)</li>
+<li>Model architecture options</li>
+<li>Training hyperparameters</li>
+<li>Default configurations</li>
 </ul>
-<p>We can submit a fine-tuning job to train our custom burn scar detection model.</p>
-<p><strong>Fine-Tuning Configuration:</strong></p>
-<ul>
-<li><strong>Base Model</strong>: Prithvi-EO-V2-300M (registered above)</li>
-<li><strong>Dataset</strong>: Burn scars training data (onboarded above)</li>
-<li><strong>Task Template</strong>: Segmentation template (from Lab 3)</li>
-<li><strong>Name</strong>: burn-scars-demo</li>
+<h3 id="why-do-we-need-it">Why Do We Need It?<a class="anchor-link" href="#why-do-we-need-it">¶</a></h3><p>When you upload a model checkpoint, GEOStudio needs to know:</p>
+<ol>
+<li><strong>What task</strong> the model was trained for</li>
+<li><strong>How to configure</strong> the model for inference</li>
+<li><strong>What inputs</strong> the model expects</li>
+</ol>
+<h3 id="available-task-types">Available Task Types<a class="anchor-link" href="#available-task-types">¶</a></h3><ul>
+<li><strong>Segmentation</strong> - Pixel-wise classification (floods, floodss, land cover)</li>
+<li><strong>Regression</strong> - Continuous value prediction (biomass, temperature)</li>
+<li><strong>Classification</strong> - Image-level labels (crop type, building detection)</li>
+<li><strong>User-Defined</strong> - Specific User defined templates for specific model use cases (convnext-template)</li>
 </ul>
-<h3 id="gpu-resource-management">⚠️ GPU Resource Management<a class="anchor-link" href="#gpu-resource-management">¶</a></h3><p><strong>Before submitting the training job:</strong></p>
-<p>If you have a <strong>single GPU</strong> in your cluster:</p>
-<div class="highlight"><pre><span></span><span class="c1"># Scale down inference deployment to release GPU</span>
-kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>terratorch-inference<span class="w"> </span>--replicas<span class="o">=</span><span class="m">0</span>
-</pre></div>
-<p>After training completes:</p>
-<div class="highlight"><pre><span></span><span class="c1"># Scale inference back up</span>
-kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span class="w"> </span>terratorch-inference<span class="w"> </span>--replicas<span class="o">=</span><span class="m">1</span>
-</pre></div>
-<p><strong>Why?</strong> The training job (<code>geotune-xxx</code> pod) needs GPU access. If the inference deployment is using the GPU, the training pod will remain in "Pending" state.</p>
+<p>For this example, we will be using the ** terramind Segmentation** task type.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=load-template">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=ba13098d">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2989,40 +3052,44 @@ kubectl<span class="w"> </span>scale<span class="w"> </span>deployment<span clas
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Get the task template ID from Lab 3</span>
-<span class="c1"># If you haven't run Lab 3, you'll need to create the segmentation template first</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># List all the templates onboarded in the cluster</span>
+<span class="n">tune_templates</span> <span class="o">=</span> <span class="n">gfm_client</span><span class="o">.</span><span class="n">list_tune_templates</span><span class="p">()[</span><span class="s1">'results'</span><span class="p">]</span>
+<span class="n">display</span><span class="p">(</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tune_templates</span><span class="p">))</span>
 
-<span class="c1"># Load the template configuration</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">'../../../populate-studio/payloads/templates/template-seg.json'</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">segmentation_template</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-    
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"📋 Segmentation Task Template:"</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">segmentation_template</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
-<span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"⚠️ Template file not found. Please check populate-studio/payloads/templates/"</span><span class="p">)</span>
-    <span class="n">segmentation_template</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="c1"># Select segmentation template</span>
+<span class="n">terramind_segmentation_template_id</span> <span class="o">=</span> <span class="s2">"ccf91f72-0a17-41f0-b835-5be3c901fe34"</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8"># Get the task template ID from Lab 3
-# If you haven't run Lab 3, you'll need to create the segmentation template first
+<div class="clipboard-copy-txt" id="cell-8"># List all the templates onboarded in the cluster
+tune_templates = gfm_client.list_tune_templates()['results']
+display(DataFrame(tune_templates))
 
-# Load the template configuration
-try:
-    with open('../../../populate-studio/payloads/templates/template-seg.json', 'r') as f:
-        segmentation_template = json.load(f)
-    
-    print("📋 Segmentation Task Template:")
-    print(json.dumps(segmentation_template, indent=2))
-except FileNotFoundError:
-    print("⚠️ Template file not found. Please check populate-studio/payloads/templates/")
-    segmentation_template = None</div>
+# Select segmentation template
+terramind_segmentation_template_id = "ccf91f72-0a17-41f0-b835-5be3c901fe34"</div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=eee4a9e7">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<hr>
+<h3 id="33-submit-the-training-job">3.3 Submit the training job<a class="anchor-link" href="#33-submit-the-training-job">¶</a></h3><hr>
+<ul>
+<li><strong>Base Model</strong>: TerraMind-1.0-tiny (300M parameters)</li>
+<li><strong>Dataset</strong>: floods training data</li>
+<li><strong>Task Template</strong>: Segmentation template</li>
+<li><strong>Name</strong>: floods-demo</li>
+</ul>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=create-template">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=submit-tune">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -3040,66 +3107,35 @@ except FileNotFoundError:
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Create the task template</span>
-<span class="k">if</span> <span class="n">segmentation_template</span><span class="p">:</span>
-    <span class="n">template_response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">segmentation_template</span><span class="p">)</span>
-    <span class="n">tune_template_id</span> <span class="o">=</span> <span class="n">template_response</span><span class="p">[</span><span class="s1">'id'</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"✅ Task template created: </span><span class="si">{</span><span class="n">tune_template_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">tune_template_id</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"⚠️ Cannot create template - template file not loaded"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-9"># Create the task template
-if segmentation_template:
-    template_response = client.create_task(segmentation_template)
-    tune_template_id = template_response['id']
-    print(f"✅ Task template created: {tune_template_id}")
-else:
-    tune_template_id = None
-    print("⚠️ Cannot create template - template file not loaded")</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=submit-tune">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-10">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewBox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Create the fine-tuning payload</span>
 <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"burn-scars-demo"</span><span class="p">,</span>
-    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Segmentation model for wildfire burn scar detection"</span><span class="p">,</span>
-    <span class="s2">"dataset_id"</span><span class="p">:</span> <span class="n">dataset_id</span><span class="p">,</span>
-    <span class="s2">"base_model_id"</span><span class="p">:</span> <span class="n">base_model_id</span><span class="p">,</span>
-    <span class="s2">"tune_template_id"</span><span class="p">:</span> <span class="n">tune_template_id</span><span class="p">,</span>
+    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"terramind_tiny-demo"</span><span class="p">,</span>
+    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Segmentation model for multimodal floods detection"</span><span class="p">,</span>
+    <span class="s2">"dataset_id"</span><span class="p">:</span> <span class="n">floods_dataset_id</span><span class="p">,</span>
+    <span class="s2">"base_model_id"</span><span class="p">:</span> <span class="n">terramind_tiny_base_model_id</span><span class="p">,</span>
+    <span class="s2">"tune_template_id"</span><span class="p">:</span> <span class="n">terramind_segmentation_template_id</span><span class="p">,</span>
+    <span class="s2">"model_parameters"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"runner"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"max_epochs"</span><span class="p">:</span> <span class="mi">2</span>
+            <span class="p">}</span>
+   <span class="p">}</span>
 <span class="p">}</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"📋 Fine-Tuning Configuration:"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-10"># Create the fine-tuning payload
+<div class="clipboard-copy-txt" id="cell-9"># Create the fine-tuning payload
 payload = {
-    "name": "burn-scars-demo",
-    "description": "Segmentation model for wildfire burn scar detection",
-    "dataset_id": dataset_id,
-    "base_model_id": base_model_id,
-    "tune_template_id": tune_template_id,
+    "name": "terramind_tiny-demo",
+    "description": "Segmentation model for multimodal floods detection",
+    "dataset_id": floods_dataset_id,
+    "base_model_id": terramind_tiny_base_model_id,
+    "tune_template_id": terramind_segmentation_template_id,
+    "model_parameters": {
+        "runner": {
+        "max_epochs": 2
+            }
+   }
 }
 
 print("📋 Fine-Tuning Configuration:")
@@ -3118,7 +3154,7 @@ print(json.dumps(payload, indent=2))</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-11">
+<clipboard-copy for="cell-10">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewBox="0 0 16 16" width="20">
@@ -3131,7 +3167,7 @@ print(json.dumps(payload, indent=2))</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Submit the fine-tuning job</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">🚀 Submitting fine-tuning job...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="n">tune_submitted</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">submit_tune</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">'json'</span><span class="p">)</span>
+<span class="n">tune_submitted</span> <span class="o">=</span> <span class="n">gfm_client</span><span class="o">.</span><span class="n">submit_tune</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">'json'</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"✅ Fine-tuning job submitted successfully!"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">tune_submitted</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
@@ -3141,10 +3177,10 @@ print(json.dumps(payload, indent=2))</div>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">📌 Tune ID: </span><span class="si">{</span><span class="n">tune_id</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">You can monitor progress in the Studio UI under 'Start fine-tuning' &gt; 'Model &amp; Tunes'"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-11"># Submit the fine-tuning job
+<div class="clipboard-copy-txt" id="cell-10"># Submit the fine-tuning job
 print("\n🚀 Submitting fine-tuning job...\n")
 
-tune_submitted = client.submit_tune(payload, output='json')
+tune_submitted = gfm_client.submit_tune(payload, output='json')
 
 print("✅ Fine-tuning job submitted successfully!")
 print(json.dumps(tune_submitted, indent=2))
@@ -3165,7 +3201,7 @@ print("\nYou can monitor progress in the Studio UI under 'Start fine-tuning' &gt
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="7-step-4-monitor-training-progress">7. Step 4: Monitor Training Progress<a class="anchor-link" href="#7-step-4-monitor-training-progress">¶</a></h2><p>Training a geospatial foundation model takes time. We'll poll the status until completion.</p>
+<h2 id="40-monitor-training-progress">4.0: Monitor Training Progress<a class="anchor-link" href="#40-monitor-training-progress">¶</a></h2><p>Training a geospatial foundation model takes time. We'll poll the status until completion.</p>
 <p><strong>What's happening during training:</strong></p>
 <ol>
 <li><strong>Initialization</strong>: Loading base model and dataset</li>
@@ -3178,25 +3214,18 @@ print("\nYou can monitor progress in the Studio UI under 'Start fine-tuning' &gt
 <ul>
 <li>Modern GPU (V100/A100): 30-45 minutes</li>
 <li>Older GPU: 45-90 minutes</li>
-<li>CPU: Not recommended (untested)</li>
+<li>CPU: Not recommended (2 hrs + Using Terramind tiny )</li>
 </ul>
 <p><strong>Monitoring Options:</strong></p>
 <ol>
-<li><strong>SDK Polling</strong> (below): Automated status checks</li>
+<li><strong>SDK Polling</strong> (below): Automated status checks (Not recommended, use Studio UI instead)</li>
 <li><strong>Studio UI</strong>: Visual progress tracking with metrics</li>
-<li><strong>Kubernetes Logs</strong>: <code>kubectl logs -f &lt;geotune-xxx-pod&gt;</code></li>
 </ol>
-<p><strong>Troubleshooting:</strong></p>
-<ul>
-<li>If polling fails, check port-forwarding and retry</li>
-<li>If pod is "Pending", check GPU availability</li>
-<li>Monitor cluster resources: <code>kubectl top nodes</code></li>
-</ul>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=poll-tune">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=monitoring-recommendation">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -3204,7 +3233,7 @@ print("\nYou can monitor progress in the Studio UI under 'Start fine-tuning' &gt
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-12">
+<clipboard-copy for="cell-11">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewBox="0 0 16 16" width="20">
@@ -3214,25 +3243,13 @@ print("\nYou can monitor progress in the Studio UI under 'Start fine-tuning' &gt
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Poll until fine-tuning is complete</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"⏳ Monitoring fine-tuning progress..."</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"This will take 30-90 minutes depending on your GPU.</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"💡 Tip: You can also monitor progress in the Studio UI</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
-
-<span class="n">client</span><span class="o">.</span><span class="n">poll_finetuning_until_finished</span><span class="p">(</span><span class="n">tune_id</span><span class="o">=</span><span class="n">tune_id</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">✅ Fine-tuning completed successfully!"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Your trained model '</span><span class="si">{</span><span class="n">payload</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span><span class="si">}</span><span class="s2">' is now available in the Model Catalog."</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">⚠️  IMPORTANT: Use the Studio UI to monitor training progress."</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"The SDK polling is for automation only - it blocks execution and provides limited feedback."</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Go to your Studio UI → Fine-Tuning section to view real-time metrics and logs.</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-12"># Poll until fine-tuning is complete
-print("⏳ Monitoring fine-tuning progress...")
-print("This will take 30-90 minutes depending on your GPU.\n")
-print("💡 Tip: You can also monitor progress in the Studio UI\n")
-
-client.poll_finetuning_until_finished(tune_id=tune_id)
-
-print("\n✅ Fine-tuning completed successfully!")
-print(f"Your trained model '{payload['name']}' is now available in the Model Catalog.")</div>
+<div class="clipboard-copy-txt" id="cell-11">print("\n⚠️  IMPORTANT: Use the Studio UI to monitor training progress.")
+print("The SDK polling is for automation only - it blocks execution and provides limited feedback.")
+print("Go to your Studio UI → Fine-Tuning section to view real-time metrics and logs.\n")</div>
 </div>
 </div>
 </div>
@@ -3245,7 +3262,7 @@ print(f"Your trained model '{payload['name']}' is now available in the Model Cat
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="8-step-5-run-inference-with-trained-model">8. Step 5: Run Inference with Trained Model<a class="anchor-link" href="#8-step-5-run-inference-with-trained-model">¶</a></h2><p>Now that training is complete, let's test our model on new data! We'll run inference on the <strong>Park Fire</strong> from August 2024 in California.</p>
+<h2 id="50-run-inference-with-trained-model">5.0: Run Inference with Trained Model<a class="anchor-link" href="#50-run-inference-with-trained-model">¶</a></h2><p>Now that training is complete, let's test our model on new data! We'll run inference on the <strong>Ahero Floods</strong> from April-May 2024 in Kisumu.</p>
 <p><strong>Inference Configuration:</strong></p>
 <ol>
 <li><p><strong>Spatial Domain</strong>: Location and extent</p>
@@ -3292,7 +3309,7 @@ print(f"Your trained model '{payload['name']}' is now available in the Model Cat
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-13">
+<clipboard-copy for="cell-12">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewBox="0 0 16 16" width="20">
@@ -3304,19 +3321,20 @@ print(f"Your trained model '{payload['name']}' is now available in the Model Cat
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Define the inference payload</span>
 <span class="n">inference_payload</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"model_display_name"</span><span class="p">:</span> <span class="s2">"burn-scars-demo"</span><span class="p">,</span>
-    <span class="s2">"location"</span><span class="p">:</span> <span class="s2">"Red Bluff, California, United States"</span><span class="p">,</span>
-    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Park Fire Aug 2024"</span><span class="p">,</span>
+    <span class="s2">"model_display_name"</span><span class="p">:</span> <span class="s2">"geofm-sandbox-models"</span><span class="p">,</span>
+    <span class="s2">"location"</span><span class="p">:</span> <span class="s2">"Ahero, Kisumu"</span><span class="p">,</span>
+    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Ahero Floods 2024"</span><span class="p">,</span>
     <span class="s2">"spatial_domain"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"bbox"</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">"bbox"</span><span class="p">:</span> <span class="p">[[</span><span class="mf">34.709244</span><span class="p">,</span><span class="o">-</span><span class="mf">0.307616</span><span class="p">,</span><span class="mf">35.121231</span><span class="p">,</span><span class="o">-</span><span class="mf">0.065918</span><span class="p">]],</span>
         <span class="s2">"urls"</span><span class="p">:</span> <span class="p">[</span>
-            <span class="s2">"https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/examples-for-inference/park_fire_scaled.tif"</span>
+            <span class="c1"># TODO: Fix codebase to work with URLs</span>
+            <span class="c1"># "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/examples-for-inference/park_fire_scaled.tif"</span>
         <span class="p">],</span>
         <span class="s2">"tiles"</span><span class="p">:</span> <span class="p">[],</span>
         <span class="s2">"polygons"</span><span class="p">:</span> <span class="p">[]</span>
     <span class="p">},</span>
     <span class="s2">"temporal_domain"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="s2">"2024-08-12"</span>
+        <span class="s2">"2024-04-30,2024-05-07"</span>
     <span class="p">],</span>
     <span class="s2">"pipeline_steps"</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
@@ -3351,42 +3369,115 @@ print(f"Your trained model '{payload['name']}' is now available in the Model Cat
             <span class="s2">"bands"</span><span class="p">:</span> <span class="p">[</span>
                 <span class="p">{</span>
                     <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"0"</span><span class="p">,</span>
-                    <span class="s2">"RGB_band"</span><span class="p">:</span> <span class="s2">"B"</span><span class="p">,</span>
-                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"Blue"</span><span class="p">,</span>
-                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"0.0001"</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"coastal"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
                     <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
-                    <span class="s2">"RGB_band"</span><span class="p">:</span> <span class="s2">"G"</span><span class="p">,</span>
-                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"Green"</span><span class="p">,</span>
-                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"0.0001"</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"blue"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"RGB_band"</span><span class="p">:</span> <span class="s2">"B"</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
                     <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"2"</span><span class="p">,</span>
-                    <span class="s2">"RGB_band"</span><span class="p">:</span> <span class="s2">"R"</span><span class="p">,</span>
-                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"Red"</span><span class="p">,</span>
-                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"0.0001"</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"green"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"RGB_band"</span><span class="p">:</span> <span class="s2">"G"</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
                     <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"3"</span><span class="p">,</span>
-                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"NIR_Narrow"</span><span class="p">,</span>
-                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"0.0001"</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"red"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"RGB_band"</span><span class="p">:</span> <span class="s2">"R"</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
                     <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"4"</span><span class="p">,</span>
-                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"SWIR1"</span><span class="p">,</span>
-                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"0.0001"</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"rededge1"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
                     <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"5"</span><span class="p">,</span>
-                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"SWIR2"</span><span class="p">,</span>
-                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"0.0001"</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"rededge2"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
+                <span class="p">},</span>
+                <span class="p">{</span>
+                    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"6"</span><span class="p">,</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"rededge3"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
+                <span class="p">},</span>
+                <span class="p">{</span>
+                    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"7"</span><span class="p">,</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"nir"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
+                <span class="p">},</span>
+                <span class="p">{</span>
+                    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"8"</span><span class="p">,</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"nir08"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
+                <span class="p">},</span>
+                <span class="p">{</span>
+                    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"9"</span><span class="p">,</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"nir09"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
+                <span class="p">},</span>
+                <span class="p">{</span>
+                    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"10"</span><span class="p">,</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"swir16"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
+                <span class="p">},</span>
+                <span class="p">{</span>
+                    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"11"</span><span class="p">,</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"swir22"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
+                <span class="p">},</span>
+                <span class="p">{</span>
+                    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"12"</span><span class="p">,</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"scl"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
+                <span class="p">}</span>
+            <span class="p">],</span>
+            <span class="s2">"connector"</span><span class="p">:</span> <span class="s2">"sentinel_aws"</span><span class="p">,</span>
+            <span class="s2">"collection"</span><span class="p">:</span> <span class="s2">"sentinel-2-l2a"</span><span class="p">,</span>
+            <span class="s2">"file_suffix"</span><span class="p">:</span> <span class="s2">"S2Hand"</span><span class="p">,</span>
+            <span class="s2">"modality_tag"</span><span class="p">:</span> <span class="s2">"S2L2A"</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">"bands"</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"0"</span><span class="p">,</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"VV"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
+                <span class="p">},</span>
+                <span class="p">{</span>
+                    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"VH"</span><span class="p">,</span>
+                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">""</span>
                 <span class="p">}</span>
             <span class="p">],</span>
             <span class="s2">"connector"</span><span class="p">:</span> <span class="s2">"sentinelhub"</span><span class="p">,</span>
-            <span class="s2">"collection"</span><span class="p">:</span> <span class="s2">"hls_l30"</span><span class="p">,</span>
-            <span class="s2">"file_suffix"</span><span class="p">:</span> <span class="s2">"_merged.tif"</span><span class="p">,</span>
-            <span class="s2">"modality_tag"</span><span class="p">:</span> <span class="s2">"HLS_L30"</span>
+            <span class="s2">"collection"</span><span class="p">:</span> <span class="s2">"s1_grd"</span><span class="p">,</span>
+            <span class="s2">"file_suffix"</span><span class="p">:</span> <span class="s2">"S1Hand"</span><span class="p">,</span>
+            <span class="s2">"modality_tag"</span><span class="p">:</span> <span class="s2">"S1GRD"</span><span class="p">,</span>
+            <span class="s2">"align_dates"</span><span class="p">:</span> <span class="s2">"true"</span><span class="p">,</span>
+            <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="p">[</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="mi">1</span>
+            <span class="p">]</span>
         <span class="p">}</span>
     <span class="p">],</span>
     <span class="s2">"geoserver_push"</span><span class="p">:</span> <span class="p">[</span>
@@ -3452,7 +3543,8 @@ print(f"Your trained model '{payload['name']}' is now available in the Model Cat
             <span class="p">},</span>
             <span class="s2">"visible_by_default"</span><span class="p">:</span> <span class="s2">"True"</span>
         <span class="p">}</span>
-    <span class="p">]</span>
+    <span class="p">],</span>
+    <span class="s2">"tune_id"</span> <span class="p">:</span> <span class="n">tune_id</span>
 <span class="p">}</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"📋 Inference Configuration:"</span><span class="p">)</span>
@@ -3460,21 +3552,22 @@ print(f"Your trained model '{payload['name']}' is now available in the Model Cat
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Date: </span><span class="si">{</span><span class="n">inference_payload</span><span class="p">[</span><span class="s1">'temporal_domain'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Model: </span><span class="si">{</span><span class="n">inference_payload</span><span class="p">[</span><span class="s1">'model_display_name'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-13"># Define the inference payload
+<div class="clipboard-copy-txt" id="cell-12"># Define the inference payload
 inference_payload = {
-    "model_display_name": "burn-scars-demo",
-    "location": "Red Bluff, California, United States",
-    "description": "Park Fire Aug 2024",
+    "model_display_name": "geofm-sandbox-models",
+    "location": "Ahero, Kisumu",
+    "description": "Ahero Floods 2024",
     "spatial_domain": {
-        "bbox": [],
+        "bbox": [[34.709244,-0.307616,35.121231,-0.065918]],
         "urls": [
-            "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/examples-for-inference/park_fire_scaled.tif"
+            # TODO: Fix codebase to work with URLs
+            # "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/examples-for-inference/park_fire_scaled.tif"
         ],
         "tiles": [],
         "polygons": []
     },
     "temporal_domain": [
-        "2024-08-12"
+        "2024-04-30,2024-05-07"
     ],
     "pipeline_steps": [
         {
@@ -3509,42 +3602,115 @@ inference_payload = {
             "bands": [
                 {
                     "index": "0",
-                    "RGB_band": "B",
-                    "band_name": "Blue",
-                    "scaling_factor": "0.0001"
+                    "band_name": "coastal",
+                    "scaling_factor": "1",
+                    "description": ""
                 },
                 {
                     "index": "1",
-                    "RGB_band": "G",
-                    "band_name": "Green",
-                    "scaling_factor": "0.0001"
+                    "band_name": "blue",
+                    "scaling_factor": "1",
+                    "RGB_band": "B",
+                    "description": ""
                 },
                 {
                     "index": "2",
-                    "RGB_band": "R",
-                    "band_name": "Red",
-                    "scaling_factor": "0.0001"
+                    "band_name": "green",
+                    "scaling_factor": "1",
+                    "RGB_band": "G",
+                    "description": ""
                 },
                 {
                     "index": "3",
-                    "band_name": "NIR_Narrow",
-                    "scaling_factor": "0.0001"
+                    "band_name": "red",
+                    "scaling_factor": "1",
+                    "RGB_band": "R",
+                    "description": ""
                 },
                 {
                     "index": "4",
-                    "band_name": "SWIR1",
-                    "scaling_factor": "0.0001"
+                    "band_name": "rededge1",
+                    "scaling_factor": "1",
+                    "description": ""
                 },
                 {
                     "index": "5",
-                    "band_name": "SWIR2",
-                    "scaling_factor": "0.0001"
+                    "band_name": "rededge2",
+                    "scaling_factor": "1",
+                    "description": ""
+                },
+                {
+                    "index": "6",
+                    "band_name": "rededge3",
+                    "scaling_factor": "1",
+                    "description": ""
+                },
+                {
+                    "index": "7",
+                    "band_name": "nir",
+                    "scaling_factor": "1",
+                    "description": ""
+                },
+                {
+                    "index": "8",
+                    "band_name": "nir08",
+                    "scaling_factor": "1",
+                    "description": ""
+                },
+                {
+                    "index": "9",
+                    "band_name": "nir09",
+                    "scaling_factor": "1",
+                    "description": ""
+                },
+                {
+                    "index": "10",
+                    "band_name": "swir16",
+                    "scaling_factor": "1",
+                    "description": ""
+                },
+                {
+                    "index": "11",
+                    "band_name": "swir22",
+                    "scaling_factor": "1",
+                    "description": ""
+                },
+                {
+                    "index": "12",
+                    "band_name": "scl",
+                    "scaling_factor": "1",
+                    "description": ""
+                }
+            ],
+            "connector": "sentinel_aws",
+            "collection": "sentinel-2-l2a",
+            "file_suffix": "S2Hand",
+            "modality_tag": "S2L2A"
+        },
+        {
+            "bands": [
+                {
+                    "index": "0",
+                    "band_name": "VV",
+                    "scaling_factor": 1,
+                    "description": ""
+                },
+                {
+                    "index": "1",
+                    "band_name": "VH",
+                    "scaling_factor": 1,
+                    "description": ""
                 }
             ],
             "connector": "sentinelhub",
-            "collection": "hls_l30",
-            "file_suffix": "_merged.tif",
-            "modality_tag": "HLS_L30"
+            "collection": "s1_grd",
+            "file_suffix": "S1Hand",
+            "modality_tag": "S1GRD",
+            "align_dates": "true",
+            "scaling_factor": [
+                1,
+                1
+            ]
         }
     ],
     "geoserver_push": [
@@ -3610,7 +3776,8 @@ inference_payload = {
             },
             "visible_by_default": "True"
         }
-    ]
+    ],
+    "tune_id" : tune_id
 }
 
 print("📋 Inference Configuration:")
@@ -3631,7 +3798,7 @@ print(f"Model: {inference_payload['model_display_name']}")</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-14">
+<clipboard-copy for="cell-13">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewBox="0 0 16 16" width="20">
@@ -3644,7 +3811,7 @@ print(f"Model: {inference_payload['model_display_name']}")</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Submit the inference request</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">🚀 Submitting inference request...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="n">inference_response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">try_out_tune</span><span class="p">(</span><span class="n">tune_id</span><span class="o">=</span><span class="n">tune_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">inference_payload</span><span class="p">)</span>
+<span class="n">inference_response</span> <span class="o">=</span> <span class="n">gfm_client</span><span class="o">.</span><span class="n">try_out_tune</span><span class="p">(</span><span class="n">tune_id</span><span class="o">=</span><span class="n">tune_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">inference_payload</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"✅ Inference submitted successfully!"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">inference_response</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
@@ -3652,14 +3819,14 @@ print(f"Model: {inference_payload['model_display_name']}")</div>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">💡 Next Steps:"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"1. Navigate to the Geospatial Studio UI"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"2. Click on 'Start fine-tuning' card"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"3. Under 'Model &amp; Tunes', find 'burn-scars-demo'"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"4. Under 'History', click on 'Park Fire Aug 2024'"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"3. Under 'Model &amp; Tunes', find 'floods-demo'"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"4. Under 'History', click on 'Ahero Floods 2024'"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"5. View the inference results on the map!"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-14"># Submit the inference request
+<div class="clipboard-copy-txt" id="cell-13"># Submit the inference request
 print("\n🚀 Submitting inference request...\n")
 
-inference_response = client.try_out_tune(tune_id=tune_id, data=inference_payload)
+inference_response = gfm_client.try_out_tune(tune_id=tune_id, data=inference_payload)
 
 print("✅ Inference submitted successfully!")
 print(json.dumps(inference_response, indent=2))
@@ -3667,8 +3834,8 @@ print(json.dumps(inference_response, indent=2))
 print("\n💡 Next Steps:")
 print("1. Navigate to the Geospatial Studio UI")
 print("2. Click on 'Start fine-tuning' card")
-print("3. Under 'Model &amp; Tunes', find 'burn-scars-demo'")
-print("4. Under 'History', click on 'Park Fire Aug 2024'")
+print("3. Under 'Model &amp; Tunes', find 'floods-demo'")
+print("4. Under 'History', click on 'Ahero Floods 2024'")
 print("5. View the inference results on the map!")</div>
 </div>
 </div>
@@ -3682,7 +3849,7 @@ print("5. View the inference results on the map!")</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="9-viewing-results-in-the-ui">9. Viewing Results in the UI<a class="anchor-link" href="#9-viewing-results-in-the-ui">¶</a></h2><p>Your inference results are now available in the Geospatial Studio UI!</p>
+<h2 id="51-viewing-results-in-the-ui">5.1. Viewing Results in the UI<a class="anchor-link" href="#51-viewing-results-in-the-ui">¶</a></h2><p>Your inference results are now available in the Geospatial Studio UI!</p>
 <p><strong>To view results:</strong></p>
 <ol>
 <li><p><strong>Navigate to Model Catalog</strong></p>
@@ -3693,21 +3860,21 @@ print("5. View the inference results on the map!")</div>
 </li>
 <li><p><strong>Find Your Model</strong></p>
 <ul>
-<li>Look for "burn-scars-demo" in the list</li>
+<li>Look for "floods-demo" in the list</li>
 <li>Click on the model card</li>
 </ul>
 </li>
 <li><p><strong>View Inference History</strong></p>
 <ul>
 <li>Click on the "History" tab</li>
-<li>Find "Park Fire Aug 2024"</li>
+<li>Find "Buildings Detection"</li>
 <li>Click to open the inference page</li>
 </ul>
 </li>
 <li><p><strong>Explore the Map</strong></p>
 <ul>
 <li><strong>Input RGB</strong>: Original satellite imagery</li>
-<li><strong>Model Prediction</strong>: Burn scar detection overlay (red areas)</li>
+<li><strong>Model Prediction</strong>: Floods detection overlay (red areas)</li>
 <li>Use layer controls to toggle visibility</li>
 <li>Zoom and pan to explore details</li>
 </ul>
@@ -3715,12 +3882,11 @@ print("5. View the inference results on the map!")</div>
 </ol>
 <p><strong>What to Look For:</strong></p>
 <ul>
-<li>Red areas indicate detected burn scars</li>
+<li>Red areas indicate detected floods</li>
 <li>Compare with the input imagery to validate results</li>
 <li>Check for false positives/negatives</li>
 <li>Assess model performance on this test case</li>
 </ul>
-<hr>
 </div>
 </div>
 </div>
@@ -3741,66 +3907,13 @@ print("5. View the inference results on the map!")</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="9-advanced-topics-customizing-your-workflow">9. Advanced Topics: Customizing Your Workflow<a class="anchor-link" href="#9-advanced-topics-customizing-your-workflow">¶</a></h2><p>Now that you've completed the end-to-end workflow, let's explore how to customize it for your own use cases.</p>
+<h2 id="60-advanced-run-inference-on-a-previously-trained-model">6.0 Advanced : Run inference on a previously trained model<a class="anchor-link" href="#60-advanced-run-inference-on-a-previously-trained-model">¶</a></h2><p>Now that you've completed the end-to-end workflow, let's see the inference output with a model trained for a longer duration</p>
 <hr>
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=custom-datasets">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="91-preparing-your-own-dataset">9.1 Preparing Your Own Dataset<a class="anchor-link" href="#91-preparing-your-own-dataset">¶</a></h3><p>To train models on your own data, you need to prepare a dataset configuration that follows the Studio format.</p>
-<p><strong>Dataset Structure Requirements:</strong></p>
-<ol>
-<li><p><strong>Data Organization</strong>:</p>
-<pre><code>your-dataset/
-├── train/
-│   ├── images/
-│   │   ├── scene_001_merged.tif
-│   │   ├── scene_002_merged.tif
-│   │   └── ...
-│   └── labels/
-│       ├── scene_001.mask.tif
-│       ├── scene_002.mask.tif
-│       └── ...
-├── val/
-│   ├── images/
-│   └── labels/
-└── test/
-    ├── images/
-    └── labels/
-</code></pre>
-</li>
-<li><p><strong>Image Requirements</strong>:</p>
-<ul>
-<li>Format: GeoTIFF (.tif)</li>
-<li>Size: Typically 512x512 pixels (can vary)</li>
-<li>Bands: Multi-spectral (e.g., RGB, NIR, SWIR)</li>
-<li>Data type: Float32 or UInt16</li>
-<li>Georeferencing: CRS and geotransform metadata</li>
-</ul>
-</li>
-<li><p><strong>Label Requirements</strong>:</p>
-<ul>
-<li>Format: GeoTIFF (.tif)</li>
-<li>Same spatial dimensions as input images</li>
-<li>Single band with integer class values</li>
-<li>For segmentation: 0 = no data, -1 = ignore, 1+ = class labels</li>
-<li>For regression: Float values representing the target variable</li>
-</ul>
-</li>
-</ol>
-<p><strong>Dataset Configuration JSON:</strong></p>
-<p>Create a JSON file describing your dataset:</p>
-</div>
-</div>
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=custom-dataset-example">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=dfcc164a">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -3808,7 +3921,7 @@ print("5. View the inference results on the map!")</div>
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
-<clipboard-copy for="cell-15">
+<clipboard-copy for="cell-14">
 <div>
 <span class="notice" hidden="">Copied!</span>
 <svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewBox="0 0 16 16" width="20">
@@ -3818,846 +3931,23 @@ print("5. View the inference results on the map!")</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Example: Custom dataset configuration</span>
-<span class="n">custom_dataset_config</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"dataset_name"</span><span class="p">:</span> <span class="s2">"My Custom Dataset"</span><span class="p">,</span>
-    <span class="s2">"dataset_url"</span><span class="p">:</span> <span class="s2">"https://your-storage.com/your-dataset.zip"</span><span class="p">,</span>  <span class="c1"># Or local path</span>
-    <span class="s2">"label_suffix"</span><span class="p">:</span> <span class="s2">".mask.tif"</span><span class="p">,</span>  <span class="c1"># How to identify label files</span>
-    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Description of your dataset and its purpose"</span><span class="p">,</span>
-    <span class="s2">"purpose"</span><span class="p">:</span> <span class="s2">"Segmentation"</span><span class="p">,</span>  <span class="c1"># Or "Regression"</span>
-    <span class="s2">"data_sources"</span><span class="p">:</span> <span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">"bands"</span><span class="p">:</span> <span class="p">[</span>
-                <span class="p">{</span>
-                    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"0"</span><span class="p">,</span>
-                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"Blue"</span><span class="p">,</span>
-                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"0.0001"</span><span class="p">,</span>  <span class="c1"># Scale raw values to 0-1 range</span>
-                    <span class="s2">"RGB_band"</span><span class="p">:</span> <span class="s2">"B"</span>  <span class="c1"># Optional: for visualization</span>
-                <span class="p">},</span>
-                <span class="p">{</span>
-                    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
-                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"Green"</span><span class="p">,</span>
-                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"0.0001"</span><span class="p">,</span>
-                    <span class="s2">"RGB_band"</span><span class="p">:</span> <span class="s2">"G"</span>
-                <span class="p">},</span>
-                <span class="p">{</span>
-                    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"2"</span><span class="p">,</span>
-                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"Red"</span><span class="p">,</span>
-                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"0.0001"</span><span class="p">,</span>
-                    <span class="s2">"RGB_band"</span><span class="p">:</span> <span class="s2">"R"</span>
-                <span class="p">},</span>
-                <span class="p">{</span>
-                    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"3"</span><span class="p">,</span>
-                    <span class="s2">"band_name"</span><span class="p">:</span> <span class="s2">"NIR"</span><span class="p">,</span>
-                    <span class="s2">"scaling_factor"</span><span class="p">:</span> <span class="s2">"0.0001"</span>
-                <span class="p">}</span>
-            <span class="p">],</span>
-            <span class="s2">"connector"</span><span class="p">:</span> <span class="s2">"sentinelhub"</span><span class="p">,</span>  <span class="c1"># Data source type</span>
-            <span class="s2">"collection"</span><span class="p">:</span> <span class="s2">"your_collection"</span><span class="p">,</span>
-            <span class="s2">"file_suffix"</span><span class="p">:</span> <span class="s2">"_merged.tif"</span><span class="p">,</span>  <span class="c1"># How to identify image files</span>
-            <span class="s2">"modality_tag"</span><span class="p">:</span> <span class="s2">"YOUR_MODALITY"</span>  <span class="c1"># e.g., "SENTINEL2", "LANDSAT8"</span>
-        <span class="p">}</span>
-    <span class="p">],</span>
-    <span class="s2">"label_categories"</span><span class="p">:</span> <span class="p">[</span>  <span class="c1"># For segmentation only</span>
-        <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
-            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Class 1"</span><span class="p">,</span>
-            <span class="s2">"color"</span><span class="p">:</span> <span class="s2">"#ff0000"</span><span class="p">,</span>  <span class="c1"># Hex color for visualization</span>
-            <span class="s2">"opacity"</span><span class="p">:</span> <span class="mi">1</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"2"</span><span class="p">,</span>
-            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Class 2"</span><span class="p">,</span>
-            <span class="s2">"color"</span><span class="p">:</span> <span class="s2">"#00ff00"</span><span class="p">,</span>
-            <span class="s2">"opacity"</span><span class="p">:</span> <span class="mi">1</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"0"</span><span class="p">,</span>
-            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"No data"</span><span class="p">,</span>
-            <span class="s2">"color"</span><span class="p">:</span> <span class="s2">"#000000"</span><span class="p">,</span>
-            <span class="s2">"opacity"</span><span class="p">:</span> <span class="mi">0</span>
-        <span class="p">},</span>
-        <span class="p">{</span>
-            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"-1"</span><span class="p">,</span>
-            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Ignore"</span><span class="p">,</span>
-            <span class="s2">"color"</span><span class="p">:</span> <span class="s2">"#000000"</span><span class="p">,</span>
-            <span class="s2">"opacity"</span><span class="p">:</span> <span class="mi">0</span>
-        <span class="p">}</span>
-    <span class="p">],</span>
-    <span class="s2">"version"</span><span class="p">:</span> <span class="s2">"v2"</span>
-<span class="p">}</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># The best model already onboarded in the cluster</span>
+<span class="n">best_floods_model</span> <span class="o">=</span> <span class="s2">"geotune-mgmshlc8b9mwksedrghray"</span>
+<span class="c1"># Run an inference on the best model</span>
+<span class="n">gfm_client</span><span class="o">.</span><span class="n">try_out_tune</span><span class="p">(</span><span class="n">tune_id</span><span class="o">=</span><span class="n">tune_id</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="o">**</span><span class="n">inference_payload</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Best Model Inference"</span><span class="p">,</span><span class="s2">"tune_id"</span><span class="p">:</span><span class="n">best_floods_model</span><span class="p">})</span>
 
-<span class="c1"># Save to file</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">'my_custom_dataset.json'</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">custom_dataset_config</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"✅ Custom dataset configuration created!"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">💡 Tips:"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"- Ensure your data is properly georeferenced"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"- Use consistent file naming conventions"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"- Validate label values match your categories"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"- Test with a small subset first"</span><span class="p">)</span>
+<span class="c1"># Use 5.1 instructions to view the results in the UI</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-15"># Example: Custom dataset configuration
-custom_dataset_config = {
-    "dataset_name": "My Custom Dataset",
-    "dataset_url": "https://your-storage.com/your-dataset.zip",  # Or local path
-    "label_suffix": ".mask.tif",  # How to identify label files
-    "description": "Description of your dataset and its purpose",
-    "purpose": "Segmentation",  # Or "Regression"
-    "data_sources": [
-        {
-            "bands": [
-                {
-                    "index": "0",
-                    "band_name": "Blue",
-                    "scaling_factor": "0.0001",  # Scale raw values to 0-1 range
-                    "RGB_band": "B"  # Optional: for visualization
-                },
-                {
-                    "index": "1",
-                    "band_name": "Green",
-                    "scaling_factor": "0.0001",
-                    "RGB_band": "G"
-                },
-                {
-                    "index": "2",
-                    "band_name": "Red",
-                    "scaling_factor": "0.0001",
-                    "RGB_band": "R"
-                },
-                {
-                    "index": "3",
-                    "band_name": "NIR",
-                    "scaling_factor": "0.0001"
-                }
-            ],
-            "connector": "sentinelhub",  # Data source type
-            "collection": "your_collection",
-            "file_suffix": "_merged.tif",  # How to identify image files
-            "modality_tag": "YOUR_MODALITY"  # e.g., "SENTINEL2", "LANDSAT8"
-        }
-    ],
-    "label_categories": [  # For segmentation only
-        {
-            "id": "1",
-            "name": "Class 1",
-            "color": "#ff0000",  # Hex color for visualization
-            "opacity": 1
-        },
-        {
-            "id": "2",
-            "name": "Class 2",
-            "color": "#00ff00",
-            "opacity": 1
-        },
-        {
-            "id": "0",
-            "name": "No data",
-            "color": "#000000",
-            "opacity": 0
-        },
-        {
-            "id": "-1",
-            "name": "Ignore",
-            "color": "#000000",
-            "opacity": 0
-        }
-    ],
-    "version": "v2"
-}
+<div class="clipboard-copy-txt" id="cell-14"># The best model already onboarded in the cluster
+best_floods_model = "geotune-mgmshlc8b9mwksedrghray"
+# Run an inference on the best model
+gfm_client.try_out_tune(tune_id=tune_id, data={**inference_payload, "description": "Best Model Inference","tune_id":best_floods_model})
 
-# Save to file
-import json
-with open('my_custom_dataset.json', 'w') as f:
-    json.dump(custom_dataset_config, f, indent=2)
 
-print("✅ Custom dataset configuration created!")
-print("\n💡 Tips:")
-print("- Ensure your data is properly georeferenced")
-print("- Use consistent file naming conventions")
-print("- Validate label values match your categories")
-print("- Test with a small subset first")</div>
+# Use 5.1 instructions to view the results in the UI</div>
 </div>
 </div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=onboard-custom-dataset">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p><strong>Onboard Your Custom Dataset:</strong></p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=onboard-custom">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-16">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewBox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Onboard your custom dataset</span>
-<span class="c1"># with open('my_custom_dataset.json', 'r') as f:</span>
-<span class="c1">#     my_dataset = json.load(f)</span>
-<span class="c1"># </span>
-<span class="c1"># onboard_response = client.onboard_dataset(data=my_dataset)</span>
-<span class="c1"># print(json.dumps(onboard_response, indent=2))</span>
-<span class="c1"># </span>
-<span class="c1"># # Monitor onboarding</span>
-<span class="c1"># client.poll_onboard_dataset_until_finished(onboard_response['dataset_id'])</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"📝 Uncomment the code above to onboard your custom dataset"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-16"># Onboard your custom dataset
-# with open('my_custom_dataset.json', 'r') as f:
-#     my_dataset = json.load(f)
-# 
-# onboard_response = client.onboard_dataset(data=my_dataset)
-# print(json.dumps(onboard_response, indent=2))
-# 
-# # Monitor onboarding
-# client.poll_onboard_dataset_until_finished(onboard_response['dataset_id'])
-
-print("📝 Uncomment the code above to onboard your custom dataset")</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=available-models">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="92-available-foundation-models">9.2 Available Foundation Models<a class="anchor-link" href="#92-available-foundation-models">¶</a></h3><p>Geospatial Studio supports multiple foundation models. Each has different characteristics:</p>
-<table>
-<thead>
-<tr>
-<th>Model</th>
-<th>Parameters</th>
-<th>Best For</th>
-<th>Strengths</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Prithvi-EO-V1-100M</strong></td>
-<td>100M</td>
-<td>General geospatial tasks</td>
-<td>Balanced performance, well-tested</td>
-</tr>
-<tr>
-<td><strong>Prithvi-EO-V2-300M</strong></td>
-<td>300M</td>
-<td>Complex patterns, large datasets</td>
-<td>Higher capacity, better accuracy</td>
-</tr>
-<tr>
-<td><strong>Prithvi-EO-V2-600M</strong></td>
-<td>600M</td>
-<td>State-of-the-art performance</td>
-<td>Highest accuracy, requires more GPU</td>
-</tr>
-<tr>
-<td><strong>Clay-V1-Base</strong></td>
-<td>~300M</td>
-<td>Multi-modal data</td>
-<td>Handles diverse data types</td>
-</tr>
-<tr>
-<td><strong>TerraMind-V1-Base</strong></td>
-<td>~300M</td>
-<td>Temporal analysis</td>
-<td>Excellent for time series</td>
-</tr>
-<tr>
-<td><strong>TerraMind-V1-Large</strong></td>
-<td>~600M</td>
-<td>Advanced temporal tasks</td>
-<td>Best temporal understanding</td>
-</tr>
-<tr>
-<td><strong>ResNet-50</strong></td>
-<td>25M</td>
-<td>Lightweight tasks</td>
-<td>Fast training, lower GPU needs</td>
-</tr>
-<tr>
-<td><strong>ConvNeXt-Large</strong></td>
-<td>200M</td>
-<td>Computer vision tasks</td>
-<td>Strong baseline performance</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Choosing a Model:</strong></p>
-<ul>
-<li><strong>For beginners</strong>: Start with Prithvi-EO-V1-100M or ResNet-50</li>
-<li><strong>For production</strong>: Use Prithvi-EO-V2-300M or Clay-V1-Base</li>
-<li><strong>For research</strong>: Try Prithvi-EO-V2-600M or TerraMind-V1-Large</li>
-<li><strong>For limited GPU</strong>: Use ResNet-50 or Prithvi-EO-V1-100M</li>
-<li><strong>For temporal data</strong>: Use TerraMind models</li>
-</ul>
-<p><strong>Example: Using Clay Foundation Model:</strong></p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=clay-model-example">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-17">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewBox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Example: Register Clay foundation model</span>
-<span class="n">clay_backbone</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"clay_v1_base"</span><span class="p">,</span>
-    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Clay is a foundational model of Earth trained as a self-supervised Masked Autoencoder (MAE)"</span><span class="p">,</span>
-    <span class="s2">"checkpoint_filename"</span><span class="p">:</span> <span class="s2">"clay_v1_base/clay_v1_base"</span><span class="p">,</span>
-    <span class="s2">"model_params"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"backbone"</span><span class="p">:</span> <span class="s2">"clay_v1_base"</span><span class="p">,</span>
-        <span class="s2">"embed_dim"</span><span class="p">:</span> <span class="mi">768</span><span class="p">,</span>
-        <span class="s2">"num_heads"</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
-        <span class="s2">"tile_size"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="s2">"num_layers"</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
-        <span class="s2">"patch_size"</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
-        <span class="s2">"tubelet_size"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="s2">"model_category"</span><span class="p">:</span> <span class="s2">"clay"</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="c1"># Register the model</span>
-<span class="c1"># clay_response = client.create_base_model(clay_backbone)</span>
-<span class="c1"># print(f"Clay model registered with ID: {clay_response['id']}")</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"📝 Uncomment to register Clay model"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">💡 Note: Clay models work best with 512x512 images"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-17"># Example: Register Clay foundation model
-clay_backbone = {
-    "name": "clay_v1_base",
-    "description": "Clay is a foundational model of Earth trained as a self-supervised Masked Autoencoder (MAE)",
-    "checkpoint_filename": "clay_v1_base/clay_v1_base",
-    "model_params": {
-        "backbone": "clay_v1_base",
-        "embed_dim": 768,
-        "num_heads": 12,
-        "tile_size": 1,
-        "num_layers": 12,
-        "patch_size": 16,
-        "tubelet_size": 1,
-        "model_category": "clay"
-    }
-}
-
-# Register the model
-# clay_response = client.create_base_model(clay_backbone)
-# print(f"Clay model registered with ID: {clay_response['id']}")
-
-print("📝 Uncomment to register Clay model")
-print("\n💡 Note: Clay models work best with 512x512 images")</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=task-templates">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="93-task-templates-and-hyperparameters">9.3 Task Templates and Hyperparameters<a class="anchor-link" href="#93-task-templates-and-hyperparameters">¶</a></h3><p>Task templates define the learning task type and training configuration. Studio supports:</p>
-<p><strong>1. Segmentation Templates:</strong></p>
-<ul>
-<li><strong>Generic Segmentation</strong>: Works with Prithvi models</li>
-<li><strong>Clay Segmentation</strong>: Optimized for Clay models</li>
-<li><strong>TerraMind Segmentation</strong>: For temporal segmentation</li>
-<li><strong>ResNet/ConvNeXt Segmentation</strong>: For CNN-based models</li>
-</ul>
-<p><strong>2. Regression Templates:</strong></p>
-<ul>
-<li>For continuous value prediction (e.g., biomass, temperature)</li>
-<li>Supports all foundation models</li>
-</ul>
-<p><strong>Key Hyperparameters to Tune:</strong></p>
-<div class="highlight"><pre><span></span><span class="c1"># Training Configuration</span>
-<span class="p">{</span>
-    <span class="s2">"runner"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"max_epochs"</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>              <span class="c1"># Number of training epochs</span>
-        <span class="s2">"early_stopping_patience"</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>  <span class="c1"># Stop if no improvement</span>
-        <span class="s2">"early_stopping_monitor"</span><span class="p">:</span> <span class="s2">"val/loss"</span>
-    <span class="p">},</span>
-    <span class="s2">"optimizer"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"Adam"</span><span class="p">,</span>                <span class="c1"># Adam, SGD, AdamW, RMSProp</span>
-        <span class="s2">"lr"</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">,</span>                  <span class="c1"># Learning rate</span>
-        <span class="s2">"weight_decay"</span><span class="p">:</span> <span class="mf">0.05</span>           <span class="c1"># L2 regularization</span>
-    <span class="p">},</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"batch_size"</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>               <span class="c1"># Samples per batch</span>
-        <span class="s2">"workers_per_gpu"</span><span class="p">:</span> <span class="mi">2</span>           <span class="c1"># Data loading workers</span>
-    <span class="p">},</span>
-    <span class="s2">"model"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"frozen_backbone"</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>      <span class="c1"># Freeze pretrained weights?</span>
-        <span class="s2">"decode_head"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"decoder"</span><span class="p">:</span> <span class="s2">"UNetDecoder"</span><span class="p">,</span>   <span class="c1"># UNetDecoder or UperNetDecoder</span>
-            <span class="s2">"channels"</span><span class="p">:</span> <span class="mi">256</span><span class="p">,</span>            <span class="c1"># Decoder channels</span>
-            <span class="s2">"num_convs"</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>             <span class="c1"># Convolutional blocks</span>
-            <span class="s2">"loss_decode"</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"CrossEntropyLoss"</span>  <span class="c1"># Loss function</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-<p><strong>Tuning Tips:</strong></p>
-<ol>
-<li><strong>Learning Rate</strong>: Start with 1e-4, adjust based on loss curves</li>
-<li><strong>Batch Size</strong>: Larger = faster but needs more GPU memory</li>
-<li><strong>Epochs</strong>: Start with 10-20, increase if underfitting</li>
-<li><strong>Frozen Backbone</strong>: Set to <code>true</code> for faster training with less data</li>
-<li><strong>Decoder</strong>: UNet is simpler, UperNet is more powerful</li>
-</ol>
-<p><strong>Example: Custom Training Configuration:</strong></p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=custom-training">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-18">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewBox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Example: Submit fine-tuning with custom hyperparameters</span>
-<span class="n">custom_tune_payload</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"my-custom-model"</span><span class="p">,</span>
-    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Custom model with tuned hyperparameters"</span><span class="p">,</span>
-    <span class="s2">"dataset_id"</span><span class="p">:</span> <span class="s2">"your_dataset_id"</span><span class="p">,</span>
-    <span class="s2">"base_model_id"</span><span class="p">:</span> <span class="s2">"your_base_model_id"</span><span class="p">,</span>
-    <span class="s2">"tune_template_id"</span><span class="p">:</span> <span class="s2">"your_template_id"</span><span class="p">,</span>
-    <span class="c1"># Override template defaults</span>
-    <span class="s2">"runner"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"max_epochs"</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>  <span class="c1"># Train longer</span>
-        <span class="s2">"early_stopping_patience"</span><span class="p">:</span> <span class="mi">10</span>
-    <span class="p">},</span>
-    <span class="s2">"optimizer"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"lr"</span><span class="p">:</span> <span class="mf">0.00005</span><span class="p">,</span>  <span class="c1"># Lower learning rate</span>
-        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"AdamW"</span><span class="p">,</span>  <span class="c1"># Different optimizer</span>
-        <span class="s2">"weight_decay"</span><span class="p">:</span> <span class="mf">0.01</span>
-    <span class="p">},</span>
-    <span class="s2">"data"</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">"batch_size"</span><span class="p">:</span> <span class="mi">8</span>  <span class="c1"># Larger batch size</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-
-<span class="c1"># Submit the tune</span>
-<span class="c1"># tune_response = client.submit_tune(custom_tune_payload, output='json')</span>
-<span class="c1"># print(json.dumps(tune_response, indent=2))</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"📝 Uncomment to submit custom training job"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">💡 Experiment with different hyperparameters to optimize performance"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-18"># Example: Submit fine-tuning with custom hyperparameters
-custom_tune_payload = {
-    "name": "my-custom-model",
-    "description": "Custom model with tuned hyperparameters",
-    "dataset_id": "your_dataset_id",
-    "base_model_id": "your_base_model_id",
-    "tune_template_id": "your_template_id",
-    # Override template defaults
-    "runner": {
-        "max_epochs": 20,  # Train longer
-        "early_stopping_patience": 10
-    },
-    "optimizer": {
-        "lr": 0.00005,  # Lower learning rate
-        "type": "AdamW",  # Different optimizer
-        "weight_decay": 0.01
-    },
-    "data": {
-        "batch_size": 8  # Larger batch size
-    }
-}
-
-# Submit the tune
-# tune_response = client.submit_tune(custom_tune_payload, output='json')
-# print(json.dumps(tune_response, indent=2))
-
-print("📝 Uncomment to submit custom training job")
-print("\n💡 Experiment with different hyperparameters to optimize performance")</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=model-comparison">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="94-comparing-models-and-experiments">9.4 Comparing Models and Experiments<a class="anchor-link" href="#94-comparing-models-and-experiments">¶</a></h3><p>To find the best model for your task, train multiple variants and compare:</p>
-<p><strong>Experiment Matrix:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Experiment</th>
-<th>Base Model</th>
-<th>Template</th>
-<th>Learning Rate</th>
-<th>Epochs</th>
-<th>Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>baseline</td>
-<td>Prithvi-V1-100M</td>
-<td>Segmentation</td>
-<td>1e-4</td>
-<td>10</td>
-<td>Quick baseline</td>
-</tr>
-<tr>
-<td>exp-1</td>
-<td>Prithvi-V2-300M</td>
-<td>Segmentation</td>
-<td>1e-4</td>
-<td>10</td>
-<td>Larger model</td>
-</tr>
-<tr>
-<td>exp-2</td>
-<td>Prithvi-V2-300M</td>
-<td>Segmentation</td>
-<td>5e-5</td>
-<td>20</td>
-<td>Lower LR, more epochs</td>
-</tr>
-<tr>
-<td>exp-3</td>
-<td>Clay-V1-Base</td>
-<td>Clay Seg</td>
-<td>6e-5</td>
-<td>15</td>
-<td>Different architecture</td>
-</tr>
-<tr>
-<td>exp-4</td>
-<td>Prithvi-V2-300M</td>
-<td>Segmentation</td>
-<td>1e-4</td>
-<td>10</td>
-<td>Frozen backbone</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Tracking Experiments:</strong></p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=experiment-tracking">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-19">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewBox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Example: Run multiple experiments</span>
-<span class="n">experiments</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">{</span>
-        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"baseline-prithvi-v1"</span><span class="p">,</span>
-        <span class="s2">"base_model_id"</span><span class="p">:</span> <span class="s2">"prithvi_v1_100m_id"</span><span class="p">,</span>
-        <span class="s2">"optimizer"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"lr"</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">}</span>
-    <span class="p">},</span>
-    <span class="p">{</span>
-        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"exp1-prithvi-v2-300m"</span><span class="p">,</span>
-        <span class="s2">"base_model_id"</span><span class="p">:</span> <span class="s2">"prithvi_v2_300m_id"</span><span class="p">,</span>
-        <span class="s2">"optimizer"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"lr"</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">}</span>
-    <span class="p">},</span>
-    <span class="p">{</span>
-        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"exp2-lower-lr"</span><span class="p">,</span>
-        <span class="s2">"base_model_id"</span><span class="p">:</span> <span class="s2">"prithvi_v2_300m_id"</span><span class="p">,</span>
-        <span class="s2">"optimizer"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"lr"</span><span class="p">:</span> <span class="mf">0.00005</span><span class="p">},</span>
-        <span class="s2">"runner"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"max_epochs"</span><span class="p">:</span> <span class="mi">20</span><span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">]</span>
-
-<span class="c1"># Submit all experiments</span>
-<span class="c1"># tune_ids = []</span>
-<span class="c1"># for exp in experiments:</span>
-<span class="c1">#     payload = {</span>
-<span class="c1">#         "name": exp["name"],</span>
-<span class="c1">#         "dataset_id": dataset_id,</span>
-<span class="c1">#         "base_model_id": exp["base_model_id"],</span>
-<span class="c1">#         "tune_template_id": tune_template_id,</span>
-<span class="c1">#         **{k: v for k, v in exp.items() if k not in ["name", "base_model_id"]}</span>
-<span class="c1">#     }</span>
-<span class="c1">#     response = client.submit_tune(payload, output='json')</span>
-<span class="c1">#     tune_ids.append(response['tune_id'])</span>
-<span class="c1">#     print(f"✅ Submitted: {exp['name']} (ID: {response['tune_id']})")</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"📝 Uncomment to run experiment matrix"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">💡 Compare results in MLflow UI to find the best model"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-19"># Example: Run multiple experiments
-experiments = [
-    {
-        "name": "baseline-prithvi-v1",
-        "base_model_id": "prithvi_v1_100m_id",
-        "optimizer": {"lr": 0.0001}
-    },
-    {
-        "name": "exp1-prithvi-v2-300m",
-        "base_model_id": "prithvi_v2_300m_id",
-        "optimizer": {"lr": 0.0001}
-    },
-    {
-        "name": "exp2-lower-lr",
-        "base_model_id": "prithvi_v2_300m_id",
-        "optimizer": {"lr": 0.00005},
-        "runner": {"max_epochs": 20}
-    }
-]
-
-# Submit all experiments
-# tune_ids = []
-# for exp in experiments:
-#     payload = {
-#         "name": exp["name"],
-#         "dataset_id": dataset_id,
-#         "base_model_id": exp["base_model_id"],
-#         "tune_template_id": tune_template_id,
-#         **{k: v for k, v in exp.items() if k not in ["name", "base_model_id"]}
-#     }
-#     response = client.submit_tune(payload, output='json')
-#     tune_ids.append(response['tune_id'])
-#     print(f"✅ Submitted: {exp['name']} (ID: {response['tune_id']})")
-
-print("📝 Uncomment to run experiment matrix")
-print("\n💡 Compare results in MLflow UI to find the best model")</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=inference-custom">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="95-running-inference-on-custom-data">9.5 Running Inference on Custom Data<a class="anchor-link" href="#95-running-inference-on-custom-data">¶</a></h3><p>Once you have a trained model, you can run inference on new data:</p>
-<p><strong>Inference Options:</strong></p>
-<ol>
-<li><strong>URL-based</strong>: Point to remote GeoTIFF files</li>
-<li><strong>Tile-based</strong>: Use map tile coordinates (z/x/y)</li>
-<li><strong>Polygon-based</strong>: Define area of interest with GeoJSON</li>
-<li><strong>Bbox-based</strong>: Specify bounding box coordinates</li>
-</ol>
-<p><strong>Example: Inference on Multiple Locations:</strong></p>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=batch-inference">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy for="cell-20">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewBox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Example: Run inference on multiple locations</span>
-<span class="n">locations</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">{</span>
-        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Location 1"</span><span class="p">,</span>
-        <span class="s2">"url"</span><span class="p">:</span> <span class="s2">"https://your-storage.com/location1.tif"</span><span class="p">,</span>
-        <span class="s2">"date"</span><span class="p">:</span> <span class="s2">"2024-08-15"</span>
-    <span class="p">},</span>
-    <span class="p">{</span>
-        <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Location 2"</span><span class="p">,</span>
-        <span class="s2">"url"</span><span class="p">:</span> <span class="s2">"https://your-storage.com/location2.tif"</span><span class="p">,</span>
-        <span class="s2">"date"</span><span class="p">:</span> <span class="s2">"2024-08-20"</span>
-    <span class="p">}</span>
-<span class="p">]</span>
-
-<span class="c1"># Submit inference for each location</span>
-<span class="c1"># for loc in locations:</span>
-<span class="c1">#     payload = {</span>
-<span class="c1">#         "model_display_name": "my-custom-model",</span>
-<span class="c1">#         "location": loc["name"],</span>
-<span class="c1">#         "description": f"Inference on {loc['name']}",</span>
-<span class="c1">#         "spatial_domain": {</span>
-<span class="c1">#             "urls": [loc["url"]],</span>
-<span class="c1">#             "bbox": [],</span>
-<span class="c1">#             "tiles": [],</span>
-<span class="c1">#             "polygons": []</span>
-<span class="c1">#         },</span>
-<span class="c1">#         "temporal_domain": [loc["date"]],</span>
-<span class="c1">#         # ... rest of inference configuration</span>
-<span class="c1">#     }</span>
-<span class="c1">#     response = client.try_out_tune(tune_id=your_tune_id, data=payload)</span>
-<span class="c1">#     print(f"✅ Inference submitted for {loc['name']}")</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"📝 Uncomment to run batch inference"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">💡 Use this for processing multiple areas or time periods"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-20"># Example: Run inference on multiple locations
-locations = [
-    {
-        "name": "Location 1",
-        "url": "https://your-storage.com/location1.tif",
-        "date": "2024-08-15"
-    },
-    {
-        "name": "Location 2",
-        "url": "https://your-storage.com/location2.tif",
-        "date": "2024-08-20"
-    }
-]
-
-# Submit inference for each location
-# for loc in locations:
-#     payload = {
-#         "model_display_name": "my-custom-model",
-#         "location": loc["name"],
-#         "description": f"Inference on {loc['name']}",
-#         "spatial_domain": {
-#             "urls": [loc["url"]],
-#             "bbox": [],
-#             "tiles": [],
-#             "polygons": []
-#         },
-#         "temporal_domain": [loc["date"]],
-#         # ... rest of inference configuration
-#     }
-#     response = client.try_out_tune(tune_id=your_tune_id, data=payload)
-#     print(f"✅ Inference submitted for {loc['name']}")
-
-print("📝 Uncomment to run batch inference")
-print("\n💡 Use this for processing multiple areas or time periods")</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=best-practices">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h3 id="96-best-practices-summary">9.6 Best Practices Summary<a class="anchor-link" href="#96-best-practices-summary">¶</a></h3><p><strong>Data Preparation:</strong></p>
-<ul>
-<li>✅ Ensure consistent image sizes and formats</li>
-<li>✅ Validate label values and categories</li>
-<li>✅ Split data into train/val/test sets (70/15/15)</li>
-<li>✅ Check for data quality issues (clouds, artifacts)</li>
-<li>✅ Document band configurations and scaling factors</li>
-</ul>
-<p><strong>Model Selection:</strong></p>
-<ul>
-<li>✅ Start with smaller models for prototyping</li>
-<li>✅ Use larger models for production</li>
-<li>✅ Consider GPU memory constraints</li>
-<li>✅ Match model to data characteristics (temporal, multi-modal)</li>
-</ul>
-<p><strong>Training:</strong></p>
-<ul>
-<li>✅ Monitor training curves in MLflow</li>
-<li>✅ Use early stopping to prevent overfitting</li>
-<li>✅ Experiment with learning rates</li>
-<li>✅ Try frozen backbone for small datasets</li>
-<li>✅ Save best checkpoints</li>
-</ul>
-<p><strong>Evaluation:</strong></p>
-<ul>
-<li>✅ Test on held-out data</li>
-<li>✅ Visual inspection of predictions</li>
-<li>✅ Compare multiple model variants</li>
-<li>✅ Validate on diverse geographic regions</li>
-<li>✅ Check for edge cases and failure modes</li>
-</ul>
-<p><strong>Deployment:</strong></p>
-<ul>
-<li>✅ Document model version and configuration</li>
-<li>✅ Test inference pipeline end-to-end</li>
-<li>✅ Monitor inference performance</li>
-<li>✅ Plan for model updates and retraining</li>
-</ul>
-<hr>
 </div>
 </div>
 </div>
@@ -4668,75 +3958,26 @@ print("\n💡 Use this for processing multiple areas or time periods")</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="10-summary-and-key-takeaways">10. Summary and Key Takeaways<a class="anchor-link" href="#10-summary-and-key-takeaways">¶</a></h2><p>Congratulations! You've completed an end-to-end machine learning workflow for geospatial AI. 🎉</p>
-<h3 id="what-you-accomplished">What You Accomplished<a class="anchor-link" href="#what-you-accomplished">¶</a></h3><p>✅ <strong>Registered a foundation model</strong> (Prithvi-EO-V2-300M)</p>
-<p>✅ <strong>Onboarded a training dataset</strong> (804 labeled burn scar scenes)</p>
-<p>✅ <strong>Submitted a fine-tuning job</strong> (customized model for burn scar detection)</p>
-<p>✅ <strong>Monitored training progress</strong> (tracked job status and completion)</p>
-<p>✅ <strong>Ran inference</strong> (tested model on new wildfire data)</p>
-<p>✅ <strong>Visualized results</strong> (viewed predictions in the UI)</p>
-<h3 id="key-concepts-learned">Key Concepts Learned<a class="anchor-link" href="#key-concepts-learned">¶</a></h3><ol>
-<li><strong>Foundation Models</strong>: Pre-trained models provide a strong starting point</li>
-<li><strong>Fine-Tuning</strong>: Customizing models for specific tasks and domains</li>
-<li><strong>Dataset Onboarding</strong>: Proper data preparation is crucial for training</li>
-<li><strong>GPU Management</strong>: Resource allocation affects training efficiency</li>
-<li><strong>Inference Pipelines</strong>: Multi-step process from data to visualization</li>
-<li><strong>Model Evaluation</strong>: Visual inspection helps assess performance</li>
-</ol>
-<h3 id="real-world-applications">Real-World Applications<a class="anchor-link" href="#real-world-applications">¶</a></h3><p>This workflow can be adapted for:</p>
+<h2 id="7-summary-and-key-takeaways">7. Summary and Key Takeaways<a class="anchor-link" href="#7-summary-and-key-takeaways">¶</a></h2><p>Congratulations! You've completed an end-to-end machine learning workflow for geospatial AI with a Multimodal Floods example. 🎉</p>
+<h3 id="what-you-accomplished">What You Accomplished<a class="anchor-link" href="#what-you-accomplished">¶</a></h3><p>✅ <strong>Submitted a fine-tuning job</strong> (customized model for floods detection) with:</p>
 <ul>
-<li><strong>Disaster Response</strong>: Rapid damage assessment</li>
-<li><strong>Environmental Monitoring</strong>: Deforestation, land use change</li>
-<li><strong>Agriculture</strong>: Crop health, yield prediction</li>
-<li><strong>Urban Planning</strong>: Infrastructure mapping, growth tracking</li>
-<li><strong>Climate Science</strong>: Ice sheet monitoring, flood mapping</li>
+<li>A TerraMind-1.0-tiny (300M) backbone</li>
+<li>A Multimodal floods dataset with 804 labeled floods scenes</li>
+<li>Tracked training job status and completion</li>
+<li>Tested model on new floods data</li>
+<li>Viewed predictions in the UI</li>
+<li>Compared predictions with a better trained model</li>
 </ul>
-<h3 id="next-steps">Next Steps<a class="anchor-link" href="#next-steps">¶</a></h3><ol>
-<li><p><strong>Experiment with Different Models</strong></p>
-<ul>
-<li>Try other foundation models</li>
-<li>Compare performance across models</li>
-</ul>
-</li>
-<li><p><strong>Customize Training</strong></p>
-<ul>
-<li>Adjust hyperparameters in task templates</li>
-<li>Experiment with different architectures</li>
-</ul>
-</li>
-<li><p><strong>Use Your Own Data</strong></p>
-<ul>
-<li>Prepare custom datasets</li>
-<li>Train models for your specific use case</li>
-</ul>
-</li>
-<li><p><strong>Integrate with Applications</strong></p>
-<ul>
-<li>Use the API for automated workflows</li>
-<li>Build custom applications on top of Studio</li>
-</ul>
-</li>
-<li><p><strong>Explore Advanced Features</strong></p>
-<ul>
-<li>Multi-temporal analysis</li>
-<li>Ensemble models</li>
-<li>Active learning workflows</li>
-</ul>
-</li>
-</ol>
 <h3 id="resources">Resources<a class="anchor-link" href="#resources">¶</a></h3><ul>
 <li><strong>Documentation</strong>: <a href="https://terrastackai.github.io/geospatial-studio/">Geospatial Studio Docs</a></li>
 <li><strong>SDK Reference</strong>: <a href="https://terrastackai.github.io/geospatial-studio-toolkit/">Geospatial Studio SDK</a></li>
-<li><strong>Dataset</strong>: <a href="https://huggingface.co/datasets/ibm-nasa-geospatial/hls_burn_scars">HLS Burn Scars on Hugging Face</a></li>
+<li><strong>Dataset</strong>: <a href="https://huggingface.co/datasets/ibm-nasa-geospatial/hls_floods">S1 and S2 Multimodal floods on Hugging Face</a></li>
 <li><strong>Foundation Models</strong>: <a href="https://huggingface.co/ibm-nasa-geospatial">IBM Geospatial Models</a></li>
 </ul>
 <hr>
-<h2 id="workshop-complete">🎓 Workshop Complete!<a class="anchor-link" href="#workshop-complete">¶</a></h2><p>You've now completed all four labs of the Geospatial Studio workshop:</p>
-<ul>
-<li><strong>Lab 1</strong>: Getting Started with the SDK</li>
-<li><strong>Lab 2</strong>: Onboarding Pre-computed Examples</li>
-<li><strong>Lab 3</strong>: Uploading Model Checkpoints and Running Inference</li>
-<li><strong>Lab 4</strong>: End-to-End Burn Scars Workflow ✨</li>
+<h3 id="next-steps">Next Steps<a class="anchor-link" href="#next-steps">¶</a></h3><ul>
+<li><strong>Lab 6</strong>: Complete end-to-end workflow with floods usecase</li>
+<li><strong>Explore</strong>: Using Multimodal models for predicting floods.</li>
 </ul>
 <p>Thank you for participating! We hope you found this workshop valuable and are excited to build geospatial AI applications with IBM Geospatial Studio.</p>
 <p><strong>Questions or Feedback?</strong></p>
@@ -4746,6 +3987,16 @@ print("\n💡 Use this for processing multiple areas or time periods")</div>
 <li>Contact the development team</li>
 </ul>
 <p>Happy mapping! 🌍🛰️</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2368d2c1">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 </div>
 </div>
 </div>
@@ -4779,7 +4030,7 @@ print("\n💡 Use this for processing multiple areas or time periods")</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 19, 2026 12:05:53 UTC"><span class="timeago" datetime="2026-02-19T12:05:53+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 19, 2026 12:05:53 UTC">2026-02-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 16, 2026 13:59:49 UTC"><span class="timeago" datetime="2026-04-16T13:59:49+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 16, 2026 13:59:49 UTC">2026-04-16</span>
   </span>
 
     
@@ -4789,7 +4040,7 @@ print("\n💡 Use this for processing multiple areas or time periods")</div>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 19, 2026 11:10:26 UTC"><span class="timeago" datetime="2026-02-19T11:10:26+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 19, 2026 11:10:26 UTC">2026-02-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 14, 2026 16:29:55 UTC"><span class="timeago" datetime="2026-04-14T16:29:55+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 14, 2026 16:29:55 UTC">2026-04-14</span>
   </span>
 
     
@@ -4826,7 +4077,7 @@ print("\n💡 Use this for processing multiple areas or time periods")</div>
       <nav class="md-footer__inner md-grid" aria-label="Footer">
         
           
-          <a href="../lab3-running-inference/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Lab 3">
+          <a href="../lab5-gesa-burnscars-workflow/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Lab 5">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"></path></svg>
@@ -4836,20 +4087,20 @@ print("\n💡 Use this for processing multiple areas or time periods")</div>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Lab 3
+                Lab 5
               </div>
             </div>
           </a>
         
         
           
-          <a href="../lab5-gesa-burnscars-workflow/" class="md-footer__link md-footer__link--next" aria-label="Next: Lab 5">
+          <a href="../lab7-gesa-buildings-workflow/" class="md-footer__link md-footer__link--next" aria-label="Next: Lab 7">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Lab 5
+                Lab 7
               </div>
             </div>
             <div class="md-footer__button md-icon">
