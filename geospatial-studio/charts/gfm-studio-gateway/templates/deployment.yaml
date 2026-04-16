@@ -46,7 +46,7 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /health
+              path: /health/livez
               port: 8000
               scheme: HTTP
             initialDelaySeconds: 60
@@ -55,7 +55,7 @@ spec:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /health
+              path: /health/readyz
               port: 8000
               scheme: HTTP
             initialDelaySeconds: 30
