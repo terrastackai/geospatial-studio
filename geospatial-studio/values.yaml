@@ -153,7 +153,7 @@ gfm-studio-gateway:
     celeryFlower:
   image:
     name: quay.io/geospatial-studio/geostudio-gateway
-    tag: latest
+    tag: feat-healthchecks
     # pullPolicy inherited from global.imagePullPolicy
     # Can be overridden here if needed
     pullPolicy: ""
@@ -223,7 +223,7 @@ geofm-ui:
     oauth:
   image:
     name: quay.io/geospatial-studio/geostudio-ui
-    tag: latest
+    tag: feat_health-check-endpoints
     # pullPolicy inherited from global.imagePullPolicy
     # Can be overridden here if needed
     pullPolicy: ""
