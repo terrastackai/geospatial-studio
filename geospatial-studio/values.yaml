@@ -337,14 +337,14 @@ pgbouncer:
     # Password for pgbouncer admin (should be set via secret)
     password: <pgbouncer_pass>
     # Postgres database credentials
-    database: postgres
+    database: <pg_auth_db_name>
   postgresql:
     # Hostname of the PostgreSQL server
     host: <postgres_host>
     # Port of the PostgreSQL server
     port: <postgres_port>
     # Database to connect to
-    database: postgres
+    database: <pg_studio_db_name>
     # Username for PostgreSQL
     username: <pg_user>
     # Password for PostgreSQL (should be set via secret)
