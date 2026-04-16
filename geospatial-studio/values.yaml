@@ -100,7 +100,7 @@ global:
     in_cluster_db: false
     # Direct postgres connection details
     postgres_host: <postgres_host>
-    postgres_port: 5432
+    postgres_port: <postgres_port>
     postgres_user: <pg_user>
     postgres_password: <pg_pass>
     # Database URI will be constructed based on pgbouncer.enabled flag
@@ -342,7 +342,7 @@ pgbouncer:
     # Hostname of the PostgreSQL server
     host: <postgres_host>
     # Port of the PostgreSQL server
-    port: 5432
+    port: <postgres_port>
     # Database to connect to
     database: postgres
     # Username for PostgreSQL

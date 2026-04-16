@@ -589,6 +589,10 @@ if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
         echo "-----------  pg_uri= -------------------------------------------------"
         echo "-----------  pg_port= ------------------------------------------------"
         echo "-----------  pg_original_db_name= ------------------------------------"
+        echo "-----------  Comment out pg_forwarded_port ---------------------------"
+        echo "-----------  pg_forwarded_port= --------------------------------------"
+        echo "-----------  Set pgbouncer_password to pg_password -------------------"
+        echo "-----------  pgbouncer_password= -------------------------------------"
         echo "**********************************************************************"
         echo "**********************************************************************"
 
@@ -611,7 +615,7 @@ if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
         
         # Set PgBouncer configuration for cloud-managed postgres
         # Note: User needs to manually set pgbouncer_host if using external PgBouncer
-        sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${pg_password}/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/pgbouncer_host=.*/pgbouncer_host=geofm-pgbouncer.${OC_PROJECT}.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
     fi
 else
     echo "----------------------------------------------------------------------"
@@ -824,7 +828,7 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
 
         python deployment-scripts/validate-env-files.py \
         --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
-        --env-variables "deployment_name,ocp_project,studio_api_key,studio_api_encryption_key,access_key_id,secret_access_key,endpoint,region,pg_username,pg_password,pg_uri,pg_port,pg_original_db_name,pg_studio_db_name,geoserver_username,geoserver_password,oauth_client_secret,oauth_cookie_secret,redis_password,image_pull_secret_b64" \
+        --env-variables "deployment_name,ocp_project,studio_api_key,studio_api_encryption_key,access_key_id,secret_access_key,endpoint,region,pg_username,pg_password,pg_uri,pg_port,pg_original_db_name,pg_studio_db_name,pgbouncer_host,pgbouncer_password,geoserver_username,geoserver_password,oauth_client_secret,oauth_cookie_secret,redis_password,image_pull_secret_b64" \
         --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
         --env-sh-variables "DEPLOYMENT_ENV,OC_PROJECT,ROUTE_ENABLED,CONTAINER_IMAGE_REPOSITORY,CLUSTER_URL,COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS,OAUTH_PROXY_PORT,OAUTH_TYPE,OAUTH_CLIENT_ID,OAUTH_ISSUER_URL,OAUTH_URL"
 
