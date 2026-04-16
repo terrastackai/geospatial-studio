@@ -73,8 +73,13 @@ postgresql+pg8000://{{ .Values.global.postgresql.auth.username }}:{{ .Values.glo
 {{- else -}}
 {{- $host := include "geospatial-studio.postgres.host" . -}}
 {{- $port := include "geospatial-studio.postgres.port" . -}}
+{{- if .Values.global.pgbouncer.enabled -}}
+{{- /* Use PgBouncer pool for gateway API */ -}}
+postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/geostudio_auth
+{{- else -}}
 {{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
 postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/{{ .Values.global.postgres.dbs.auth }}
+{{- end -}}
 {{- end -}}
 {{- end }}
 
@@ -98,10 +103,19 @@ Build orchestration database URI for pipelines
 Uses pgbouncer if enabled (pool name matches database name), otherwise direct postgres
 */}}
 {{- define "geospatial-studio.postgres.orchestrate.uri" -}}
+{{- if .Values.global.postgres.in_cluster_db -}}
+postgresql+pg8000://{{ .Values.global.postgresql.auth.username }}:{{ .Values.global.postgresql.auth.password }}@{{ .Release.Name }}-postgresql-hl.{{ .Release.Namespace }}.svc/{{ .Values.global.postgresql.dbs.gateway }}
+{{- else -}}
 {{- $host := include "geospatial-studio.postgres.host" . -}}
 {{- $port := include "geospatial-studio.postgres.port" . -}}
-{{- /* Pool name matches database name, so same URI works for both PgBouncer and direct */ -}}
-postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port | int }}/{{ .Values.global.postgres.dbs.gateway }}
+{{- if .Values.global.pgbouncer.enabled -}}
+{{- /* Use PgBouncer pool for gateway API */ -}}
+postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/geostudio
+{{- else -}}
+{{- /* Direct connection to database */ -}}
+postgresql+pg8000://{{ .Values.global.postgres.postgres_user }}:{{ .Values.global.postgres.postgres_password }}@{{ $host }}:{{ $port }}/{{ .Values.global.postgres.dbs.gateway }}
+{{- end -}}
+{{- end -}}
 {{- end }}
 
 {{/*
