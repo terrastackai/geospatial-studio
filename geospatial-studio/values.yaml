@@ -108,9 +108,9 @@ global:
     # If pgbouncer.enabled=false: postgresql://<user>:<pass>@<postgres_host>:<postgres_port>
     backend_uri_base: postgresql://<pg_user>:<pg_pass>@<host>:<port>
     dbs:
-      mlflow: mlflow
-      gateway: geostudio
-      auth: geostudio_auth
+      mlflow: <pg_mlflow_db_name>
+      gateway: <pg_studio_db_name>
+      auth: <pg_auth_db_name>
 
   # PgBouncer configuration - connection pooler for PostgreSQL
   # When enabled, all services will connect through PgBouncer instead of directly to PostgreSQL
