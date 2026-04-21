@@ -108,7 +108,7 @@
         {"id": "1", "name": "Floods", "description": "Flooding assets"}
     ],
     "dataset_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/sen1floods11_v1.1.4_zip.zip",
-    "description": "Flood data from places",
+    "description": "Flood data from various places. Data from https://huggingface.co/datasets/ibm-nasa-geospatial/hls_floods",
     "label_suffix": "_LabelHand.tif",
     "purpose": "Segmentation"
 }

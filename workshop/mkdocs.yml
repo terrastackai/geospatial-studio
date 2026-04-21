@@ -32,6 +32,10 @@ nav:
   - Lab 2: notebooks/lab2-onboarding-examples.ipynb
   - Lab 3: notebooks/lab3-running-inference.ipynb
   - Lab 4: notebooks/lab4-burnscars-workflow.ipynb
+  - Lab 5: notebooks/lab5-gesa-burnscars-workflow.ipynb
+  - Lab 6: notebooks/lab6-gesa-floods-workflow.ipynb
+  - Lab 7: notebooks/lab7-gesa-buildings-workflow.ipynb
+
   - Resources:
       - Additional Resources: resources/additional-resources.md
       - Troubleshooting: resources/troubleshooting.md
