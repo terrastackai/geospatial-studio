@@ -154,6 +154,10 @@ processors:
           secretKeyRef:
             name: nasa-earth-data-secret
             key: NASA_EARTH_BEARER_TOKEN
+      - name: TERRAKIT_CACHE_ENABLED
+        value: "TERRAKIT_CACHE_ENABLED"
+      - name: TERRAKIT_CACHE_DIR
+        value: "TERRAKIT_CACHE_DIR"
   - name: push-to-geoserver
     enabled: true
     image:

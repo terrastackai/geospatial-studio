@@ -48,6 +48,13 @@ spec:  {{ if hasKey $v "replicas" }}
             sleep {{ $.Values.waitForGateway.sleepTime }}
           done
           echo "Gateway service is ready!"
+      - name: create-terrakit-cache-dir
+        image: busybox:latest
+        imagePullPolicy: {{ $.Values.image.pullPolicy | default $.Values.global.imagePullPolicy }}
+        command: ['sh', '-c', 'mkdir -p /data/cache && chmod 755 /data/cache && echo "Cache directory created at /data/cache"']
+        volumeMounts:
+        - name: test-inference-pvc
+          mountPath: /data
       {{- end }}
       containers:
       - name: {{ $.Values.namePrefix }}-{{ $v.name }}
@@ -119,7 +126,7 @@ spec:  {{ if hasKey $v "replicas" }}
       volumes:
         - name: test-inference-pvc
           persistentVolumeClaim:
-            claimName: {{ $.Values.inference_volume.pvc_name }}
+            claimName: {{ $.Values.storage.pvcName | default $.Values.inference_volume.pvc_name }}
         {{- range $p := $v.extra_volumes }}
         - name: {{ $p.name }}
           persistentVolumeClaim:

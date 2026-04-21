@@ -26,6 +26,10 @@ export NON_COS_STORAGE_CLASS=
 export PVC_ACCESS_MODE=ReadWriteOnce
 export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=
 
+# Terrakit Cache Configuration
+export TERRAKIT_CACHE_ENABLED=true
+export TERRAKIT_CACHE_DIR=/data/cache
+
 # Populate buckets with data
 export LULC_TILE_ROOT=
 export LULC_TILE_SHAPEFILE=
