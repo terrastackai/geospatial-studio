@@ -48,6 +48,9 @@ gateway:
   api_key: studio_api_key
   appName: geofm-gateway
 
+redis:
+  enabled:  REDIS_ENABLED
+
 geoserver:
   username: geoserver_username
   password: geoserver_password
@@ -155,9 +158,9 @@ processors:
             name: nasa-earth-data-secret
             key: NASA_EARTH_BEARER_TOKEN
       - name: TERRAKIT_CACHE_ENABLED
-        value: "TERRAKIT_CACHE_ENABLED"
+        value: "TERRAKIT_CACHE_ENABLED_VALUE"
       - name: TERRAKIT_CACHE_DIR
-        value: "TERRAKIT_CACHE_DIR"
+        value: "TERRAKIT_CACHE_DIR_VALUE"
   - name: push-to-geoserver
     enabled: true
     image:

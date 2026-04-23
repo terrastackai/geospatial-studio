@@ -27,8 +27,8 @@ export PVC_ACCESS_MODE=ReadWriteOnce
 export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=
 
 # Terrakit Cache Configuration
-export TERRAKIT_CACHE_ENABLED=true
-export TERRAKIT_CACHE_DIR=/data/cache
+export TERRAKIT_CACHE_ENABLED_VALUE=true
+export TERRAKIT_CACHE_DIR_VALUE=/data/cache
 
 # Populate buckets with data
 export LULC_TILE_ROOT=

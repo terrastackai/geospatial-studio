@@ -349,6 +349,8 @@ geospatial-studio-pipelines:
   cluster_url: CLUSTER_URL
   environment: ENVIRONMENT_VALUE
   log_level: DEBUG
+  redis:
+    enalbed: REDIS_ENABLED
   inference_volume:
     pvc_name: inference-shared-pvc
   default_replicas: 1
@@ -461,6 +463,10 @@ geospatial-studio-pipelines:
             secretKeyRef:
               name: nasa-earth-data-secret
               key: NASA_EARTH_BEARER_TOKEN
+        - name: TERRAKIT_CACHE_ENABLED
+          value: "TERRAKIT_CACHE_ENABLED_VALUE"
+        - name: TERRAKIT_CACHE_DIR
+          value: "TERRAKIT_CACHE_DIR_VALUE"
     - name: push-to-geoserver
       enabled: true
       image:
