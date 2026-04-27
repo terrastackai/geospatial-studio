@@ -153,7 +153,7 @@ gfm-studio-gateway:
     celeryFlower:
   image:
     name: quay.io/geospatial-studio/geostudio-gateway
-    tag: latest
+    tag: feat-user-groups
     # pullPolicy inherited from global.imagePullPolicy
     # Can be overridden here if needed
     pullPolicy: ""
