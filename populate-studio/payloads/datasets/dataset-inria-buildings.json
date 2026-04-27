@@ -1,0 +1,51 @@
+{
+    "dataset_name": "Inria Building dataset",
+    "data_sources": [
+        {
+            "bands": [
+            {
+                "index": "0",
+                "band_name": "B04",
+                "scaling_factor": 1,
+                "RGB_band": "R"
+            },
+            {
+                "index": "1",
+                "band_name": "B03",
+                "scaling_factor": 1,
+                "RGB_band": "G"
+            },
+            {
+                "index": "2",
+                "band_name": "B02",
+                "scaling_factor": 1,
+                "RGB_band": "B"
+            }
+            ],
+            "connector": "sentinelhub",
+            "collection": "s2_l2a",
+            "file_suffix": "_train.tif",
+            "modality_tag": "S2L2A"
+        }
+    ],
+    "label_categories": [
+        {
+            "id": "0",
+            "name": "Background",
+            "color": "#000000",
+            "opacity": "0",
+            "weight": null
+        },
+        {
+            "id": "1",
+            "name": "Building",
+            "color": "#000000",
+            "opacity": 1,
+            "weight": null
+        }
+        ],
+    "dataset_url": "https://geospatial-studio-example-data.s3.us-east.cloud-object-storage.appdomain.cloud/AerialImageDatasetTiledMergedFixedLabels_sample.zip",
+    "description": "Sampled 10k Inria dataset pre-processed and tiled geotiffs. From https://project.inria.fr/aerialimagelabeling/",
+    "label_suffix": "_label.tif",
+    "purpose": "Segmentation"
+}
