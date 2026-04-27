@@ -40,7 +40,7 @@ spec:
           image: ghcr.io/mlflow/mlflow:latest # Match your main image version
           command: ["/bin/sh", "-c"]
           args:
-            - mlflow db upgrade $BACKEND_URI
+            - mlflow db upgrade $BACKEND_URI || true
           envFrom:
             - secretRef:
                 name: {{ .Values.global.appNames.mlflow }}-secrets
