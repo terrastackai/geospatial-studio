@@ -332,6 +332,51 @@ configure_resource_mode() {
             export POSTGRES_MEMORY_REQUEST="256Mi"
             export POSTGRES_MEMORY_LIMIT="512Mi"
             export POSTGRES_STORAGE="2Gi"
+            # PgBouncer
+            export PGBOUNCER_CPU_REQUEST="250m"
+            export PGBOUNCER_CPU_LIMIT="1000m"
+            export PGBOUNCER_MEMORY_REQUEST="256Mi"
+            export PGBOUNCER_MEMORY_LIMIT="1Gi"
+            # MLflow
+            export MLFLOW_CPU_REQUEST="null"
+            export MLFLOW_CPU_LIMIT="null"
+            export MLFLOW_MEMORY_REQUEST="null"
+            export MLFLOW_MEMORY_LIMIT="null"
+            # Redis Master
+            export REDIS_MASTER_CPU_REQUEST="null"
+            export REDIS_MASTER_CPU_LIMIT="null"
+            export REDIS_MASTER_MEMORY_REQUEST="null"
+            export REDIS_MASTER_MEMORY_LIMIT="null"
+            # Redis Replica
+            export REDIS_REPLICA_CPU_REQUEST="null"
+            export REDIS_REPLICA_CPU_LIMIT="null"
+            export REDIS_REPLICA_MEMORY_REQUEST="null"
+            export REDIS_REPLICA_MEMORY_LIMIT="null"
+            # Gateway API
+            export GATEWAY_API_CPU_REQUEST="null"
+            export GATEWAY_API_CPU_LIMIT="null"
+            export GATEWAY_API_MEMORY_REQUEST="null"
+            export GATEWAY_API_MEMORY_LIMIT="null"
+            # Gateway Celery Worker
+            export GATEWAY_CELERY_WORKER_CPU_REQUEST="null"
+            export GATEWAY_CELERY_WORKER_CPU_LIMIT="null"
+            export GATEWAY_CELERY_WORKER_MEMORY_REQUEST="null"
+            export GATEWAY_CELERY_WORKER_MEMORY_LIMIT="null"
+            # Gateway OAuth
+            export GATEWAY_OAUTH_CPU_REQUEST="null"
+            export GATEWAY_OAUTH_CPU_LIMIT="null"
+            export GATEWAY_OAUTH_MEMORY_REQUEST="null"
+            export GATEWAY_OAUTH_MEMORY_LIMIT="null"
+            # UI OAuth
+            export UI_OAUTH_CPU_REQUEST="null"
+            export UI_OAUTH_CPU_LIMIT="null"
+            export UI_OAUTH_MEMORY_REQUEST="null"
+            export UI_OAUTH_MEMORY_LIMIT="null"
+            # UI
+            export UI_CPU_REQUEST="null"
+            export UI_CPU_LIMIT="null"
+            export UI_MEMORY_REQUEST="null"
+            export UI_MEMORY_LIMIT="null"
             # Studio
             export GFM_FT_DATA_STORAGE="10Gi"
             export_storage_vars "5Gi" \
@@ -369,6 +414,51 @@ configure_resource_mode() {
             export POSTGRES_MEMORY_REQUEST="512Mi"
             export POSTGRES_MEMORY_LIMIT="1Gi"
             export POSTGRES_STORAGE="2Gi"
+            # PgBouncer
+            export PGBOUNCER_CPU_REQUEST="250m"
+            export PGBOUNCER_CPU_LIMIT="1000m"
+            export PGBOUNCER_MEMORY_REQUEST="256Mi"
+            export PGBOUNCER_MEMORY_LIMIT="1Gi"
+            # MLflow
+            export MLFLOW_CPU_REQUEST="null"
+            export MLFLOW_CPU_LIMIT="null"
+            export MLFLOW_MEMORY_REQUEST="null"
+            export MLFLOW_MEMORY_LIMIT="null"
+            # Redis Master
+            export REDIS_MASTER_CPU_REQUEST="null"
+            export REDIS_MASTER_CPU_LIMIT="null"
+            export REDIS_MASTER_MEMORY_REQUEST="null"
+            export REDIS_MASTER_MEMORY_LIMIT="null"
+            # Redis Replica
+            export REDIS_REPLICA_CPU_REQUEST="null"
+            export REDIS_REPLICA_CPU_LIMIT="null"
+            export REDIS_REPLICA_MEMORY_REQUEST="null"
+            export REDIS_REPLICA_MEMORY_LIMIT="null"
+            # Gateway API
+            export GATEWAY_API_CPU_REQUEST="null"
+            export GATEWAY_API_CPU_LIMIT="null"
+            export GATEWAY_API_MEMORY_REQUEST="null"
+            export GATEWAY_API_MEMORY_LIMIT="null"
+            # Gateway Celery Worker
+            export GATEWAY_CELERY_WORKER_CPU_REQUEST="null"
+            export GATEWAY_CELERY_WORKER_CPU_LIMIT="null"
+            export GATEWAY_CELERY_WORKER_MEMORY_REQUEST="null"
+            export GATEWAY_CELERY_WORKER_MEMORY_LIMIT="null"
+            # Gateway OAuth
+            export GATEWAY_OAUTH_CPU_REQUEST="null"
+            export GATEWAY_OAUTH_CPU_LIMIT="null"
+            export GATEWAY_OAUTH_MEMORY_REQUEST="null"
+            export GATEWAY_OAUTH_MEMORY_LIMIT="null"
+            # UI OAuth
+            export UI_OAUTH_CPU_REQUEST="null"
+            export UI_OAUTH_CPU_LIMIT="null"
+            export UI_OAUTH_MEMORY_REQUEST="null"
+            export UI_OAUTH_MEMORY_LIMIT="null"
+            # UI
+            export UI_CPU_REQUEST="null"
+            export UI_CPU_LIMIT="null"
+            export UI_MEMORY_REQUEST="null"
+            export UI_MEMORY_LIMIT="null"
             # Studio
             export GFM_FT_DATA_STORAGE="15Gi"
             export_storage_vars "5Gi" \
@@ -406,6 +496,51 @@ configure_resource_mode() {
             export POSTGRES_MEMORY_REQUEST="768Mi"
             export POSTGRES_MEMORY_LIMIT="1536Mi"
             export POSTGRES_STORAGE="10Gi"
+            # PgBouncer
+            export PGBOUNCER_CPU_REQUEST="1"
+            export PGBOUNCER_CPU_LIMIT="2"
+            export PGBOUNCER_MEMORY_REQUEST="2Gi"
+            export PGBOUNCER_MEMORY_LIMIT="4Gi"
+            # MLflow
+            export MLFLOW_CPU_REQUEST="1"
+            export MLFLOW_CPU_LIMIT="1"
+            export MLFLOW_MEMORY_REQUEST="6G"
+            export MLFLOW_MEMORY_LIMIT="12G"
+            # Redis Master
+            export REDIS_MASTER_CPU_REQUEST="1"
+            export REDIS_MASTER_CPU_LIMIT="2"
+            export REDIS_MASTER_MEMORY_REQUEST="1Gi"
+            export REDIS_MASTER_MEMORY_LIMIT="2Gi"
+            # Redis Replica
+            export REDIS_REPLICA_CPU_REQUEST="1"
+            export REDIS_REPLICA_CPU_LIMIT="2"
+            export REDIS_REPLICA_MEMORY_REQUEST="1Gi"
+            export REDIS_REPLICA_MEMORY_LIMIT="2Gi"
+            # Gateway API
+            export GATEWAY_API_CPU_REQUEST="2"
+            export GATEWAY_API_CPU_LIMIT="4"
+            export GATEWAY_API_MEMORY_REQUEST="4Gi"
+            export GATEWAY_API_MEMORY_LIMIT="16Gi"
+            # Gateway Celery Worker
+            export GATEWAY_CELERY_WORKER_CPU_REQUEST="500m"
+            export GATEWAY_CELERY_WORKER_CPU_LIMIT="1"
+            export GATEWAY_CELERY_WORKER_MEMORY_REQUEST="512Mi"
+            export GATEWAY_CELERY_WORKER_MEMORY_LIMIT="1536Gi"
+            # Gateway OAuth
+            export GATEWAY_OAUTH_CPU_REQUEST="500m"
+            export GATEWAY_OAUTH_CPU_LIMIT="1"
+            export GATEWAY_OAUTH_MEMORY_REQUEST="512Mi"
+            export GATEWAY_OAUTH_MEMORY_LIMIT="1024Mi"
+            # UI OAuth
+            export UI_OAUTH_CPU_REQUEST="500m"
+            export UI_OAUTH_CPU_LIMIT="1"
+            export UI_OAUTH_MEMORY_REQUEST="512Mi"
+            export UI_OAUTH_MEMORY_LIMIT="1024Mi"
+            # UI
+            export UI_CPU_REQUEST="1"
+            export UI_CPU_LIMIT="2"
+            export UI_MEMORY_REQUEST="2Gi"
+            export UI_MEMORY_LIMIT="4Gi"
             # Studio
             export_storage_vars "20Gi" \
                 GFM_FT_DATA_STORAGE \
@@ -443,6 +578,51 @@ configure_resource_mode() {
             export POSTGRES_MEMORY_REQUEST="1Gi"
             export POSTGRES_MEMORY_LIMIT="2Gi"
             export POSTGRES_STORAGE="10Gi"
+            # PgBouncer
+            export PGBOUNCER_CPU_REQUEST="1"
+            export PGBOUNCER_CPU_LIMIT="2"
+            export PGBOUNCER_MEMORY_REQUEST="4Gi"
+            export PGBOUNCER_MEMORY_LIMIT="8Gi"
+            # MLflow
+            export MLFLOW_CPU_REQUEST="1"
+            export MLFLOW_CPU_LIMIT="1"
+            export MLFLOW_MEMORY_REQUEST="8G"
+            export MLFLOW_MEMORY_LIMIT="16G"
+            # Redis Master
+            export REDIS_MASTER_CPU_REQUEST="1"
+            export REDIS_MASTER_CPU_LIMIT="2"
+            export REDIS_MASTER_MEMORY_REQUEST="2Gi"
+            export REDIS_MASTER_MEMORY_LIMIT="4Gi"
+            # Redis Replica
+            export REDIS_REPLICA_CPU_REQUEST="1"
+            export REDIS_REPLICA_CPU_LIMIT="2"
+            export REDIS_REPLICA_MEMORY_REQUEST="2Gi"
+            export REDIS_REPLICA_MEMORY_LIMIT="4Gi"
+            # Gateway API
+            export GATEWAY_API_CPU_REQUEST="4"
+            export GATEWAY_API_CPU_LIMIT="8"
+            export GATEWAY_API_MEMORY_REQUEST="8Gi"
+            export GATEWAY_API_MEMORY_LIMIT="32Gi"
+            # Gateway Celery Worker
+            export GATEWAY_CELERY_WORKER_CPU_REQUEST="1"
+            export GATEWAY_CELERY_WORKER_CPU_LIMIT="2"
+            export GATEWAY_CELERY_WORKER_MEMORY_REQUEST="1Gi"
+            export GATEWAY_CELERY_WORKER_MEMORY_LIMIT="2Gi"
+            # Gateway OAuth
+            export GATEWAY_OAUTH_CPU_REQUEST="1"
+            export GATEWAY_OAUTH_CPU_LIMIT="2"
+            export GATEWAY_OAUTH_MEMORY_REQUEST="512Mi"
+            export GATEWAY_OAUTH_MEMORY_LIMIT="1Gi"
+            # UI OAuth
+            export UI_OAUTH_CPU_REQUEST="512m"
+            export UI_OAUTH_CPU_LIMIT="1000m"
+            export UI_OAUTH_MEMORY_REQUEST="512Mi"
+            export UI_OAUTH_MEMORY_LIMIT="1Gi"
+            # UI
+            export UI_CPU_REQUEST="2"
+            export UI_CPU_LIMIT="4"
+            export UI_MEMORY_REQUEST="4Gi"
+            export UI_MEMORY_LIMIT="8Gi"
             # Studio
             export_storage_vars "100Gi" \
                 GFM_FT_DATA_STORAGE \
@@ -478,6 +658,51 @@ configure_resource_mode() {
             export POSTGRES_CPU_LIMIT="4000m"
             export POSTGRES_MEMORY_REQUEST="2Gi"
             export POSTGRES_MEMORY_LIMIT="4Gi"
+            # PgBouncer
+            export PGBOUNCER_CPU_REQUEST="1"
+            export PGBOUNCER_CPU_LIMIT="2"
+            export PGBOUNCER_MEMORY_REQUEST="8Gi"
+            export PGBOUNCER_MEMORY_LIMIT="16Gi"
+            # MLflow
+            export MLFLOW_CPU_REQUEST="1"
+            export MLFLOW_CPU_LIMIT="2"
+            export MLFLOW_MEMORY_REQUEST="8G"
+            export MLFLOW_MEMORY_LIMIT="16G"
+            # Redis Master
+            export REDIS_MASTER_CPU_REQUEST="1"
+            export REDIS_MASTER_CPU_LIMIT="2"
+            export REDIS_MASTER_MEMORY_REQUEST="4Gi"
+            export REDIS_MASTER_MEMORY_LIMIT="8Gi"
+            # Redis Replica
+            export REDIS_REPLICA_CPU_REQUEST="1"
+            export REDIS_REPLICA_CPU_LIMIT="2"
+            export REDIS_REPLICA_MEMORY_REQUEST="4Gi"
+            export REDIS_REPLICA_MEMORY_LIMIT="8Gi"
+            # Gateway API
+            export GATEWAY_API_CPU_REQUEST="5"
+            export GATEWAY_API_CPU_LIMIT="10"
+            export GATEWAY_API_MEMORY_REQUEST="8Gi"
+            export GATEWAY_API_MEMORY_LIMIT="36Gi"
+            # Gateway Celery Worker
+            export GATEWAY_CELERY_WORKER_CPU_REQUEST="2"
+            export GATEWAY_CELERY_WORKER_CPU_LIMIT="4"
+            export GATEWAY_CELERY_WORKER_MEMORY_REQUEST="2Gi"
+            export GATEWAY_CELERY_WORKER_MEMORY_LIMIT="4Gi"
+            # Gateway OAuth
+            export GATEWAY_OAUTH_CPU_REQUEST="2"
+            export GATEWAY_OAUTH_CPU_LIMIT="4"
+            export GATEWAY_OAUTH_MEMORY_REQUEST="1Gi"
+            export GATEWAY_OAUTH_MEMORY_LIMIT="2Gi"
+            # UI OAuth
+            export UI_OAUTH_CPU_REQUEST="1"
+            export UI_OAUTH_CPU_LIMIT="2"
+            export UI_OAUTH_MEMORY_REQUEST="1Gi"
+            export UI_OAUTH_MEMORY_LIMIT="2Gi"
+            # UI
+            export UI_CPU_REQUEST="3"
+            export UI_CPU_LIMIT="6"
+            export UI_MEMORY_REQUEST="8Gi"
+            export UI_MEMORY_LIMIT="16Gi"
             # Studio
             export_storage_vars "200Gi" \
                 GFM_FT_DATA_STORAGE \
@@ -514,6 +739,42 @@ configure_resource_mode() {
     sed -i -e "s/export POSTGRES_MEMORY_REQUEST=.*/export POSTGRES_MEMORY_REQUEST=${POSTGRES_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export POSTGRES_MEMORY_LIMIT=.*/export POSTGRES_MEMORY_LIMIT=${POSTGRES_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export POSTGRES_STORAGE=.*/export POSTGRES_STORAGE=${POSTGRES_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export PGBOUNCER_CPU_REQUEST=.*/export PGBOUNCER_CPU_REQUEST=${PGBOUNCER_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export PGBOUNCER_CPU_LIMIT=.*/export PGBOUNCER_CPU_LIMIT=${PGBOUNCER_CPU_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export PGBOUNCER_MEMORY_REQUEST=.*/export PGBOUNCER_MEMORY_REQUEST=${PGBOUNCER_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export PGBOUNCER_MEMORY_LIMIT=.*/export PGBOUNCER_MEMORY_LIMIT=${PGBOUNCER_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export MLFLOW_CPU_REQUEST=.*/export MLFLOW_CPU_REQUEST=${MLFLOW_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export MLFLOW_CPU_LIMIT=.*/export MLFLOW_CPU_LIMIT=${MLFLOW_CPU_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export MLFLOW_MEMORY_REQUEST=.*/export MLFLOW_MEMORY_REQUEST=${MLFLOW_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export MLFLOW_MEMORY_LIMIT=.*/export MLFLOW_MEMORY_LIMIT=${MLFLOW_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export REDIS_MASTER_CPU_REQUEST=.*/export REDIS_MASTER_CPU_REQUEST=${REDIS_MASTER_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export REDIS_MASTER_CPU_LIMIT=.*/export REDIS_MASTER_CPU_LIMIT=${REDIS_MASTER_CPU_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export REDIS_MASTER_MEMORY_REQUEST=.*/export REDIS_MASTER_MEMORY_REQUEST=${REDIS_MASTER_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export REDIS_MASTER_MEMORY_LIMIT=.*/export REDIS_MASTER_MEMORY_LIMIT=${REDIS_MASTER_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export REDIS_REPLICA_CPU_REQUEST=.*/export REDIS_REPLICA_CPU_REQUEST=${REDIS_REPLICA_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export REDIS_REPLICA_CPU_LIMIT=.*/export REDIS_REPLICA_CPU_LIMIT=${REDIS_REPLICA_CPU_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export REDIS_REPLICA_MEMORY_REQUEST=.*/export REDIS_REPLICA_MEMORY_REQUEST=${REDIS_REPLICA_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export REDIS_REPLICA_MEMORY_LIMIT=.*/export REDIS_REPLICA_MEMORY_LIMIT=${REDIS_REPLICA_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GATEWAY_API_CPU_REQUEST=.*/export GATEWAY_API_CPU_REQUEST=${GATEWAY_API_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GATEWAY_API_CPU_LIMIT=.*/export GATEWAY_API_CPU_LIMIT=${GATEWAY_API_CPU_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GATEWAY_API_MEMORY_REQUEST=.*/export GATEWAY_API_MEMORY_REQUEST=${GATEWAY_API_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GATEWAY_API_MEMORY_LIMIT=.*/export GATEWAY_API_MEMORY_LIMIT=${GATEWAY_API_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GATEWAY_CELERY_WORKER_CPU_REQUEST=.*/export GATEWAY_CELERY_WORKER_CPU_REQUEST=${GATEWAY_CELERY_WORKER_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GATEWAY_CELERY_WORKER_CPU_LIMIT=.*/export GATEWAY_CELERY_WORKER_CPU_LIMIT=${GATEWAY_CELERY_WORKER_CPU_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GATEWAY_CELERY_WORKER_MEMORY_REQUEST=.*/export GATEWAY_CELERY_WORKER_MEMORY_REQUEST=${GATEWAY_CELERY_WORKER_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GATEWAY_CELERY_WORKER_MEMORY_LIMIT=.*/export GATEWAY_CELERY_WORKER_MEMORY_LIMIT=${GATEWAY_CELERY_WORKER_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GATEWAY_OAUTH_CPU_REQUEST=.*/export GATEWAY_OAUTH_CPU_REQUEST=${GATEWAY_OAUTH_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GATEWAY_OAUTH_CPU_LIMIT=.*/export GATEWAY_OAUTH_CPU_LIMIT=${GATEWAY_OAUTH_CPU_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GATEWAY_OAUTH_MEMORY_REQUEST=.*/export GATEWAY_OAUTH_MEMORY_REQUEST=${GATEWAY_OAUTH_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GATEWAY_OAUTH_MEMORY_LIMIT=.*/export GATEWAY_OAUTH_MEMORY_LIMIT=${GATEWAY_OAUTH_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export UI_OAUTH_CPU_REQUEST=.*/export UI_OAUTH_CPU_REQUEST=${UI_OAUTH_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export UI_OAUTH_CPU_LIMIT=.*/export UI_OAUTH_CPU_LIMIT=${UI_OAUTH_CPU_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export UI_OAUTH_MEMORY_REQUEST=.*/export UI_OAUTH_MEMORY_REQUEST=${UI_OAUTH_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export UI_OAUTH_MEMORY_LIMIT=.*/export UI_OAUTH_MEMORY_LIMIT=${UI_OAUTH_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export UI_CPU_REQUEST=.*/export UI_CPU_REQUEST=${UI_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export UI_CPU_LIMIT=.*/export UI_CPU_LIMIT=${UI_CPU_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export UI_MEMORY_REQUEST=.*/export UI_MEMORY_REQUEST=${UI_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export UI_MEMORY_LIMIT=.*/export UI_MEMORY_LIMIT=${UI_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export GFM_FT_DATA_STORAGE=.*/export GFM_FT_DATA_STORAGE=${GFM_FT_DATA_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export GFM_FT_FILES_STORAGE=.*/export GFM_FT_FILES_STORAGE=${GFM_FT_FILES_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export GFM_FT_MODELS_STORAGE=.*/export GFM_FT_MODELS_STORAGE=${GFM_FT_MODELS_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
@@ -525,4 +786,80 @@ configure_resource_mode() {
     sed -i -e "s/export REDIS_REPLICAS_STORAGE=.*/export REDIS_REPLICAS_STORAGE=${REDIS_REPLICAS_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
     echo "Resource configuration complete for all components"
+}
+
+# Function to conditionally add --set flags for Helm deployment
+# Only adds the flag if the value is not 'null' or empty
+# Usage: add_helm_set_if_not_null "helm.path.to.value" "$ENV_VAR_VALUE"
+add_helm_set_if_not_null() {
+    local helm_path="$1"
+    local value="$2"
+
+    # Check if value is not empty, not 'null', and not just whitespace
+    if [[ -n "$value" && "$value" != "null" && -n "${value// /}" ]]; then
+        echo "--set \"${helm_path}=${value}\""
+    fi
+}
+
+# Function to build all resource --set flags for Helm deployment
+# Returns a string of all applicable --set flags (CPU and memory only, no storage)
+build_resource_helm_flags() {
+    local flags=""
+
+    # PgBouncer resources
+    flags+=" $(add_helm_set_if_not_null "pgbouncer.resources.requests.cpu" "$PGBOUNCER_CPU_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "pgbouncer.resources.requests.memory" "$PGBOUNCER_MEMORY_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "pgbouncer.resources.limits.cpu" "$PGBOUNCER_CPU_LIMIT")"
+    flags+=" $(add_helm_set_if_not_null "pgbouncer.resources.limits.memory" "$PGBOUNCER_MEMORY_LIMIT")"
+
+    # MLflow resources (CPU and memory only, no storage)
+    flags+=" $(add_helm_set_if_not_null "gfm-mlflow.resources.requests.cpu" "$MLFLOW_CPU_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "gfm-mlflow.resources.requests.memory" "$MLFLOW_MEMORY_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "gfm-mlflow.resources.limits.cpu" "$MLFLOW_CPU_LIMIT")"
+    flags+=" $(add_helm_set_if_not_null "gfm-mlflow.resources.limits.memory" "$MLFLOW_MEMORY_LIMIT")"
+
+    # Redis Master resources (CPU and memory only, no storage)
+    flags+=" $(add_helm_set_if_not_null "redis.master.resources.requests.cpu" "$REDIS_MASTER_CPU_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "redis.master.resources.requests.memory" "$REDIS_MASTER_MEMORY_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "redis.master.resources.limits.cpu" "$REDIS_MASTER_CPU_LIMIT")"
+    flags+=" $(add_helm_set_if_not_null "redis.master.resources.limits.memory" "$REDIS_MASTER_MEMORY_LIMIT")"
+
+    # Redis Replica resources (CPU and memory only, no storage)
+    flags+=" $(add_helm_set_if_not_null "redis.replica.resources.requests.cpu" "$REDIS_REPLICA_CPU_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "redis.replica.resources.requests.memory" "$REDIS_REPLICA_MEMORY_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "redis.replica.resources.limits.cpu" "$REDIS_REPLICA_CPU_LIMIT")"
+    flags+=" $(add_helm_set_if_not_null "redis.replica.resources.limits.memory" "$REDIS_REPLICA_MEMORY_LIMIT")"
+
+    # Gateway API resources
+    flags+=" $(add_helm_set_if_not_null "gfm-studio-gateway.resources.api.requests.cpu" "$GATEWAY_API_CPU_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "gfm-studio-gateway.resources.api.requests.memory" "$GATEWAY_API_MEMORY_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "gfm-studio-gateway.resources.api.limits.cpu" "$GATEWAY_API_CPU_LIMIT")"
+    flags+=" $(add_helm_set_if_not_null "gfm-studio-gateway.resources.api.limits.memory" "$GATEWAY_API_MEMORY_LIMIT")"
+
+    # Gateway Celery Worker resources
+    flags+=" $(add_helm_set_if_not_null "gfm-studio-gateway.resources.celeryWorker.requests.cpu" "$GATEWAY_CELERY_WORKER_CPU_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "gfm-studio-gateway.resources.celeryWorker.requests.memory" "$GATEWAY_CELERY_WORKER_MEMORY_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "gfm-studio-gateway.resources.celeryWorker.limits.cpu" "$GATEWAY_CELERY_WORKER_CPU_LIMIT")"
+    flags+=" $(add_helm_set_if_not_null "gfm-studio-gateway.resources.celeryWorker.limits.memory" "$GATEWAY_CELERY_WORKER_MEMORY_LIMIT")"
+
+    # Gateway OAuth resources
+    flags+=" $(add_helm_set_if_not_null "gfm-studio-gateway.resources.oauth.requests.cpu" "$GATEWAY_OAUTH_CPU_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "gfm-studio-gateway.resources.oauth.requests.memory" "$GATEWAY_OAUTH_MEMORY_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "gfm-studio-gateway.resources.oauth.limits.cpu" "$GATEWAY_OAUTH_CPU_LIMIT")"
+    flags+=" $(add_helm_set_if_not_null "gfm-studio-gateway.resources.oauth.limits.memory" "$GATEWAY_OAUTH_MEMORY_LIMIT")"
+
+    # UI resources
+    flags+=" $(add_helm_set_if_not_null "geofm-ui.resources.ui.requests.cpu" "$UI_CPU_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "geofm-ui.resources.ui.requests.memory" "$UI_MEMORY_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "geofm-ui.resources.ui.limits.cpu" "$UI_CPU_LIMIT")"
+    flags+=" $(add_helm_set_if_not_null "geofm-ui.resources.ui.limits.memory" "$UI_MEMORY_LIMIT")"
+
+    # UI OAuth resources
+    flags+=" $(add_helm_set_if_not_null "geofm-ui.resources.oauth.requests.cpu" "$UI_OAUTH_CPU_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "geofm-ui.resources.oauth.requests.memory" "$UI_OAUTH_MEMORY_REQUEST")"
+    flags+=" $(add_helm_set_if_not_null "geofm-ui.resources.oauth.limits.cpu" "$UI_OAUTH_CPU_LIMIT")"
+    flags+=" $(add_helm_set_if_not_null "geofm-ui.resources.oauth.limits.memory" "$UI_OAUTH_MEMORY_LIMIT")"
+
+    # Return the flags (trim leading/trailing spaces)
+    echo "$flags" | xargs
 }

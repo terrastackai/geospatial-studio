@@ -562,8 +562,11 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     echo "--------------------  Deploying the Studio  --------------------------"
     echo "----------------------------------------------------------------------"
 
+    # Build resource configuration flags (only applies non-null values)
+    RESOURCE_FLAGS=$(build_resource_helm_flags)
+
     # Deploy Geospatial Studio
-    ./deployment-scripts/deploy_studio.sh
+    ./deployment-scripts/deploy_studio.sh "${RESOURCE_FLAGS}"
 else
     echo "----------------------------------------------------------------------"
     echo "------------------  Skipping Studio Deployment  ----------------------"

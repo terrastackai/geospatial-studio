@@ -67,6 +67,60 @@ export POSTGRES_MEMORY_REQUEST=512Mi
 export POSTGRES_MEMORY_LIMIT=1Gi
 export POSTGRES_STORAGE=2Gi
 
+# PgBouncer Resources
+export PGBOUNCER_CPU_REQUEST=250m
+export PGBOUNCER_CPU_LIMIT=1000m
+export PGBOUNCER_MEMORY_REQUEST=256Mi
+export PGBOUNCER_MEMORY_LIMIT=1Gi
+
+# MLflow Resources
+export MLFLOW_CPU_REQUEST='null'
+export MLFLOW_CPU_LIMIT='null'
+export MLFLOW_MEMORY_REQUEST='null'
+export MLFLOW_MEMORY_LIMIT='null'
+
+# Redis Master Resources
+export REDIS_MASTER_CPU_REQUEST='null'
+export REDIS_MASTER_CPU_LIMIT='null'
+export REDIS_MASTER_MEMORY_REQUEST='null'
+export REDIS_MASTER_MEMORY_LIMIT='null'
+
+# Redis Replica Resources
+export REDIS_REPLICA_CPU_REQUEST='null'
+export REDIS_REPLICA_CPU_LIMIT='null'
+export REDIS_REPLICA_MEMORY_REQUEST='null'
+export REDIS_REPLICA_MEMORY_LIMIT='null'
+
+# Gateway API Resources
+export GATEWAY_API_CPU_REQUEST='null'
+export GATEWAY_API_CPU_LIMIT='null'
+export GATEWAY_API_MEMORY_REQUEST='null'
+export GATEWAY_API_MEMORY_LIMIT='null'
+
+# Gateway Celery Worker Resources
+export GATEWAY_CELERY_WORKER_CPU_REQUEST='null'
+export GATEWAY_CELERY_WORKER_CPU_LIMIT='null'
+export GATEWAY_CELERY_WORKER_MEMORY_REQUEST='null'
+export GATEWAY_CELERY_WORKER_MEMORY_LIMIT='null'
+
+# Gateway OAuth Resources
+export GATEWAY_OAUTH_CPU_REQUEST='null'
+export GATEWAY_OAUTH_CPU_LIMIT='null'
+export GATEWAY_OAUTH_MEMORY_REQUEST='null'
+export GATEWAY_OAUTH_MEMORY_LIMIT='null'
+
+# UI OAuth Resources
+export UI_OAUTH_CPU_REQUEST='null'
+export UI_OAUTH_CPU_LIMIT='null'
+export UI_OAUTH_MEMORY_REQUEST='null'
+export UI_OAUTH_MEMORY_LIMIT='null'
+
+# UI Resources
+export UI_CPU_REQUEST='null'
+export UI_CPU_LIMIT='null'
+export UI_MEMORY_REQUEST='null'
+export UI_MEMORY_LIMIT='null'
+
 # Populate buckets with data
 export LULC_TILE_ROOT=
 export LULC_TILE_SHAPEFILE=
