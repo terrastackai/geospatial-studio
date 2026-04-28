@@ -252,7 +252,7 @@ if [[ "$DEPLOY_KEYCLOAK" == "Deploy" ]]; then
       --memory-limit $KEYCLOAK_MEMORY_LIMIT \
       --env-path workspace/${DEPLOYMENT_ENV}/env/.env \
       > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
-    
+
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s

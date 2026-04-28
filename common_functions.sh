@@ -297,7 +297,7 @@ configure_resource_mode() {
     resource_mode_options="dev low medium high xlarge custom"
     typeset resource_mode
     get_menu_selection "Select resource mode" "resource_mode" "$resource_mode_options"
-    
+
     export RESOURCE_MODE=$resource_mode
     echo "RESOURCE_MODE selected: **$RESOURCE_MODE**"
 
@@ -305,7 +305,7 @@ configure_resource_mode() {
         sed -i -e "s/export RESOURCE_MODE=.*/export RESOURCE_MODE=${RESOURCE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         return 0
     fi
-    
+
     # Set resources based on selected mode
     case $RESOURCE_MODE in
         low)
@@ -492,7 +492,7 @@ configure_resource_mode() {
                 REDIS_REPLICAS_STORAGE
             ;;
     esac
-    
+
     # Update env.sh with resource mode and all component resources
     sed -i -e "s/export RESOURCE_MODE=.*/export RESOURCE_MODE=${RESOURCE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export MINIO_CPU_REQUEST=.*/export MINIO_CPU_REQUEST=${MINIO_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
@@ -523,6 +523,6 @@ configure_resource_mode() {
     sed -i -e "s/export GENERIC_PYTHON_PROCESSOR_STORAGE=.*/export GENERIC_PYTHON_PROCESSOR_STORAGE=${GENERIC_PYTHON_PROCESSOR_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export REDIS_MASTER_STORAGE=.*/export REDIS_MASTER_STORAGE=${REDIS_MASTER_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export REDIS_REPLICAS_STORAGE=.*/export REDIS_REPLICAS_STORAGE=${REDIS_REPLICAS_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    
+
     echo "Resource configuration complete for all components"
 }
