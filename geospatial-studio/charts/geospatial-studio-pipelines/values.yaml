@@ -98,6 +98,7 @@ objectStorage:
     geoserver: BUCKET_GEOSERVER
     inference_auxdata: BUCKET_INFERENCE_AUXDATA
     generic_python_processor: BUCKET_GENERIC_PYTHON_PROCESSOR
+    pipelineData: BUCKET_PIPELINE_DATA
   cos_storage_class: COS_STORAGE_CLASS
 non_cos_storage_class: NON_COS_STORAGE_CLASS
 pvc_access_mode: PVC_ACCESS_MODE
@@ -161,6 +162,12 @@ processors:
         value: "TERRAKIT_CACHE_ENABLED_VALUE"
       - name: TERRAKIT_CACHE_DIR
         value: "TERRAKIT_CACHE_DIR_VALUE"
+    extra_volumes:
+      - name: pipeline-data-pvc
+        claimName: pipeline-data-pvc
+        bucket_name: BUCKET_PIPELINE_DATA
+        mountPath: /pipeline/data
+        create: true
   - name: push-to-geoserver
     enabled: true
     image:
