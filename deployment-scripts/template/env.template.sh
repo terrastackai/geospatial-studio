@@ -54,10 +54,10 @@ export KEYCLOAK_MEMORY_REQUEST=512Mi
 export KEYCLOAK_MEMORY_LIMIT=1Gi
 
 # GeoServer Resources
-export GEOSERVER_CPU_REQUEST=''
-export GEOSERVER_CPU_LIMIT=''
-export GEOSERVER_MEMORY_REQUEST=''
-export GEOSERVER_MEMORY_LIMIT=''
+export GEOSERVER_CPU_REQUEST='null'
+export GEOSERVER_CPU_LIMIT='null'
+export GEOSERVER_MEMORY_REQUEST='null'
+export GEOSERVER_MEMORY_LIMIT='null'
 export GEOSERVER_STORAGE=2Gi
 
 # PostgreSQL Resources (Bitnami chart defaults)
