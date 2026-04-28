@@ -270,3 +270,259 @@ check_deployment_and_prompt() {
         eval "$deploy_var_name='Deploy'"
     fi
 }
+
+# Helper function to export storage variables
+export_storage_vars() {
+    local size="$1"
+    shift
+    for var in "$@"; do
+        export "$var"="$size"
+    done
+}
+
+# Configure resource mode for all components
+configure_resource_mode() {
+    echo "***********************************************************************************"
+    echo "----------------------  Configure Resource Mode  ----------------------------------"
+    echo "***********************************************************************************"
+    echo "Select resource allocation profile for MinIO, Keycloak, GeoServer, and PostgreSQL:"
+    echo "  - dev: Use development values (default, development)"
+    echo "  - low: testing deployment (minimal resources)"
+    echo "  - medium: Enhanced performance"
+    echo "  - high: High-performance workloads"
+    echo "  - xlarge: Maximum performance"
+    echo "  - custom: Custom resource configuration in env.sh"
+    echo "***********************************************************************************"
+
+    resource_mode_options="dev low medium high xlarge custom"
+    typeset resource_mode
+    get_menu_selection "Select resource mode" "resource_mode" "$resource_mode_options"
+    
+    export RESOURCE_MODE=$resource_mode
+    echo "RESOURCE_MODE selected: **$RESOURCE_MODE**"
+
+    if [[ "$RESOURCE_MODE" == "custom" ]]; then
+        sed -i -e "s/export RESOURCE_MODE=.*/export RESOURCE_MODE=${RESOURCE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        return 0
+    fi
+    
+    # Set resources based on selected mode
+    case $RESOURCE_MODE in
+        low)
+            # MinIO
+            export MINIO_CPU_REQUEST="500m"
+            export MINIO_CPU_LIMIT="1000m"
+            export MINIO_MEMORY_REQUEST="512Mi"
+            export MINIO_MEMORY_LIMIT="1Gi"
+            export MINIO_STORAGE="30Gi"
+            # Keycloak
+            export KEYCLOAK_CPU_REQUEST="100m"
+            export KEYCLOAK_CPU_LIMIT="500m"
+            export KEYCLOAK_MEMORY_REQUEST="256Mi"
+            export KEYCLOAK_MEMORY_LIMIT="512Mi"
+            # GeoServer
+            export GEOSERVER_CPU_REQUEST="null"
+            export GEOSERVER_CPU_LIMIT="null"
+            export GEOSERVER_MEMORY_REQUEST="null"
+            export GEOSERVER_MEMORY_LIMIT="null"
+            export GEOSERVER_STORAGE="2Gi"
+            # PostgreSQL
+            export POSTGRES_CPU_REQUEST="100m"
+            export POSTGRES_CPU_LIMIT="500m"
+            export POSTGRES_MEMORY_REQUEST="256Mi"
+            export POSTGRES_MEMORY_LIMIT="512Mi"
+            export POSTGRES_STORAGE="2Gi"
+            # Studio
+            export GFM_FT_DATA_STORAGE="10Gi"
+            export_storage_vars "5Gi" \
+                GFM_FT_FILES_STORAGE \
+                GFM_FT_MODELS_STORAGE \
+                INFERENCE_SHARED_STORAGE
+            export_storage_vars "1Gi" \
+                GFM_MLFLOW_STORAGE \
+                INFERENCE_AUXDATA_STORAGE \
+                GENERIC_PYTHON_PROCESSOR_STORAGE \
+                REDIS_MASTER_STORAGE \
+                REDIS_REPLICAS_STORAGE
+            ;;
+        dev)
+            # MinIO
+            export MINIO_CPU_REQUEST="2000m"
+            export MINIO_CPU_LIMIT="4000m"
+            export MINIO_MEMORY_REQUEST="2Gi"
+            export MINIO_MEMORY_LIMIT="4Gi"
+            export MINIO_STORAGE="40Gi"
+            # Keycloak
+            export KEYCLOAK_CPU_REQUEST="250m"
+            export KEYCLOAK_CPU_LIMIT="1000m"
+            export KEYCLOAK_MEMORY_REQUEST="512Mi"
+            export KEYCLOAK_MEMORY_LIMIT="1Gi"
+            # GeoServer
+            export GEOSERVER_CPU_REQUEST="null"
+            export GEOSERVER_CPU_LIMIT="null"
+            export GEOSERVER_MEMORY_REQUEST="null"
+            export GEOSERVER_MEMORY_LIMIT="null"
+            export GEOSERVER_STORAGE="2Gi"
+            # PostgreSQL
+            export POSTGRES_CPU_REQUEST="250m"
+            export POSTGRES_CPU_LIMIT="1000m"
+            export POSTGRES_MEMORY_REQUEST="512Mi"
+            export POSTGRES_MEMORY_LIMIT="1Gi"
+            export POSTGRES_STORAGE="2Gi"
+            # Studio
+            export GFM_FT_DATA_STORAGE="15Gi"
+            export_storage_vars "5Gi" \
+                GFM_FT_FILES_STORAGE \
+                GFM_FT_MODELS_STORAGE \
+                INFERENCE_SHARED_STORAGE
+            export_storage_vars "1Gi" \
+                GFM_MLFLOW_STORAGE \
+                INFERENCE_AUXDATA_STORAGE \
+                GENERIC_PYTHON_PROCESSOR_STORAGE \
+                REDIS_MASTER_STORAGE \
+                REDIS_REPLICAS_STORAGE
+            ;;
+        medium)
+            # MinIO
+            export MINIO_CPU_REQUEST="4000m"
+            export MINIO_CPU_LIMIT="8000m"
+            export MINIO_MEMORY_REQUEST="3Gi"
+            export MINIO_MEMORY_LIMIT="6Gi"
+            export MINIO_STORAGE="100Gi"
+            # Keycloak
+            export KEYCLOAK_CPU_REQUEST="500m"
+            export KEYCLOAK_CPU_LIMIT="1500m"
+            export KEYCLOAK_MEMORY_REQUEST="768Mi"
+            export KEYCLOAK_MEMORY_LIMIT="1536Mi"
+            # GeoServer
+            export GEOSERVER_CPU_REQUEST="750m"
+            export GEOSERVER_CPU_LIMIT="1500m"
+            export GEOSERVER_MEMORY_REQUEST="8Gi"
+            export GEOSERVER_MEMORY_LIMIT="24Gi"
+            export GEOSERVER_STORAGE="30Gi"
+            # PostgreSQL
+            export POSTGRES_CPU_REQUEST="500m"
+            export POSTGRES_CPU_LIMIT="1500m"
+            export POSTGRES_MEMORY_REQUEST="768Mi"
+            export POSTGRES_MEMORY_LIMIT="1536Mi"
+            export POSTGRES_STORAGE="10Gi"
+            # Studio
+            export_storage_vars "20Gi" \
+                GFM_FT_DATA_STORAGE \
+                GFM_FT_FILES_STORAGE \
+                GFM_FT_MODELS_STORAGE \
+                INFERENCE_SHARED_STORAGE
+            export_storage_vars "1Gi" \
+                GFM_MLFLOW_STORAGE \
+                INFERENCE_AUXDATA_STORAGE \
+                GENERIC_PYTHON_PROCESSOR_STORAGE \
+                REDIS_MASTER_STORAGE \
+                REDIS_REPLICAS_STORAGE
+            ;;
+        high)
+            # MinIO
+            export MINIO_CPU_REQUEST="3000m"
+            export MINIO_CPU_LIMIT="6000m"
+            export MINIO_MEMORY_REQUEST="4Gi"
+            export MINIO_MEMORY_LIMIT="8Gi"
+            export MINIO_STORAGE="500Gi"
+            # Keycloak
+            export KEYCLOAK_CPU_REQUEST="750m"
+            export KEYCLOAK_CPU_LIMIT="2000m"
+            export KEYCLOAK_MEMORY_REQUEST="1Gi"
+            export KEYCLOAK_MEMORY_LIMIT="2Gi"
+            # GeoServer
+            export GEOSERVER_CPU_REQUEST="1000m"
+            export GEOSERVER_CPU_LIMIT="3000m"
+            export GEOSERVER_MEMORY_REQUEST="12Gi"
+            export GEOSERVER_MEMORY_LIMIT="48Gi"
+            export GEOSERVER_STORAGE="200Gi"
+            # PostgreSQL
+            export POSTGRES_CPU_REQUEST="750m"
+            export POSTGRES_CPU_LIMIT="2000m"
+            export POSTGRES_MEMORY_REQUEST="1Gi"
+            export POSTGRES_MEMORY_LIMIT="2Gi"
+            export POSTGRES_STORAGE="10Gi"
+            # Studio
+            export_storage_vars "100Gi" \
+                GFM_FT_DATA_STORAGE \
+                GFM_FT_FILES_STORAGE \
+                GFM_FT_MODELS_STORAGE \
+                INFERENCE_SHARED_STORAGE \
+                INFERENCE_AUXDATA_STORAGE
+            export_storage_vars "5Gi" \
+                GFM_MLFLOW_STORAGE \
+                GENERIC_PYTHON_PROCESSOR_STORAGE \
+                REDIS_MASTER_STORAGE \
+                REDIS_REPLICAS_STORAGE
+            ;;
+        xlarge)
+            # MinIO
+            export MINIO_CPU_REQUEST="4000m"
+            export MINIO_CPU_LIMIT="8000m"
+            export MINIO_MEMORY_REQUEST="6Gi"
+            export MINIO_MEMORY_LIMIT="12Gi"
+            export MINIO_STORAGE="1000Gi"
+            # Keycloak
+            export KEYCLOAK_CPU_REQUEST="1000m"
+            export KEYCLOAK_CPU_LIMIT="4000m"
+            export KEYCLOAK_MEMORY_REQUEST="2Gi"
+            export KEYCLOAK_MEMORY_LIMIT="4Gi"
+            # GeoServer
+            export GEOSERVER_CPU_REQUEST="2000m"
+            export GEOSERVER_CPU_LIMIT="4000m"
+            export GEOSERVER_MEMORY_REQUEST="12Gi"
+            export GEOSERVER_MEMORY_LIMIT="60Gi"
+            # PostgreSQL
+            export POSTGRES_CPU_REQUEST="1000m"
+            export POSTGRES_CPU_LIMIT="4000m"
+            export POSTGRES_MEMORY_REQUEST="2Gi"
+            export POSTGRES_MEMORY_LIMIT="4Gi"
+            # Studio
+            export_storage_vars "200Gi" \
+                GFM_FT_DATA_STORAGE \
+                GFM_FT_FILES_STORAGE \
+                GFM_FT_MODELS_STORAGE \
+                INFERENCE_SHARED_STORAGE \
+                INFERENCE_AUXDATA_STORAGE
+            export_storage_vars "10Gi" \
+                GFM_MLFLOW_STORAGE \
+                GENERIC_PYTHON_PROCESSOR_STORAGE \
+                REDIS_MASTER_STORAGE \
+                REDIS_REPLICAS_STORAGE
+            ;;
+    esac
+    
+    # Update env.sh with resource mode and all component resources
+    sed -i -e "s/export RESOURCE_MODE=.*/export RESOURCE_MODE=${RESOURCE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export MINIO_CPU_REQUEST=.*/export MINIO_CPU_REQUEST=${MINIO_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export MINIO_CPU_LIMIT=.*/export MINIO_CPU_LIMIT=${MINIO_CPU_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export MINIO_MEMORY_REQUEST=.*/export MINIO_MEMORY_REQUEST=${MINIO_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export MINIO_MEMORY_LIMIT=.*/export MINIO_MEMORY_LIMIT=${MINIO_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export MINIO_STORAGE=.*/export MINIO_STORAGE=${MINIO_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export KEYCLOAK_CPU_REQUEST=.*/export KEYCLOAK_CPU_REQUEST=${KEYCLOAK_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export KEYCLOAK_CPU_LIMIT=.*/export KEYCLOAK_CPU_LIMIT=${KEYCLOAK_CPU_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export KEYCLOAK_MEMORY_REQUEST=.*/export KEYCLOAK_MEMORY_REQUEST=${KEYCLOAK_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export KEYCLOAK_MEMORY_LIMIT=.*/export KEYCLOAK_MEMORY_LIMIT=${KEYCLOAK_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GEOSERVER_CPU_REQUEST=.*/export GEOSERVER_CPU_REQUEST=${GEOSERVER_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GEOSERVER_CPU_LIMIT=.*/export GEOSERVER_CPU_LIMIT=${GEOSERVER_CPU_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GEOSERVER_MEMORY_REQUEST=.*/export GEOSERVER_MEMORY_REQUEST=${GEOSERVER_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GEOSERVER_MEMORY_LIMIT=.*/export GEOSERVER_MEMORY_LIMIT=${GEOSERVER_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GEOSERVER_STORAGE=.*/export GEOSERVER_STORAGE=${GEOSERVER_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export POSTGRES_CPU_REQUEST=.*/export POSTGRES_CPU_REQUEST=${POSTGRES_CPU_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export POSTGRES_CPU_LIMIT=.*/export POSTGRES_CPU_LIMIT=${POSTGRES_CPU_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export POSTGRES_MEMORY_REQUEST=.*/export POSTGRES_MEMORY_REQUEST=${POSTGRES_MEMORY_REQUEST}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export POSTGRES_MEMORY_LIMIT=.*/export POSTGRES_MEMORY_LIMIT=${POSTGRES_MEMORY_LIMIT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export POSTGRES_STORAGE=.*/export POSTGRES_STORAGE=${POSTGRES_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GFM_FT_DATA_STORAGE=.*/export GFM_FT_DATA_STORAGE=${GFM_FT_DATA_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GFM_FT_FILES_STORAGE=.*/export GFM_FT_FILES_STORAGE=${GFM_FT_FILES_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GFM_FT_MODELS_STORAGE=.*/export GFM_FT_MODELS_STORAGE=${GFM_FT_MODELS_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export INFERENCE_SHARED_STORAGE=.*/export INFERENCE_SHARED_STORAGE=${INFERENCE_SHARED_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export INFERENCE_AUXDATA_STORAGE=.*/export INFERENCE_AUXDATA_STORAGE=${INFERENCE_AUXDATA_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GFM_MLFLOW_STORAGE=.*/export GFM_MLFLOW_STORAGE=${GFM_MLFLOW_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export GENERIC_PYTHON_PROCESSOR_STORAGE=.*/export GENERIC_PYTHON_PROCESSOR_STORAGE=${GENERIC_PYTHON_PROCESSOR_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export REDIS_MASTER_STORAGE=.*/export REDIS_MASTER_STORAGE=${REDIS_MASTER_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export REDIS_REPLICAS_STORAGE=.*/export REDIS_REPLICAS_STORAGE=${REDIS_REPLICAS_STORAGE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    
+    echo "Resource configuration complete for all components"
+}

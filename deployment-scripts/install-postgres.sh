@@ -27,7 +27,21 @@ else
 fi
 
 if [[ -n "$DO_NOT_SET_SCC" ]] && [[ "$DO_NOT_SET_SCC" == "DO_NOT_SET_SCC" ]]; then
-    helm install postgresql --namespace ${OC_PROJECT} --version $PG_VERSION bitnami/postgresql --set postgresql.serviceAccount.name="default" --set image.repository="bitnamilegacy/postgresql" --set primary.persistence.existingClaim="postgresql-pvc" --set global.postgresql.auth.postgresPassword=$POSTGRES_PASSWORD --set volumePermissions.enabled=false --set shmVolume.enabled=false --set volumePermissions.image.repository="bitnamilegacy/os-shell" --set primary.podSecurityContext.fsGroup=null --set primary.securityContext.enabled=false --set primary.containerSecurityContext.enabled=false
+    helm install postgresql --namespace ${OC_PROJECT} --version $PG_VERSION bitnami/postgresql \
+        --set postgresql.serviceAccount.name="default" \
+        --set image.repository="bitnamilegacy/postgresql" \
+        --set primary.persistence.existingClaim="postgresql-pvc" \
+        --set global.postgresql.auth.postgresPassword=$POSTGRES_PASSWORD \
+        --set volumePermissions.enabled=false \
+        --set shmVolume.enabled=false \
+        --set volumePermissions.image.repository="bitnamilegacy/os-shell" \
+        --set primary.podSecurityContext.fsGroup=null \
+        --set primary.securityContext.enabled=false \
+        --set primary.containerSecurityContext.enabled=false \
+        --set primary.resources.requests.cpu=$POSTGRES_CPU_REQUEST \
+        --set primary.resources.requests.memory=$POSTGRES_MEMORY_REQUEST \
+        --set primary.resources.limits.cpu=$POSTGRES_CPU_LIMIT \
+        --set primary.resources.limits.memory=$POSTGRES_MEMORY_LIMIT
 else
     if command -v oc &> /dev/null; then
         oc adm policy add-scc-to-user anyuid -n $OC_PROJECT -z default
@@ -36,6 +50,17 @@ else
         echo "If running on OpenShift, please install the OpenShift CLI (oc) and run:"
         echo "  oc adm policy add-scc-to-user anyuid -n $OC_PROJECT -z default"
     fi
-    helm install postgresql --namespace ${OC_PROJECT} --version $PG_VERSION bitnami/postgresql --set postgresql.serviceAccount.name="default" --set image.repository="bitnamilegacy/postgresql" --set primary.persistence.existingClaim="postgresql-pvc" --set global.postgresql.auth.postgresPassword=$POSTGRES_PASSWORD --set volumePermissions.enabled=true --set shmVolume.enabled=false --set volumePermissions.image.repository="bitnamilegacy/os-shell"
+    helm install postgresql --namespace ${OC_PROJECT} --version $PG_VERSION bitnami/postgresql \
+        --set postgresql.serviceAccount.name="default" \
+        --set image.repository="bitnamilegacy/postgresql" \
+        --set primary.persistence.existingClaim="postgresql-pvc" \
+        --set global.postgresql.auth.postgresPassword=$POSTGRES_PASSWORD \
+        --set volumePermissions.enabled=true \
+        --set shmVolume.enabled=false \
+        --set volumePermissions.image.repository="bitnamilegacy/os-shell" \
+        --set primary.resources.requests.cpu=$POSTGRES_CPU_REQUEST \
+        --set primary.resources.requests.memory=$POSTGRES_MEMORY_REQUEST \
+        --set primary.resources.limits.cpu=$POSTGRES_CPU_LIMIT \
+        --set primary.resources.limits.memory=$POSTGRES_MEMORY_LIMIT
 fi
 

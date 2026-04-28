@@ -85,6 +85,16 @@ export CLUSTER_NODE_NAME=$cluster_node_name
 
 kubectl label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
 
+echo "----------------------------------------------------------------------"
+echo "--------------------  Configure Resource Mode  -----------------------"
+echo "----------------------------------------------------------------------"
+
+if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+    configure_resource_mode
+fi
+
+source workspace/${DEPLOYMENT_ENV}/env/env.sh
+
 echo "***********************************************************************************"
 echo "----------------------  Configure Storage Mode  -----------------------------------"
 echo "-----------------------------------------------------------------------------------"
@@ -191,8 +201,16 @@ if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
     kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
 
-
-    python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --storage $MINIO_STORAGE > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+    python ./deployment-scripts/update-deployment-template.py \
+        --disable-route \
+        --storageclass ${NON_COS_STORAGE_CLASS} \
+        --storage $MINIO_STORAGE \
+        --filename deployment-scripts/minio-deployment.yaml \
+        --cpu-request $MINIO_CPU_REQUEST \
+        --cpu-limit $MINIO_CPU_LIMIT \
+        --memory-request $MINIO_MEMORY_REQUEST \
+        --memory-limit $MINIO_MEMORY_LIMIT \
+        > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
@@ -230,6 +248,7 @@ else
     echo "-------------------  Skipping Minio Deployment  ----------------------"
     echo "----------------------------------------------------------------------"
     echo "Loading existing MinIO configuration..."
+    sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 fi
 
@@ -282,7 +301,15 @@ if [[ "$DEPLOY_KEYCLOAK" == "Deploy" ]]; then
     echo "--------------------  Deploying Keycloak  ----------------------------"
     echo "----------------------------------------------------------------------"
 
-    python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+    python ./deployment-scripts/update-deployment-template.py \
+      --disable-route \
+      --filename deployment-scripts/keycloak-deployment.yaml \
+      --cpu-request $KEYCLOAK_CPU_REQUEST \
+      --cpu-limit $KEYCLOAK_CPU_LIMIT \
+      --memory-request $KEYCLOAK_MEMORY_REQUEST \
+      --memory-limit $KEYCLOAK_MEMORY_LIMIT \
+      --env-path workspace/${DEPLOYMENT_ENV}/env/.env \
+      > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
@@ -320,7 +347,17 @@ if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
     echo "--------------------  Deploying Geoserver  ----------------------------"
     echo "----------------------------------------------------------------------"
 
-    python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --storage $GEOSERVER_STORAGE --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+    python ./deployment-scripts/update-deployment-template.py \
+        --filename deployment-scripts/geoserver-deployment.yaml \
+        --storageclass ${NON_COS_STORAGE_CLASS} \
+        --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") \
+        --storage $GEOSERVER_STORAGE \
+        --disable-route \
+        --cpu-request $GEOSERVER_CPU_REQUEST \
+        --cpu-limit $GEOSERVER_CPU_LIMIT \
+        --memory-request $GEOSERVER_MEMORY_REQUEST \
+        --memory-limit $GEOSERVER_MEMORY_LIMIT \
+        > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n $OC_PROJECT --timeout=900s
