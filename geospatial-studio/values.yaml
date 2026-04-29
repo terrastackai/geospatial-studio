@@ -349,6 +349,13 @@ pgbouncer:
     username: <pg_user>
     # Password for PostgreSQL (should be set via secret)
     password: <pg_pass>
+  resources:
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
 
 # geospatial-studio-pipelines
 geospatial-studio-pipelines:

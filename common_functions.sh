@@ -801,6 +801,152 @@ add_helm_set_if_not_null() {
     fi
 }
 
+# Function to update values-deploy.yaml with resource configurations
+# This function populates the empty resource sections in the values file
+# with the values from environment variables set by configure_resource_mode()
+update_values_deploy_resources() {
+    local values_file="$1"
+
+    if [[ ! -f "$values_file" ]]; then
+        echo "Error: Values file not found: $values_file"
+        return 1
+    fi
+
+    echo "Updating resource configurations in $values_file..."
+
+    # Use yq to update the YAML file with resource values
+    # Only update if the environment variable is set and not 'null'
+
+    # PgBouncer resources
+    if [[ -n "$PGBOUNCER_CPU_REQUEST" && "$PGBOUNCER_CPU_REQUEST" != "null" && -n "${PGBOUNCER_CPU_REQUEST// /}" ]]; then
+        yq eval -i ".pgbouncer.resources.requests.cpu = \"$PGBOUNCER_CPU_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$PGBOUNCER_MEMORY_REQUEST" && "$PGBOUNCER_MEMORY_REQUEST" != "null" && -n "${PGBOUNCER_MEMORY_REQUEST// /}" ]]; then
+        yq eval -i ".pgbouncer.resources.requests.memory = \"$PGBOUNCER_MEMORY_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$PGBOUNCER_CPU_LIMIT" && "$PGBOUNCER_CPU_LIMIT" != "null" && -n "${PGBOUNCER_CPU_LIMIT// /}" ]]; then
+        yq eval -i ".pgbouncer.resources.limits.cpu = \"$PGBOUNCER_CPU_LIMIT\"" "$values_file"
+    fi
+    if [[ -n "$PGBOUNCER_MEMORY_LIMIT" && "$PGBOUNCER_MEMORY_LIMIT" != "null" && -n "${PGBOUNCER_MEMORY_LIMIT// /}" ]]; then
+        yq eval -i ".pgbouncer.resources.limits.memory = \"$PGBOUNCER_MEMORY_LIMIT\"" "$values_file"
+    fi
+
+    # MLflow resources
+    if [[ -n "$MLFLOW_CPU_REQUEST" && "$MLFLOW_CPU_REQUEST" != "null" && -n "${MLFLOW_CPU_REQUEST// /}" ]]; then
+        yq eval -i ".gfm-mlflow.resources.requests.cpu = \"$MLFLOW_CPU_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$MLFLOW_MEMORY_REQUEST" && "$MLFLOW_MEMORY_REQUEST" != "null" && -n "${MLFLOW_MEMORY_REQUEST// /}" ]]; then
+        yq eval -i ".gfm-mlflow.resources.requests.memory = \"$MLFLOW_MEMORY_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$MLFLOW_CPU_LIMIT" && "$MLFLOW_CPU_LIMIT" != "null" && -n "${MLFLOW_CPU_LIMIT// /}" ]]; then
+        yq eval -i ".gfm-mlflow.resources.limits.cpu = \"$MLFLOW_CPU_LIMIT\"" "$values_file"
+    fi
+    if [[ -n "$MLFLOW_MEMORY_LIMIT" && "$MLFLOW_MEMORY_LIMIT" != "null" && -n "${MLFLOW_MEMORY_LIMIT// /}" ]]; then
+        yq eval -i ".gfm-mlflow.resources.limits.memory = \"$MLFLOW_MEMORY_LIMIT\"" "$values_file"
+    fi
+
+    # Redis Master resources
+    if [[ -n "$REDIS_MASTER_CPU_REQUEST" && "$REDIS_MASTER_CPU_REQUEST" != "null" && -n "${REDIS_MASTER_CPU_REQUEST// /}" ]]; then
+        yq eval -i ".redis.master.resources.requests.cpu = \"$REDIS_MASTER_CPU_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$REDIS_MASTER_MEMORY_REQUEST" && "$REDIS_MASTER_MEMORY_REQUEST" != "null" && -n "${REDIS_MASTER_MEMORY_REQUEST// /}" ]]; then
+        yq eval -i ".redis.master.resources.requests.memory = \"$REDIS_MASTER_MEMORY_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$REDIS_MASTER_CPU_LIMIT" && "$REDIS_MASTER_CPU_LIMIT" != "null" && -n "${REDIS_MASTER_CPU_LIMIT// /}" ]]; then
+        yq eval -i ".redis.master.resources.limits.cpu = \"$REDIS_MASTER_CPU_LIMIT\"" "$values_file"
+    fi
+    if [[ -n "$REDIS_MASTER_MEMORY_LIMIT" && "$REDIS_MASTER_MEMORY_LIMIT" != "null" && -n "${REDIS_MASTER_MEMORY_LIMIT// /}" ]]; then
+        yq eval -i ".redis.master.resources.limits.memory = \"$REDIS_MASTER_MEMORY_LIMIT\"" "$values_file"
+    fi
+
+    # Redis Replica resources
+    if [[ -n "$REDIS_REPLICA_CPU_REQUEST" && "$REDIS_REPLICA_CPU_REQUEST" != "null" && -n "${REDIS_REPLICA_CPU_REQUEST// /}" ]]; then
+        yq eval -i ".redis.replica.resources.requests.cpu = \"$REDIS_REPLICA_CPU_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$REDIS_REPLICA_MEMORY_REQUEST" && "$REDIS_REPLICA_MEMORY_REQUEST" != "null" && -n "${REDIS_REPLICA_MEMORY_REQUEST// /}" ]]; then
+        yq eval -i ".redis.replica.resources.requests.memory = \"$REDIS_REPLICA_MEMORY_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$REDIS_REPLICA_CPU_LIMIT" && "$REDIS_REPLICA_CPU_LIMIT" != "null" && -n "${REDIS_REPLICA_CPU_LIMIT// /}" ]]; then
+        yq eval -i ".redis.replica.resources.limits.cpu = \"$REDIS_REPLICA_CPU_LIMIT\"" "$values_file"
+    fi
+    if [[ -n "$REDIS_REPLICA_MEMORY_LIMIT" && "$REDIS_REPLICA_MEMORY_LIMIT" != "null" && -n "${REDIS_REPLICA_MEMORY_LIMIT// /}" ]]; then
+        yq eval -i ".redis.replica.resources.limits.memory = \"$REDIS_REPLICA_MEMORY_LIMIT\"" "$values_file"
+    fi
+
+    # Gateway API resources
+    if [[ -n "$GATEWAY_API_CPU_REQUEST" && "$GATEWAY_API_CPU_REQUEST" != "null" && -n "${GATEWAY_API_CPU_REQUEST// /}" ]]; then
+        yq eval -i ".gfm-studio-gateway.resources.api.requests.cpu = \"$GATEWAY_API_CPU_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$GATEWAY_API_MEMORY_REQUEST" && "$GATEWAY_API_MEMORY_REQUEST" != "null" && -n "${GATEWAY_API_MEMORY_REQUEST// /}" ]]; then
+        yq eval -i ".gfm-studio-gateway.resources.api.requests.memory = \"$GATEWAY_API_MEMORY_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$GATEWAY_API_CPU_LIMIT" && "$GATEWAY_API_CPU_LIMIT" != "null" && -n "${GATEWAY_API_CPU_LIMIT// /}" ]]; then
+        yq eval -i ".gfm-studio-gateway.resources.api.limits.cpu = \"$GATEWAY_API_CPU_LIMIT\"" "$values_file"
+    fi
+    if [[ -n "$GATEWAY_API_MEMORY_LIMIT" && "$GATEWAY_API_MEMORY_LIMIT" != "null" && -n "${GATEWAY_API_MEMORY_LIMIT// /}" ]]; then
+        yq eval -i ".gfm-studio-gateway.resources.api.limits.memory = \"$GATEWAY_API_MEMORY_LIMIT\"" "$values_file"
+    fi
+
+    # Gateway Celery Worker resources
+    if [[ -n "$GATEWAY_CELERY_WORKER_CPU_REQUEST" && "$GATEWAY_CELERY_WORKER_CPU_REQUEST" != "null" && -n "${GATEWAY_CELERY_WORKER_CPU_REQUEST// /}" ]]; then
+        yq eval -i ".gfm-studio-gateway.resources.celeryWorker.requests.cpu = \"$GATEWAY_CELERY_WORKER_CPU_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$GATEWAY_CELERY_WORKER_MEMORY_REQUEST" && "$GATEWAY_CELERY_WORKER_MEMORY_REQUEST" != "null" && -n "${GATEWAY_CELERY_WORKER_MEMORY_REQUEST// /}" ]]; then
+        yq eval -i ".gfm-studio-gateway.resources.celeryWorker.requests.memory = \"$GATEWAY_CELERY_WORKER_MEMORY_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$GATEWAY_CELERY_WORKER_CPU_LIMIT" && "$GATEWAY_CELERY_WORKER_CPU_LIMIT" != "null" && -n "${GATEWAY_CELERY_WORKER_CPU_LIMIT// /}" ]]; then
+        yq eval -i ".gfm-studio-gateway.resources.celeryWorker.limits.cpu = \"$GATEWAY_CELERY_WORKER_CPU_LIMIT\"" "$values_file"
+    fi
+    if [[ -n "$GATEWAY_CELERY_WORKER_MEMORY_LIMIT" && "$GATEWAY_CELERY_WORKER_MEMORY_LIMIT" != "null" && -n "${GATEWAY_CELERY_WORKER_MEMORY_LIMIT// /}" ]]; then
+        yq eval -i ".gfm-studio-gateway.resources.celeryWorker.limits.memory = \"$GATEWAY_CELERY_WORKER_MEMORY_LIMIT\"" "$values_file"
+    fi
+
+    # Gateway OAuth resources
+    if [[ -n "$GATEWAY_OAUTH_CPU_REQUEST" && "$GATEWAY_OAUTH_CPU_REQUEST" != "null" && -n "${GATEWAY_OAUTH_CPU_REQUEST// /}" ]]; then
+        yq eval -i ".gfm-studio-gateway.resources.oauth.requests.cpu = \"$GATEWAY_OAUTH_CPU_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$GATEWAY_OAUTH_MEMORY_REQUEST" && "$GATEWAY_OAUTH_MEMORY_REQUEST" != "null" && -n "${GATEWAY_OAUTH_MEMORY_REQUEST// /}" ]]; then
+        yq eval -i ".gfm-studio-gateway.resources.oauth.requests.memory = \"$GATEWAY_OAUTH_MEMORY_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$GATEWAY_OAUTH_CPU_LIMIT" && "$GATEWAY_OAUTH_CPU_LIMIT" != "null" && -n "${GATEWAY_OAUTH_CPU_LIMIT// /}" ]]; then
+        yq eval -i ".gfm-studio-gateway.resources.oauth.limits.cpu = \"$GATEWAY_OAUTH_CPU_LIMIT\"" "$values_file"
+    fi
+    if [[ -n "$GATEWAY_OAUTH_MEMORY_LIMIT" && "$GATEWAY_OAUTH_MEMORY_LIMIT" != "null" && -n "${GATEWAY_OAUTH_MEMORY_LIMIT// /}" ]]; then
+        yq eval -i ".gfm-studio-gateway.resources.oauth.limits.memory = \"$GATEWAY_OAUTH_MEMORY_LIMIT\"" "$values_file"
+    fi
+
+    # UI resources
+    if [[ -n "$UI_CPU_REQUEST" && "$UI_CPU_REQUEST" != "null" && -n "${UI_CPU_REQUEST// /}" ]]; then
+        yq eval -i ".geofm-ui.resources.ui.requests.cpu = \"$UI_CPU_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$UI_MEMORY_REQUEST" && "$UI_MEMORY_REQUEST" != "null" && -n "${UI_MEMORY_REQUEST// /}" ]]; then
+        yq eval -i ".geofm-ui.resources.ui.requests.memory = \"$UI_MEMORY_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$UI_CPU_LIMIT" && "$UI_CPU_LIMIT" != "null" && -n "${UI_CPU_LIMIT// /}" ]]; then
+        yq eval -i ".geofm-ui.resources.ui.limits.cpu = \"$UI_CPU_LIMIT\"" "$values_file"
+    fi
+    if [[ -n "$UI_MEMORY_LIMIT" && "$UI_MEMORY_LIMIT" != "null" && -n "${UI_MEMORY_LIMIT// /}" ]]; then
+        yq eval -i ".geofm-ui.resources.ui.limits.memory = \"$UI_MEMORY_LIMIT\"" "$values_file"
+    fi
+
+    # UI OAuth resources
+    if [[ -n "$UI_OAUTH_CPU_REQUEST" && "$UI_OAUTH_CPU_REQUEST" != "null" && -n "${UI_OAUTH_CPU_REQUEST// /}" ]]; then
+        yq eval -i ".geofm-ui.resources.oauth.requests.cpu = \"$UI_OAUTH_CPU_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$UI_OAUTH_MEMORY_REQUEST" && "$UI_OAUTH_MEMORY_REQUEST" != "null" && -n "${UI_OAUTH_MEMORY_REQUEST// /}" ]]; then
+        yq eval -i ".geofm-ui.resources.oauth.requests.memory = \"$UI_OAUTH_MEMORY_REQUEST\"" "$values_file"
+    fi
+    if [[ -n "$UI_OAUTH_CPU_LIMIT" && "$UI_OAUTH_CPU_LIMIT" != "null" && -n "${UI_OAUTH_CPU_LIMIT// /}" ]]; then
+        yq eval -i ".geofm-ui.resources.oauth.limits.cpu = \"$UI_OAUTH_CPU_LIMIT\"" "$values_file"
+    fi
+    if [[ -n "$UI_OAUTH_MEMORY_LIMIT" && "$UI_OAUTH_MEMORY_LIMIT" != "null" && -n "${UI_OAUTH_MEMORY_LIMIT// /}" ]]; then
+        yq eval -i ".geofm-ui.resources.oauth.limits.memory = \"$UI_OAUTH_MEMORY_LIMIT\"" "$values_file"
+    fi
+
+    echo "✓ Resource configurations updated successfully in $values_file"
+    return 0
+}
+
 # Function to build all resource --set flags for Helm deployment
 # Returns a string of all applicable --set flags (CPU and memory only, no storage)
 build_resource_helm_flags() {

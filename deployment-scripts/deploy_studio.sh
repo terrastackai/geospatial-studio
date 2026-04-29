@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-RESOURCE_FLAGS=$1
+RESOURCE_FLAGS="${1:-}"
 
 source workspace/$DEPLOYMENT_ENV/env/.env
 

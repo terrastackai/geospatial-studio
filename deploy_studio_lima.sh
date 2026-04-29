@@ -501,11 +501,10 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     echo "--------------------  Deploying the Studio  --------------------------"
     echo "----------------------------------------------------------------------"
 
-    # Build resource configuration flags (only applies non-null values)
-    RESOURCE_FLAGS=$(build_resource_helm_flags)
+    update_values_deploy_resources workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
     # Deploy Geospatial Studio
-    ./deployment-scripts/deploy_studio.sh "${RESOURCE_FLAGS}"
+    ./deployment-scripts/deploy_studio.sh
 else
     echo "----------------------------------------------------------------------"
     echo "------------------  Skipping Studio Deployment  ----------------------"
