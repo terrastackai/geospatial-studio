@@ -1,0 +1,65 @@
+{{- if .Values.knative.enabled }}
+---
+# Knative Event Broker for pipeline events
+apiVersion: eventing.knative.dev/v1
+kind: Broker
+metadata:
+  name: {{ .Values.knative.broker.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: geospatial-studio
+    component: event-broker
+  annotations:
+    eventing.knative.dev/broker.class: {{ .Values.knative.broker.class }}
+spec:
+  # Use in-memory channel for development, switch to Kafka for production
+  config:
+    apiVersion: v1
+    kind: ConfigMap
+    name: config-br-default-channel
+    namespace: knative-eventing
+  
+  # Delivery configuration
+  {{- if .Values.knative.deadLetterSink.enabled }}
+  delivery:
+    deadLetterSink:
+      ref:
+        apiVersion: serving.knative.dev/v1
+        kind: Service
+        name: dead-letter-sink
+        namespace: {{ .Values.namespace }}
+    retry: {{ .Values.knative.broker.delivery.retry }}
+    backoffPolicy: {{ .Values.knative.broker.delivery.backoffPolicy }}
+    backoffDelay: {{ .Values.knative.broker.delivery.backoffDelay }}
+  {{- end }}
+
+---
+{{- if .Values.knative.deadLetterSink.enabled }}
+# Dead Letter Sink service for failed events
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: dead-letter-sink
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: geospatial-studio
+    component: dead-letter-sink
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/min-scale: "{{ .Values.knative.deadLetterSink.minScale }}"
+        autoscaling.knative.dev/max-scale: "{{ .Values.knative.deadLetterSink.maxScale }}"
+    spec:
+      containers:
+      - name: dead-letter-sink
+        image: {{ .Values.knative.deadLetterSink.image }}
+        env:
+        - name: LOG_LEVEL
+          value: "info"
+        ports:
+        - containerPort: 8080
+{{- end }}
+{{- end }}
+
+# Made with Bob

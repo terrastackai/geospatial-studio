@@ -1,0 +1,195 @@
+{{- if .Values.knative.enabled }}
+{{- range $v := .Values.processors }}
+{{- if $v.enabled }}
+---
+# Knative Service for {{ $v.name }}
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: {{ $.Values.namePrefix }}-{{ $v.name }}
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: geospatial-studio
+    component: {{ $v.name }}
+    geostudio: pipelines
+spec:
+  template:
+    metadata:
+      annotations:
+        # Autoscaling configuration
+        autoscaling.knative.dev/min-scale: "{{ $.Values.knative.serviceDefaults.minScale }}"
+        autoscaling.knative.dev/max-scale: "{{ $.Values.knative.serviceDefaults.maxScale }}"
+        autoscaling.knative.dev/target: "{{ $.Values.knative.serviceDefaults.target }}"
+        autoscaling.knative.dev/scale-to-zero-pod-retention-period: "{{ $.Values.knative.serviceDefaults.scaleToZeroPodRetentionPeriod }}"
+        autoscaling.knative.dev/scale-down-delay: "{{ $.Values.knative.serviceDefaults.scaleDownDelay }}"
+        
+        # Observability
+        {{- if and (hasKey $.Values "observability") (hasKey $.Values.observability "enabled") $.Values.observability.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        {{- end }}
+        
+        # Config checksums for auto-restart on config changes
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") $ | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") $ | sha256sum }}
+      labels:
+        app: {{ $.Values.namePrefix }}-{{ $v.name }}
+        geostudio: pipelines
+    spec:
+      serviceAccountName: {{ $.Values.serviceAccount.name }}
+      {{- if $.Values.imagePullSecret.b64secret }}
+      imagePullSecrets:
+       - name: {{ $.Values.imagePullSecret.name }}
+      {{- end }}
+      {{- if and (hasKey $v "affinity") ($.Values.gpuConfig.enabled) }}
+      affinity: {{ $v.affinity | toYaml | nindent 8 }}
+      {{- end }}
+      
+      containerConcurrency: {{ $.Values.knative.serviceDefaults.containerConcurrency }}
+      timeoutSeconds: {{ $.Values.knative.serviceDefaults.timeoutSeconds }}
+      
+      containers:
+      - name: {{ $.Values.namePrefix }}-{{ $v.name }}
+        image: {{ $v.image.name }}:{{ $v.image.tag }}
+        imagePullPolicy: {{ $.Values.image.pullPolicy | default $.Values.global.imagePullPolicy }}
+        
+        # Override CMD to use event-driven wrapper
+        command: ["python"]
+        args: ["/pipeline/knative_orchestrate_wrapper.py"]
+        
+        ports:
+        - name: http1
+          containerPort: 8080
+        
+        envFrom:
+          - configMapRef:
+              name: pipeline-gateway-cm
+        {{- if and (hasKey $.Values "observability") (hasKey $.Values.observability "enabled") $.Values.observability.enabled }}
+          - configMapRef:
+              name: pipeline-observability-cm
+        {{- end }}
+          - secretRef:
+              name: pipeline-gateway-creds
+        
+        env:
+          # Event-driven mode
+          - name: EVENT_DRIVEN_MODE
+            value: "true"
+          - name: EVENT_BROKER_URL
+            value: "http://broker-ingress.knative-eventing.svc.cluster.local/{{ $.Values.namespace }}/{{ $.Values.knative.broker.name }}"
+          
+          # Database configuration
+          - name: orchestrate_db_uri
+            valueFrom:
+              secretKeyRef:
+                name: {{ $.Values.orchestrate_db.secret_name }}
+                key: orchestrate_db_uri
+          - name: inference_task_table
+            value: {{ $.Values.orchestrate_db.inference_task_table }}
+          
+          # Logging
+          - name: log_level
+            value: {{ $.Values.log_level }}
+        
+        {{- if and (hasKey $.Values "observability") (hasKey $.Values.observability "enabled") $.Values.observability.enabled }}
+          - name: process_exec
+            value: {{ printf "opentelemetry-instrument %s" $v.process_exec }}
+          - name: OTEL_SERVICE_NAME
+            value: {{ printf "%s-component" $v.process_id }}
+        {{- else }}
+          - name: process_exec
+            value: {{ $v.process_exec }}
+        {{- end }}
+          - name: process_id
+            value: {{ $v.process_id }}
+          - name: gfmaas_api_key
+            valueFrom:
+              secretKeyRef:
+                name: pipeline-gateway-creds
+                key: gfmaas_api_key
+          {{- if hasKey $v "extra_envs" }}
+          {{- $v.extra_envs | toYaml | nindent 10 }}
+          {{- end }}
+        
+        volumeMounts:
+          - name: test-inference-pvc
+            mountPath: /data
+          {{- if hasKey $v "extra_volumes" }}
+          {{- range $p := $v.extra_volumes }}
+          - name: {{ $p.name }}
+            mountPath: {{ $p.mountPath }}
+          {{- end }}
+          {{- end }}
+          {{- if hasKey $v "resources" }}
+          {{- if hasKey $v.resources "requests" }}
+          {{- if hasKey $v.resources.requests "nvidia.com/gpu" }}
+          - name: dshm
+            mountPath: /dev/shm
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- if hasKey $v "resources" }}
+          {{- if hasKey $v.resources "shm" }}
+          - name: dshm
+            mountPath: /dev/shm
+          {{- end }}
+          {{- end }}
+        
+        {{- if hasKey $v "resources" }}
+        resources:
+          {{- if hasKey $v.resources "limits" }}
+          limits: {{ omit $v.resources.limits "shm" | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if hasKey $v.resources "requests" }}
+          requests: {{ omit $v.resources.requests "shm" | toYaml | nindent 12 }}
+          {{- end }}
+        {{- end }}
+        
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+      
+      volumes:
+        - name: test-inference-pvc
+          persistentVolumeClaim:
+            claimName: {{ $.Values.inference_volume.pvc_name }}
+        {{- range $p := $v.extra_volumes }}
+        - name: {{ $p.name }}
+          persistentVolumeClaim:
+            claimName: {{ $p.claimName }}
+        {{- end }}
+        {{- if hasKey $v "resources" }}
+        {{- if hasKey $v.resources "requests" }}
+        {{- if hasKey $v.resources.requests "nvidia.com/gpu" }}
+        - name: dshm
+          emptyDir:
+            medium: Memory
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- if hasKey $v "resources" }}
+        {{- if hasKey $v.resources "shm" }}
+        - name: dshm
+          emptyDir:
+            medium: Memory
+        {{- end }}
+        {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+# Made with Bob

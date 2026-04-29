@@ -17,6 +17,54 @@ inference_volume:
 
 default_replicas: 1
 
+# Knative Eventing Configuration
+# Enable this to use event-driven serverless architecture instead of polling
+knative:
+  enabled: true  # Set to true to enable Knative event-driven mode
+  
+  # Event broker configuration
+  broker:
+    name: default
+    class: MTChannelBasedBroker  # Use MTChannelBasedBroker for in-memory, or KafkaBroker for production
+    delivery:
+      retry: 3
+      backoffPolicy: exponential
+      backoffDelay: PT1S
+  
+  # Database event publisher (PostgreSQL CDC)
+  dbEventPublisher:
+    enabled: true  # Publishes events when tasks are created in database
+    image:
+      name: quay.io/geospatial-studio/geostudio-pipelines
+      tag: feat-serverless-pipelines
+    replicas: 1
+    setupTrigger: true  # Create PostgreSQL trigger on first deployment
+    channel: task_events
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+  
+  # Knative Service defaults (can be overridden per processor)
+  serviceDefaults:
+    minScale: 0  # Scale to zero when idle
+    maxScale: 10
+    target: 10  # Target concurrent requests per pod
+    scaleToZeroPodRetentionPeriod: "30s"
+    scaleDownDelay: "30s"
+    containerConcurrency: 10
+    timeoutSeconds: 600  # 10 minutes default timeout
+  
+  # Dead letter sink for failed events
+  deadLetterSink:
+    enabled: true
+    image: gcr.io/knative-releases/knative.dev/eventing/cmd/event_display:latest
+    minScale: 1
+    maxScale: 2
+
 imagePullSecret:
   create: false
   name: us-icr-pull-secret

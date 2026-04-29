@@ -1,0 +1,30 @@
+{{- if .Values.knative.enabled }}
+{{- range $v := .Values.processors }}
+{{- if $v.enabled }}
+---
+# Trigger for {{ $v.name }} service
+apiVersion: eventing.knative.dev/v1
+kind: Trigger
+metadata:
+  name: {{ $v.name }}-trigger
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: geospatial-studio
+    component: {{ $v.name }}
+spec:
+  broker: {{ $.Values.knative.broker.name }}
+  filter:
+    attributes:
+      type: com.geospatial.task.ready
+      processid: {{ $v.process_id }}
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: {{ $.Values.namePrefix }}-{{ $v.name }}
+    uri: /process
+{{- end }}
+{{- end }}
+{{- end }}
+
+# Made with Bob
