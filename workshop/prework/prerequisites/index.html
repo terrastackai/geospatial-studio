@@ -720,6 +720,56 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#resource-allocation-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Allocation Modes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resource Allocation Modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available Modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mode-selection-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mode Selection Guidelines
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-planning-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Planning Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#required-software" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1696,25 +1746,784 @@
 </div>
 </div>
 </div>
+<h2 id="resource-allocation-modes">Resource Allocation Modes<a class="headerlink" href="#resource-allocation-modes" title="Permanent link">¶</a></h2>
+<p>Geospatial Studio supports multiple resource allocation profiles to match different deployment scenarios and workload requirements. During deployment, you'll be prompted to select a resource mode that determines CPU, memory, and storage allocations for all components.</p>
+<div class="admonition important">
+<p class="admonition-title">Resource Planning</p>
+<p>The resource requirements listed below include a <strong>30% buffer</strong> to ensure cluster stability and avoid resource exhaustion. Always provision clusters with these recommended totals rather than just the sum of component requests.</p>
+</div>
+<h3 id="available-modes">Available Modes<a class="headerlink" href="#available-modes" title="Permanent link">¶</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:6"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio"><input id="__tabbed_3_2" name="__tabbed_3" type="radio"><input id="__tabbed_3_3" name="__tabbed_3" type="radio"><input id="__tabbed_3_4" name="__tabbed_3" type="radio"><input id="__tabbed_3_5" name="__tabbed_3" type="radio"><input id="__tabbed_3_6" name="__tabbed_3" type="radio"><div class="tabbed-labels"><label for="__tabbed_3_1">Low Mode</label><label for="__tabbed_3_2">Dev Mode</label><label for="__tabbed_3_3">Medium Mode</label><label for="__tabbed_3_4">High Mode</label><label for="__tabbed_3_5">XLarge Mode</label><label for="__tabbed_3_6">Custom Mode</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>Best for:</strong> Testing, proof-of-concept, or resource-constrained environments</p>
+<ul>
+<li><strong>CPU:</strong> ~6-8 cores</li>
+<li><strong>Memory:</strong> ~16-20 GB RAM</li>
+<li><strong>Storage:</strong> ~50-75 GB</li>
+</ul>
+<p><strong>Component Resource Requests:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>CPU Request</th>
+<th>CPU Limit</th>
+<th>Memory Request</th>
+<th>Memory Limit</th>
+<th>Storage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MinIO</td>
+<td>500m</td>
+<td>1</td>
+<td>512Mi</td>
+<td>1Gi</td>
+<td>30Gi</td>
+</tr>
+<tr>
+<td>Keycloak</td>
+<td>100m</td>
+<td>500m</td>
+<td>256Mi</td>
+<td>512Mi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td>100m</td>
+<td>500m</td>
+<td>256Mi</td>
+<td>512Mi</td>
+<td>2Gi</td>
+</tr>
+<tr>
+<td>PgBouncer</td>
+<td>250m</td>
+<td>1</td>
+<td>256Mi</td>
+<td>1Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>GeoServer</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>2Gi</td>
+</tr>
+<tr>
+<td>MLflow</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>1Gi</td>
+</tr>
+<tr>
+<td>Redis Master</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>1Gi</td>
+</tr>
+<tr>
+<td>Redis Replica</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>1Gi</td>
+</tr>
+<tr>
+<td>Gateway API</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Gateway Worker</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Gateway OAuth</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>-</td>
+</tr>
+<tr>
+<td>UI</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>-</td>
+</tr>
+<tr>
+<td>UI OAuth</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Studio Storage</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>10-15Gi</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Default Resources</p>
+<p>Components marked as "Default" use Kubernetes resources as defined in the Helm chart or scale and timeshare at runtime based on available resource in cluster.</p>
+</div>
+</div>
+<div class="tabbed-block">
+<p><strong>Best for:</strong> Development, testing, and small-scale deployments</p>
+<ul>
+<li><strong>CPU:</strong> ~8-14 cores</li>
+<li><strong>Memory:</strong> ~22-32 GB RAM</li>
+<li><strong>Storage:</strong> ~75-100 GB</li>
+</ul>
+<p><strong>Component Resource Requests:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>CPU Request</th>
+<th>CPU Limit</th>
+<th>Memory Request</th>
+<th>Memory Limit</th>
+<th>Storage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MinIO</td>
+<td>2</td>
+<td>4</td>
+<td>2Gi</td>
+<td>4Gi</td>
+<td>40Gi</td>
+</tr>
+<tr>
+<td>Keycloak</td>
+<td>250m</td>
+<td>1</td>
+<td>512Mi</td>
+<td>1Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td>250m</td>
+<td>1</td>
+<td>512Mi</td>
+<td>1Gi</td>
+<td>2Gi</td>
+</tr>
+<tr>
+<td>PgBouncer</td>
+<td>250m</td>
+<td>1</td>
+<td>256Mi</td>
+<td>1Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>GeoServer</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>2Gi</td>
+</tr>
+<tr>
+<td>MLflow</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>1Gi</td>
+</tr>
+<tr>
+<td>Redis Master</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>1Gi</td>
+</tr>
+<tr>
+<td>Redis Replica</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>1Gi</td>
+</tr>
+<tr>
+<td>Gateway API</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Gateway Worker</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Gateway OAuth</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>-</td>
+</tr>
+<tr>
+<td>UI</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>-</td>
+</tr>
+<tr>
+<td>UI OAuth</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>Default</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Studio Storage</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>15-20Gi</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<p><strong>Best for:</strong> Production deployments with moderate workloads</p>
+<ul>
+<li><strong>CPU:</strong> ~21-32 cores</li>
+<li><strong>Memory:</strong> ~62-84 GB RAM</li>
+<li><strong>Storage:</strong> ~200-400 GB</li>
+</ul>
+<p><strong>Component Resource Requests:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>CPU Request</th>
+<th>CPU Limit</th>
+<th>Memory Request</th>
+<th>Memory Limit</th>
+<th>Storage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MinIO</td>
+<td>4</td>
+<td>8</td>
+<td>3Gi</td>
+<td>6Gi</td>
+<td>100Gi</td>
+</tr>
+<tr>
+<td>Keycloak</td>
+<td>500m</td>
+<td>1.5</td>
+<td>768Mi</td>
+<td>1536Mi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td>500m</td>
+<td>1.5</td>
+<td>768Mi</td>
+<td>1536Mi</td>
+<td>10Gi</td>
+</tr>
+<tr>
+<td>PgBouncer</td>
+<td>1</td>
+<td>2</td>
+<td>2Gi</td>
+<td>4Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>GeoServer</td>
+<td>750m</td>
+<td>1.5</td>
+<td>8Gi</td>
+<td>24Gi</td>
+<td>30Gi</td>
+</tr>
+<tr>
+<td>MLflow</td>
+<td>1</td>
+<td>1</td>
+<td>6Gi</td>
+<td>12Gi</td>
+<td>1Gi</td>
+</tr>
+<tr>
+<td>Redis Master</td>
+<td>1</td>
+<td>2</td>
+<td>1Gi</td>
+<td>2Gi</td>
+<td>1Gi</td>
+</tr>
+<tr>
+<td>Redis Replica</td>
+<td>1</td>
+<td>2</td>
+<td>1Gi</td>
+<td>2Gi</td>
+<td>1Gi</td>
+</tr>
+<tr>
+<td>Gateway API</td>
+<td>2</td>
+<td>4</td>
+<td>4Gi</td>
+<td>16Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Gateway Worker</td>
+<td>500m</td>
+<td>1</td>
+<td>512Mi</td>
+<td>1.5Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Gateway OAuth</td>
+<td>500m</td>
+<td>1</td>
+<td>512Mi</td>
+<td>1Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>UI</td>
+<td>1</td>
+<td>2</td>
+<td>2Gi</td>
+<td>4Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>UI OAuth</td>
+<td>500m</td>
+<td>1</td>
+<td>512Mi</td>
+<td>1Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Studio Storage</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>20-25Gi</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<p><strong>Best for:</strong> Production deployments with high workloads and performance requirements</p>
+<ul>
+<li><strong>CPU:</strong> ~31-52 cores</li>
+<li><strong>Memory:</strong> ~104-156 GB RAM</li>
+<li><strong>Storage:</strong> ~0.8-1.5 TB</li>
+</ul>
+<p><strong>Component Resource Requests:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>CPU Request</th>
+<th>CPU Limit</th>
+<th>Memory Request</th>
+<th>Memory Limit</th>
+<th>Storage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MinIO</td>
+<td>3</td>
+<td>6</td>
+<td>4Gi</td>
+<td>8Gi</td>
+<td>500Gi</td>
+</tr>
+<tr>
+<td>Keycloak</td>
+<td>750m</td>
+<td>2</td>
+<td>1Gi</td>
+<td>2Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td>750m</td>
+<td>2</td>
+<td>1Gi</td>
+<td>2Gi</td>
+<td>10Gi</td>
+</tr>
+<tr>
+<td>PgBouncer</td>
+<td>1</td>
+<td>2</td>
+<td>4Gi</td>
+<td>8Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>GeoServer</td>
+<td>1</td>
+<td>3</td>
+<td>12Gi</td>
+<td>48Gi</td>
+<td>200Gi</td>
+</tr>
+<tr>
+<td>MLflow</td>
+<td>1</td>
+<td>1</td>
+<td>8Gi</td>
+<td>16Gi</td>
+<td>5Gi</td>
+</tr>
+<tr>
+<td>Redis Master</td>
+<td>1</td>
+<td>2</td>
+<td>2Gi</td>
+<td>4Gi</td>
+<td>5Gi</td>
+</tr>
+<tr>
+<td>Redis Replica</td>
+<td>1</td>
+<td>2</td>
+<td>2Gi</td>
+<td>4Gi</td>
+<td>5Gi</td>
+</tr>
+<tr>
+<td>Gateway API</td>
+<td>4</td>
+<td>8</td>
+<td>8Gi</td>
+<td>32Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Gateway Worker</td>
+<td>1</td>
+<td>2</td>
+<td>1Gi</td>
+<td>2Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Gateway OAuth</td>
+<td>1</td>
+<td>2</td>
+<td>512Mi</td>
+<td>1Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>UI</td>
+<td>2</td>
+<td>4</td>
+<td>4Gi</td>
+<td>8Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>UI OAuth</td>
+<td>512m</td>
+<td>1</td>
+<td>512Mi</td>
+<td>1Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Studio Storage</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>100-110Gi</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<p><strong>Best for:</strong> Enterprise production deployments with maximum performance requirements</p>
+<p><strong>Recommended Cluster Resources (with 30% buffer):</strong></p>
+<ul>
+<li><strong>CPU:</strong> ~42-74+ cores</li>
+<li><strong>Memory:</strong> ~156-240+ GB RAM</li>
+<li><strong>Storage:</strong> ~1.8-2.0+ TB</li>
+</ul>
+<p><strong>Component Resource Requests:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>CPU Request</th>
+<th>CPU Limit</th>
+<th>Memory Request</th>
+<th>Memory Limit</th>
+<th>Storage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MinIO</td>
+<td>4</td>
+<td>8</td>
+<td>6Gi</td>
+<td>12Gi</td>
+<td>1000Gi</td>
+</tr>
+<tr>
+<td>Keycloak</td>
+<td>1</td>
+<td>4</td>
+<td>2Gi</td>
+<td>4Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td>1</td>
+<td>4</td>
+<td>2Gi</td>
+<td>4Gi</td>
+<td>10Gi</td>
+</tr>
+<tr>
+<td>PgBouncer</td>
+<td>1</td>
+<td>2</td>
+<td>8Gi</td>
+<td>16Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>GeoServer</td>
+<td>2</td>
+<td>4</td>
+<td>12Gi</td>
+<td>60Gi</td>
+<td>200Gi</td>
+</tr>
+<tr>
+<td>MLflow</td>
+<td>1</td>
+<td>2</td>
+<td>8Gi</td>
+<td>16Gi</td>
+<td>10Gi</td>
+</tr>
+<tr>
+<td>Redis Master</td>
+<td>1</td>
+<td>2</td>
+<td>4Gi</td>
+<td>8Gi</td>
+<td>10Gi</td>
+</tr>
+<tr>
+<td>Redis Replica</td>
+<td>1</td>
+<td>2</td>
+<td>4Gi</td>
+<td>8Gi</td>
+<td>10Gi</td>
+</tr>
+<tr>
+<td>Gateway API</td>
+<td>5</td>
+<td>10</td>
+<td>8Gi</td>
+<td>36Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Gateway Worker</td>
+<td>2</td>
+<td>4</td>
+<td>2Gi</td>
+<td>4Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Gateway OAuth</td>
+<td>2</td>
+<td>4</td>
+<td>1Gi</td>
+<td>2Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>UI</td>
+<td>3</td>
+<td>6</td>
+<td>8Gi</td>
+<td>16Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>UI OAuth</td>
+<td>1</td>
+<td>2</td>
+<td>1Gi</td>
+<td>2Gi</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Studio Storage</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>200-220Gi</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<p><strong>Best for:</strong> Specialized deployments with specific resource requirements</p>
+<p>When selecting custom mode, you'll need to manually configure resource allocations in the <code>env.sh</code> file for your deployment environment. This allows fine-grained control over each component's resources.</p>
+<div class="admonition tip">
+<p class="admonition-title">Custom Mode Planning</p>
+<p>When using custom mode, remember to add a 30% buffer to your calculated resource requirements to ensure cluster stability.</p>
+</div>
+</div>
+</div>
+</div>
+<h3 id="mode-selection-guidelines">Mode Selection Guidelines<a class="headerlink" href="#mode-selection-guidelines" title="Permanent link">¶</a></h3>
+<p>Choose your resource mode based on:</p>
+<ol>
+<li><strong>Workload Type:</strong></li>
+<li><strong>Testing/PoC:</strong> Low or Dev mode</li>
+<li><strong>Development:</strong> Dev or Medium mode</li>
+<li><strong>Production (light):</strong> Medium mode</li>
+<li>
+<p><strong>Production (heavy):</strong> High or XLarge mode</p>
+</li>
+<li>
+<p><strong>Available Infrastructure:</strong></p>
+</li>
+<li>Match the mode to your cluster's available resources</li>
+<li>Ensure the recommended totals (with 30% buffer) fit within your cluster capacity</li>
+<li>Consider storage I/O performance requirements</li>
+<li>
+<p>Leave headroom for Kubernetes system components and monitoring tools</p>
+</li>
+<li>
+<p><strong>Expected Usage:</strong></p>
+</li>
+<li><strong>Number of concurrent users:</strong> More users = higher mode</li>
+<li><strong>Dataset sizes:</strong> Larger datasets = higher mode</li>
+<li><strong>Model training frequency:</strong> Frequent training = higher mode</li>
+<li><strong>Inference workload:</strong> High inference volume = higher mode</li>
+</ol>
+<h3 id="resource-planning-example">Resource Planning Example<a class="headerlink" href="#resource-planning-example" title="Permanent link">¶</a></h3>
+<p>For a <strong>Medium Mode</strong> deployment:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Actual Component Needs:  ~16 CPU, ~48 GB RAM, ~180 GB storage
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>+ 30% Buffer:            ~5 CPU,  ~16 GB RAM, ~55 GB storage
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>─────────────────────────────────────────────────────────────
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>Recommended Cluster:     ~21 CPU, ~64 GB RAM, ~235 GB storage
+</span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Resource Optimization</p>
+<ul>
+<li>Start with a lower mode and scale up based on actual usage</li>
+<li>Monitor resource utilization using Kubernetes metrics</li>
+<li>Adjust individual component resources in custom mode if needed</li>
+<li>Consider using node autoscaling for dynamic workloads</li>
+<li>The 30% buffer accounts for:<ul>
+<li>Kubernetes system overhead</li>
+<li>Pod scheduling inefficiencies</li>
+<li>Temporary resource spikes</li>
+<li>Monitoring and logging tools</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Storage Considerations</p>
+<ul>
+<li>Storage values shown are for persistent volumes only</li>
+<li>Add ~10-20 GB for container images (pulled once per node)</li>
+<li>Plan for data growth over time (models, datasets, logs)</li>
+<li>Use high-performance storage classes (SSD/NVMe) for production</li>
+<li>Consider separate storage tiers for hot vs. cold data</li>
+</ul>
+</div>
 <h2 id="required-software">Required Software<a class="headerlink" href="#required-software" title="Permanent link">¶</a></h2>
 <h3 id="for-all-deployments">For All Deployments<a class="headerlink" href="#for-all-deployments" title="Permanent link">¶</a></h3>
 <p>Install the following tools before proceeding:</p>
 <h4 id="1-python-311">1. Python 3.11+<a class="headerlink" href="#1-python-311" title="Permanent link">¶</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Check Python version</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>python<span class="w"> </span>--version
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Should output: Python 3.11.x or higher</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Check Python version</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>python<span class="w"> </span>--version
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Should output: Python 3.11.x or higher</span>
 </span></code></pre></div>
 <p>Install Python if needed:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio"><input id="__tabbed_3_2" name="__tabbed_3" type="radio"><div class="tabbed-labels"><label for="__tabbed_3_1">macOS</label><label for="__tabbed_3_2">Linux</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio"><input id="__tabbed_4_2" name="__tabbed_4" type="radio"><div class="tabbed-labels"><label for="__tabbed_4_1">macOS</label><label for="__tabbed_4_2">Linux</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>brew<span class="w"> </span>install<span class="w"> </span>python@3.11
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>brew<span class="w"> </span>install<span class="w"> </span>python@3.11
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>sudo<span class="w"> </span>apt<span class="w"> </span>update
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>python3.11<span class="w"> </span>python3.11-venv<span class="w"> </span>python3-pip
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>sudo<span class="w"> </span>apt<span class="w"> </span>update
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>python3.11<span class="w"> </span>python3.11-venv<span class="w"> </span>python3-pip
 </span></code></pre></div>
 </div>
 </div>
@@ -1724,44 +2533,44 @@
 <p class="admonition-title">Version Compatibility</p>
 <p>Helm v4 is currently <strong>not compatible</strong>. Use v3.19.</p>
 </div>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Check Helm version</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>helm<span class="w"> </span>version
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Install Helm v3.19</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>curl<span class="w"> </span>https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Check Helm version</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>helm<span class="w"> </span>version
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Install Helm v3.19</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>curl<span class="w"> </span>https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
 </span></code></pre></div>
 <h4 id="3-kubectl">3. kubectl<a class="headerlink" href="#3-kubectl" title="Permanent link">¶</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Check kubectl version</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>kubectl<span class="w"> </span>version<span class="w"> </span>--client
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Install kubectl (bundled with OpenShift CLI)</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Check kubectl version</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>kubectl<span class="w"> </span>version<span class="w"> </span>--client
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Install kubectl (bundled with OpenShift CLI)</span>
 </span></code></pre></div>
 <h4 id="4-openshift-cli-oc">4. OpenShift CLI (oc)<a class="headerlink" href="#4-openshift-cli-oc" title="Permanent link">¶</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Download from: https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># Verify installation</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>oc<span class="w"> </span>version
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Download from: https://docs.okd.io/4.18/cli_reference/openshift_cli/getting-started-cli.html</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1"># Verify installation</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>oc<span class="w"> </span>version
 </span></code></pre></div>
 <h4 id="5-jq-json-processor">5. jq (JSON processor)<a class="headerlink" href="#5-jq-json-processor" title="Permanent link">¶</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># macOS</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>brew<span class="w"> </span>install<span class="w"> </span>jq
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Linux</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>jq
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># Verify</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>jq<span class="w"> </span>--version
-</span></code></pre></div>
-<h4 id="6-yq-yaml-processor">6. yq (YAML processor)<a class="headerlink" href="#6-yq-yaml-processor" title="Permanent link">¶</a></h4>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># macOS</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>brew<span class="w"> </span>install<span class="w"> </span>yq
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>brew<span class="w"> </span>install<span class="w"> </span>jq
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
 </span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Linux</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>wget<span class="w"> </span>https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64<span class="w"> </span>-O<span class="w"> </span>/usr/local/bin/yq
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>chmod<span class="w"> </span>+x<span class="w"> </span>/usr/local/bin/yq
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="c1"># Verify</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>yq<span class="w"> </span>--version
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>jq
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># Verify</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>jq<span class="w"> </span>--version
+</span></code></pre></div>
+<h4 id="6-yq-yaml-processor">6. yq (YAML processor)<a class="headerlink" href="#6-yq-yaml-processor" title="Permanent link">¶</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># macOS</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>brew<span class="w"> </span>install<span class="w"> </span>yq
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Linux</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>wget<span class="w"> </span>https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64<span class="w"> </span>-O<span class="w"> </span>/usr/local/bin/yq
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>chmod<span class="w"> </span>+x<span class="w"> </span>/usr/local/bin/yq
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="c1"># Verify</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>yq<span class="w"> </span>--version
 </span></code></pre></div>
 <h3 id="for-local-deployment-only">For Local Deployment Only<a class="headerlink" href="#for-local-deployment-only" title="Permanent link">¶</a></h3>
 <h4 id="lima-vm-v121">Lima VM v1.2.1<a class="headerlink" href="#lima-vm-v121" title="Permanent link">¶</a></h4>
@@ -1769,13 +2578,13 @@
 <p class="admonition-title">Version Compatibility</p>
 <p>Lima v2 is currently <strong>not compatible</strong>. Use v1.2.1.</p>
 </div>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># macOS</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>brew<span class="w"> </span>install<span class="w"> </span>lima
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Linux - follow instructions at: https://lima-vm.io/docs/installation/</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="c1"># Verify</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>limactl<span class="w"> </span>--version
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># macOS</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>brew<span class="w"> </span>install<span class="w"> </span>lima
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Linux - follow instructions at: https://lima-vm.io/docs/installation/</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="c1"># Verify</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>limactl<span class="w"> </span>--version
 </span></code></pre></div>
 <h3 id="for-cluster-deployment-only">For Cluster Deployment Only<a class="headerlink" href="#for-cluster-deployment-only" title="Permanent link">¶</a></h3>
 <h4 id="cluster-access">Cluster Access<a class="headerlink" href="#cluster-access" title="Permanent link">¶</a></h4>
@@ -1795,12 +2604,12 @@
 </ul>
 <h2 id="python-dependencies">Python Dependencies<a class="headerlink" href="#python-dependencies" title="Permanent link">¶</a></h2>
 <p>Install required Python packages:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Clone the repository (if not already done)</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/terrastackai/geospatial-studio.git
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="nb">cd</span><span class="w"> </span>geospatial-studio
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="c1"># Install Python dependencies</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Clone the repository (if not already done)</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/terrastackai/geospatial-studio.git
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="nb">cd</span><span class="w"> </span>geospatial-studio
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="c1"># Install Python dependencies</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
 </span></code></pre></div>
 <h2 id="network-requirements">Network Requirements<a class="headerlink" href="#network-requirements" title="Permanent link">¶</a></h2>
 <p>Ensure you have:</p>
@@ -1811,7 +2620,7 @@
 </ul>
 <h3 id="required-ports">Required Ports<a class="headerlink" href="#required-ports" title="Permanent link">¶</a></h3>
 <p>The following ports will be used during deployment and operation:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio"><input id="__tabbed_4_2" name="__tabbed_4" type="radio"><div class="tabbed-labels"><label for="__tabbed_4_1">Local Deployment (k8s/Lima)</label><label for="__tabbed_4_2">Cluster Deployment (OpenShift)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio"><input id="__tabbed_5_2" name="__tabbed_5" type="radio"><div class="tabbed-labels"><label for="__tabbed_5_1">Local Deployment (k8s/Lima)</label><label for="__tabbed_5_2">Cluster Deployment (OpenShift)</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <table>
@@ -1946,46 +2755,46 @@
 </ul>
 <h2 id="quick-verification-script">Quick Verification Script<a class="headerlink" href="#quick-verification-script" title="Permanent link">¶</a></h2>
 <p>Run this script to verify your prerequisites:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="ch">#!/bin/bash</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"Checking prerequisites..."</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="c1"># Check Python</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="nv">PYTHON_VERSION</span><span class="o">=</span><span class="k">$(</span>python<span class="w"> </span>--version<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">'{print $2}'</span><span class="k">)</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="nv">PYTHON_MAJOR</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="nv">$PYTHON_VERSION</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d.<span class="w"> </span>-f1<span class="k">)</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="nv">PYTHON_MINOR</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="nv">$PYTHON_VERSION</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d.<span class="w"> </span>-f2<span class="k">)</span>
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">"</span><span class="nv">$PYTHON_MAJOR</span><span class="s2">"</span><span class="w"> </span>-eq<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">"</span><span class="nv">$PYTHON_MINOR</span><span class="s2">"</span><span class="w"> </span>-ge<span class="w"> </span><span class="m">11</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
-</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ Python 3.11+ (found </span><span class="nv">$PYTHON_VERSION</span><span class="s2">)"</span>
-</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="k">else</span>
-</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"❌ Python 3.11+ required (found </span><span class="nv">$PYTHON_VERSION</span><span class="s2">)"</span>
-</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="k">fi</span>
-</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>
-</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="c1"># Check Helm</span>
-</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>helm<span class="w"> </span>version<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-q<span class="w"> </span><span class="s2">"v3.19"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ Helm v3.19"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"❌ Helm v3.19 required"</span>
-</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>
-</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="c1"># Check kubectl</span>
-</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>kubectl<span class="w"> </span>version<span class="w"> </span>--client<span class="w"> </span><span class="p">&amp;</span>&gt;/dev/null<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ kubectl installed"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"❌ kubectl required"</span>
-</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>
-</span><span id="__span-10-21"><a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a><span class="c1"># Check oc</span>
-</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a>oc<span class="w"> </span>version<span class="w"> </span><span class="p">&amp;</span>&gt;/dev/null<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ OpenShift CLI installed"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"❌ OpenShift CLI required"</span>
-</span><span id="__span-10-23"><a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a>
-</span><span id="__span-10-24"><a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span class="c1"># Check jq</span>
-</span><span id="__span-10-25"><a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a>jq<span class="w"> </span>--version<span class="w"> </span><span class="p">&amp;</span>&gt;/dev/null<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ jq installed"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"❌ jq required"</span>
-</span><span id="__span-10-26"><a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a>
-</span><span id="__span-10-27"><a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a><span class="c1"># Check yq</span>
-</span><span id="__span-10-28"><a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a>yq<span class="w"> </span>--version<span class="w"> </span><span class="p">&amp;</span>&gt;/dev/null<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ yq installed"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"❌ yq required"</span>
-</span><span id="__span-10-29"><a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a>
-</span><span id="__span-10-30"><a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a><span class="c1"># Check Lima (for local deployment)</span>
-</span><span id="__span-10-31"><a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a>limactl<span class="w"> </span>--version<span class="w"> </span><span class="p">&amp;</span>&gt;/dev/null<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ Lima VM installed"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"⚠️  Lima VM required for local deployment"</span>
-</span><span id="__span-10-32"><a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a>
-</span><span id="__span-10-33"><a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a><span class="c1"># Check disk space</span>
-</span><span id="__span-10-34"><a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a><span class="nv">BLOCKSIZE</span><span class="o">=</span>1G<span class="w"> </span>df<span class="w"> </span>.<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">'NR==2 {if($4 &gt;= 100) {print "✅ OK ("$4"GB available)"; exit 0} else {print "❌ Low ("$4"GB available)"; exit 1}}'</span>
-</span><span id="__span-10-35"><a id="__codelineno-10-35" name="__codelineno-10-35" href="#__codelineno-10-35"></a>
-</span><span id="__span-10-36"><a id="__codelineno-10-36" name="__codelineno-10-36" href="#__codelineno-10-36"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"Verification complete!"</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="ch">#!/bin/bash</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"Checking prerequisites..."</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="c1"># Check Python</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="nv">PYTHON_VERSION</span><span class="o">=</span><span class="k">$(</span>python<span class="w"> </span>--version<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">'{print $2}'</span><span class="k">)</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="nv">PYTHON_MAJOR</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="nv">$PYTHON_VERSION</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d.<span class="w"> </span>-f1<span class="k">)</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="nv">PYTHON_MINOR</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span><span class="w"> </span><span class="nv">$PYTHON_VERSION</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d.<span class="w"> </span>-f2<span class="k">)</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">"</span><span class="nv">$PYTHON_MAJOR</span><span class="s2">"</span><span class="w"> </span>-eq<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">"</span><span class="nv">$PYTHON_MINOR</span><span class="s2">"</span><span class="w"> </span>-ge<span class="w"> </span><span class="m">11</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ Python 3.11+ (found </span><span class="nv">$PYTHON_VERSION</span><span class="s2">)"</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="k">else</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"❌ Python 3.11+ required (found </span><span class="nv">$PYTHON_VERSION</span><span class="s2">)"</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="k">fi</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="c1"># Check Helm</span>
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>helm<span class="w"> </span>version<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-q<span class="w"> </span><span class="s2">"v3.19"</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ Helm v3.19"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"❌ Helm v3.19 required"</span>
+</span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>
+</span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="c1"># Check kubectl</span>
+</span><span id="__span-11-19"><a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a>kubectl<span class="w"> </span>version<span class="w"> </span>--client<span class="w"> </span><span class="p">&amp;</span>&gt;/dev/null<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ kubectl installed"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"❌ kubectl required"</span>
+</span><span id="__span-11-20"><a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>
+</span><span id="__span-11-21"><a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="c1"># Check oc</span>
+</span><span id="__span-11-22"><a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a>oc<span class="w"> </span>version<span class="w"> </span><span class="p">&amp;</span>&gt;/dev/null<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ OpenShift CLI installed"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"❌ OpenShift CLI required"</span>
+</span><span id="__span-11-23"><a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a>
+</span><span id="__span-11-24"><a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="c1"># Check jq</span>
+</span><span id="__span-11-25"><a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a>jq<span class="w"> </span>--version<span class="w"> </span><span class="p">&amp;</span>&gt;/dev/null<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ jq installed"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"❌ jq required"</span>
+</span><span id="__span-11-26"><a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a>
+</span><span id="__span-11-27"><a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a><span class="c1"># Check yq</span>
+</span><span id="__span-11-28"><a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a>yq<span class="w"> </span>--version<span class="w"> </span><span class="p">&amp;</span>&gt;/dev/null<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ yq installed"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"❌ yq required"</span>
+</span><span id="__span-11-29"><a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a>
+</span><span id="__span-11-30"><a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a><span class="c1"># Check Lima (for local deployment)</span>
+</span><span id="__span-11-31"><a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a>limactl<span class="w"> </span>--version<span class="w"> </span><span class="p">&amp;</span>&gt;/dev/null<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"✅ Lima VM installed"</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"⚠️  Lima VM required for local deployment"</span>
+</span><span id="__span-11-32"><a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a>
+</span><span id="__span-11-33"><a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a><span class="c1"># Check disk space</span>
+</span><span id="__span-11-34"><a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a><span class="nv">BLOCKSIZE</span><span class="o">=</span>1G<span class="w"> </span>df<span class="w"> </span>.<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">'NR==2 {if($4 &gt;= 100) {print "✅ OK ("$4"GB available)"; exit 0} else {print "❌ Low ("$4"GB available)"; exit 1}}'</span>
+</span><span id="__span-11-35"><a id="__codelineno-11-35" name="__codelineno-11-35" href="#__codelineno-11-35"></a>
+</span><span id="__span-11-36"><a id="__codelineno-11-36" name="__codelineno-11-36" href="#__codelineno-11-36"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"Verification complete!"</span>
 </span></code></pre></div>
 <p>Save this as <code>check-prerequisites.sh</code>, make it executable, and run:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>chmod<span class="w"> </span>+x<span class="w"> </span>check-prerequisites.sh
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>./check-prerequisites.sh
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>chmod<span class="w"> </span>+x<span class="w"> </span>check-prerequisites.sh
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>./check-prerequisites.sh
 </span></code></pre></div>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">¶</a></h2>
 <p>Once all prerequisites are met:</p>
@@ -2003,18 +2812,18 @@
 <details class="question">
 <summary>Helm v4 installed</summary>
 <p>Uninstall Helm v4 and install v3.19:
-</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Remove Helm v4</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>rm<span class="w"> </span><span class="k">$(</span>which<span class="w"> </span>helm<span class="k">)</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># Install Helm v3.19</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>curl<span class="w"> </span>https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># Remove Helm v4</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>rm<span class="w"> </span><span class="k">$(</span>which<span class="w"> </span>helm<span class="k">)</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1"># Install Helm v3.19</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>curl<span class="w"> </span>https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
 </span></code></pre></div><p></p>
 </details>
 <details class="question">
 <summary>Lima v2 installed</summary>
 <p>Uninstall Lima v2 and install v1.2.1:
-</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>brew<span class="w"> </span>uninstall<span class="w"> </span>lima
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>brew<span class="w"> </span>install<span class="w"> </span>lima@1.2.1
+</p><div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>brew<span class="w"> </span>uninstall<span class="w"> </span>lima
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>brew<span class="w"> </span>install<span class="w"> </span>lima@1.2.1
 </span></code></pre></div><p></p>
 </details>
 <details class="question">
@@ -2045,7 +2854,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"></path></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 19, 2026 11:10:26 UTC"><span class="timeago" datetime="2026-02-19T11:10:26+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 19, 2026 11:10:26 UTC">2026-02-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 29, 2026 11:37:42 UTC"><span class="timeago" datetime="2026-04-29T11:37:42+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 29, 2026 11:37:42 UTC">2026-04-29</span>
   </span>
 
     
