@@ -29,7 +29,7 @@ command:
   api:
     - /bin/sh
     - '-c'
-    - uvicorn gfmstudio.main:app --host 0.0.0.0 --port 8000 --loop asyncio --log-config logging.ini; tail -f /dev/null
+    - uvicorn gfmstudio.main:app --host 0.0.0.0 --port 8000 --h11-max-incomplete-event-size 65536 --loop asyncio --log-config logging.ini; tail -f /dev/null
 
 tolerations:
   enabled: false
@@ -297,6 +297,16 @@ mountLocations:
   data_mount: /ft-data/
   files_mount: /geotunes/
   generic_python-processor_mount: /generic_data/
+
+persistence:
+  files_pvc_name:
+    capacity: 5Gi
+  data_pvc_name:
+    capacity: 15Gi
+  models_pvc_name:
+    capacity: 5Gi
+  pipelines_pvc_name:
+    capacity: 5Gi
 
 services:
   # baseName: gfm-studio-gateway

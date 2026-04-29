@@ -100,7 +100,7 @@ global:
     in_cluster_db: false
     # Direct postgres connection details
     postgres_host: <postgres_host>
-    postgres_port: 5432
+    postgres_port: <postgres_port>
     postgres_user: <pg_user>
     postgres_password: <pg_pass>
     # Database URI will be constructed based on pgbouncer.enabled flag
@@ -108,9 +108,9 @@ global:
     # If pgbouncer.enabled=false: postgresql://<user>:<pass>@<postgres_host>:<postgres_port>
     backend_uri_base: postgresql://<pg_user>:<pg_pass>@<host>:<port>
     dbs:
-      mlflow: mlflow
-      gateway: geostudio
-      auth: geostudio_auth
+      mlflow: <pg_mlflow_db_name>
+      gateway: <pg_studio_db_name>
+      auth: <pg_auth_db_name>
 
   # PgBouncer configuration - connection pooler for PostgreSQL
   # When enabled, all services will connect through PgBouncer instead of directly to PostgreSQL
@@ -213,6 +213,15 @@ gfm-studio-gateway:
 
       RESOURCE_LIMIT_Memory: 10     # Memory in GB
       RESOURCE_REQUEST_Memory: 6   # Memory in GB
+  persistence:
+    files_pvc_name:
+      capacity: GFM_FT_FILES_STORAGE
+    data_pvc_name:
+      capacity: GFM_FT_DATA_STORAGE
+    models_pvc_name:
+      capacity: GFM_FT_MODELS_STORAGE
+    pipelines_pvc_name:
+      capacity: INFERENCE_SHARED_STORAGE
 
 
 # geofm-ui
@@ -248,6 +257,9 @@ gfm-mlflow:
     tag: latest
   route:
     enabled: ROUTE_ENABLED
+  persistence:
+    gfmMlflowCOSPVC:
+      capacity: GFM_MLFLOW_STORAGE
 
 # redis
 redis:
@@ -279,6 +291,9 @@ redis:
     metrics:
       enabled: true
     persistence:
+      enabled: true
+      size: REDIS_MASTER_STORAGE
+      storageClass: NON_COS_STORAGE_CLASS
       annotations: {}
   replica:
     replicaCount: 1
@@ -303,6 +318,9 @@ redis:
     metrics:
       enabled: true
     persistence:
+      enabled: true
+      size: REDIS_REPLICAS_STORAGE
+      storageClass: NON_COS_STORAGE_CLASS
       annotations: {}
 
 # pgbouncer - PostgreSQL connection pooler subchart
@@ -319,18 +337,25 @@ pgbouncer:
     # Password for pgbouncer admin (should be set via secret)
     password: <pgbouncer_pass>
     # Postgres database credentials
-    database: postgres
+    database: <pg_auth_db_name>
   postgresql:
     # Hostname of the PostgreSQL server
     host: <postgres_host>
     # Port of the PostgreSQL server
-    port: 5432
+    port: <postgres_port>
     # Database to connect to
-    database: postgres
+    database: <pg_studio_db_name>
     # Username for PostgreSQL
     username: <pg_user>
     # Password for PostgreSQL (should be set via secret)
     password: <pg_pass>
+  resources:
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
 
 # geospatial-studio-pipelines
 geospatial-studio-pipelines:
@@ -522,6 +547,8 @@ geospatial-studio-pipelines:
           bucket_name: BUCKET_INFERENCE_AUXDATA
           mountPath: /auxdata
           create: true
+          persistence:
+            capacity: INFERENCE_AUXDATA_STORAGE
     - name: terratorch-inference
       enabled: true
       image:
@@ -566,3 +593,5 @@ geospatial-studio-pipelines:
           bucket_name: BUCKET_GENERIC_PYTHON_PROCESSOR
           mountPath: /generic_data   
           create: true
+          persistence:
+            capacity: GENERIC_PYTHON_PROCESSOR_STORAGE
