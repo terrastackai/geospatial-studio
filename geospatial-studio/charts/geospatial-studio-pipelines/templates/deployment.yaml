@@ -1,7 +1,7 @@
 # © Copyright IBM Corporation 2025
 # SPDX-License-Identifier: Apache-2.0
 
-
+{{- if not .Values.knative.enabled }}
 {{- range $v := .Values.processors }}
 {{- if $v.enabled }}
 apiVersion: apps/v1
@@ -133,5 +133,6 @@ spec:  {{ if hasKey $v "replicas" }}
           emptyDir:
             medium: Memory  {{- end }}{{- end }} 
 ---
+{{- end }}
 {{- end }}
 {{- end }}

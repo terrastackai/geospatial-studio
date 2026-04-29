@@ -1,0 +1,121 @@
+{{- if and .Values.knative.enabled .Values.knative.dbEventPublisher.enabled }}
+---
+# Database Event Publisher Deployment
+# Listens to PostgreSQL NOTIFY/LISTEN and publishes CloudEvents
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.namePrefix }}-db-event-publisher
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: geospatial-studio
+    component: db-event-publisher
+    geostudio: pipelines
+spec:
+  replicas: {{ .Values.knative.dbEventPublisher.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.namePrefix }}-db-event-publisher
+      geostudio: pipelines
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") $ | sha256sum }}
+      labels:
+        app: {{ .Values.namePrefix }}-db-event-publisher
+        geostudio: pipelines
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      {{- if .Values.imagePullSecret.b64secret }}
+      imagePullSecrets:
+       - name: {{ .Values.imagePullSecret.name }}
+      {{- end }}
+      
+      {{- if .Values.knative.dbEventPublisher.setupTrigger }}
+      # Init container to setup PostgreSQL trigger
+      initContainers:
+      - name: setup-db-trigger
+        image: {{ .Values.knative.dbEventPublisher.image.name }}:{{ .Values.knative.dbEventPublisher.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
+        command: ['python', '-m', 'pipelines.general_libraries.eventing.db_events']
+        env:
+          - name: orchestrate_db_uri
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.orchestrate_db.secret_name }}
+                key: orchestrate_db_uri
+          - name: inference_task_table
+            value: {{ .Values.orchestrate_db.inference_task_table }}
+          - name: DB_NOTIFY_CHANNEL
+            value: {{ .Values.knative.dbEventPublisher.channel }}
+          - name: SETUP_TRIGGER
+            value: "true"
+          - name: EVENT_BROKER_URL
+            value: "http://broker-ingress.knative-eventing.svc.cluster.local/{{ .Values.namespace }}/{{ .Values.knative.broker.name }}"
+      {{- end }}
+      
+      containers:
+      - name: db-event-publisher
+        image: {{ .Values.knative.dbEventPublisher.image.name }}:{{ .Values.knative.dbEventPublisher.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
+        command: ['python', '-m', 'pipelines.general_libraries.eventing.db_events']
+        env:
+          - name: orchestrate_db_uri
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.orchestrate_db.secret_name }}
+                key: orchestrate_db_uri
+          - name: inference_task_table
+            value: {{ .Values.orchestrate_db.inference_task_table }}
+          - name: DB_NOTIFY_CHANNEL
+            value: {{ .Values.knative.dbEventPublisher.channel }}
+          - name: SETUP_TRIGGER
+            value: "false"
+          - name: EVENT_BROKER_URL
+            value: "http://broker-ingress.knative-eventing.svc.cluster.local/{{ .Values.namespace }}/{{ .Values.knative.broker.name }}"
+          - name: log_level
+            value: {{ .Values.log_level }}
+        
+        resources:
+          {{- if .Values.knative.dbEventPublisher.resources.limits }}
+          limits: {{ .Values.knative.dbEventPublisher.resources.limits | toYaml | nindent 12 }}
+          {{- end }}
+          {{- if .Values.knative.dbEventPublisher.resources.requests }}
+          requests: {{ .Values.knative.dbEventPublisher.resources.requests | toYaml | nindent 12 }}
+          {{- end }}
+        
+        livenessProbe:
+          exec:
+            command:
+            - pgrep
+            - -f
+            - db_events
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+---
+# Service for DB Event Publisher (for monitoring)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.namePrefix }}-db-event-publisher
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: geospatial-studio
+    component: db-event-publisher
+    geostudio: pipelines
+spec:
+  selector:
+    app: {{ .Values.namePrefix }}-db-event-publisher
+    geostudio: pipelines
+  ports:
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+  type: ClusterIP
+{{- end }}
+
+# Made with Bob
