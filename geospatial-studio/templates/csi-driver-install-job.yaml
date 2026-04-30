@@ -1,0 +1,236 @@
+{{- if .Values.global.csiDriver.enabled }}
+{{- if and .Values.global.minio.enabled (eq .Values.global.objectStorage.cos_storage_class "cos-s3-csi-s3fs-sc") }}
+
+---
+# Job to install IBM Object S3 CSI Driver
+# This job deploys the CSI driver components to enable S3 bucket mounting as PVCs
+# Runs after ConfigMap creation (-80) and MinIO TLS certificate creation (-85)
+# CSI manifests are loaded from ConfigMap created by csi-driver-configmap.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-csi-driver-installer
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: csi-driver-installer
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-75"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 5
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: geostudio
+        app.kubernetes.io/component: csi-driver-installer
+    spec:
+      serviceAccountName: {{ .Values.global.serviceAccount.name }}
+      restartPolicy: Never
+      containers:
+      - name: csi-installer
+        image: bitnami/kubectl:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash"]
+        args:
+        - "-c"
+        - |
+          set -e
+          
+          NAMESPACE="{{ .Values.global.namespace }}"
+          MINIO_ENDPOINT="{{ .Values.global.objectStorage.endpoint }}"
+          REGION="{{ .Values.global.objectStorage.region | default "us-east-1" }}"
+          ZONE="${REGION}a"
+          CONFIGMAP_NAME="{{ .Release.Name }}-csi-driver-manifests"
+          
+          echo "=================================================="
+          echo "IBM Object S3 CSI Driver Installation"
+          echo "=================================================="
+          echo "Namespace: $NAMESPACE"
+          echo "MinIO Endpoint: $MINIO_ENDPOINT"
+          echo "Region: $REGION"
+          echo "Zone: $ZONE"
+          echo "ConfigMap: $CONFIGMAP_NAME"
+          echo "=================================================="
+          echo ""
+          
+          # Add topology labels to nodes (required by CSI driver)
+          echo "Ensuring topology labels on nodes..."
+          NODES=$(kubectl get nodes -o jsonpath='{.items[*].metadata.name}')
+          for NODE in $NODES; do
+            CURRENT_REGION=$(kubectl get node "$NODE" -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/region}' 2>/dev/null || echo "")
+            CURRENT_ZONE=$(kubectl get node "$NODE" -o jsonpath='{.metadata.labels.topology\.kubernetes\.io/zone}' 2>/dev/null || echo "")
+            
+            if [ "$CURRENT_REGION" != "$REGION" ] || [ "$CURRENT_ZONE" != "$ZONE" ]; then
+              echo "  Adding topology labels to node $NODE (region=$REGION, zone=$ZONE)"
+              kubectl label nodes "$NODE" \
+                topology.kubernetes.io/region="$REGION" \
+                topology.kubernetes.io/zone="$ZONE" \
+                --overwrite
+            else
+              echo "  ✓ Node $NODE already has topology labels"
+            fi
+          done
+          echo ""
+          
+          # Check if already installed
+          if kubectl get deployment cos-s3-csi-controller -n kube-system >/dev/null 2>&1; then
+            echo "✓ CSI driver already installed"
+            
+            # Check version
+            CURRENT_IMAGE=$(kubectl get deployment cos-s3-csi-controller -n kube-system \
+              -o jsonpath='{.spec.template.spec.containers[1].image}' 2>/dev/null || echo "unknown")
+            
+            echo "✓ CSI driver is running with image: $CURRENT_IMAGE"
+            echo "Storage classes:"
+            kubectl get storageclass | grep cos-s3-csi || echo "No CSI storage classes found"
+            exit 0
+          fi
+          
+          echo ""
+          echo "Creating temporary directory structure..."
+          mkdir -p /tmp/csi-driver
+          cd /tmp/csi-driver
+          
+          # Extract manifests from ConfigMap
+          echo "Extracting CSI manifests from ConfigMap..."
+          kubectl get configmap "$CONFIGMAP_NAME" -n "$NAMESPACE" -o jsonpath='{.data.kustomization\.yaml}' > kustomization.yaml
+          kubectl get configmap "$CONFIGMAP_NAME" -n "$NAMESPACE" -o jsonpath='{.data.cos-s3-csi-controller\.yaml}' > cos-s3-csi-controller.yaml
+          kubectl get configmap "$CONFIGMAP_NAME" -n "$NAMESPACE" -o jsonpath='{.data.cos-s3-csi-driver\.yaml}' > cos-s3-csi-driver.yaml
+          kubectl get configmap "$CONFIGMAP_NAME" -n "$NAMESPACE" -o jsonpath='{.data.cos-s3-csidriver\.yaml}' > cos-s3-csidriver.yaml
+          kubectl get configmap "$CONFIGMAP_NAME" -n "$NAMESPACE" -o jsonpath='{.data.cos-s3-csi-sc\.yaml}' > cos-s3-csi-sc.yaml
+          kubectl get configmap "$CONFIGMAP_NAME" -n "$NAMESPACE" -o jsonpath='{.data.cos-s3-csi-s3fs-sc\.yaml}' > cos-s3-csi-s3fs-sc.yaml
+          
+          echo "✓ Manifests extracted"
+          echo ""
+          
+          # Replace placeholders in storage class files
+          echo "Templating storage classes..."
+          sed -i "s|MINIO_ENDPOINT_PLACEHOLDER|$MINIO_ENDPOINT|g" cos-s3-csi-sc.yaml
+          sed -i "s|REGION_PLACEHOLDER|$REGION|g" cos-s3-csi-sc.yaml
+          
+          sed -i "s|MINIO_ENDPOINT_PLACEHOLDER|$MINIO_ENDPOINT|g" cos-s3-csi-s3fs-sc.yaml
+          sed -i "s|REGION_PLACEHOLDER|$REGION|g" cos-s3-csi-s3fs-sc.yaml
+          
+          echo "✓ Storage classes templated"
+          echo ""
+          
+          # Verify files were created
+          echo "Verifying files..."
+          ls -la
+          echo ""
+          
+          # Apply using kustomize
+          echo "=================================================="
+          echo "Applying CSI driver with kustomize..."
+          echo "=================================================="
+          kubectl apply -k .
+          
+          # Wait for CSI driver pods to be ready
+          echo ""
+          echo "Waiting for CSI driver to be ready..."
+          echo "This may take up to 5 minutes..."
+          
+          kubectl wait --for=condition=available --timeout=300s \
+            deployment/cos-s3-csi-controller -n kube-system || {
+            echo "ERROR: Timeout waiting for CSI controller"
+            echo "Checking controller status:"
+            kubectl get deployment cos-s3-csi-controller -n kube-system
+            kubectl describe deployment cos-s3-csi-controller -n kube-system
+            exit 1
+          }
+          
+          kubectl wait --for=condition=ready --timeout=300s \
+            pod -l app=cos-s3-csi-driver -n kube-system || {
+            echo "ERROR: Timeout waiting for CSI driver pods"
+            echo "Checking driver pod status:"
+            kubectl get pods -n kube-system -l app=cos-s3-csi-driver
+            kubectl describe pods -n kube-system -l app=cos-s3-csi-driver
+            exit 1
+          }
+          
+          echo ""
+          echo "=================================================="
+          echo "✓ CSI Driver Installation Complete!"
+          echo "=================================================="
+          echo ""
+          echo "Installed components:"
+          kubectl get deployment cos-s3-csi-controller -n kube-system
+          kubectl get daemonset cos-s3-csi-driver -n kube-system
+          kubectl get storageclass | grep cos-s3-csi
+          echo ""
+          echo "=================================================="
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
+
+---
+# Job to restart CSI driver after MinIO CA certificate is created
+# This ensures the CSI driver picks up the new certificate for TLS verification
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: csi-driver-restart
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: csi-driver-restart
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-65"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: geostudio
+        app.kubernetes.io/component: csi-driver-restart
+    spec:
+      serviceAccountName: {{ .Values.global.serviceAccount.name }}
+      restartPolicy: Never
+      containers:
+      - name: csi-restarter
+        image: bitnami/kubectl:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash"]
+        args:
+        - "-c"
+        - |
+          set -e
+          
+          echo "=================================================="
+          echo "Restarting CSI Driver to pick up MinIO certificate"
+          echo "=================================================="
+          
+          # Check if CSI driver is installed
+          if ! kubectl get deployment cos-s3-csi-controller -n kube-system >/dev/null 2>&1; then
+            echo "CSI driver not installed, skipping restart"
+            exit 0
+          fi
+          
+          echo "Restarting CSI controller..."
+          kubectl rollout restart deployment/cos-s3-csi-controller -n kube-system
+          
+          echo "Restarting CSI driver daemonset..."
+          kubectl rollout restart daemonset/cos-s3-csi-driver -n kube-system
+          
+          echo ""
+          echo "Waiting for rollout to complete..."
+          kubectl rollout status deployment/cos-s3-csi-controller -n kube-system --timeout=180s
+          kubectl rollout status daemonset/cos-s3-csi-driver -n kube-system --timeout=180s
+          
+          echo ""
+          echo "=================================================="
+          echo "✓ CSI Driver Restart Complete!"
+          echo "=================================================="
+
+{{- end }}
+{{- end }}

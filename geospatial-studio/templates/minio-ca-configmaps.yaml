@@ -1,0 +1,154 @@
+{{- if and (eq .Values.global.objectStorage.cos_storage_class "cos-s3-csi-s3fs-sc") (.Values.global.objectStorage.createCosSecret) }}
+{{- if or (.Values.global.minio.enabled) (contains "minio" .Values.global.objectStorage.endpoint) }}
+{{- if .Values.global.objectStorage.tlsCertPem }}
+---
+# ConfigMap with MinIO CA certificate for CSI driver in kube-system namespace
+# Uses manually provided certificate from values
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minio-public-config
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: csi-driver-config
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-75"
+data:
+  minio-public.crt: |
+{{ .Values.global.objectStorage.tlsCertPem | toString | nindent 4 }}
+---
+# ConfigMap with MinIO CA certificate for application namespace
+# Uses manually provided certificate from values
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minio-public-config
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: storage-config
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-75"
+data:
+  minio-public.crt: |
+{{ .Values.global.objectStorage.tlsCertPem | toString | nindent 4 }}
+{{- else if .Values.global.minio.enabled }}
+---
+# Job to create ConfigMaps from auto-generated minio-tls-secret
+# Runs after certificate generation job completes
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-ca-configmap-creator
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: minio-ca-configmap-creator
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-70"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 5
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: geostudio
+        app.kubernetes.io/component: minio-ca-configmap-creator
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ .Values.global.serviceAccount.name }}
+      containers:
+      - name: configmap-creator
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          
+          echo "Waiting for minio-tls-secret to be created..."
+          for i in {1..30}; do
+            if kubectl get secret minio-tls-secret -n {{ .Values.global.namespace }} >/dev/null 2>&1; then
+              echo "Secret found!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "ERROR: minio-tls-secret not found after 30 attempts"
+              exit 1
+            fi
+            echo "Attempt $i/30: Secret not found yet, waiting..."
+            sleep 2
+          done
+          
+          echo "Extracting certificate from secret..."
+          CERT=$(kubectl get secret minio-tls-secret -n {{ .Values.global.namespace }} -o jsonpath='{.data.tls\.crt}' | base64 -d)
+          
+          if [ -z "$CERT" ]; then
+            echo "ERROR: Failed to extract certificate"
+            exit 1
+          fi
+          
+          echo "Creating ConfigMap in kube-system namespace..."
+          kubectl create configmap minio-public-config \
+            --from-literal=minio-public.crt="$CERT" \
+            --namespace=kube-system \
+            --dry-run=client -o yaml | \
+            kubectl label -f - --local --dry-run=client -o yaml \
+              app.kubernetes.io/name=geostudio \
+              app.kubernetes.io/component=csi-driver-config \
+              app.kubernetes.io/managed-by={{ .Release.Service }} | \
+            kubectl apply -f -
+          
+          echo "Creating ConfigMap in {{ .Values.global.namespace }} namespace..."
+          kubectl create configmap minio-public-config \
+            --from-literal=minio-public.crt="$CERT" \
+            --namespace={{ .Values.global.namespace }} \
+            --dry-run=client -o yaml | \
+            kubectl label -f - --local --dry-run=client -o yaml \
+              app.kubernetes.io/name=geostudio \
+              app.kubernetes.io/component=storage-config \
+              app.kubernetes.io/managed-by={{ .Release.Service }} | \
+            kubectl apply -f -
+          
+          echo "ConfigMaps created successfully in both namespaces"
+          
+          {{- if eq .Values.global.objectStorage.cos_storage_class "cos-s3-csi-s3fs-sc" }}
+          echo ""
+          echo "=================================================="
+          echo "Restarting S3 CSI controller to pick up certificate..."
+          echo "=================================================="
+          
+          # Find and restart CSI controller pod
+          CSI_POD=$(kubectl get pods -n kube-system --no-headers | grep 'cos-s3-csi-controller' | awk '{print $1}' | head -1)
+          
+          if [ -n "$CSI_POD" ]; then
+            echo "Found CSI controller pod: $CSI_POD"
+            kubectl delete pod $CSI_POD -n kube-system
+            echo "✓ CSI controller restart triggered"
+            
+            # Wait a bit for new pod to start
+            sleep 5
+            echo "Waiting for new CSI controller to be ready..."
+            for i in {1..30}; do
+              NEW_POD=$(kubectl get pods -n kube-system --no-headers | grep 'cos-s3-csi-controller' | grep 'Running' | awk '{print $1}' | head -1)
+              if [ -n "$NEW_POD" ]; then
+                echo "✓ New CSI controller pod ready: $NEW_POD"
+                break
+              fi
+              sleep 2
+            done
+          else
+            echo "Note: S3 CSI controller not found. Skipping restart."
+          fi
+          echo "=================================================="
+          {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

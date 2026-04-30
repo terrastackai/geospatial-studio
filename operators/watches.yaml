@@ -1,0 +1,9 @@
+# Use the 'create api' subcommand to add watches to this file.
+- group: geostudio.geostudio.ibm.com
+  version: v1alpha1
+  kind: GEOStudio
+  chart: helm-charts/geospatial-studio
+  watchDependentResources: false
+  overrideValues:
+    maxHistory: 3
+# +kubebuilder:scaffold:watch

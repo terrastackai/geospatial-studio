@@ -66,6 +66,65 @@ spec:
         app: cos-s3-csi-controller
     spec:
       serviceAccountName: cos-s3-csi-controller
+      initContainers:
+        - name: setup-ca-cert
+          image: cos-driver-image
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              mkdir -p /ca-certs
+              mkdir -p /etc-ssl-certs
+              
+              # Copy MinIO CA certificate
+              if [ -f /tmp/minio-ca/minio-public.crt ]; then
+                cp /tmp/minio-ca/minio-public.crt /ca-certs/minio-ca.crt
+                echo "✓ Copied MinIO CA certificate"
+              else
+                echo "Warning: MinIO CA certificate not found at /tmp/minio-ca/minio-public.crt"
+                exit 1
+              fi
+              
+              # Try to find and copy system CA certificates
+              if [ -f /etc/ssl/certs/ca-certificates.crt ]; then
+                cat /etc/ssl/certs/ca-certificates.crt > /ca-certs/ca-bundle.crt
+                echo "✓ Copied system CA certificates from /etc/ssl/certs/ca-certificates.crt"
+              elif [ -f /etc/ssl/certs/ca-bundle.crt ]; then
+                cat /etc/ssl/certs/ca-bundle.crt > /ca-certs/ca-bundle.crt
+                echo "✓ Copied system CA certificates from /etc/ssl/certs/ca-bundle.crt"
+              elif [ -f /etc/pki/tls/certs/ca-bundle.crt ]; then
+                cat /etc/pki/tls/certs/ca-bundle.crt > /ca-certs/ca-bundle.crt
+                echo "✓ Copied system CA certificates from /etc/pki/tls/certs/ca-bundle.crt"
+              else
+                echo "Warning: System CA certificates not found, using MinIO CA only"
+                touch /ca-certs/ca-bundle.crt
+              fi
+              
+              # Append MinIO CA to bundle
+              cat /ca-certs/minio-ca.crt >> /ca-certs/ca-bundle.crt
+              echo "✓ Added MinIO CA certificate to bundle"
+              
+              # Copy the bundle to /etc/ssl/certs for Go programs
+              cp /ca-certs/ca-bundle.crt /etc-ssl-certs/ca-certificates.crt
+              cp /ca-certs/ca-bundle.crt /etc-ssl-certs/ca-bundle.crt
+              echo "✓ Copied CA bundle to /etc/ssl/certs/"
+              
+              # Verify the bundle exists and has content
+              if [ ! -s /ca-certs/ca-bundle.crt ]; then
+                echo "ERROR: CA bundle is empty"
+                exit 1
+              fi
+              
+              echo "✓ CA certificate setup complete"
+              ls -lh /ca-certs/
+              ls -lh /etc-ssl-certs/
+          volumeMounts:
+            - name: trusted-ca-certs
+              mountPath: /tmp/minio-ca
+            - name: ca-certificates
+              mountPath: /ca-certs
+            - name: etc-ssl-certs
+              mountPath: /etc-ssl-certs
       containers:
         - name: csi-provisioner
           image: csi-provisioner-image
@@ -81,6 +140,9 @@ spec:
           volumeMounts:
             - mountPath: /csi
               name: socket-dir
+            - name: ca-certificates
+              mountPath: /ca-certs
+              readOnly: true
         - name: cos-csi-provisioner
           securityContext:
             capabilities:
@@ -104,13 +166,18 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: SSL_CERT_FILE
+              value: /ca-certs/ca-bundle.crt
           imagePullPolicy: "Always"
           volumeMounts:
             - mountPath: /csi
               name: socket-dir
-            - name: trusted-ca-certs
-              mountPath: /etc/ssl/certs/minio-ca-certificates.crt
-              subPath: minio-public.crt
+            - name: ca-certificates
+              mountPath: /ca-certs
+              readOnly: true
+            - name: etc-ssl-certs
+              mountPath: /etc/ssl/certs
+              readOnly: true
         - name: liveness-probe
           image: liveness-probe-image
           args:
@@ -129,3 +196,7 @@ spec:
         - name: trusted-ca-certs
           configMap:
             name: minio-public-config
+        - name: ca-certificates
+          emptyDir: {}
+        - name: etc-ssl-certs
+          emptyDir: {}

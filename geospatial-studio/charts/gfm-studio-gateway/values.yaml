@@ -132,7 +132,7 @@ hooks:
           MODELS_URI="$BASE_URL"/studio-gateway/v2/models
           MAX_RETRIES=30
           RETRY_DELAY=5
-
+          
           echo "Seeding sandbox models -> $MODELS_URI"
           
           # Function to post model with retry until 2xx response
@@ -179,7 +179,7 @@ hooks:
           # Post both models with retry logic
           post_model "/payloads/try-in-lab.json" "geofm-sandbox-models"
           post_model "/payloads/add-layer.json" "add-layer-sandbox-model"
-
+          
           echo ""
           echo "✅ Sandbox model seed complete"
 

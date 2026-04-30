@@ -1,0 +1,68 @@
+# --- VERSION CONTROL ---
+.git
+.gitignore
+.gitattributes
+.hg
+.svn
+
+# --- DOCKER & KUBERNETES ---
+Dockerfile
+docker-compose.yml
+.dockerignore
+.helmignore
+charts/
+values.yaml
+
+# --- OS / IDE SPECIFIC ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+.project
+.classpath
+.settings/
+
+# --- LOCAL DEVELOPMENT / SECRETS ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.cert
+ssh-key*
+kubeconfig*
+secrets.txt
+
+# --- PACKAGE MANAGER CACHES ---
+**/node_modules/
+**/.npm/
+**/.yarn/
+.gradle/
+.mvn/
+target/
+bin/
+obj/
+__pycache__/
+*.pyc
+.venv/
+vendor/
+
+# --- BUILD OUTPUTS & LOGS ---
+dist/
+build/
+out/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.terraform/
+.serverless/
+.tar
+
+# --- DOCUMENTATION ---
+README.md
+CHANGELOG.md
+docs/

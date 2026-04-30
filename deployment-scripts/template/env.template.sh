@@ -9,7 +9,7 @@
 export DEPLOYMENT_ENV=${DEPLOYMENT_ENV}
 export OC_PROJECT=${OC_PROJECT}
 export ENVIRONMENT=
-export ROUTE_ENABLED=true
+export ROUTE_ENABLED=${ROUTE_ENABLED:-true}
 export CONTAINER_IMAGE_REPOSITORY=geospatial-studio
 
 # POSTGRESQL version for cluster DB
@@ -135,6 +135,12 @@ export REDIS_ENABLED=true
 export REDIS_FULL_NAME_OVERRIDE=geofm-redis
 export REDIS_ARCHITECTURE=replication
 
+# MinIO configuration
+export MINIO_IMAGE=quay.io/minio/minio
+export MINIO_TAG=latest
+export MINIO_PERSISTENCE_ENABLED=true
+export MINIO_STORAGE_SIZE=100Gi
+
 # Pipelines configuration
 export PIPELINES_ENABLED=true
 
@@ -174,3 +180,9 @@ export NODE_GPU_SPEC=NVIDIA-A100-SXM4-80GB
 # Geoserver config
 export GEOSERVER_CM_PROXYBASEURL=
 export GEOSERVER_CM_WHITELIST=
+
+# Operator configuration (for operator-based deployments)
+export GEOSTUDIO_OPERATOR_IMAGE=${GEOSTUDIO_OPERATOR_IMAGE:-quay.io/geospatial-studio/geostudio-operator:latest}
+export INSTALL_IBM_CSI_DRIVER=${INSTALL_IBM_CSI_DRIVER:-true}
+export USER_NAMESPACE=${OC_PROJECT}
+export OPERATOR_NAMESPACE=${OPERATOR_NAMESPACE:-geostudio-operator-system}

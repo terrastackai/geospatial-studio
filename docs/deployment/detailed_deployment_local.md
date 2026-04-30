@@ -493,13 +493,16 @@ kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 &
 
 # Login with username: `minioadmin`, password: `minioadmin`
 
-
 # Also at this point update `workspace/${DEPLOYMENT_ENV}/env/.env.sh` with...
 export COS_STORAGE_CLASS=cos-s3-csi-s3fs-sc
 export NON_COS_STORAGE_CLASS=local-path
+
+# Install the drivers
+cp -R geospatial-studio/files/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
+sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
+kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
 ```
-
-
 
 * Once the S3 instance has been created, you can add the credentials and endpoint to the `workspace/${DEPLOYMENT_ENV}/env/.env` file as shown below.
 
