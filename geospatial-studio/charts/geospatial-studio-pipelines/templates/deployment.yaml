@@ -107,6 +107,26 @@ spec:  {{ if hasKey $v "replicas" }}
           {{- if hasKey $v "resources" }} {{ if hasKey $v.resources "shm" }}
           - name: dshm
             mountPath: /dev/shm {{ end }} {{ end }}
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pgrep -f "{{ $v.process_exec }}" || exit 1
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pgrep -f "{{ $v.process_exec }}" || exit 1
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
         {{- if hasKey $v "resources" }}
         resources:
           {{- if hasKey $v.resources "limits" }}
