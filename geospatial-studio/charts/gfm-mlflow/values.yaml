@@ -107,7 +107,7 @@ persistence:
   gfmMlflowCOSPVC:
     create: false
     claimName: gfm-mlflow-cos-pvc
-    capacity: 50Gi
+    capacity: 5Gi
     # customStorageClass: ibmc-s3fs-cos-perf
 # objectStorage:
 #   endpoint: http://s3.us-south.cloud-object-storage.appdomain.cloud

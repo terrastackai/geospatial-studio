@@ -62,7 +62,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ .Values.persistence.gfmMlflowCOSPVC.capacity }}
 {{- end }}
 
 {{- else if eq .Values.global.storage.storageMode "cluster-block-storage" }}
@@ -78,7 +78,7 @@ spec:
     - {{ .Values.global.pvc_access_mode }}
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ .Values.persistence.gfmMlflowCOSPVC.capacity }}
 
 {{- else if eq .Values.global.storage.storageMode "local-hostpath" }}
 ---
@@ -91,7 +91,7 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 10Gi
+    storage: {{ .Values.persistence.gfmMlflowCOSPVC.capacity }}
   accessModes:
     - ReadWriteMany
   claimRef:
@@ -111,6 +111,6 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 10Gi
+      storage: {{ .Values.persistence.gfmMlflowCOSPVC.capacity }}
 ---
 {{- end }}

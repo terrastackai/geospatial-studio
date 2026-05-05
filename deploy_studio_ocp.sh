@@ -62,16 +62,27 @@ if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
     check_deployment_and_prompt "deployment" "ibmcloud-object-storage-plugin" "ibm-object-s3fs" "IBM Object Storage Plugin" "DEPLOY_IBM_STORAGE"
 else
     echo "✓ No existing configuration - will deploy all components"
-    DEPLOY_MINIO="Deploy"
     DEPLOY_POSTGRES="Deploy"
     DEPLOY_KEYCLOAK="Deploy"
-    DEPLOY_GEOSERVER="Deploy"
-    DEPLOY_STUDIO="Deploy"
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        check_deployment_and_prompt "deployment" "minio" "${OC_PROJECT}" "MinIO (object storage) or configure existing object storage" "DEPLOY_MINIO"
+    else
+        DEPLOY_MINIO="Deploy"
+    fi
+
     if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
         check_deployment_and_prompt "deployment" "ibmcloud-object-storage-plugin" "ibm-object-s3fs" "IBM Object Storage Plugin" "DEPLOY_IBM_STORAGE"
     else
         DEPLOY_IBM_STORAGE="Deploy"
     fi
+
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        check_deployment_and_prompt "deployment" "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
+    else
+        DEPLOY_GEOSERVER="Deploy"
+    fi
+
+    DEPLOY_STUDIO="Deploy"
 fi
 
 echo ""
@@ -160,6 +171,14 @@ if [ $? -ne 0 ]; then
 fi
 
 oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
+
+echo "----------------------------------------------------------------------"
+echo "--------------------  Configure Resource Mode  -----------------------"
+echo "----------------------------------------------------------------------"
+
+if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+    configure_resource_mode
+fi
 
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
@@ -393,7 +412,16 @@ if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
 
         source workspace/${DEPLOYMENT_ENV}/env/env.sh
         
-        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+        python ./deployment-scripts/update-deployment-template.py \
+            --disable-pvc \
+            --storageclass ${NON_COS_STORAGE_CLASS} \
+            --storage $MINIO_STORAGE \
+            --filename deployment-scripts/minio-deployment.yaml \
+            --cpu-request $MINIO_CPU_REQUEST \
+            --cpu-limit $MINIO_CPU_LIMIT \
+            --memory-request $MINIO_MEMORY_REQUEST \
+            --memory-limit $MINIO_MEMORY_LIMIT \
+            > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
         kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
@@ -578,6 +606,10 @@ if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
         echo "-----------  pg_uri= -------------------------------------------------"
         echo "-----------  pg_port= ------------------------------------------------"
         echo "-----------  pg_original_db_name= ------------------------------------"
+        echo "-----------  Comment out pg_forwarded_port ---------------------------"
+        echo "-----------  pg_forwarded_port= --------------------------------------"
+        echo "-----------  Set pgbouncer_password to pg_password -------------------"
+        echo "-----------  pgbouncer_password= -------------------------------------"
         echo "**********************************************************************"
         echo "**********************************************************************"
 
@@ -600,7 +632,7 @@ if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
         
         # Set PgBouncer configuration for cloud-managed postgres
         # Note: User needs to manually set pgbouncer_host if using external PgBouncer
-        sed -i -e "s/pgbouncer_password=.*/pgbouncer_password=${pg_password}/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/pgbouncer_host=.*/pgbouncer_host=geofm-pgbouncer.${OC_PROJECT}.svc.cluster.local/g" workspace/${DEPLOYMENT_ENV}/env/.env
     fi
 else
     echo "----------------------------------------------------------------------"
@@ -626,8 +658,14 @@ if [[ "$DEPLOY_KEYCLOAK" == "Deploy" ]]; then
         echo "--------------------  Deploying Keycloak  ----------------------------"
         echo "----------------------------------------------------------------------"
 
-
-        python ./deployment-scripts/update-keycloak-deployment.py --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+        python ./deployment-scripts/update-deployment-template.py \
+            --filename deployment-scripts/keycloak-deployment.yaml \
+            --cpu-request $KEYCLOAK_CPU_REQUEST \
+            --cpu-limit $KEYCLOAK_CPU_LIMIT \
+            --memory-request $KEYCLOAK_MEMORY_REQUEST \
+            --memory-limit $KEYCLOAK_MEMORY_LIMIT \
+            --env-path workspace/${DEPLOYMENT_ENV}/env/.env \
+            > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 
         kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
@@ -715,7 +753,18 @@ if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
 
     if [[ "$geoserver_install_type" == "Configure-SCC" ]]; then
         oc adm policy add-scc-to-user anyuid -n ${OC_PROJECT} -z default
-        python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+        python ./deployment-scripts/update-deployment-template.py \
+            --filename deployment-scripts/geoserver-deployment.yaml \
+            --disable-pvc \
+            --storageclass ${NON_COS_STORAGE_CLASS} \
+            --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") \
+            --geoserver-csrf-whitelist ${CLUSTER_URL} \
+            --storage $GEOSERVER_STORAGE \
+            --cpu-request $GEOSERVER_CPU_REQUEST \
+            --cpu-limit $GEOSERVER_CPU_LIMIT \
+            --memory-request $GEOSERVER_MEMORY_REQUEST \
+            --memory-limit $GEOSERVER_MEMORY_LIMIT \
+            > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
         kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
     else
         printf "\n\n#Use this dockerfile to create a custom image\n\nFROM --platform=linux/amd64 docker.osgeo.org/geoserver:2.28.1\nRUN chmod -R 777 /tmp\nRUN addgroup --system geoserver && adduser --system -gid 101 geoserver\nRUN chown -R geoserver:geoserver /opt\nRUN chmod -R 777 /opt\nRUN chmod -R 777 /usr/local/tomcat\nUSER geoserver:geoserver\n"
@@ -750,7 +799,21 @@ if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
             get_user_input "Provide the geoserver image uri: " geoserver_image_uri
             echo "geoserver image uri accepted: **$geoserver_image_uri**"
 
-            python ./deployment-scripts/update-deployment-template.py --disable-pvc --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") --geoserver-csrf-whitelist ${CLUSTER_URL} --geoserver-run-unprivileged "false" --geoserver-image-pull-secret ${geoserver_image_pull_secret_name} --geoserver-image-uri ${geoserver_image_uri} > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+            python ./deployment-scripts/update-deployment-template.py \
+                --filename deployment-scripts/geoserver-deployment.yaml \
+                --disable-pvc \
+                --storageclass ${NON_COS_STORAGE_CLASS} \
+                --proxy-base-url $(printf "https://%s-%s.%s/geoserver" "geofm-geoserver" "$OC_PROJECT" "$CLUSTER_URL") \
+                --geoserver-csrf-whitelist ${CLUSTER_URL} \
+                --geoserver-run-unprivileged "false" \
+                --geoserver-image-pull-secret ${geoserver_image_pull_secret_name} \
+                --geoserver-image-uri ${geoserver_image_uri} \
+                --storage $GEOSERVER_STORAGE \
+                --cpu-request $GEOSERVER_CPU_REQUEST \
+                --cpu-limit $GEOSERVER_CPU_LIMIT \
+                --memory-request $GEOSERVER_MEMORY_REQUEST \
+                --memory-limit $GEOSERVER_MEMORY_LIMIT \
+                > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
             kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
 
             if [ $? -eq 0 ]; then
@@ -813,7 +876,7 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
 
         python deployment-scripts/validate-env-files.py \
         --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
-        --env-variables "deployment_name,ocp_project,studio_api_key,studio_api_encryption_key,access_key_id,secret_access_key,endpoint,region,pg_username,pg_password,pg_uri,pg_port,pg_original_db_name,pg_studio_db_name,geoserver_username,geoserver_password,oauth_client_secret,oauth_cookie_secret,redis_password,image_pull_secret_b64" \
+        --env-variables "deployment_name,ocp_project,studio_api_key,studio_api_encryption_key,access_key_id,secret_access_key,endpoint,region,pg_username,pg_password,pg_uri,pg_port,pg_original_db_name,pg_studio_db_name,pgbouncer_host,pgbouncer_password,geoserver_username,geoserver_password,oauth_client_secret,oauth_cookie_secret,redis_password,image_pull_secret_b64" \
         --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
         --env-sh-variables "DEPLOYMENT_ENV,OC_PROJECT,ROUTE_ENABLED,CONTAINER_IMAGE_REPOSITORY,CLUSTER_URL,COS_STORAGE_CLASS,NON_COS_STORAGE_CLASS,OAUTH_PROXY_PORT,OAUTH_TYPE,OAUTH_CLIENT_ID,OAUTH_ISSUER_URL,OAUTH_URL"
 
@@ -843,6 +906,9 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     sed -i -e "s|<pgbouncer_port>|${pgbouncer_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
     sed -i -e "s|<pgbouncer_user>|${pgbouncer_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
     sed -i -e "s|<pgbouncer_pass>|${pgbouncer_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_studio_db_name>|${pg_studio_db_name}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_mlflow_db_name>|${pg_mlflow_db_name}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_auth_db_name>|${pg_auth_db_name}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
     gpu_configuration_options="GPU-Available No-GPU-Available"
     typeset gpu_configuration_type
@@ -952,6 +1018,8 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     echo "----------------------------------------------------------------------"
     echo "--------------------  Deploying the Studio  --------------------------"
     echo "----------------------------------------------------------------------"
+
+    update_values_deploy_resources workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
     # Deploy Geospatial Studio
     ./deployment-scripts/deploy_studio.sh
