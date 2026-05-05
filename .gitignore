@@ -67,6 +67,7 @@ studio-pf.log
 
 # Credentials and secrets
 .geostudio_config_file
+geostudio_config_file
 *.env
 .env.local
 secrets.yml
