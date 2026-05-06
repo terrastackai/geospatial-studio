@@ -26,6 +26,101 @@ export NON_COS_STORAGE_CLASS=
 export PVC_ACCESS_MODE=ReadWriteOnce
 export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=
 
+# GEOStudio Storage
+export GFM_FT_DATA_STORAGE=15Gi
+export GFM_FT_FILES_STORAGE=5Gi
+export GFM_FT_MODELS_STORAGE=5Gi
+export INFERENCE_SHARED_STORAGE=5Gi
+export GFM_MLFLOW_STORAGE=1Gi
+export INFERENCE_AUXDATA_STORAGE=1Gi
+export GENERIC_PYTHON_PROCESSOR_STORAGE=1Gi
+export REDIS_MASTER_STORAGE=1Gi
+export REDIS_REPLICAS_STORAGE=1Gi
+
+# Resource Configuration
+export RESOURCE_MODE=dev
+
+# MinIO Resources
+export MINIO_CPU_REQUEST=2000m
+export MINIO_CPU_LIMIT=4000m
+export MINIO_MEMORY_REQUEST=2Gi
+export MINIO_MEMORY_LIMIT=4Gi
+export MINIO_STORAGE=40Gi
+
+# Keycloak Resources
+export KEYCLOAK_CPU_REQUEST=250m
+export KEYCLOAK_CPU_LIMIT=1000m
+export KEYCLOAK_MEMORY_REQUEST=512Mi
+export KEYCLOAK_MEMORY_LIMIT=1Gi
+
+# GeoServer Resources
+export GEOSERVER_CPU_REQUEST='null'
+export GEOSERVER_CPU_LIMIT='null'
+export GEOSERVER_MEMORY_REQUEST='null'
+export GEOSERVER_MEMORY_LIMIT='null'
+export GEOSERVER_STORAGE=2Gi
+
+# PostgreSQL Resources (Bitnami chart defaults)
+export POSTGRES_CPU_REQUEST=250m
+export POSTGRES_CPU_LIMIT=1000m
+export POSTGRES_MEMORY_REQUEST=512Mi
+export POSTGRES_MEMORY_LIMIT=1Gi
+export POSTGRES_STORAGE=2Gi
+
+# PgBouncer Resources
+export PGBOUNCER_CPU_REQUEST=250m
+export PGBOUNCER_CPU_LIMIT=1000m
+export PGBOUNCER_MEMORY_REQUEST=256Mi
+export PGBOUNCER_MEMORY_LIMIT=1Gi
+
+# MLflow Resources
+export MLFLOW_CPU_REQUEST='null'
+export MLFLOW_CPU_LIMIT='null'
+export MLFLOW_MEMORY_REQUEST='null'
+export MLFLOW_MEMORY_LIMIT='null'
+
+# Redis Master Resources
+export REDIS_MASTER_CPU_REQUEST='null'
+export REDIS_MASTER_CPU_LIMIT='null'
+export REDIS_MASTER_MEMORY_REQUEST='null'
+export REDIS_MASTER_MEMORY_LIMIT='null'
+
+# Redis Replica Resources
+export REDIS_REPLICA_CPU_REQUEST='null'
+export REDIS_REPLICA_CPU_LIMIT='null'
+export REDIS_REPLICA_MEMORY_REQUEST='null'
+export REDIS_REPLICA_MEMORY_LIMIT='null'
+
+# Gateway API Resources
+export GATEWAY_API_CPU_REQUEST='null'
+export GATEWAY_API_CPU_LIMIT='null'
+export GATEWAY_API_MEMORY_REQUEST='null'
+export GATEWAY_API_MEMORY_LIMIT='null'
+
+# Gateway Celery Worker Resources
+export GATEWAY_CELERY_WORKER_CPU_REQUEST='null'
+export GATEWAY_CELERY_WORKER_CPU_LIMIT='null'
+export GATEWAY_CELERY_WORKER_MEMORY_REQUEST='null'
+export GATEWAY_CELERY_WORKER_MEMORY_LIMIT='null'
+
+# Gateway OAuth Resources
+export GATEWAY_OAUTH_CPU_REQUEST='null'
+export GATEWAY_OAUTH_CPU_LIMIT='null'
+export GATEWAY_OAUTH_MEMORY_REQUEST='null'
+export GATEWAY_OAUTH_MEMORY_LIMIT='null'
+
+# UI OAuth Resources
+export UI_OAUTH_CPU_REQUEST='null'
+export UI_OAUTH_CPU_LIMIT='null'
+export UI_OAUTH_MEMORY_REQUEST='null'
+export UI_OAUTH_MEMORY_LIMIT='null'
+
+# UI Resources
+export UI_CPU_REQUEST='null'
+export UI_CPU_LIMIT='null'
+export UI_MEMORY_REQUEST='null'
+export UI_MEMORY_LIMIT='null'
+
 # Populate buckets with data
 export LULC_TILE_ROOT=
 export LULC_TILE_SHAPEFILE=

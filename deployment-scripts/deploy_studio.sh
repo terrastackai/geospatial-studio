@@ -4,9 +4,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-
+RESOURCE_FLAGS="${1:-}"
 
 source workspace/$DEPLOYMENT_ENV/env/.env
+
 helm upgrade -f workspace/$DEPLOYMENT_ENV/values/geospatial-studio/values-deploy.yaml studio \
             ./geospatial-studio/ \
             --install \
@@ -50,5 +51,6 @@ helm upgrade -f workspace/$DEPLOYMENT_ENV/values/geospatial-studio/values-deploy
             --set "geospatial-studio-pipelines.objectStorage.endpoint=${endpoint}" \
             --set "geospatial-studio-pipelines.objectStorage.region=${region}" \
             --set "geospatial-studio-pipelines.objectStorage.access_key=${access_key_id}" \
-            --set "geospatial-studio-pipelines.objectStorage.secret_key=${secret_access_key}"
+            --set "geospatial-studio-pipelines.objectStorage.secret_key=${secret_access_key}" \
+            ${RESOURCE_FLAGS}
             # --dry-run > studio-deploy-dry-run.yaml

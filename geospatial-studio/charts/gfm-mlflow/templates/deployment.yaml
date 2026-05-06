@@ -35,6 +35,15 @@ spec:
       serviceAccountName: {{ include "gfm-mlflow.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: mlflow-db-migration
+          image: ghcr.io/mlflow/mlflow:latest # Match your main image version
+          command: ["/bin/sh", "-c"]
+          args:
+            - mlflow db upgrade $BACKEND_URI || true
+          envFrom:
+            - secretRef:
+                name: {{ .Values.global.appNames.mlflow }}-secrets
       containers:
         - name: {{ .Chart.Name }}
           securityContext:

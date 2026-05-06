@@ -215,6 +215,8 @@ processors:
         bucket_name: BUCKET_INFERENCE_AUXDATA
         mountPath: /auxdata
         create: true
+        persistence:
+          capacity: 1Gi
   - name: terratorch-inference
     enabled: true
     image:
@@ -264,3 +266,5 @@ processors:
         bucket_name: BUCKET_GENERIC_PYTHON_PROCESSOR
         mountPath: /generic_data   
         create: true
+        persistence:
+          capacity: 1Gi

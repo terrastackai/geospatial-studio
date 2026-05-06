@@ -305,7 +305,7 @@ spec:
               containerPort: 8080
               protocol: TCP
           resources:
-            null
+            {}
           volumeMounts:
             - mountPath: /opt/geoserver_data
               name: gfm-geoserver-pv-storage
