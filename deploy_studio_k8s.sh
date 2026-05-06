@@ -403,6 +403,61 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
         sed -i -e "s/export INGRESS_ENABLED=.*/export INGRESS_ENABLED=$INGRESS_ENABLED/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
         if [[ "$INGRESS_ENABLED" == "true" ]]; then
+
+            # Load balancer support - if missing (bare-metal kubernetes clusters)
+
+            lb_support_options="Yes No"
+            typeset lb_support
+            
+            get_menu_selection \
+                "Do you have Load Balancer support in your cluster?:" \
+                lb_support \
+                "$lb_support_options"
+            
+            export LB_SUPPORT=$lb_support
+
+            if [[ "$LB_SUPPORT" == "No" ]]; then
+                # Install MetalLB
+                kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/manifests/metallb-native.yaml
+                
+                kubectl wait --namespace metallb-system \
+                    --for=condition=ready pod \
+                    --selector=app=metallb \
+                    --timeout=90s                
+
+                NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
+                if [[ -n "$NODE_IP" ]]; then
+                    BASE_IP=$(echo $NODE_IP | cut -d'.' -f1-3)
+                    IP_RANGE="${BASE_IP}.200-${BASE_IP}.250"
+                    echo "Detected node IP: $NODE_IP, using range: $IP_RANGE"
+                else
+                    # Fallback to common private network
+                    IP_RANGE="192.168.1.200-192.168.1.250"
+                    echo "Could not detect network, using default range: $IP_RANGE"
+                fi
+
+                # Apply MetalLB configuration
+                cat <<EOF | kubectl apply -f -
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - ${IP_RANGE}
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: default
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - default-pool
+EOF
+                echo "✓ MetalLB installed and configured with IP range: ${IP_RANGE}"
+            fi
             
             echo "**********************************************************************"
             echo "**********************************************************************"
