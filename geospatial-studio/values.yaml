@@ -140,6 +140,13 @@ global:
     fullnameOverride: REDIS_FULL_NAME_OVERRIDE
     password: redis_password
     architecture: REDIS_ARCHITECTURE
+  ingress:
+    enabled: INGRESS_ENABLED
+    host: INGRESS_HOST
+    className: INGRESS_CLASS_NAME
+    tlsEnabled: INGRESS_TLS_ENABLED
+    tlsCrtB64: ingressTlsCrtB64
+    tlsKeyB64: ingressTlsKeyB64
 
 ### Sub Charts Specific Values ###
 

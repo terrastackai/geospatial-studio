@@ -174,3 +174,10 @@ export NODE_GPU_SPEC=NVIDIA-A100-SXM4-80GB
 # Geoserver config
 export GEOSERVER_CM_PROXYBASEURL=
 export GEOSERVER_CM_WHITELIST=
+
+
+#Ingress
+export INGRESS_ENABLED=false  # Enable for non-OpenShift environments
+export INGRESS_HOST=local # Set to your domain
+export INGRESS_CLASS_NAME=haproxy # If using a different ingress controller, set className here
+export INGRESS_TLS_ENABLED=true

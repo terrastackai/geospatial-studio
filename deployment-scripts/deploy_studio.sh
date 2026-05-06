@@ -33,6 +33,8 @@ helm upgrade -f workspace/$DEPLOYMENT_ENV/values/geospatial-studio/values-deploy
             --set "global.oauth.clientSecret=${oauth_client_secret}" \
             --set "global.oauth.tlsCrtB64=${tls_crt_b64}" \
             --set "global.oauth.tlsKeyB64=${tls_key_b64}" \
+            --set "global.ingress.tlsCrtB64=${ingress_tls_crt_b64}" \
+            --set "global.ingress.tlsKeyB64=${ingress_tls_key_b64}" \
             --set "global.oauth.cookieSecret=${oauth_cookie_secret}" \
             --set "global.objectStorage.access_key=${access_key_id}" \
             --set "global.objectStorage.secret_key=${secret_access_key}" \
