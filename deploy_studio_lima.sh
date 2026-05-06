@@ -390,17 +390,19 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
             echo ""
 
             # create ingress tls
-            openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-                -keyout ingress-tls.key \
-                -out ingress-tls.crt \
-                -subj "/CN=local-ingress/O=local" \
-                -addext "subjectAltName=DNS:*.${INGRESS_HOST}"
+            if [[ "$INGRESS_TLS_ENABLED" == "true" ]]; then
+                openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                    -keyout ingress-tls.key \
+                    -out ingress-tls.crt \
+                    -subj "/CN=local-ingress/O=local" \
+                    -addext "subjectAltName=DNS:*.${INGRESS_HOST}"
 
-            export INGRESS_TLS_CRT_B64=$(openssl base64 -in ingress-tls.crt -A)
-            export INGRESS_TLS_KEY_B64=$(openssl base64 -in ingress-tls.key -A)
+                export INGRESS_TLS_CRT_B64=$(openssl base64 -in ingress-tls.crt -A)
+                export INGRESS_TLS_KEY_B64=$(openssl base64 -in ingress-tls.key -A)
 
-            sed -i -e "s/ingress_tls_crt_b64=.*/ingress_tls_crt_b64=$INGRESS_TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-            sed -i -e "s/ingress_tls_key_b64=.*/ingress_tls_key_b64=$INGRESS_TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
+                sed -i -e "s/ingress_tls_crt_b64=.*/ingress_tls_crt_b64=$INGRESS_TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
+                sed -i -e "s/ingress_tls_key_b64=.*/ingress_tls_key_b64=$INGRESS_TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
+            fi
 
             # install haproxy kubernetes ingress controller
             kubectl delete all -l app.kubernetes.io/name=traefik -n kube-system
