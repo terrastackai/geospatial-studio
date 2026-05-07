@@ -79,7 +79,7 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /oauth/healthz
+              path: /ping
               port: {{ .Values.global.oauth.oauthProxyPort }}
               scheme: HTTPS
             initialDelaySeconds: 30
@@ -88,7 +88,7 @@ spec:
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /oauth/healthz
+              path: /ping
               port: {{ .Values.global.oauth.oauthProxyPort }}
               scheme: HTTPS
             initialDelaySeconds: 10
