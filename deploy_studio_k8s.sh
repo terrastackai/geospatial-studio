@@ -764,6 +764,7 @@ kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY -
 kubectl port-forward deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
 kubectl port-forward deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
 kubectl port-forward deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n kube-system svc/haproxy-kubernetes-ingress 80:80 443:443 >> studio-pf.log 2>&1 &
 
 echo "----------------------------------------------------------------------"
 echo "-----------------------  Deployment summary  -------------------------"
