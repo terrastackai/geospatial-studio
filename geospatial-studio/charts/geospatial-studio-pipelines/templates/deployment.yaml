@@ -124,7 +124,7 @@ spec:  {{ if hasKey $v "replicas" }}
             - -c
             - pgrep -f "{{ $v.process_exec }}" || exit 1
           initialDelaySeconds: 30
-          periodSeconds: 10
+          periodSeconds: 15
           timeoutSeconds: 5
           failureThreshold: 3
         {{- if hasKey $v "resources" }}

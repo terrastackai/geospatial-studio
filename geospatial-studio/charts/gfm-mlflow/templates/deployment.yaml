@@ -89,7 +89,7 @@ spec:
               port: {{ .Values.service.port }}
               scheme: HTTP
             initialDelaySeconds: 30
-            periodSeconds: 10
+            periodSeconds: 15
             timeoutSeconds: 5
             failureThreshold: 3
           resources:

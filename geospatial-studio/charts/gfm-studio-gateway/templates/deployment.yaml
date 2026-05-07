@@ -58,8 +58,8 @@ spec:
               path: /health/readyz
               port: 8000
               scheme: HTTP
-            initialDelaySeconds: 30
-            periodSeconds: 10
+            initialDelaySeconds: 60
+            periodSeconds: 15
             timeoutSeconds: 5
             failureThreshold: 3
           command:
@@ -118,7 +118,7 @@ spec:
               port: {{ .Values.global.oauth.oauthProxyPort }}
               scheme: HTTPS
             initialDelaySeconds: 10
-            periodSeconds: 5
+            periodSeconds: 10
             timeoutSeconds: 3
             failureThreshold: 3
           volumeMounts:
@@ -151,7 +151,7 @@ spec:
               - -c
               - pgrep -f "subscribe_new_mlflow_run.py" || exit 1
             initialDelaySeconds: 30
-            periodSeconds: 10
+            periodSeconds: 15
             timeoutSeconds: 5
             failureThreshold: 3
           envFrom:
