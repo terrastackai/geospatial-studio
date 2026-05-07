@@ -112,20 +112,20 @@ spec:  {{ if hasKey $v "replicas" }}
             command:
             - /bin/sh
             - -c
-            - pgrep -f "{{ $v.process_exec }}" || exit 1
+            - timeout 15 pgrep -f "{{ $v.process_exec }}" || exit 1
           initialDelaySeconds: 60
           periodSeconds: 30
-          timeoutSeconds: 10
+          timeoutSeconds: 20
           failureThreshold: 3
         readinessProbe:
           exec:
             command:
             - /bin/sh
             - -c
-            - pgrep -f "{{ $v.process_exec }}" || exit 1
+            - timeout 15 pgrep -f "{{ $v.process_exec }}" || exit 1
           initialDelaySeconds: 30
           periodSeconds: 15
-          timeoutSeconds: 5
+          timeoutSeconds: 15
           failureThreshold: 3
         {{- if hasKey $v "resources" }}
         resources:

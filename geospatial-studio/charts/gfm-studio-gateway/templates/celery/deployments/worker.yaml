@@ -84,20 +84,20 @@ spec:
               command:
               - /bin/sh
               - -c
-              - pgrep -f "celery.*worker" || exit 1
+              - timeout 15 pgrep -f "celery.*worker" || exit 1
             initialDelaySeconds: 60
             periodSeconds: 30
-            timeoutSeconds: 10
+            timeoutSeconds: 20
             failureThreshold: 3
           readinessProbe:
             exec:
               command:
               - /bin/sh
               - -c
-              - pgrep -f "celery.*worker" || exit 1
+              - timeout 10 pgrep -f "celery.*worker" || exit 1
             initialDelaySeconds: 30
             periodSeconds: 10
-            timeoutSeconds: 5
+            timeoutSeconds: 15
             failureThreshold: 3
           envFrom:
             - configMapRef:
