@@ -65,6 +65,51 @@ Complete an end-to-end workflow:
 
 ---
 
+### Lab 5:  Burn Scars Workflow
+**File:** `lab5-burnscars-workflow.ipynb`
+
+Learn to:
+- Use Geospatial Earth Observation Studio API for burn scar detection
+- Work with Sentinel-2 multispectral imagery
+- Configure advanced model parameters
+- Evaluate model performance metrics
+- Compare results with baseline models
+- Generate detailed analysis reports
+
+**Estimated Time:** 60-90 minutes | **Difficulty:** Intermediate
+
+---
+
+### Lab 6:  Floods Workflow
+**File:** `lab6-floods-workflow.ipynb`
+
+Learn to:
+- Detect and map flood extents using satellite imagery
+- Perform multi-temporal analysis for flood monitoring
+- Work with Sentinel-1 SAR and Sentinel-2 optical data
+- Generate flood risk assessments
+- Create disaster response visualizations
+- Export results for emergency management
+
+**Estimated Time:** 60-90 minutes | **Difficulty:** Intermediate
+
+---
+
+### Lab 7:  Buildings Workflow
+**File:** `lab7-buildings-workflow.ipynb`
+
+Learn to:
+- Detect building footprints from satellite imagery
+- Perform urban area analysis and mapping
+- Extract infrastructure features
+- Calculate building density metrics
+- Generate urban planning insights
+- Export vector data for GIS applications
+
+**Estimated Time:** 60-90 minutes | **Difficulty:** Intermediate
+
+---
+
 ## How to Use These Notebooks
 
 ### Prerequisites

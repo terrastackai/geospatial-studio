@@ -45,6 +45,25 @@ This workshop provides a complete learning path for IBM Geospatial Studio, desig
    - Fine-tuning models
    - Deploying and monitoring
 
+5. **Lab 5: Burn Scars Workflow** (60-90 minutes)
+   - Advanced burn scar detection
+   - Working with Sentinel-2 imagery
+   - Model evaluation and validation
+
+6. **Lab 6: Floods Workflow** (60-90 minutes)
+   - Flood detection and mapping
+   - Multi-temporal analysis
+   - Disaster response applications
+
+7. **Lab 7: Buildings Workflow** (60-90 minutes)
+   - Building footprint detection
+   - Urban area analysis
+   - Infrastructure mapping
+
+**Note**: All notebooks are available in [`docs/notebooks/`](docs/notebooks/) directory. See the [Notebooks README](docs/notebooks/README.md) for detailed descriptions and usage instructions.
+
+
+
 **Total Workshop Time**: 4.5 - 6 hours
 
 ## 🚀 Quick Start
