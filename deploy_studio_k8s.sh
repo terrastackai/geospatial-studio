@@ -523,7 +523,6 @@ EOF
                 --set service.type=LoadBalancer \
                 --set ports.web.port=80 \
                 --set ports.websecure.port=443 \
-                --set ports.websecure.tls.enabled=true
 
             # wait for ingress controller to be ready
             kubectl rollout status daemonset/traefik -n kube-system --timeout=300s
@@ -765,6 +764,7 @@ kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY -
 kubectl port-forward deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
 kubectl port-forward deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
 kubectl port-forward deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
+kubectl port-forward -n kube-system svc/traefik 80:80 443:443 >> studio-pf.log 2>&1 &
 
 echo "----------------------------------------------------------------------"
 echo "-----------------------  Deployment summary  -------------------------"
