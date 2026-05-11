@@ -238,7 +238,7 @@ geofm-ui:
     pullPolicy: ""
   route:
     enabled: ROUTE_ENABLED
-  securityContext:
+  securityContext: 
     api:
       runAsNonRoot: true
     pod:

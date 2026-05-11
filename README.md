@@ -54,7 +54,7 @@ By leveraging tools like **TerraTorch**, **TerraKit**, and **Iterate**, the Geos
 
 The studio is builds upon the broader ecosystem utilising [TerraTorch](https://github.com/terrastackai/terratorch) for model fine-tuning and inference, and leveraging [TerraKit](https://github.com/terrastackai/terrakit) for geospatial data search, query and processing.
 
-![Geospatial Studio UI Screenshots](./docs/images/ui-screenshots.png)
+![Geospatial Studio UI Screenshots](./docs/images/ui-screenshots.png) 
 
 ---
 
