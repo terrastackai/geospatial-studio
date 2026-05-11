@@ -1,0 +1,9 @@
+{{- if .Values.global.ingress.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: self-signed-transport
+  namespace: {{ .Values.global.namespace }}
+spec:
+  insecureSkipVerify: true
+{{- end }}

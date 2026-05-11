@@ -513,19 +513,20 @@ EOF
                 sed -i -e "s/ingress_tls_key_b64=.*/ingress_tls_key_b64=$INGRESS_TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
             fi
 
-            # install haproxy kubernetes ingress controller
-            helm repo add haproxytech https://haproxytech.github.io/helm-charts
+            # install traefik kubernetes ingress controller
+            helm repo add traefik https://traefik.github.io/charts
             helm repo update
 
-            helm install haproxy-kubernetes-ingress haproxytech/kubernetes-ingress \
+            helm install traefik traefik/traefik \
                 --namespace kube-system \
-                --set controller.kind=DaemonSet \
-                --set controller.service.type=LoadBalancer \
-                --set controller.publishService.enabled=true \
-                --set controller.publishService.pathOverride=kube-system/haproxy-kubernetes-ingress
+                --set deployment.kind=DaemonSet \
+                --set service.type=LoadBalancer \
+                --set ports.web.port=80 \
+                --set ports.websecure.port=443 \
+                --set ports.websecure.tls.enabled=true
 
             # wait for ingress controller to be ready
-            kubectl rollout status daemonset/haproxy-kubernetes-ingress -n kube-system --timeout=300s
+            kubectl rollout status daemonset/traefik -n kube-system --timeout=300s
 
             # add ingress URIs to keycloak redirect uris
             # Re-authenticate to Keycloak and get fresh token
@@ -764,7 +765,6 @@ kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY -
 kubectl port-forward deployment/geofm-ui 4180:4180 >> studio-pf.log 2>&1 &
 kubectl port-forward deployment/geofm-gateway 4181:4180 >> studio-pf.log 2>&1 &
 kubectl port-forward deployment/geofm-mlflow 5000:5000 >> studio-pf.log 2>&1 &
-kubectl port-forward -n kube-system svc/haproxy-kubernetes-ingress 80:80 443:443 >> studio-pf.log 2>&1 &
 
 echo "----------------------------------------------------------------------"
 echo "-----------------------  Deployment summary  -------------------------"

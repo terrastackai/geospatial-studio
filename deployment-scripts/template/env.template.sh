@@ -179,5 +179,5 @@ export GEOSERVER_CM_WHITELIST=
 #Ingress
 export INGRESS_ENABLED=false  # Enable for non-OpenShift environments
 export INGRESS_HOST=local # Set to your domain
-export INGRESS_CLASS_NAME=haproxy # If using a different ingress controller, set className here
+export INGRESS_CLASS_NAME=traefik # If using a different ingress controller, set className here
 export INGRESS_TLS_ENABLED=true

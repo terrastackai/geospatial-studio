@@ -1,0 +1,16 @@
+{{- if .Values.global.ingress.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ .Values.global.appNames.mlflow }}
+  namespace: {{ .Values.global.namespace }}
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`{{ printf "%s.%s" .Values.global.appNames.mlflow .Values.global.ingress.host }}`)
+      kind: Rule
+      services:
+        - name: {{ .Values.global.appNames.mlflow }}
+          port: {{ .Values.service.port }}
+{{- end }}

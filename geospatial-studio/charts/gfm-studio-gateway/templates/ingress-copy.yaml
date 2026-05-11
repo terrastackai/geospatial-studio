@@ -1,0 +1,22 @@
+{{- if .Values.global.ingress.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ .Values.global.appNames.gateway }}
+  namespace: {{ .Values.global.namespace }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ printf "%s.%s" .Values.global.appNames.gateway .Values.global.ingress.host }}`)
+      kind: Rule
+      services:
+        - name: {{ .Values.global.appNames.gateway }}
+          port: {{ .Values.global.oauth.oauthProxyPort }}
+          {{- if .Values.global.ingress.tlsEnabled }}
+          scheme: https
+          serversTransport: self-signed-transport
+          {{- end }}
+  tls:
+    secretName: {{ .Values.global.appNames.gateway }}-ingress-tls
+{{- end }}

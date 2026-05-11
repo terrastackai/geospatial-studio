@@ -404,22 +404,6 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
                 sed -i -e "s/ingress_tls_key_b64=.*/ingress_tls_key_b64=$INGRESS_TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
             fi
 
-            # install haproxy kubernetes ingress controller
-            kubectl delete all -l app.kubernetes.io/name=traefik -n kube-system
-            kubectl delete ingressclass traefik
-            helm repo add haproxytech https://haproxytech.github.io/helm-charts
-            helm repo update
-
-            helm install haproxy-kubernetes-ingress haproxytech/kubernetes-ingress \
-                --namespace kube-system \
-                --set controller.kind=DaemonSet \
-                --set controller.service.type=LoadBalancer \
-                --set controller.publishService.enabled=true \
-                --set controller.publishService.pathOverride=kube-system/haproxy-kubernetes-ingress
-
-            # wait for ingress controller to be ready
-            kubectl rollout status daemonset/haproxy-kubernetes-ingress -n kube-system --timeout=300s
-
             # add ingress URIs to keycloak redirect uris
             # Re-authenticate to Keycloak and get fresh token
             export KC_TOKEN=$(curl -k --silent --request POST \
