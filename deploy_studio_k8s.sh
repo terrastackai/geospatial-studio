@@ -406,7 +406,7 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
 
             # Load balancer support - if missing (bare-metal kubernetes clusters)
 
-            lb_support_options="Yes No"
+            lb_support_options="No Yes"
             typeset lb_support
             
             get_menu_selection \
