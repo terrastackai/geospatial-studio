@@ -527,6 +527,17 @@ EOF
             # wait for ingress controller to be ready
             kubectl rollout status daemonset/haproxy-kubernetes-ingress -n kube-system --timeout=300s
 
+
+            # Enalble ingress for geoserver
+            source workspace/${DEPLOYMENT_ENV}/env/env.sh
+            sed -e "s/namespace: default/namespace: $OC_PROJECT/g" \
+                -e "s/ingressClassName: haproxy/ingressClassName: $INGRESS_CLASS_NAME/g" \
+                -e "s/geofm-geoserver\.local/geofm-geoserver.$INGRESS_HOST/g" \
+                deployment-scripts/template/geoserver-ingress.yaml > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-ingress.yaml
+            
+            kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-ingress.yaml -n ${OC_PROJECT}
+            echo "✓ Geoserver ingress deployed"
+
             # add ingress URIs to keycloak redirect uris
             # Re-authenticate to Keycloak and get fresh token
             export KC_TOKEN=$(curl -k --silent --request POST \

@@ -1,0 +1,30 @@
+# © Copyright IBM Corporation 2025
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: geofm-geoserver
+  namespace: default
+  labels:
+    app: geofm-geoserver
+  annotations:
+    haproxy-ingress.github.io/ssl-redirect: "true"
+    haproxy-ingress.github.io/hsts: "true"
+    haproxy-ingress.github.io/hsts-max-age: "31536000"
+    haproxy-ingress.github.io/timeout-server: "900s"
+    haproxy-ingress.github.io/rewrite-target: /geoserver/$1
+spec:
+  ingressClassName: haproxy
+  rules:
+    - host: geofm-geoserver.local
+      http:
+        paths:
+          - path: /(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: geofm-geoserver
+                port:
+                  number: 3000
+
