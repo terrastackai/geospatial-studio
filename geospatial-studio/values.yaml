@@ -279,6 +279,20 @@ redis:
       enabled: false
       securityContext:
         runAsUser: 'auto'
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 60
+      periodSeconds: 30
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
     resources:
       limits:
         cpu: "1"  # 1 CPU core (reduced for CRC)
@@ -306,6 +320,20 @@ redis:
       enabled: false
       securityContext:
         runAsUser: 'auto'
+    livenessProbe:
+      enabled: true
+      initialDelaySeconds: 60
+      periodSeconds: 30
+      timeoutSeconds: 10
+      successThreshold: 1
+      failureThreshold: 3
+    readinessProbe:
+      enabled: true
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
     resources:
       limits:
         cpu: "1"  # 1 CPU core (reduced for CRC)
