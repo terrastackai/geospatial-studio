@@ -164,7 +164,7 @@ gfm-studio-gateway:
       name: quay.io/geospatial-studio/geospatial-model-inference-service
       tag: latest
     tt_hpoTune:
-      name: quay.io/geospatial-studio/gfmstudio-hpo
+      name: quay.io/geospatial-studio/terratorch
       tag: latest
     dataset_pipeline:
       name: quay.io/geospatial-studio/geostudio-pipelines

@@ -16,8 +16,8 @@ images:
     name: quay.io/geospatial-studio/geospatial-model-inference-service
     tag: v0.1.0
   tt_hpoTune:
-    name: quay.io/geospatial-studio/gfmstudio-hpo
-    tag: v0.1.0
+    name: quay.io/geospatial-studio/terratorch
+    tag: latest
   dataset_pipeline:
     name: quay.io/geospatial-studio/geostudio-pipelines
     tag: v0.1.0
