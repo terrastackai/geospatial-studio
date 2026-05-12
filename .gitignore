@@ -86,3 +86,20 @@ workspace/
 minio-private.key
 minio-public.crt
 
+# mkdocs documentation
+**/site/
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.tar
+bin
+
+# editor and IDE paraphernalia
+.idea
+*.swp
+*.swo
+*~

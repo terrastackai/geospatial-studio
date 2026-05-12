@@ -1,0 +1,40 @@
+{{- if .Values.global.csiDriver.enabled }}
+{{- if and .Values.global.minio.enabled (eq .Values.global.objectStorage.cos_storage_class "cos-s3-csi-s3fs-sc") }}
+---
+# ConfigMap containing CSI driver manifests
+# These manifests are loaded from files/ibm-object-csi-driver/ directory
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-csi-driver-manifests
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/name: geostudio
+    app.kubernetes.io/component: csi-driver-installer
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-80"
+    "helm.sh/hook-delete-policy": before-hook-creation
+data:
+  kustomization.yaml: |
+{{ .Files.Get "files/ibm-object-csi-driver/kustomization.yaml" | indent 4 }}
+  
+  cos-s3-csi-controller.yaml: |
+{{ .Files.Get "files/ibm-object-csi-driver/cos-s3-csi-controller.yaml" | indent 4 }}
+  
+  cos-s3-csi-driver.yaml: |
+{{ .Files.Get "files/ibm-object-csi-driver/cos-s3-csi-driver.yaml" | indent 4 }}
+  
+  cos-s3-csidriver.yaml: |
+{{ .Files.Get "files/ibm-object-csi-driver/cos-s3-csidriver.yaml" | indent 4 }}
+  
+  cos-s3-csi-sc.yaml: |
+{{ .Files.Get "files/ibm-object-csi-driver/cos-s3-csi-sc.yaml" | indent 4 }}
+  
+  cos-s3-csi-s3fs-sc.yaml: |
+{{ .Files.Get "files/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml" | indent 4 }}
+
+{{- end }}
+{{- end }}

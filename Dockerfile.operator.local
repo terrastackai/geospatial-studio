@@ -1,0 +1,6 @@
+FROM quay.io/operator-framework/helm-operator:v1.42.0
+
+ENV HOME=/opt/helm
+COPY operators/watches.yaml ${HOME}/watches.yaml
+COPY geospatial-studio ${HOME}/helm-charts/geospatial-studio
+WORKDIR ${HOME}

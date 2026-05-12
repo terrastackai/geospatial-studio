@@ -113,8 +113,10 @@ get_menu_selection \
 storage_mode \
 "$storage_mode_options"
 
+source lib/k8s-utils.sh
+CSI_DRIVER_TYPE=$(get_csi_driver_type)
 export STORAGE_MODE=$storage_mode
-echo "STORAGE_MODE selected: **$STORAGE_MODE**"
+echo "Using CSI driver type: $CSI_DRIVER_TYPE with storage class: $STORAGE_MODE"
 
 # Update env.sh with storage mode
 sed -i -e "s/export STORAGE_MODE=.*/export STORAGE_MODE=${STORAGE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
@@ -219,7 +221,7 @@ if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
     kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 >> studio-pf.log 2>&1 &
     sleep 5
 
-    cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
+    cp -R geospatial-studio/files/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
     sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
     sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
     kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/

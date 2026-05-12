@@ -150,7 +150,7 @@ The IBM Object CSI Driver enables dynamic provisioning of S3-compatible storage:
 
 ```bash
 # Apply the CSI driver manifests
-cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
+cp -R geospatial-studio/files/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
 sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
 sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
 kubectl apply -k workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/
@@ -802,7 +802,7 @@ kubectl delete -f deployment-scripts/minio-deployment.yaml -n ${OC_PROJECT}
 kubectl delete -f deployment-scripts/geoserver-deployment.yaml -n ${OC_PROJECT}
 
 # Delete CSI driver
-kubectl delete -k deployment-scripts/ibm-object-csi-driver/
+kubectl delete -k geospatial-studio/files/ibm-object-csi-driver/
 
 # Delete secrets and configmaps
 kubectl delete secret minio-tls-secret -n ${OC_PROJECT}
