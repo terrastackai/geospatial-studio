@@ -28,6 +28,7 @@ echo "----------------------------------------------------------------------"
 
 if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
     echo "✓ Workspace configuration exists"
+    export STUDIO_INSTALLATION="UPGRADE"
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
     
@@ -72,116 +73,133 @@ sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${D
 
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-echo "----------------------------------------------------------------------"
-echo "--------------------  Add labels to node  ------------------"
-echo "----------------------------------------------------------------------"
 
-# Set the cluster node name where the application will be deployed
-# CLUSTER_NODE_NAME
-typeset cluster_node_name
-get_user_input "Provide a name for the cluster node for deployment, e.g. studio-worker, studio-node... Run 'kubectl get nodes' to get the nodes available in the cluster" cluster_node_name
-echo "CLUSTER_NODE_NAME accepted: **$cluster_node_name**"
-export CLUSTER_NODE_NAME=$cluster_node_name
+if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Add labels to node  ------------------"
+    echo "----------------------------------------------------------------------"
 
-kubectl label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
+    # Set the cluster node name where the application will be deployed
+    # CLUSTER_NODE_NAME
+    typeset cluster_node_name
+    get_user_input "Provide a name for the cluster node for deployment, e.g. studio-worker, studio-node... Run 'kubectl get nodes' to get the nodes available in the cluster" cluster_node_name
+    echo "CLUSTER_NODE_NAME accepted: **$cluster_node_name**"
+    export CLUSTER_NODE_NAME=$cluster_node_name
 
-echo "----------------------------------------------------------------------"
-echo "--------------------  Configure Resource Mode  -----------------------"
-echo "----------------------------------------------------------------------"
+    kubectl label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
 
-if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
-    configure_resource_mode
-fi
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Configure Resource Mode  -----------------------"
+    echo "----------------------------------------------------------------------"
 
-source workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-echo "***********************************************************************************"
-echo "----------------------  Configure Storage Mode  -----------------------------------"
-echo "-----------------------------------------------------------------------------------"
-echo "***********************************************************************************"
-echo "Select the storage mode for your deployment:"
-echo "  - cloud-object-storage: Use Cloud Object Storage (production) [DEFAULT]"
-echo "  - cluster-block-storage: Use in-cluster dynamic provisioning"
-echo "  - local-hostpath: Use local host directories (development/testing)"
-echo "***********************************************************************************"
-
-storage_mode_options="cloud-object-storage cluster-block-storage local-hostpath"
-typeset storage_mode
-
-get_menu_selection \
-"Select storage mode for your deployment:" \
-storage_mode \
-"$storage_mode_options"
-
-export STORAGE_MODE=$storage_mode
-echo "STORAGE_MODE selected: **$STORAGE_MODE**"
-
-# Update env.sh with storage mode
-sed -i -e "s/export STORAGE_MODE=.*/export STORAGE_MODE=${STORAGE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-if [[ "$STORAGE_MODE" == "cloud-object-storage" ]] || [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
-    echo "***********************************************************************************"
-    echo "--------------------------  Configure storage classes -----------------------------"
-    echo "-----------------------------------------------------------------------------------"
-
-    if [[ "$STORAGE_MODE" == "cloud-object-storage" ]]; then
-        export COS_STORAGE_CLASS="cos-s3-csi-s3fs-sc"
-        echo "COS_STORAGE_CLASS selected: **$COS_STORAGE_CLASS**"
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        configure_resource_mode
     fi
 
-    # Set NON_COS_STORAGE_CLASS for both COS and cluster-block-storage
-    echo "----------- Verify the available in-cluster storage classes in your cluster -------"
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+
     echo "***********************************************************************************"
-    echo "************************  You will enter the following  ***************************"
-    echo "------------------------  NON_COS_STORAGE_CLASS -----------------------------------"
+    echo "----------------------  Configure Storage Mode  -----------------------------------"
+    echo "-----------------------------------------------------------------------------------"
     echo "***********************************************************************************"
-    in_cluster_storage_class_options="Default User-Supplied"
-    typeset in_cluster_storage_class_type
+    echo "Select the storage mode for your deployment:"
+    echo "  - cloud-object-storage: Use Cloud Object Storage (production) [DEFAULT]"
+    echo "  - cluster-block-storage: Use in-cluster dynamic provisioning"
+    echo "  - local-hostpath: Use local host directories (development/testing)"
+    echo "***********************************************************************************"
+
+    storage_mode_options="cloud-object-storage cluster-block-storage local-hostpath"
+    typeset storage_mode
 
     get_menu_selection \
-    "Select a storage class for your cluster. You can use the default 'standard' class or provide a custom one." \
-    in_cluster_storage_class_type \
-    "$in_cluster_storage_class_options"
+    "Select storage mode for your deployment:" \
+    storage_mode \
+    "$storage_mode_options"
 
-    if [[ "$in_cluster_storage_class_type" == "Default" ]]; then
-        export NON_COS_STORAGE_CLASS="standard"
-    else
-        typeset user_non_cos_storage_class
-        get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
-        echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
-        export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
-    fi
+    export STORAGE_MODE=$storage_mode
+    echo "STORAGE_MODE selected: **$STORAGE_MODE**"
 
-    if [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
-        # Select PVC access mode
+    # Update env.sh with storage mode
+    sed -i -e "s/export STORAGE_MODE=.*/export STORAGE_MODE=${STORAGE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    if [[ "$STORAGE_MODE" == "cloud-object-storage" ]] || [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
         echo "***********************************************************************************"
-        echo "----------------------  Configure PVC Access Mode  --------------------------------"
+        echo "--------------------------  Configure storage classes -----------------------------"
         echo "-----------------------------------------------------------------------------------"
-        echo "Select the access mode for Persistent Volume Claims:"
-        echo "  - ReadWriteOnce: Volume can be mounted as read-write by a single node"
-        echo "  - ReadWriteMany: Volume can be mounted as read-write by many nodes"
-        echo "***********************************************************************************"
 
-        pvc_access_mode_options="ReadWriteOnce ReadWriteMany"
-        typeset pvc_access_mode
+        if [[ "$STORAGE_MODE" == "cloud-object-storage" ]]; then
+            export COS_STORAGE_CLASS="cos-s3-csi-s3fs-sc"
+            echo "COS_STORAGE_CLASS selected: **$COS_STORAGE_CLASS**"
+        fi
+
+        # Set NON_COS_STORAGE_CLASS for both COS and cluster-block-storage
+        echo "----------- Verify the available in-cluster storage classes in your cluster -------"
+        echo "***********************************************************************************"
+        echo "************************  You will enter the following  ***************************"
+        echo "------------------------  NON_COS_STORAGE_CLASS -----------------------------------"
+        echo "***********************************************************************************"
+        in_cluster_storage_class_options="Default User-Supplied"
+        typeset in_cluster_storage_class_type
 
         get_menu_selection \
-            "Select PVC access mode:" \
-            pvc_access_mode \
-            "$pvc_access_mode_options"
+        "Select a storage class for your cluster. You can use the default 'standard' class or provide a custom one." \
+        in_cluster_storage_class_type \
+        "$in_cluster_storage_class_options"
 
-        export PVC_ACCESS_MODE=$pvc_access_mode
-        echo "PVC_ACCESS_MODE selected: **$PVC_ACCESS_MODE**"
+        if [[ "$in_cluster_storage_class_type" == "Default" ]]; then
+            export NON_COS_STORAGE_CLASS="standard"
+        else
+            typeset user_non_cos_storage_class
+            get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
+            echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
+            export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
+        fi
+
+        if [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
+            # Select PVC access mode
+            echo "***********************************************************************************"
+            echo "----------------------  Configure PVC Access Mode  --------------------------------"
+            echo "-----------------------------------------------------------------------------------"
+            echo "Select the access mode for Persistent Volume Claims:"
+            echo "  - ReadWriteOnce: Volume can be mounted as read-write by a single node"
+            echo "  - ReadWriteMany: Volume can be mounted as read-write by many nodes"
+            echo "***********************************************************************************"
+
+            pvc_access_mode_options="ReadWriteOnce ReadWriteMany"
+            typeset pvc_access_mode
+
+            get_menu_selection \
+                "Select PVC access mode:" \
+                pvc_access_mode \
+                "$pvc_access_mode_options"
+
+            export PVC_ACCESS_MODE=$pvc_access_mode
+            echo "PVC_ACCESS_MODE selected: **$PVC_ACCESS_MODE**"
+        fi
+
+        # Update env.sh
+        sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS:-cos-s3-csi-s3fs-sc}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS:-standard}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export PVC_ACCESS_MODE=.*/export PVC_ACCESS_MODE=${PVC_ACCESS_MODE:-ReadWriteOnce}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    else
+        echo "Using local-hostpath storage mode - no storage class configuration needed"
+        sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     fi
-
-    # Update env.sh
-    sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS:-cos-s3-csi-s3fs-sc}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS:-standard}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export PVC_ACCESS_MODE=.*/export PVC_ACCESS_MODE=${PVC_ACCESS_MODE:-ReadWriteOnce}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 else
-    echo "Using local-hostpath storage mode - no storage class configuration needed"
-    sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    echo "***********************************************************************************"
+    echo "----------------------  Using values in env.sh  -----------------------------------"
+    echo "------------------  You can manually update the following -------------------------"
+    echo "-----------------------------------------------------------------------------------"
+    echo "***********************************************************************************"
+    echo "  - cluster node labels: Use kubectl to update the cluster node labels"
+    echo "  - RESOURCE_MODE: **$RESOURCE_MODE**"
+    echo "  - STORAGE_MODE: **$STORAGE_MODE**"
+    echo "  - COS_STORAGE_CLASS: **$COS_STORAGE_CLASS**"
+    echo "  - NON_COS_STORAGE_CLASS: **$NON_COS_STORAGE_CLASS**"
+    echo "  - PVC_ACCESS_MODE: **$PVC_ACCESS_MODE**"
+    echo "***********************************************************************************"
+    echo "***********************************************************************************"
 fi
 
 if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
@@ -394,17 +412,47 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
     sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-    # Additional setup
+    # Try to read API keys from multiple locations with fallback
+    # Priority: workspace/$DEPLOYMENT_ENV/.studio-api-key -> workspace/$DEPLOYMENT_ENV/env/.env
 
-    file=./.studio-api-key
-    if [ -e "$file" ]; then
-        echo "File exists"
-        source $file
-    else 
+    # First, try workspace/$DEPLOYMENT_ENV/.studio-api-key
+    if [ -e "workspace/$DEPLOYMENT_ENV/.studio-api-key" ]; then
+        echo "Reading API keys from workspace/$DEPLOYMENT_ENV/.studio-api-key"
+        source workspace/$DEPLOYMENT_ENV/.studio-api-key
+    # Last resort: try workspace/$DEPLOYMENT_ENV/env/.env
+    elif [ -e "workspace/$DEPLOYMENT_ENV/env/.env" ]; then
+        echo "Reading API keys from workspace/$DEPLOYMENT_ENV/env/.env"
+        # Read from .env file and only accept non-null values
+        if [ -f "workspace/$DEPLOYMENT_ENV/env/.env" ]; then
+            # Extract studio_api_key and studio_api_encryption_key from .env
+            temp_api_key=$(grep "^studio_api_key=" workspace/$DEPLOYMENT_ENV/env/.env | cut -d'=' -f2)
+            temp_encryption_key=$(grep "^studio_api_encryption_key=" workspace/$DEPLOYMENT_ENV/env/.env | cut -d'=' -f2)
+
+            # Only use values if they are not null/empty
+            if [ -n "$temp_api_key" ] && [ "$temp_api_key" != "null" ]; then
+                export STUDIO_API_KEY="$temp_api_key"
+            fi
+            if [ -n "$temp_encryption_key" ] && [ "$temp_encryption_key" != "null" ]; then
+                export API_ENCRYPTION_KEY="$temp_encryption_key"
+            fi
+        fi
+    fi
+
+    # Validate that we have non-null values, otherwise generate new ones
+    if [ -z "$STUDIO_API_KEY" ] || [ "$STUDIO_API_KEY" = "null" ] || [ -z "$API_ENCRYPTION_KEY" ] || [ "$API_ENCRYPTION_KEY" = "null" ]; then
+        echo "Generating new API keys (no valid keys found in existing locations)"
         export STUDIO_API_KEY=$(echo "pak-$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 32)")
         export API_ENCRYPTION_KEY=$(echo "$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '\n')")
-        echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > ./.studio-api-key
-        echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> ./.studio-api-key
+        echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > workspace/$DEPLOYMENT_ENV/.studio-api-key
+        echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> workspace/$DEPLOYMENT_ENV/.studio-api-key
+    else
+        # If keys were found but workspace/$DEPLOYMENT_ENV/.studio-api-key doesn't exist, create it
+        if [ ! -e "workspace/$DEPLOYMENT_ENV/.studio-api-key" ]; then
+            echo "Creating workspace/$DEPLOYMENT_ENV/.studio-api-key with existing keys"
+            echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > workspace/$DEPLOYMENT_ENV/.studio-api-key
+            echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> workspace/$DEPLOYMENT_ENV/.studio-api-key
+        fi
+        echo "Using existing API keys"
     fi
 
     sed -i -e "s/studio_api_key=.*/studio_api_key=$STUDIO_API_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env

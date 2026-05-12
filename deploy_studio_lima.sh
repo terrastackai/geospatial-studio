@@ -30,6 +30,7 @@ echo "----------------------------------------------------------------------"
 
 if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
     echo "✓ Workspace configuration exists"
+    export STUDIO_INSTALLATION="UPGRADE"
     
     check_deployment_and_prompt "deployment" "minio" "${OC_PROJECT}" "MinIO (object storage)" "DEPLOY_MINIO"
     check_deployment_and_prompt "statefulset" "postgresql" "${OC_PROJECT}" "PostgreSQL (database)" "DEPLOY_POSTGRES"
@@ -78,13 +79,23 @@ echo "----------------------------------------------------------------------"
 
 kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
 
+if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Configure Resource Mode  -----------------------"
+    echo "----------------------------------------------------------------------"
 
-echo "----------------------------------------------------------------------"
-echo "--------------------  Configure Resource Mode  -----------------------"
-echo "----------------------------------------------------------------------"
-
-if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
-    configure_resource_mode
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        configure_resource_mode
+    fi
+else
+    echo "***********************************************************************************"
+    echo "----------------------  Using values in env.sh  -----------------------------------"
+    echo "------------------  You can manually update the following -------------------------"
+    echo "-----------------------------------------------------------------------------------"
+    echo "***********************************************************************************"
+    echo "  - RESOURCE_MODE: **$RESOURCE_MODE**"
+    echo "***********************************************************************************"
+    echo "***********************************************************************************"
 fi
 
 
@@ -340,17 +351,47 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
     sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-    # Additional setup
+    # Try to read API keys from multiple locations with fallback
+    # Priority: workspace/$DEPLOYMENT_ENV/.studio-api-key -> workspace/$DEPLOYMENT_ENV/env/.env
 
-    file=./.studio-api-key
-    if [ -e "$file" ]; then
-        echo "File exists"
-        source $file
-    else 
+    # First, try workspace/$DEPLOYMENT_ENV/.studio-api-key
+    if [ -e "workspace/$DEPLOYMENT_ENV/.studio-api-key" ]; then
+        echo "Reading API keys from workspace/$DEPLOYMENT_ENV/.studio-api-key"
+        source workspace/$DEPLOYMENT_ENV/.studio-api-key
+    # Last resort: try workspace/$DEPLOYMENT_ENV/env/.env
+    elif [ -e "workspace/$DEPLOYMENT_ENV/env/.env" ]; then
+        echo "Reading API keys from workspace/$DEPLOYMENT_ENV/env/.env"
+        # Read from .env file and only accept non-null values
+        if [ -f "workspace/$DEPLOYMENT_ENV/env/.env" ]; then
+            # Extract studio_api_key and studio_api_encryption_key from .env
+            temp_api_key=$(grep "^studio_api_key=" workspace/$DEPLOYMENT_ENV/env/.env | cut -d'=' -f2)
+            temp_encryption_key=$(grep "^studio_api_encryption_key=" workspace/$DEPLOYMENT_ENV/env/.env | cut -d'=' -f2)
+
+            # Only use values if they are not null/empty
+            if [ -n "$temp_api_key" ] && [ "$temp_api_key" != "null" ]; then
+                export STUDIO_API_KEY="$temp_api_key"
+            fi
+            if [ -n "$temp_encryption_key" ] && [ "$temp_encryption_key" != "null" ]; then
+                export API_ENCRYPTION_KEY="$temp_encryption_key"
+            fi
+        fi
+    fi
+
+    # Validate that we have non-null values, otherwise generate new ones
+    if [ -z "$STUDIO_API_KEY" ] || [ "$STUDIO_API_KEY" = "null" ] || [ -z "$API_ENCRYPTION_KEY" ] || [ "$API_ENCRYPTION_KEY" = "null" ]; then
+        echo "Generating new API keys (no valid keys found in existing locations)"
         export STUDIO_API_KEY=$(echo "pak-$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 32)")
         export API_ENCRYPTION_KEY=$(echo "$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '\n')")
-        echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > ./.studio-api-key
-        echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> ./.studio-api-key
+        echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > workspace/$DEPLOYMENT_ENV/.studio-api-key
+        echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> workspace/$DEPLOYMENT_ENV/.studio-api-key
+    else
+        # If keys were found but workspace/$DEPLOYMENT_ENV/.studio-api-key doesn't exist, create it
+        if [ ! -e "workspace/$DEPLOYMENT_ENV/.studio-api-key" ]; then
+            echo "Creating workspace/$DEPLOYMENT_ENV/.studio-api-key with existing keys"
+            echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > workspace/$DEPLOYMENT_ENV/.studio-api-key
+            echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> workspace/$DEPLOYMENT_ENV/.studio-api-key
+        fi
+        echo "Using existing API keys"
     fi
 
     sed -i -e "s/studio_api_key=.*/studio_api_key=$STUDIO_API_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
