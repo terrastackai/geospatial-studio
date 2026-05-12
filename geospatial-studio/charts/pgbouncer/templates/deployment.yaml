@@ -89,7 +89,7 @@ spec:
         readinessProbe:
           tcpSocket:
             port: pgbouncer
-          initialDelaySeconds: 5
+          initialDelaySeconds: 30
           periodSeconds: 5
         volumeMounts:
         - name: pgbouncer-conf
