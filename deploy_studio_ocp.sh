@@ -50,7 +50,7 @@ echo "----------------------------------------------------------------------"
 echo "---------------  Checking Existing Deployments  ----------------------"
 echo "----------------------------------------------------------------------"
 
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && [ -f "workspace/${DEPLOYMENT_ENV}/env/.env" ]; then
     echo "✓ Workspace configuration exists"
     export STUDIO_INSTALLATION="UPGRADE"
 
@@ -119,8 +119,7 @@ if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
     read ans
 fi
 
-# Setup workspace environment if it doesn't exist
-if [ ! -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || [ ! -f "workspace/${DEPLOYMENT_ENV}/env/.env" ]; then
+if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
     echo "Setting up workspace environment..."
     # Below step will create two env scripts under the workspace/${DEPLOYMENT_ENV}/env folder.
     # One script contains just the secret values template, and the other script contains all the other general Geospatial configuration.
@@ -129,9 +128,7 @@ if [ ! -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] || [ ! -f "workspace/${DEPL
     # Update the workspace env file with deployment env and namespace
     sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=${DEPLOYMENT_ENV}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=${OC_PROJECT}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-fi
 
-if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
     # Update cluster url
     if [[ -n "$CLUSTER_URL" ]]; then
         cluster_url_defined_options="Yes No"

@@ -28,7 +28,7 @@ echo "----------------------------------------------------------------------"
 echo "---------------  Checking Existing Deployments  ----------------------"
 echo "----------------------------------------------------------------------"
 
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && [ -f "workspace/${DEPLOYMENT_ENV}/env/.env" ]; then
     echo "✓ Workspace configuration exists"
     export STUDIO_INSTALLATION="UPGRADE"
 
@@ -79,25 +79,25 @@ if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
     read ans
 fi
 
-echo "----------------------------------------------------------------------"
-echo "------  Creating baseline deployment/values files  -------------------"
-echo "----------------------------------------------------------------------"
-
-./deployment-scripts/setup-workspace-env.sh
-
-sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=lima/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-source workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-echo "----------------------------------------------------------------------"
-echo "--------------------  Add labels to node  ------------------"
-echo "----------------------------------------------------------------------"
-
-kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
-
 if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "------  Creating baseline deployment/values files  -------------------"
+    echo "----------------------------------------------------------------------"
+
+    ./deployment-scripts/setup-workspace-env.sh
+
+    sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=lima/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Add labels to node  ------------------"
+    echo "----------------------------------------------------------------------"
+
+    kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
+
     echo "----------------------------------------------------------------------"
     echo "--------------------  Configure Resource Mode  -----------------------"
     echo "----------------------------------------------------------------------"
@@ -219,7 +219,6 @@ else
     echo "-------------------  Skipping Minio Deployment  ----------------------"
     echo "----------------------------------------------------------------------"
     echo "Loading existing MinIO configuration..."
-    sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 fi
 

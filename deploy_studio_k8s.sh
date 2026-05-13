@@ -26,7 +26,7 @@ echo "----------------------------------------------------------------------"
 echo "---------------  Checking Existing Deployments  ----------------------"
 echo "----------------------------------------------------------------------"
 
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && [ -f "workspace/${DEPLOYMENT_ENV}/env/.env" ]; then
     echo "✓ Workspace configuration exists"
     export STUDIO_INSTALLATION="UPGRADE"
 
@@ -55,6 +55,7 @@ if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
     fi
 else
     echo "✓ No existing configuration - will deploy all components"
+
     DEPLOY_MINIO="Deploy"
     DEPLOY_POSTGRES="Deploy"
     DEPLOY_KEYCLOAK="Deploy"
@@ -77,20 +78,19 @@ if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
     read ans
 fi
 
-echo "----------------------------------------------------------------------"
-echo "------  Creating baseline deployment/values files  -------------------"
-echo "----------------------------------------------------------------------"
-
-./deployment-scripts/setup-workspace-env.sh
-
-sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=k8s/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-
 if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "------  Creating baseline deployment/values files  -------------------"
+    echo "----------------------------------------------------------------------"
+
+    ./deployment-scripts/setup-workspace-env.sh
+
+    sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=k8s/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.s
+
     echo "----------------------------------------------------------------------"
     echo "--------------------  Add labels to node  ------------------"
     echo "----------------------------------------------------------------------"
@@ -219,40 +219,96 @@ else
 fi
 
 if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
-    echo "----------------------------------------------------------------------"
-    echo "----------------------  Deploying Minio  -----------------------------"
-    echo "----------------------------------------------------------------------"
+    cloud_object_storage_type_options="Cluster-deployment Cloud-managed-instance"
+    typeset cloud_object_storage_type
 
-    # Install MinIO
-    # Create TLS for minio
-    openssl genrsa -out minio-private.key 2048
-    sed -e "s/default/$OC_PROJECT/g" deployment-scripts/minio-openssl.conf > workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
-    openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
+    get_menu_selection \
+        "Select whether to deploy a cloud object storage in cluster or use a cloud managed instance that you have externally subscribed to: " \
+        cloud_object_storage_type \
+        "$cloud_object_storage_type_options"
 
-    kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml
-    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml -n ${OC_PROJECT}
+    if [[ "$cloud_object_storage_type" == "Cluster-deployment" ]]; then
+        echo "----------------------------------------------------------------------"
+        echo "----------------------  Deploying Minio  -----------------------------"
+        echo "----------------------------------------------------------------------"
 
-    kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
-    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
+        # Install MinIO
+        # Create TLS for minio
+        openssl genrsa -out minio-private.key 2048
+        sed -e "s/default/$OC_PROJECT/g" deployment-scripts/minio-openssl.conf > workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
+        openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
 
-    python ./deployment-scripts/update-deployment-template.py \
-        --disable-route \
-        --storageclass ${NON_COS_STORAGE_CLASS} \
-        --storage $MINIO_STORAGE \
-        --filename deployment-scripts/minio-deployment.yaml \
-        --cpu-request $MINIO_CPU_REQUEST \
-        --cpu-limit $MINIO_CPU_LIMIT \
-        --memory-request $MINIO_MEMORY_REQUEST \
-        --memory-limit $MINIO_MEMORY_LIMIT \
-        > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
-    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
+        kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml
+        kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml -n ${OC_PROJECT}
 
-    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
+        kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
+        kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
 
-    sleep 5
-    kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 >> studio-pf.log 2>&1 &
-    sleep 5
+        python ./deployment-scripts/update-deployment-template.py \
+            --disable-route \
+            --storageclass ${NON_COS_STORAGE_CLASS} \
+            --storage $MINIO_STORAGE \
+            --filename deployment-scripts/minio-deployment.yaml \
+            --cpu-request $MINIO_CPU_REQUEST \
+            --cpu-limit $MINIO_CPU_LIMIT \
+            --memory-request $MINIO_MEMORY_REQUEST \
+            --memory-limit $MINIO_MEMORY_LIMIT \
+            > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+        kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
+
+        sleep 5
+        kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 >> studio-pf.log 2>&1 &
+        sleep 5
+
+        # # # Update .env with the MinIO details for local connection
+        sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s|endpoint=.*|endpoint=https://localhost:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
+
+
+        kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 >> studio-pf.log 2>&1 &
+        sleep 5
+
+        python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+
+        sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+    else
+        echo "**********************************************************************"
+        echo "**********************************************************************"
+        echo "-----------  Configure s3 storage and update the values --------------"
+        echo "**********************************************************************"
+        echo "**********************************************************************"
+        echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/.env *************"
+        echo "-----------  access_key_id= ------------------------------------------"
+        echo "-----------  secret_access_key= --------------------------------------"
+        echo "-----------  endpoint= -----------------------------------------------"
+        echo "-----------  region= -------------------------------------------------"
+        echo "**********************************************************************"
+        echo "**********************************************************************"
+
+        while true; do
+            printf "%s " "Press enter to continue after entering the variables"
+            read ans
+
+            python deployment-scripts/validate-env-files.py \
+            --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
+            --env-variables "access_key_id,secret_access_key,endpoint,region" \
+            --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
+            --env-sh-variables ""
+
+            if [ $? -eq 0 ]; then
+                break
+            fi
+        done
+
+        python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+    fi
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    # Setup COS CSI driver
     cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
     sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
     sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
@@ -260,29 +316,11 @@ if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=300s
-
-
-    # # # Update .env with the MinIO details for local connection
-    sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s|endpoint=.*|endpoint=https://localhost:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-
-    kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 >> studio-pf.log 2>&1 &
-    sleep 5
-
-    python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
-
-    sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-    source workspace/${DEPLOYMENT_ENV}/env/env.sh
 else
     echo "----------------------------------------------------------------------"
     echo "-------------------  Skipping Minio Deployment  ----------------------"
     echo "----------------------------------------------------------------------"
     echo "Loading existing MinIO configuration..."
-    sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 fi
 
