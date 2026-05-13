@@ -6,10 +6,6 @@ metadata:
   namespace: {{ .Values.global.namespace }}
   labels:
     app: {{ .Values.global.appNames.mlflow }}
-  annotations:
-    haproxy-ingress.github.io/ssl-redirect: "true"
-    haproxy-ingress.github.io/hsts: "true"
-    haproxy-ingress.github.io/hsts-max-age: "31536000"
 spec:
   ingressClassName: {{ .Values.global.ingress.className }}
   rules:
