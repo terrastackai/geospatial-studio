@@ -53,14 +53,32 @@ echo "----------------------------------------------------------------------"
 if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
     echo "✓ Workspace configuration exists"
     export STUDIO_INSTALLATION="UPGRADE"
+
+    infrastructure_upgrade_options="SKIP REDEPLOY"
+    typeset infrastructure_upgrade
+
+    get_menu_selection \
+    "Redeploy any infrastructure i.e. minio/object-storage-plugin/postgresql/keycloak/geoserver:" \
+    infrastructure_upgrade \
+    "$infrastructure_upgrade_options"
+
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
-        
-    check_deployment_and_prompt "deployment" "minio" "${OC_PROJECT}" "MinIO (object storage)" "DEPLOY_MINIO"
-    check_deployment_and_prompt "statefulset" "postgresql" "${OC_PROJECT}" "PostgreSQL (database)" "DEPLOY_POSTGRES"
-    check_deployment_and_prompt "deployment" "keycloak" "${OC_PROJECT}" "Keycloak (authentication)" "DEPLOY_KEYCLOAK"
-    check_deployment_and_prompt "deployment" "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
-    check_deployment_and_prompt "helm" "studio" "${OC_PROJECT}" "Geospatial Studio" "DEPLOY_STUDIO"
-    check_deployment_and_prompt "deployment" "ibmcloud-object-storage-plugin" "ibm-object-s3fs" "IBM Object Storage Plugin" "DEPLOY_IBM_STORAGE"
+
+    if [[ "$infrastructure_upgrade" == "REDEPLOY" ]]; then
+        check_deployment_and_prompt "deployment" "minio" "${OC_PROJECT}" "MinIO (object storage)" "DEPLOY_MINIO"
+        check_deployment_and_prompt "statefulset" "postgresql" "${OC_PROJECT}" "PostgreSQL (database)" "DEPLOY_POSTGRES"
+        check_deployment_and_prompt "deployment" "keycloak" "${OC_PROJECT}" "Keycloak (authentication)" "DEPLOY_KEYCLOAK"
+        check_deployment_and_prompt "deployment" "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
+        check_deployment_and_prompt "helm" "studio" "${OC_PROJECT}" "Geospatial Studio" "DEPLOY_STUDIO"
+        check_deployment_and_prompt "deployment" "ibmcloud-object-storage-plugin" "ibm-object-s3fs" "IBM Object Storage Plugin" "DEPLOY_IBM_STORAGE"
+    else
+        DEPLOY_MINIO="Skip"
+        DEPLOY_POSTGRES="Skip"
+        DEPLOY_KEYCLOAK="Skip"
+        DEPLOY_GEOSERVER="Skip"
+        DEPLOY_IBM_STORAGE="Skip"
+        DEPLOY_STUDIO="Deploy"
+    fi
 else
     echo "✓ No existing configuration - will deploy all components"
     DEPLOY_POSTGRES="Deploy"

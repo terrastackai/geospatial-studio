@@ -394,14 +394,14 @@ jobs:
           echo "✓ Using geospatial-studio directory: $GS_DIR"
 
           # Extract API key written by the deployment script
-          if [[ -f "${GS_DIR}/.studio-api-key" ]]; then
-            source "${GS_DIR}/.studio-api-key"
-            echo "✓ Loaded STUDIO_API_KEY from .studio-api-key"
-          elif [[ -f ".studio-api-key" ]]; then
-            source .studio-api-key
-            echo "✓ Loaded STUDIO_API_KEY from .studio-api-key (repo root)"
+          if [[ -f "${GS_DIR}/workspace/k8s/.studio-api-key" ]]; then
+            source "${GS_DIR}/workspace/k8s/.studio-api-key"
+            echo "✓ Loaded STUDIO_API_KEY from ${GS_DIR}/workspace/k8s/.studio-api-key"
+          elif [[ -f "workspace/k8s/.studio-api-key" ]]; then
+            source workspace/k8s/.studio-api-key
+            echo "✓ Loaded STUDIO_API_KEY from workspace/k8s/.studio-api-key (workspace root)"
           else
-            echo "❌ Error: .studio-api-key file not found"
+            echo "❌ Error: workspace/k8s/.studio-api-key file not found"
             exit 1
           fi
 
