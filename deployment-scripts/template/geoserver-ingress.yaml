@@ -12,7 +12,6 @@ metadata:
     haproxy-ingress.github.io/hsts: "true"
     haproxy-ingress.github.io/hsts-max-age: "31536000"
     haproxy-ingress.github.io/timeout-server: "900s"
-    haproxy.org/path-rewrite: ^([^?]*)(\?.*)?$ /geoserver\1\2
 spec:
   ingressClassName: haproxy
   rules:
