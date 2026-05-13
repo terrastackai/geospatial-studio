@@ -105,6 +105,9 @@ serviceAccount:
   # If you have an alternative service account change this
   name: 'api-gateway-sa'
 
+securityContext:
+  api: {}
+
 processors:
   - name: inference-planner
     enabled: true
