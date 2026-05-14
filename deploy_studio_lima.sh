@@ -28,14 +28,33 @@ echo "----------------------------------------------------------------------"
 echo "---------------  Checking Existing Deployments  ----------------------"
 echo "----------------------------------------------------------------------"
 
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && [ -f "workspace/${DEPLOYMENT_ENV}/env/.env" ]; then
     echo "✓ Workspace configuration exists"
+    export STUDIO_INSTALLATION="UPGRADE"
+
+    infrastructure_upgrade_options="SKIP REDEPLOY"
+    typeset infrastructure_upgrade
+
+    get_menu_selection \
+    "Redeploy any infrastructure i.e. minio/postgresql/keycloak/geoserver:" \
+    infrastructure_upgrade \
+    "$infrastructure_upgrade_options"
+
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
     
-    check_deployment_and_prompt "deployment" "minio" "${OC_PROJECT}" "MinIO (object storage)" "DEPLOY_MINIO"
-    check_deployment_and_prompt "statefulset" "postgresql" "${OC_PROJECT}" "PostgreSQL (database)" "DEPLOY_POSTGRES"
-    check_deployment_and_prompt "deployment" "keycloak" "${OC_PROJECT}" "Keycloak (authentication)" "DEPLOY_KEYCLOAK"
-    check_deployment_and_prompt "deployment" "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
-    check_deployment_and_prompt "helm" "studio" "${OC_PROJECT}" "Geospatial Studio" "DEPLOY_STUDIO"
+    if [[ "$infrastructure_upgrade" == "REDEPLOY" ]]; then
+        check_deployment_and_prompt "deployment" "minio" "${OC_PROJECT}" "MinIO (object storage)" "DEPLOY_MINIO"
+        check_deployment_and_prompt "statefulset" "postgresql" "${OC_PROJECT}" "PostgreSQL (database)" "DEPLOY_POSTGRES"
+        check_deployment_and_prompt "deployment" "keycloak" "${OC_PROJECT}" "Keycloak (authentication)" "DEPLOY_KEYCLOAK"
+        check_deployment_and_prompt "deployment" "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
+        check_deployment_and_prompt "helm" "studio" "${OC_PROJECT}" "Geospatial Studio" "DEPLOY_STUDIO"
+    else
+        DEPLOY_MINIO="Skip"
+        DEPLOY_POSTGRES="Skip"
+        DEPLOY_KEYCLOAK="Skip"
+        DEPLOY_GEOSERVER="Skip"
+        DEPLOY_STUDIO="Deploy"
+    fi
 else
     echo "✓ No existing configuration - will deploy all components"
     DEPLOY_MINIO="Deploy"
@@ -60,23 +79,43 @@ if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
     read ans
 fi
 
-echo "----------------------------------------------------------------------"
-echo "------  Creating baseline deployment/values files  -------------------"
-echo "----------------------------------------------------------------------"
+if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "------  Creating baseline deployment/values files  -------------------"
+    echo "----------------------------------------------------------------------"
 
-./deployment-scripts/setup-workspace-env.sh
+    ./deployment-scripts/setup-workspace-env.sh
 
-sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=lima/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=lima/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-source workspace/${DEPLOYMENT_ENV}/env/env.sh
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-echo "----------------------------------------------------------------------"
-echo "--------------------  Add labels to node  ------------------"
-echo "----------------------------------------------------------------------"
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Add labels to node  ------------------"
+    echo "----------------------------------------------------------------------"
 
-kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
+    kubectl label nodes lima-studio topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
+
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Configure Resource Mode  -----------------------"
+    echo "----------------------------------------------------------------------"
+
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        configure_resource_mode
+    fi
+else
+    echo "***********************************************************************************"
+    echo "----------------------  Using values in env.sh  -----------------------------------"
+    echo "------------------  You can manually update the following -------------------------"
+    echo "-----------------------------------------------------------------------------------"
+    echo "***********************************************************************************"
+    echo "  - RESOURCE_MODE: **$RESOURCE_MODE**"
+    echo "***********************************************************************************"
+    echo "***********************************************************************************"
+fi
+
 
 if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
     echo "----------------------------------------------------------------------"
@@ -96,7 +135,15 @@ if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
 
 
-    python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+    python ./deployment-scripts/update-deployment-template.py \
+      --disable-route \
+      --storage $MINIO_STORAGE \
+      --filename deployment-scripts/minio-deployment.yaml \
+      --cpu-request $MINIO_CPU_REQUEST \
+      --cpu-limit $MINIO_CPU_LIMIT \
+      --memory-request $MINIO_MEMORY_REQUEST \
+      --memory-limit $MINIO_MEMORY_LIMIT \
+      > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
@@ -186,7 +233,7 @@ if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
 
     export POSTGRES_PASSWORD=devPostgresql123
 
-    ./deployment-scripts/install-postgres.sh
+    ./deployment-scripts/install-postgres.sh UPDATE_STORAGE
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod/postgresql-0 -n ${OC_PROJECT} --timeout=300s
 
@@ -224,7 +271,16 @@ if [[ "$DEPLOY_KEYCLOAK" == "Deploy" ]]; then
     echo "--------------------  Deploying Keycloak  ----------------------------"
     echo "----------------------------------------------------------------------"
 
-    python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+    python ./deployment-scripts/update-deployment-template.py \
+      --disable-route \
+      --filename deployment-scripts/keycloak-deployment.yaml \
+      --cpu-request $KEYCLOAK_CPU_REQUEST \
+      --cpu-limit $KEYCLOAK_CPU_LIMIT \
+      --memory-request $KEYCLOAK_MEMORY_REQUEST \
+      --memory-limit $KEYCLOAK_MEMORY_LIMIT \
+      --env-path workspace/${DEPLOYMENT_ENV}/env/.env \
+      > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
@@ -264,7 +320,16 @@ if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
     echo "--------------------  Deploying Geoserver  ----------------------------"
     echo "----------------------------------------------------------------------"
 
-    python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+    python ./deployment-scripts/update-deployment-template.py \
+      --filename deployment-scripts/geoserver-deployment.yaml \
+      --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") \
+      --storage $GEOSERVER_STORAGE \
+      --disable-route \
+      --cpu-request $GEOSERVER_CPU_REQUEST \
+      --cpu-limit $GEOSERVER_CPU_LIMIT \
+      --memory-request $GEOSERVER_MEMORY_REQUEST \
+      --memory-limit $GEOSERVER_MEMORY_LIMIT \
+      > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n ${OC_PROJECT} --timeout=900s
@@ -303,17 +368,47 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
     sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-    # Additional setup
+    # Try to read API keys from multiple locations with fallback
+    # Priority: workspace/$DEPLOYMENT_ENV/.studio-api-key -> workspace/$DEPLOYMENT_ENV/env/.env
 
-    file=./.studio-api-key
-    if [ -e "$file" ]; then
-        echo "File exists"
-        source $file
-    else 
+    # First, try workspace/$DEPLOYMENT_ENV/.studio-api-key
+    if [ -e "workspace/$DEPLOYMENT_ENV/.studio-api-key" ]; then
+        echo "Reading API keys from workspace/$DEPLOYMENT_ENV/.studio-api-key"
+        source workspace/$DEPLOYMENT_ENV/.studio-api-key
+    # Last resort: try workspace/$DEPLOYMENT_ENV/env/.env
+    elif [ -e "workspace/$DEPLOYMENT_ENV/env/.env" ]; then
+        echo "Reading API keys from workspace/$DEPLOYMENT_ENV/env/.env"
+        # Read from .env file and only accept non-null values
+        if [ -f "workspace/$DEPLOYMENT_ENV/env/.env" ]; then
+            # Extract studio_api_key and studio_api_encryption_key from .env
+            temp_api_key=$(grep "^studio_api_key=" workspace/$DEPLOYMENT_ENV/env/.env | cut -d'=' -f2)
+            temp_encryption_key=$(grep "^studio_api_encryption_key=" workspace/$DEPLOYMENT_ENV/env/.env | cut -d'=' -f2)
+
+            # Only use values if they are not null/empty
+            if [ -n "$temp_api_key" ] && [ "$temp_api_key" != "null" ]; then
+                export STUDIO_API_KEY="$temp_api_key"
+            fi
+            if [ -n "$temp_encryption_key" ] && [ "$temp_encryption_key" != "null" ]; then
+                export API_ENCRYPTION_KEY="$temp_encryption_key"
+            fi
+        fi
+    fi
+
+    # Validate that we have non-null values, otherwise generate new ones
+    if [ -z "$STUDIO_API_KEY" ] || [ "$STUDIO_API_KEY" = "null" ] || [ -z "$API_ENCRYPTION_KEY" ] || [ "$API_ENCRYPTION_KEY" = "null" ]; then
+        echo "Generating new API keys (no valid keys found in existing locations)"
         export STUDIO_API_KEY=$(echo "pak-$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 32)")
         export API_ENCRYPTION_KEY=$(echo "$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '\n')")
-        echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > ./.studio-api-key
-        echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> ./.studio-api-key
+        echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > workspace/$DEPLOYMENT_ENV/.studio-api-key
+        echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> workspace/$DEPLOYMENT_ENV/.studio-api-key
+    else
+        # If keys were found but workspace/$DEPLOYMENT_ENV/.studio-api-key doesn't exist, create it
+        if [ ! -e "workspace/$DEPLOYMENT_ENV/.studio-api-key" ]; then
+            echo "Creating workspace/$DEPLOYMENT_ENV/.studio-api-key with existing keys"
+            echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > workspace/$DEPLOYMENT_ENV/.studio-api-key
+            echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> workspace/$DEPLOYMENT_ENV/.studio-api-key
+        fi
+        echo "Using existing API keys"
     fi
 
     sed -i -e "s/studio_api_key=.*/studio_api_key=$STUDIO_API_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
@@ -353,6 +448,9 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     sed -i -e "s|<pgbouncer_port>|${pgbouncer_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
     sed -i -e "s|<pgbouncer_user>|${pgbouncer_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
     sed -i -e "s|<pgbouncer_pass>|${pgbouncer_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_studio_db_name>|${pg_studio_db_name}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_mlflow_db_name>|${pg_mlflow_db_name}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_auth_db_name>|${pg_auth_db_name}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
     # The line below removes GPUs from the pipeline components, to leave GPUs activated, copy out this line
     python ./deployment-scripts/remove-pipeline-gpu.py workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
@@ -460,6 +558,8 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     echo "----------------------------------------------------------------------"
     echo "--------------------  Deploying the Studio  --------------------------"
     echo "----------------------------------------------------------------------"
+
+    update_values_deploy_resources workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
     # Deploy Geospatial Studio
     ./deployment-scripts/deploy_studio.sh

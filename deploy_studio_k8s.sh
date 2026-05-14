@@ -26,18 +26,36 @@ echo "----------------------------------------------------------------------"
 echo "---------------  Checking Existing Deployments  ----------------------"
 echo "----------------------------------------------------------------------"
 
-if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ]; then
+if [ -f "workspace/${DEPLOYMENT_ENV}/env/env.sh" ] && [ -f "workspace/${DEPLOYMENT_ENV}/env/.env" ]; then
     echo "✓ Workspace configuration exists"
+    export STUDIO_INSTALLATION="UPGRADE"
+
+    infrastructure_upgrade_options="SKIP REDEPLOY"
+    typeset infrastructure_upgrade
+
+    get_menu_selection \
+    "Redeploy any infrastructure i.e. minio/postgresql/keycloak/geoserver:" \
+    infrastructure_upgrade \
+    "$infrastructure_upgrade_options"
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
-    
-    check_deployment_and_prompt "deployment" "minio" "${OC_PROJECT}" "MinIO (object storage)" "DEPLOY_MINIO"
-    check_deployment_and_prompt "statefulset" "postgresql" "${OC_PROJECT}" "PostgreSQL (database)" "DEPLOY_POSTGRES"
-    check_deployment_and_prompt "deployment" "keycloak" "${OC_PROJECT}" "Keycloak (authentication)" "DEPLOY_KEYCLOAK"
-    check_deployment_and_prompt "deployment" "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
-    check_deployment_and_prompt "helm" "studio" "${OC_PROJECT}" "Geospatial Studio" "DEPLOY_STUDIO"
+
+    if [[ "$infrastructure_upgrade" == "REDEPLOY" ]]; then
+        check_deployment_and_prompt "deployment" "minio" "${OC_PROJECT}" "MinIO (object storage)" "DEPLOY_MINIO"
+        check_deployment_and_prompt "statefulset" "postgresql" "${OC_PROJECT}" "PostgreSQL (database)" "DEPLOY_POSTGRES"
+        check_deployment_and_prompt "deployment" "keycloak" "${OC_PROJECT}" "Keycloak (authentication)" "DEPLOY_KEYCLOAK"
+        check_deployment_and_prompt "deployment" "geofm-geoserver" "${OC_PROJECT}" "GeoServer" "DEPLOY_GEOSERVER"
+        check_deployment_and_prompt "helm" "studio" "${OC_PROJECT}" "Geospatial Studio" "DEPLOY_STUDIO"
+    else
+        DEPLOY_MINIO="Skip"
+        DEPLOY_POSTGRES="Skip"
+        DEPLOY_KEYCLOAK="Skip"
+        DEPLOY_GEOSERVER="Skip"
+        DEPLOY_STUDIO="Deploy"
+    fi
 else
     echo "✓ No existing configuration - will deploy all components"
+
     DEPLOY_MINIO="Deploy"
     DEPLOY_POSTGRES="Deploy"
     DEPLOY_KEYCLOAK="Deploy"
@@ -60,147 +78,237 @@ if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
     read ans
 fi
 
-echo "----------------------------------------------------------------------"
-echo "------  Creating baseline deployment/values files  -------------------"
-echo "----------------------------------------------------------------------"
-
-./deployment-scripts/setup-workspace-env.sh
-
-sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=k8s/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
 source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-echo "----------------------------------------------------------------------"
-echo "--------------------  Add labels to node  ------------------"
-echo "----------------------------------------------------------------------"
+if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
+    echo "----------------------------------------------------------------------"
+    echo "------  Creating baseline deployment/values files  -------------------"
+    echo "----------------------------------------------------------------------"
 
-# Set the cluster node name where the application will be deployed
-# CLUSTER_NODE_NAME
-typeset cluster_node_name
-get_user_input "Provide a name for the cluster node for deployment, e.g. studio-worker, studio-node... Run 'kubectl get nodes' to get the nodes available in the cluster" cluster_node_name
-echo "CLUSTER_NODE_NAME accepted: **$cluster_node_name**"
-export CLUSTER_NODE_NAME=$cluster_node_name
+    ./deployment-scripts/setup-workspace-env.sh
 
-kubectl label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
+    sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=k8s/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.s
 
-echo "***********************************************************************************"
-echo "----------------------  Configure Storage Mode  -----------------------------------"
-echo "-----------------------------------------------------------------------------------"
-echo "***********************************************************************************"
-echo "Select the storage mode for your deployment:"
-echo "  - cloud-object-storage: Use Cloud Object Storage (production) [DEFAULT]"
-echo "  - cluster-block-storage: Use in-cluster dynamic provisioning"
-echo "  - local-hostpath: Use local host directories (development/testing)"
-echo "***********************************************************************************"
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Add labels to node  ------------------"
+    echo "----------------------------------------------------------------------"
 
-storage_mode_options="cloud-object-storage cluster-block-storage local-hostpath"
-typeset storage_mode
+    # Set the cluster node name where the application will be deployed
+    # CLUSTER_NODE_NAME
+    typeset cluster_node_name
+    get_user_input "Provide a name for the cluster node for deployment, e.g. studio-worker, studio-node... Run 'kubectl get nodes' to get the nodes available in the cluster" cluster_node_name
+    echo "CLUSTER_NODE_NAME accepted: **$cluster_node_name**"
+    export CLUSTER_NODE_NAME=$cluster_node_name
 
-get_menu_selection \
-"Select storage mode for your deployment:" \
-storage_mode \
-"$storage_mode_options"
+    kubectl label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
 
-export STORAGE_MODE=$storage_mode
-echo "STORAGE_MODE selected: **$STORAGE_MODE**"
+    echo "----------------------------------------------------------------------"
+    echo "--------------------  Configure Resource Mode  -----------------------"
+    echo "----------------------------------------------------------------------"
 
-# Update env.sh with storage mode
-sed -i -e "s/export STORAGE_MODE=.*/export STORAGE_MODE=${STORAGE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-
-if [[ "$STORAGE_MODE" == "cloud-object-storage" ]] || [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
-    echo "***********************************************************************************"
-    echo "--------------------------  Configure storage classes -----------------------------"
-    echo "-----------------------------------------------------------------------------------"
-
-    if [[ "$STORAGE_MODE" == "cloud-object-storage" ]]; then
-        export COS_STORAGE_CLASS="cos-s3-csi-s3fs-sc"
-        echo "COS_STORAGE_CLASS selected: **$COS_STORAGE_CLASS**"
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        configure_resource_mode
     fi
 
-    # Set NON_COS_STORAGE_CLASS for both COS and cluster-block-storage
-    echo "----------- Verify the available in-cluster storage classes in your cluster -------"
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+
     echo "***********************************************************************************"
-    echo "************************  You will enter the following  ***************************"
-    echo "------------------------  NON_COS_STORAGE_CLASS -----------------------------------"
+    echo "----------------------  Configure Storage Mode  -----------------------------------"
+    echo "-----------------------------------------------------------------------------------"
     echo "***********************************************************************************"
-    in_cluster_storage_class_options="Default User-Supplied"
-    typeset in_cluster_storage_class_type
+    echo "Select the storage mode for your deployment:"
+    echo "  - cloud-object-storage: Use Cloud Object Storage (production) [DEFAULT]"
+    echo "  - cluster-block-storage: Use in-cluster dynamic provisioning"
+    echo "  - local-hostpath: Use local host directories (development/testing)"
+    echo "***********************************************************************************"
+
+    storage_mode_options="cloud-object-storage cluster-block-storage local-hostpath"
+    typeset storage_mode
 
     get_menu_selection \
-    "Select a storage class for your cluster. You can use the default 'standard' class or provide a custom one." \
-    in_cluster_storage_class_type \
-    "$in_cluster_storage_class_options"
+    "Select storage mode for your deployment:" \
+    storage_mode \
+    "$storage_mode_options"
 
-    if [[ "$in_cluster_storage_class_type" == "Default" ]]; then
-        export NON_COS_STORAGE_CLASS="standard"
-    else
-        typeset user_non_cos_storage_class
-        get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
-        echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
-        export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
-    fi
+    export STORAGE_MODE=$storage_mode
+    echo "STORAGE_MODE selected: **$STORAGE_MODE**"
 
-    if [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
-        # Select PVC access mode
+    # Update env.sh with storage mode
+    sed -i -e "s/export STORAGE_MODE=.*/export STORAGE_MODE=${STORAGE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    if [[ "$STORAGE_MODE" == "cloud-object-storage" ]] || [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
         echo "***********************************************************************************"
-        echo "----------------------  Configure PVC Access Mode  --------------------------------"
+        echo "--------------------------  Configure storage classes -----------------------------"
         echo "-----------------------------------------------------------------------------------"
-        echo "Select the access mode for Persistent Volume Claims:"
-        echo "  - ReadWriteOnce: Volume can be mounted as read-write by a single node"
-        echo "  - ReadWriteMany: Volume can be mounted as read-write by many nodes"
-        echo "***********************************************************************************"
 
-        pvc_access_mode_options="ReadWriteOnce ReadWriteMany"
-        typeset pvc_access_mode
+        if [[ "$STORAGE_MODE" == "cloud-object-storage" ]]; then
+            export COS_STORAGE_CLASS="cos-s3-csi-s3fs-sc"
+            echo "COS_STORAGE_CLASS selected: **$COS_STORAGE_CLASS**"
+        fi
+
+        # Set NON_COS_STORAGE_CLASS for both COS and cluster-block-storage
+        echo "----------- Verify the available in-cluster storage classes in your cluster -------"
+        echo "***********************************************************************************"
+        echo "************************  You will enter the following  ***************************"
+        echo "------------------------  NON_COS_STORAGE_CLASS -----------------------------------"
+        echo "***********************************************************************************"
+        in_cluster_storage_class_options="Default User-Supplied"
+        typeset in_cluster_storage_class_type
 
         get_menu_selection \
-            "Select PVC access mode:" \
-            pvc_access_mode \
-            "$pvc_access_mode_options"
+        "Select a storage class for your cluster. You can use the default 'standard' class or provide a custom one." \
+        in_cluster_storage_class_type \
+        "$in_cluster_storage_class_options"
 
-        export PVC_ACCESS_MODE=$pvc_access_mode
-        echo "PVC_ACCESS_MODE selected: **$PVC_ACCESS_MODE**"
+        if [[ "$in_cluster_storage_class_type" == "Default" ]]; then
+            export NON_COS_STORAGE_CLASS="standard"
+        else
+            typeset user_non_cos_storage_class
+            get_user_input "Enter NON_COS_STORAGE_CLASS: " user_non_cos_storage_class
+            echo "NON_COS_STORAGE_CLASS accepted: **$user_non_cos_storage_class**"
+            export NON_COS_STORAGE_CLASS=$user_non_cos_storage_class
+        fi
+
+        if [[ "$STORAGE_MODE" == "cluster-block-storage" ]]; then
+            # Select PVC access mode
+            echo "***********************************************************************************"
+            echo "----------------------  Configure PVC Access Mode  --------------------------------"
+            echo "-----------------------------------------------------------------------------------"
+            echo "Select the access mode for Persistent Volume Claims:"
+            echo "  - ReadWriteOnce: Volume can be mounted as read-write by a single node"
+            echo "  - ReadWriteMany: Volume can be mounted as read-write by many nodes"
+            echo "***********************************************************************************"
+
+            pvc_access_mode_options="ReadWriteOnce ReadWriteMany"
+            typeset pvc_access_mode
+
+            get_menu_selection \
+                "Select PVC access mode:" \
+                pvc_access_mode \
+                "$pvc_access_mode_options"
+
+            export PVC_ACCESS_MODE=$pvc_access_mode
+            echo "PVC_ACCESS_MODE selected: **$PVC_ACCESS_MODE**"
+        fi
+
+        # Update env.sh
+        sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS:-cos-s3-csi-s3fs-sc}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS:-standard}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export PVC_ACCESS_MODE=.*/export PVC_ACCESS_MODE=${PVC_ACCESS_MODE:-ReadWriteOnce}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    else
+        echo "Using local-hostpath storage mode - no storage class configuration needed"
+        sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     fi
-
-    # Update env.sh
-    sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS:-cos-s3-csi-s3fs-sc}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS:-standard}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export PVC_ACCESS_MODE=.*/export PVC_ACCESS_MODE=${PVC_ACCESS_MODE:-ReadWriteOnce}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 else
-    echo "Using local-hostpath storage mode - no storage class configuration needed"
-    sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    echo "***********************************************************************************"
+    echo "----------------------  Using values in env.sh  -----------------------------------"
+    echo "------------------  You can manually update the following -------------------------"
+    echo "-----------------------------------------------------------------------------------"
+    echo "***********************************************************************************"
+    echo "  - cluster node labels: Use kubectl to update the cluster node labels"
+    echo "  - RESOURCE_MODE: **$RESOURCE_MODE**"
+    echo "  - STORAGE_MODE: **$STORAGE_MODE**"
+    echo "  - COS_STORAGE_CLASS: **$COS_STORAGE_CLASS**"
+    echo "  - NON_COS_STORAGE_CLASS: **$NON_COS_STORAGE_CLASS**"
+    echo "  - PVC_ACCESS_MODE: **$PVC_ACCESS_MODE**"
+    echo "***********************************************************************************"
+    echo "***********************************************************************************"
 fi
 
 if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
-    echo "----------------------------------------------------------------------"
-    echo "----------------------  Deploying Minio  -----------------------------"
-    echo "----------------------------------------------------------------------"
+    cloud_object_storage_type_options="Cluster-deployment Cloud-managed-instance"
+    typeset cloud_object_storage_type
 
-    # Install MinIO
-    # Create TLS for minio
-    openssl genrsa -out minio-private.key 2048
-    sed -e "s/default/$OC_PROJECT/g" deployment-scripts/minio-openssl.conf > workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
-    openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
+    get_menu_selection \
+        "Select whether to deploy a cloud object storage in cluster or use a cloud managed instance that you have externally subscribed to: " \
+        cloud_object_storage_type \
+        "$cloud_object_storage_type_options"
 
-    kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml
-    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml -n ${OC_PROJECT}
+    if [[ "$cloud_object_storage_type" == "Cluster-deployment" ]]; then
+        echo "----------------------------------------------------------------------"
+        echo "----------------------  Deploying Minio  -----------------------------"
+        echo "----------------------------------------------------------------------"
 
-    kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
-    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
+        # Install MinIO
+        # Create TLS for minio
+        openssl genrsa -out minio-private.key 2048
+        sed -e "s/default/$OC_PROJECT/g" deployment-scripts/minio-openssl.conf > workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
+        openssl req -new -x509 -nodes -days 730 -keyout minio-private.key -out minio-public.crt --config workspace/$DEPLOYMENT_ENV/initialisation/minio-user-openssl.conf
+
+        kubectl create secret tls minio-tls-secret --cert=minio-public.crt --key=minio-private.key -n ${OC_PROJECT} --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml
+        kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-tls-secret.yaml -n ${OC_PROJECT}
+
+        kubectl create configmap minio-public-config --from-file=minio-public.crt -n kube-system --dry-run=client -o yaml > workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml
+        kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-public-config.yaml -n kube-system
+
+        python ./deployment-scripts/update-deployment-template.py \
+            --disable-route \
+            --storageclass ${NON_COS_STORAGE_CLASS} \
+            --storage $MINIO_STORAGE \
+            --filename deployment-scripts/minio-deployment.yaml \
+            --cpu-request $MINIO_CPU_REQUEST \
+            --cpu-limit $MINIO_CPU_LIMIT \
+            --memory-request $MINIO_MEMORY_REQUEST \
+            --memory-limit $MINIO_MEMORY_LIMIT \
+            > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
+        kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
+
+        kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
+
+        sleep 5
+        kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 >> studio-pf.log 2>&1 &
+        sleep 5
+
+        # # # Update .env with the MinIO details for local connection
+        sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s|endpoint=.*|endpoint=https://localhost:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+        sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
 
 
-    python ./deployment-scripts/update-deployment-template.py --disable-route --filename deployment-scripts/minio-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} > workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml
-    kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/minio-deployment.yaml -n ${OC_PROJECT}
+        kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 >> studio-pf.log 2>&1 &
+        sleep 5
 
-    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=minio -n ${OC_PROJECT} --timeout=300s
+        python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
 
-    sleep 5
-    kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 >> studio-pf.log 2>&1 &
-    sleep 5
+        sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
+    else
+        echo "**********************************************************************"
+        echo "**********************************************************************"
+        echo "-----------  Configure s3 storage and update the values --------------"
+        echo "**********************************************************************"
+        echo "**********************************************************************"
+        echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/.env *************"
+        echo "-----------  access_key_id= ------------------------------------------"
+        echo "-----------  secret_access_key= --------------------------------------"
+        echo "-----------  endpoint= -----------------------------------------------"
+        echo "-----------  region= -------------------------------------------------"
+        echo "**********************************************************************"
+        echo "**********************************************************************"
 
+        while true; do
+            printf "%s " "Press enter to continue after entering the variables"
+            read ans
+
+            python deployment-scripts/validate-env-files.py \
+            --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
+            --env-variables "access_key_id,secret_access_key,endpoint,region" \
+            --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
+            --env-sh-variables ""
+
+            if [ $? -eq 0 ]; then
+                break
+            fi
+        done
+
+        python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
+    fi
+    source workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    # Setup COS CSI driver
     cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
     sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
     sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-sc.yaml
@@ -208,23 +316,6 @@ if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-controller -n kube-system --timeout=300s
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=cos-s3-csi-driver -n kube-system --timeout=300s
-
-
-    # # # Update .env with the MinIO details for local connection
-    sed -i -e "s/access_key_id=.*/access_key_id=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s/secret_access_key=.*/secret_access_key=minioadmin/g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s|endpoint=.*|endpoint=https://localhost:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
-    sed -i -e "s/region=.*/region=us-east-1/g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-
-    kubectl port-forward -n ${OC_PROJECT} svc/minio 9000:9000 >> studio-pf.log 2>&1 &
-    sleep 5
-
-    python deployment-scripts/create_buckets.py --env-path workspace/${DEPLOYMENT_ENV}/env/.env
-
-    sed -i -e "s|endpoint=.*|endpoint=https://minio.$OC_PROJECT.svc.cluster.local:9000|g" workspace/${DEPLOYMENT_ENV}/env/.env
-
-    source workspace/${DEPLOYMENT_ENV}/env/env.sh
 else
     echo "----------------------------------------------------------------------"
     echo "-------------------  Skipping Minio Deployment  ----------------------"
@@ -282,7 +373,15 @@ if [[ "$DEPLOY_KEYCLOAK" == "Deploy" ]]; then
     echo "--------------------  Deploying Keycloak  ----------------------------"
     echo "----------------------------------------------------------------------"
 
-    python ./deployment-scripts/update-keycloak-deployment.py --disable-route --filename deployment-scripts/keycloak-deployment.yaml --env-path workspace/${DEPLOYMENT_ENV}/env/.env > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
+    python ./deployment-scripts/update-deployment-template.py \
+      --disable-route \
+      --filename deployment-scripts/keycloak-deployment.yaml \
+      --cpu-request $KEYCLOAK_CPU_REQUEST \
+      --cpu-limit $KEYCLOAK_CPU_LIMIT \
+      --memory-request $KEYCLOAK_MEMORY_REQUEST \
+      --memory-limit $KEYCLOAK_MEMORY_LIMIT \
+      --env-path workspace/${DEPLOYMENT_ENV}/env/.env \
+      > workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/keycloak-deployment.yaml -n ${OC_PROJECT}
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app=keycloak -n ${OC_PROJECT} --timeout=300s
@@ -320,7 +419,17 @@ if [[ "$DEPLOY_GEOSERVER" == "Deploy" ]]; then
     echo "--------------------  Deploying Geoserver  ----------------------------"
     echo "----------------------------------------------------------------------"
 
-    python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/geoserver-deployment.yaml --storageclass ${NON_COS_STORAGE_CLASS} --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") --disable-route > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
+    python ./deployment-scripts/update-deployment-template.py \
+        --filename deployment-scripts/geoserver-deployment.yaml \
+        --storageclass ${NON_COS_STORAGE_CLASS} \
+        --proxy-base-url $(printf "http://geofm-geoserver-%s.svc.cluster.local:3000/geoserver" "$OC_PROJECT") \
+        --storage $GEOSERVER_STORAGE \
+        --disable-route \
+        --cpu-request $GEOSERVER_CPU_REQUEST \
+        --cpu-limit $GEOSERVER_CPU_LIMIT \
+        --memory-request $GEOSERVER_MEMORY_REQUEST \
+        --memory-limit $GEOSERVER_MEMORY_LIMIT \
+        > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-deployment.yaml -n ${OC_PROJECT}
 
     kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY --for=condition=ready pod -l app.kubernetes.io/name=gfm-geoserver -n $OC_PROJECT --timeout=900s
@@ -357,17 +466,47 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
     sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-    # Additional setup
+    # Try to read API keys from multiple locations with fallback
+    # Priority: workspace/$DEPLOYMENT_ENV/.studio-api-key -> workspace/$DEPLOYMENT_ENV/env/.env
 
-    file=./.studio-api-key
-    if [ -e "$file" ]; then
-        echo "File exists"
-        source $file
-    else 
+    # First, try workspace/$DEPLOYMENT_ENV/.studio-api-key
+    if [ -e "workspace/$DEPLOYMENT_ENV/.studio-api-key" ]; then
+        echo "Reading API keys from workspace/$DEPLOYMENT_ENV/.studio-api-key"
+        source workspace/$DEPLOYMENT_ENV/.studio-api-key
+    # Last resort: try workspace/$DEPLOYMENT_ENV/env/.env
+    elif [ -e "workspace/$DEPLOYMENT_ENV/env/.env" ]; then
+        echo "Reading API keys from workspace/$DEPLOYMENT_ENV/env/.env"
+        # Read from .env file and only accept non-null values
+        if [ -f "workspace/$DEPLOYMENT_ENV/env/.env" ]; then
+            # Extract studio_api_key and studio_api_encryption_key from .env
+            temp_api_key=$(grep "^studio_api_key=" workspace/$DEPLOYMENT_ENV/env/.env | cut -d'=' -f2)
+            temp_encryption_key=$(grep "^studio_api_encryption_key=" workspace/$DEPLOYMENT_ENV/env/.env | cut -d'=' -f2)
+
+            # Only use values if they are not null/empty
+            if [ -n "$temp_api_key" ] && [ "$temp_api_key" != "null" ]; then
+                export STUDIO_API_KEY="$temp_api_key"
+            fi
+            if [ -n "$temp_encryption_key" ] && [ "$temp_encryption_key" != "null" ]; then
+                export API_ENCRYPTION_KEY="$temp_encryption_key"
+            fi
+        fi
+    fi
+
+    # Validate that we have non-null values, otherwise generate new ones
+    if [ -z "$STUDIO_API_KEY" ] || [ "$STUDIO_API_KEY" = "null" ] || [ -z "$API_ENCRYPTION_KEY" ] || [ "$API_ENCRYPTION_KEY" = "null" ]; then
+        echo "Generating new API keys (no valid keys found in existing locations)"
         export STUDIO_API_KEY=$(echo "pak-$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9' | head -c 32)")
         export API_ENCRYPTION_KEY=$(echo "$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '\n')")
-        echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > ./.studio-api-key
-        echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> ./.studio-api-key
+        echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > workspace/$DEPLOYMENT_ENV/.studio-api-key
+        echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> workspace/$DEPLOYMENT_ENV/.studio-api-key
+    else
+        # If keys were found but workspace/$DEPLOYMENT_ENV/.studio-api-key doesn't exist, create it
+        if [ ! -e "workspace/$DEPLOYMENT_ENV/.studio-api-key" ]; then
+            echo "Creating workspace/$DEPLOYMENT_ENV/.studio-api-key with existing keys"
+            echo "export STUDIO_API_KEY=$STUDIO_API_KEY" > workspace/$DEPLOYMENT_ENV/.studio-api-key
+            echo "export API_ENCRYPTION_KEY=$API_ENCRYPTION_KEY" >> workspace/$DEPLOYMENT_ENV/.studio-api-key
+        fi
+        echo "Using existing API keys"
     fi
 
     sed -i -e "s/studio_api_key=.*/studio_api_key=$STUDIO_API_KEY/g" workspace/${DEPLOYMENT_ENV}/env/.env
@@ -407,6 +546,9 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     sed -i -e "s|<pgbouncer_port>|${pgbouncer_port}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
     sed -i -e "s|<pgbouncer_user>|${pgbouncer_username}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
     sed -i -e "s|<pgbouncer_pass>|${pgbouncer_password}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_studio_db_name>|${pg_studio_db_name}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_mlflow_db_name>|${pg_mlflow_db_name}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
+    sed -i -e "s|<pg_auth_db_name>|${pg_auth_db_name}|g" workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
     # The line below removes GPUs from the pipeline components and Finetuning job, to leave GPUs activated, copy out this line
     gpu_configuration_options="GPU-Available No-GPU-Available"
@@ -521,6 +663,8 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     echo "----------------------------------------------------------------------"
     echo "--------------------  Deploying the Studio  --------------------------"
     echo "----------------------------------------------------------------------"
+
+    update_values_deploy_resources workspace/${DEPLOYMENT_ENV}/values/geospatial-studio/values-deploy.yaml
 
     # Deploy Geospatial Studio
     ./deployment-scripts/deploy_studio.sh
