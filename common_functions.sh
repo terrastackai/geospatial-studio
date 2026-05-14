@@ -67,7 +67,7 @@ get_menu_selection() {
     fi
 
     # Interactive mode
-    printf "\n\n--- Selection Menu ---\n"
+    printf "\n\n--- Selection Menu For Prompt Below---\n"
 
     # Display the numbered menu options
     for ((i = 0; i < num_options; i++)); do

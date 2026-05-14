@@ -85,15 +85,6 @@ resources:
     cpu: 1
     memory: 4G
 
-# livenessProbe:
-#   httpGet:
-#     path: /
-#     port: http
-# readinessProbe:
-#   httpGet:
-#     path: /
-#     port: http
-
 autoscaling: {}
   # enabled: false
   # minReplicas: 1

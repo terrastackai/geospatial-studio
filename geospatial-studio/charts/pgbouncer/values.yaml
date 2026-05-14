@@ -67,9 +67,8 @@ resources:
     memory: "256Mi"
 
 # Security context
-podSecurityContext:
-  enabled: false
-  runAsUser: 'auto'
+securityContext:
+  api: {}
 
 containerSecurityContext:
   enabled: false
