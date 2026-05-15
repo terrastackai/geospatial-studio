@@ -404,8 +404,6 @@ geospatial-studio-pipelines:
   cluster_url: CLUSTER_URL
   environment: ENVIRONMENT_VALUE
   log_level: DEBUG
-  redis:
-    enalbed: REDIS_ENABLED
   inference_volume:
     pvc_name: inference-shared-pvc
   default_replicas: 1

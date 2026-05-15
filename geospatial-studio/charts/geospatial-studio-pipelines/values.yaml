@@ -48,9 +48,6 @@ gateway:
   api_key: studio_api_key
   appName: geofm-gateway
 
-redis:
-  enabled:  REDIS_ENABLED
-
 geoserver:
   username: geoserver_username
   password: geoserver_password
