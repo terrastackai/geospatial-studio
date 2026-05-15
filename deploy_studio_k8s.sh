@@ -466,195 +466,190 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
     sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
-        echo "----------------------------------------------------------------------"
-        echo "-------------  Ingress Configuration  --------------------------------"
-        echo "----------------------------------------------------------------------"
 
-        get_menu_selection "Enable Ingress for external access?" "INGRESS_ENABLED" "true false"
-        sed -i -e "s/export INGRESS_ENABLED=.*/export INGRESS_ENABLED=$INGRESS_ENABLED/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    echo "----------------------------------------------------------------------"
+    echo "-------------  Ingress Configuration  --------------------------------"
+    echo "----------------------------------------------------------------------"
 
-        if [[ "$INGRESS_ENABLED" == "true" ]]; then
+    get_menu_selection "Enable Ingress for external access?" "INGRESS_ENABLED" "true false"
+    sed -i -e "s/export INGRESS_ENABLED=.*/export INGRESS_ENABLED=$INGRESS_ENABLED/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-            # Load balancer support - if missing (bare-metal kubernetes clusters)
+    if [[ "$INGRESS_ENABLED" == "true" ]]; then
 
-            lb_support_options="No Yes"
-            typeset lb_support
+        # Load balancer support - if missing (bare-metal kubernetes clusters)
+
+        lb_support_options="No Yes"
+        typeset lb_support
+        
+        get_menu_selection \
+            "Do you have Load Balancer support in your cluster?:" \
+            lb_support \
+            "$lb_support_options"
+        
+        export LB_SUPPORT=$lb_support
+
+        if [[ "$LB_SUPPORT" == "No" ]]; then
+            # Install MetalLB
+            kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/manifests/metallb-native.yaml
             
-            get_menu_selection \
-                "Do you have Load Balancer support in your cluster?:" \
-                lb_support \
-                "$lb_support_options"
-            
-            export LB_SUPPORT=$lb_support
+            kubectl wait --namespace metallb-system \
+                --for=condition=ready pod \
+                --selector=app=metallb \
+                --timeout=90s                
 
-            if [[ "$LB_SUPPORT" == "No" ]]; then
-                # Install MetalLB
-                kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.12/config/manifests/metallb-native.yaml
-                
-                kubectl wait --namespace metallb-system \
-                    --for=condition=ready pod \
-                    --selector=app=metallb \
-                    --timeout=90s                
+            NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
+            if [[ -n "$NODE_IP" ]]; then
+                BASE_IP=$(echo $NODE_IP | cut -d'.' -f1-3)
+                IP_RANGE="${BASE_IP}.200-${BASE_IP}.250"
+                echo "Detected node IP: $NODE_IP, using range: $IP_RANGE"
+            else
+                # Fallback to common private network
+                IP_RANGE="192.168.1.200-192.168.1.250"
+                echo "Could not detect network, using default range: $IP_RANGE"
+            fi
 
-                NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
-                if [[ -n "$NODE_IP" ]]; then
-                    BASE_IP=$(echo $NODE_IP | cut -d'.' -f1-3)
-                    IP_RANGE="${BASE_IP}.200-${BASE_IP}.250"
-                    echo "Detected node IP: $NODE_IP, using range: $IP_RANGE"
-                else
-                    # Fallback to common private network
-                    IP_RANGE="192.168.1.200-192.168.1.250"
-                    echo "Could not detect network, using default range: $IP_RANGE"
-                fi
-
-                # Apply MetalLB configuration
-                cat <<EOF | kubectl apply -f -
+            # Apply MetalLB configuration
+            cat <<EOF | kubectl apply -f -
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
-  name: default-pool
-  namespace: metallb-system
+name: default-pool
+namespace: metallb-system
 spec:
-  addresses:
-  - ${IP_RANGE}
+addresses:
+- ${IP_RANGE}
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
 metadata:
-  name: default
-  namespace: metallb-system
+name: default
+namespace: metallb-system
 spec:
-  ipAddressPools:
-  - default-pool
+ipAddressPools:
+- default-pool
 EOF
-                echo "✓ MetalLB installed and configured with IP range: ${IP_RANGE}"
-            fi
-            
-            echo "**********************************************************************"
-            echo "**********************************************************************"
-            echo "-----------  Update env.sh file with ingress configuration values ----"
-            echo "**********************************************************************"
-            echo "**********************************************************************"
-            echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/env.sh ***********"
-            echo "-----------  export INGRESS_TLS_ENABLED= -----------------------------"
-            echo "-----------  export INGRESS_CLASS_NAME= ------------------------------"
-            echo "-----------  export INGRESS_HOST= ------------------------------------"
-            echo "**********************************************************************"
-            echo "**********************************************************************"
-
-            while true; do
-                printf "%s " "Press enter to continue after entering the variables"
-                read ans
-
-                python deployment-scripts/validate-env-files.py \
-                --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
-                --env-variables "" \
-                --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-                --env-sh-variables "INGRESS_TLS_ENABLED,INGRESS_CLASS_NAME,INGRESS_HOST"
-
-                if [ $? -eq 0 ]; then
-                    break
-                fi
-            done
-
-            source workspace/${DEPLOYMENT_ENV}/env/env.sh
-            
-            echo ""
-            echo "----------------------------------------------------------------------"
-            echo "Ingress configuration summary:"
-            echo "  Enabled: $INGRESS_ENABLED"
-            echo "  TLS Enabled: $INGRESS_TLS_ENABLED"
-            echo "  Controller: $INGRESS_CLASS_NAME"
-            echo "  Host: ${INGRESS_HOST}"
-            echo "----------------------------------------------------------------------"
-            echo ""
-
-            # create ingress tls
-            if [[ "$INGRESS_TLS_ENABLED" == "true" ]]; then
-                openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-                    -keyout ingress-tls.key \
-                    -out ingress-tls.crt \
-                    -subj "/CN=local-ingress/O=local" \
-                    -addext "subjectAltName=DNS:*.${INGRESS_HOST}"
-
-                export INGRESS_TLS_CRT_B64=$(openssl base64 -in ingress-tls.crt -A)
-                export INGRESS_TLS_KEY_B64=$(openssl base64 -in ingress-tls.key -A)
-
-                sed -i -e "s/ingress_tls_crt_b64=.*/ingress_tls_crt_b64=$INGRESS_TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-                sed -i -e "s/ingress_tls_key_b64=.*/ingress_tls_key_b64=$INGRESS_TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-            fi
-
-            # install haproxy kubernetes ingress controller
-            helm repo add haproxytech https://haproxytech.github.io/helm-charts
-            helm repo update
-
-            helm install haproxy-kubernetes-ingress haproxytech/kubernetes-ingress \
-                --namespace kube-system \
-                --set controller.kind=DaemonSet \
-                --set controller.service.type=LoadBalancer \
-                --set controller.publishService.enabled=true \
-                --set controller.publishService.pathOverride=kube-system/haproxy-kubernetes-ingress
-
-            # wait for ingress controller to be ready
-            kubectl rollout status daemonset/haproxy-kubernetes-ingress -n kube-system --timeout=300s
-
-
-            # Enalble ingress for geoserver
-            source workspace/${DEPLOYMENT_ENV}/env/env.sh
-            sed -e "s/namespace: default/namespace: $OC_PROJECT/g" \
-                -e "s/ingressClassName: haproxy/ingressClassName: $INGRESS_CLASS_NAME/g" \
-                -e "s/geofm-geoserver\.local/geofm-geoserver.$INGRESS_HOST/g" \
-                deployment-scripts/template/geoserver-ingress.yaml > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-ingress.yaml
-            
-            kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-ingress.yaml -n ${OC_PROJECT}
-            echo "✓ Geoserver ingress deployed"
-
-            # add ingress URIs to keycloak redirect uris
-            # Re-authenticate to Keycloak and get fresh token
-            export KC_TOKEN=$(curl -k --silent --request POST \
-                --url http://localhost:8080/realms/master/protocol/openid-connect/token \
-                --header 'content-type: application/x-www-form-urlencoded' \
-                --data client_id=admin-cli \
-                --data grant_type=password \
-                --data username=admin \
-                --data password=admin | jq -r '.access_token') # pragma: allowlist secret
-
-            # Get client UUID
-            export client_uuid=$(curl -k --silent -X GET \
-                "http://localhost:8080/admin/realms/geostudio/clients?clientId=geostudio-client" \
-                --header "Content-Type: application/json" \
-                --header "Authorization: Bearer ${KC_TOKEN}" | jq -r '.[0].id')
-
-            echo "Keycloak Token: ${KC_TOKEN:0:20}..."
-            echo "Client UUID: $client_uuid"
-
-            INGRESS_URIS=(
-                "https://geofm-ui.${INGRESS_HOST}/*"
-                "https://geofm-gateway.${INGRESS_HOST}/*"
-            )
-            
-            # Get current redirect URIs and add new ones
-            UPDATED_URIS=$(curl -k --silent -X GET "http://localhost:8080/admin/realms/geostudio/clients/${client_uuid}" \
-                --header "Authorization: Bearer ${KC_TOKEN}" | \
-                jq --argjson new "$(printf '%s\n' "${INGRESS_URIS[@]}" | jq -R . | jq -s .)" \
-                '.redirectUris + $new | unique')
-            
-            # Update client
-            curl -k --silent --show-error -L -X PUT "http://localhost:8080/admin/realms/geostudio/clients/${client_uuid}" \
-                --header "Content-Type: application/json" \
-                --header "Authorization: Bearer ${KC_TOKEN}" \
-                --data "{\"redirectUris\": ${UPDATED_URIS}}"
-            
-            echo "✓ Added ingress redirect URIs (host: ${INGRESS_HOST})"
-
-        else
-            echo "Ingress disabled - skipping ingress configuration"
+            echo "✓ MetalLB installed and configured with IP range: ${IP_RANGE}"
         fi
+        
+        echo "**********************************************************************"
+        echo "**********************************************************************"
+        echo "-----------  Update env.sh file with ingress configuration values ----"
+        echo "**********************************************************************"
+        echo "**********************************************************************"
+        echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/env.sh ***********"
+        echo "-----------  export INGRESS_TLS_ENABLED= -----------------------------"
+        echo "-----------  export INGRESS_CLASS_NAME= ------------------------------"
+        echo "-----------  export INGRESS_HOST= ------------------------------------"
+        echo "**********************************************************************"
+        echo "**********************************************************************"
+
+        while true; do
+            printf "%s " "Press enter to continue after entering the variables"
+            read ans
+
+            python deployment-scripts/validate-env-files.py \
+            --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
+            --env-variables "" \
+            --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
+            --env-sh-variables "INGRESS_TLS_ENABLED,INGRESS_CLASS_NAME,INGRESS_HOST"
+
+            if [ $? -eq 0 ]; then
+                break
+            fi
+        done
+
+        source workspace/${DEPLOYMENT_ENV}/env/env.sh
+        
+        echo ""
+        echo "----------------------------------------------------------------------"
+        echo "Ingress configuration summary:"
+        echo "  Enabled: $INGRESS_ENABLED"
+        echo "  TLS Enabled: $INGRESS_TLS_ENABLED"
+        echo "  Controller: $INGRESS_CLASS_NAME"
+        echo "  Host: ${INGRESS_HOST}"
+        echo "----------------------------------------------------------------------"
+        echo ""
+
+        # create ingress tls
+        if [[ "$INGRESS_TLS_ENABLED" == "true" ]]; then
+            openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                -keyout ingress-tls.key \
+                -out ingress-tls.crt \
+                -subj "/CN=local-ingress/O=local" \
+                -addext "subjectAltName=DNS:*.${INGRESS_HOST}"
+
+            export INGRESS_TLS_CRT_B64=$(openssl base64 -in ingress-tls.crt -A)
+            export INGRESS_TLS_KEY_B64=$(openssl base64 -in ingress-tls.key -A)
+
+            sed -i -e "s/ingress_tls_crt_b64=.*/ingress_tls_crt_b64=$INGRESS_TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
+            sed -i -e "s/ingress_tls_key_b64=.*/ingress_tls_key_b64=$INGRESS_TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
+        fi
+
+        # install haproxy kubernetes ingress controller
+        helm repo add haproxytech https://haproxytech.github.io/helm-charts
+        helm repo update
+
+        helm install haproxy-kubernetes-ingress haproxytech/kubernetes-ingress \
+            --namespace kube-system \
+            --set controller.kind=DaemonSet \
+            --set controller.service.type=LoadBalancer \
+            --set controller.publishService.enabled=true \
+            --set controller.publishService.pathOverride=kube-system/haproxy-kubernetes-ingress
+
+        # wait for ingress controller to be ready
+        kubectl rollout status daemonset/haproxy-kubernetes-ingress -n kube-system --timeout=300s
+
+
+        # Enalble ingress for geoserver
+        source workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -e "s/namespace: default/namespace: $OC_PROJECT/g" \
+            -e "s/ingressClassName: haproxy/ingressClassName: $INGRESS_CLASS_NAME/g" \
+            -e "s/geofm-geoserver\.local/geofm-geoserver.$INGRESS_HOST/g" \
+            deployment-scripts/template/geoserver-ingress.yaml > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-ingress.yaml
+        
+        kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-ingress.yaml -n ${OC_PROJECT}
+        echo "✓ Geoserver ingress deployed"
+
+        # add ingress URIs to keycloak redirect uris
+        # Re-authenticate to Keycloak and get fresh token
+        export KC_TOKEN=$(curl -k --silent --request POST \
+            --url http://localhost:8080/realms/master/protocol/openid-connect/token \
+            --header 'content-type: application/x-www-form-urlencoded' \
+            --data client_id=admin-cli \
+            --data grant_type=password \
+            --data username=admin \
+            --data password=admin | jq -r '.access_token') # pragma: allowlist secret
+
+        # Get client UUID
+        export client_uuid=$(curl -k --silent -X GET \
+            "http://localhost:8080/admin/realms/geostudio/clients?clientId=geostudio-client" \
+            --header "Content-Type: application/json" \
+            --header "Authorization: Bearer ${KC_TOKEN}" | jq -r '.[0].id')
+
+        echo "Keycloak Token: ${KC_TOKEN:0:20}..."
+        echo "Client UUID: $client_uuid"
+
+        INGRESS_URIS=(
+            "https://geofm-ui.${INGRESS_HOST}/*"
+            "https://geofm-gateway.${INGRESS_HOST}/*"
+        )
+        
+        # Get current redirect URIs and add new ones
+        UPDATED_URIS=$(curl -k --silent -X GET "http://localhost:8080/admin/realms/geostudio/clients/${client_uuid}" \
+            --header "Authorization: Bearer ${KC_TOKEN}" | \
+            jq --argjson new "$(printf '%s\n' "${INGRESS_URIS[@]}" | jq -R . | jq -s .)" \
+            '.redirectUris + $new | unique')
+        
+        # Update client
+        curl -k --silent --show-error -L -X PUT "http://localhost:8080/admin/realms/geostudio/clients/${client_uuid}" \
+            --header "Content-Type: application/json" \
+            --header "Authorization: Bearer ${KC_TOKEN}" \
+            --data "{\"redirectUris\": ${UPDATED_URIS}}"
+        
+        echo "✓ Added ingress redirect URIs (host: ${INGRESS_HOST})"
+
     else
-        echo "----------------------------------------------------------------------"
-        echo "Non-interactive mode: Skipping ingress configuration (ingress disabled)"
-        echo "----------------------------------------------------------------------"
+        echo "Ingress disabled - skipping ingress configuration"
     fi
 
 

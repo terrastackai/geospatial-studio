@@ -368,142 +368,137 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     sed -i -e "s/tls_key_b64=.*/tls_key_b64=$TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
     sed -i -e "s/export CREATE_TLS_SECRET=.*/export CREATE_TLS_SECRET=true/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
-        echo "----------------------------------------------------------------------"
-        echo "-------------  Ingress Configuration  --------------------------------"
-        echo "----------------------------------------------------------------------"
 
-        get_menu_selection "Enable Ingress for external access?" "INGRESS_ENABLED" "true false"
-        sed -i -e "s/export INGRESS_ENABLED=.*/export INGRESS_ENABLED=$INGRESS_ENABLED/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    echo "----------------------------------------------------------------------"
+    echo "-------------  Ingress Configuration  --------------------------------"
+    echo "----------------------------------------------------------------------"
 
-        if [[ "$INGRESS_ENABLED" == "true" ]]; then
-            
-            echo "**********************************************************************"
-            echo "**********************************************************************"
-            echo "-----------  Update env.sh file with ingress configuration values ----"
-            echo "**********************************************************************"
-            echo "**********************************************************************"
-            echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/env.sh ***********"
-            echo "-----------  export INGRESS_TLS_ENABLED= -----------------------------"
-            echo "-----------  export INGRESS_CLASS_NAME= ------------------------------"
-            echo "-----------  export INGRESS_HOST= ------------------------------------"
-            echo "**********************************************************************"
-            echo "**********************************************************************"
+    get_menu_selection "Enable Ingress for external access?" "INGRESS_ENABLED" "true false"
+    sed -i -e "s/export INGRESS_ENABLED=.*/export INGRESS_ENABLED=$INGRESS_ENABLED/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
-            while true; do
-                printf "%s " "Press enter to continue after entering the variables"
-                read ans
+    if [[ "$INGRESS_ENABLED" == "true" ]]; then
+        
+        echo "**********************************************************************"
+        echo "**********************************************************************"
+        echo "-----------  Update env.sh file with ingress configuration values ----"
+        echo "**********************************************************************"
+        echo "**********************************************************************"
+        echo "***********  Update workspace/${DEPLOYMENT_ENV}/env/env.sh ***********"
+        echo "-----------  export INGRESS_TLS_ENABLED= -----------------------------"
+        echo "-----------  export INGRESS_CLASS_NAME= ------------------------------"
+        echo "-----------  export INGRESS_HOST= ------------------------------------"
+        echo "**********************************************************************"
+        echo "**********************************************************************"
 
-                python deployment-scripts/validate-env-files.py \
-                --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
-                --env-variables "" \
-                --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
-                --env-sh-variables "INGRESS_TLS_ENABLED,INGRESS_CLASS_NAME,INGRESS_HOST"
+        while true; do
+            printf "%s " "Press enter to continue after entering the variables"
+            read ans
 
-                if [ $? -eq 0 ]; then
-                    break
-                fi
-            done
+            python deployment-scripts/validate-env-files.py \
+            --env-file  workspace/${DEPLOYMENT_ENV}/env/.env \
+            --env-variables "" \
+            --env-sh-file workspace/${DEPLOYMENT_ENV}/env/env.sh \
+            --env-sh-variables "INGRESS_TLS_ENABLED,INGRESS_CLASS_NAME,INGRESS_HOST"
 
-            source workspace/${DEPLOYMENT_ENV}/env/env.sh
-            
-            echo ""
-            echo "----------------------------------------------------------------------"
-            echo "Ingress configuration summary:"
-            echo "  Enabled: $INGRESS_ENABLED"
-            echo "  TLS Enabled: $INGRESS_TLS_ENABLED"
-            echo "  Controller: $INGRESS_CLASS_NAME"
-            echo "  Host: ${INGRESS_HOST}"
-            echo "----------------------------------------------------------------------"
-            echo ""
-
-            # create ingress tls
-            if [[ "$INGRESS_TLS_ENABLED" == "true" ]]; then
-                openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-                    -keyout ingress-tls.key \
-                    -out ingress-tls.crt \
-                    -subj "/CN=local-ingress/O=local" \
-                    -addext "subjectAltName=DNS:*.${INGRESS_HOST}"
-
-                export INGRESS_TLS_CRT_B64=$(openssl base64 -in ingress-tls.crt -A)
-                export INGRESS_TLS_KEY_B64=$(openssl base64 -in ingress-tls.key -A)
-
-                sed -i -e "s/ingress_tls_crt_b64=.*/ingress_tls_crt_b64=$INGRESS_TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
-                sed -i -e "s/ingress_tls_key_b64=.*/ingress_tls_key_b64=$INGRESS_TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
+            if [ $? -eq 0 ]; then
+                break
             fi
+        done
 
-            # install haproxy kubernetes ingress controller
-            kubectl delete all -l app.kubernetes.io/name=traefik -n kube-system
-            kubectl delete ingressclass traefik
-            helm repo add haproxytech https://haproxytech.github.io/helm-charts
-            helm repo update
+        source workspace/${DEPLOYMENT_ENV}/env/env.sh
+        
+        echo ""
+        echo "----------------------------------------------------------------------"
+        echo "Ingress configuration summary:"
+        echo "  Enabled: $INGRESS_ENABLED"
+        echo "  TLS Enabled: $INGRESS_TLS_ENABLED"
+        echo "  Controller: $INGRESS_CLASS_NAME"
+        echo "  Host: ${INGRESS_HOST}"
+        echo "----------------------------------------------------------------------"
+        echo ""
 
-            helm install haproxy-kubernetes-ingress haproxytech/kubernetes-ingress \
-                --namespace kube-system \
-                --set controller.kind=DaemonSet \
-                --set controller.service.type=LoadBalancer \
-                --set controller.publishService.enabled=true \
-                --set controller.publishService.pathOverride=kube-system/haproxy-kubernetes-ingress
+        # create ingress tls
+        if [[ "$INGRESS_TLS_ENABLED" == "true" ]]; then
+            openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+                -keyout ingress-tls.key \
+                -out ingress-tls.crt \
+                -subj "/CN=local-ingress/O=local" \
+                -addext "subjectAltName=DNS:*.${INGRESS_HOST}"
 
-            # wait for ingress controller to be ready
-            kubectl rollout status daemonset/haproxy-kubernetes-ingress -n kube-system --timeout=300s
+            export INGRESS_TLS_CRT_B64=$(openssl base64 -in ingress-tls.crt -A)
+            export INGRESS_TLS_KEY_B64=$(openssl base64 -in ingress-tls.key -A)
 
-
-            # Enalble ingress for geoserver
-            source workspace/${DEPLOYMENT_ENV}/env/env.sh
-            sed -e "s/namespace: default/namespace: $OC_PROJECT/g" \
-                -e "s/ingressClassName: haproxy/ingressClassName: $INGRESS_CLASS_NAME/g" \
-                -e "s/geofm-geoserver\.local/geofm-geoserver.$INGRESS_HOST/g" \
-                deployment-scripts/template/geoserver-ingress.yaml > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-ingress.yaml
-            
-            kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-ingress.yaml -n ${OC_PROJECT}
-            echo "✓ Geoserver ingress deployed"
-
-            # add ingress URIs to keycloak redirect uris
-            # Re-authenticate to Keycloak and get fresh token
-            export KC_TOKEN=$(curl -k --silent --request POST \
-                --url http://localhost:8080/realms/master/protocol/openid-connect/token \
-                --header 'content-type: application/x-www-form-urlencoded' \
-                --data client_id=admin-cli \
-                --data grant_type=password \
-                --data username=admin \
-                --data password=admin | jq -r '.access_token') # pragma: allowlist secret
-
-            # Get client UUID
-            export client_uuid=$(curl -k --silent -X GET \
-                "http://localhost:8080/admin/realms/geostudio/clients?clientId=geostudio-client" \
-                --header "Content-Type: application/json" \
-                --header "Authorization: Bearer ${KC_TOKEN}" | jq -r '.[0].id')
-
-            echo "Keycloak Token: ${KC_TOKEN:0:20}..."
-            echo "Client UUID: $client_uuid"
-
-            INGRESS_URIS=(
-                "https://geofm-ui.${INGRESS_HOST}/*"
-                "https://geofm-gateway.${INGRESS_HOST}/*"
-            )
-            
-            # Get current redirect URIs and add new ones
-            UPDATED_URIS=$(curl -k --silent -X GET "http://localhost:8080/admin/realms/geostudio/clients/${client_uuid}" \
-                --header "Authorization: Bearer ${KC_TOKEN}" | \
-                jq --argjson new "$(printf '%s\n' "${INGRESS_URIS[@]}" | jq -R . | jq -s .)" \
-                '.redirectUris + $new | unique')
-            
-            # Update client
-            curl -k --silent --show-error -L -X PUT "http://localhost:8080/admin/realms/geostudio/clients/${client_uuid}" \
-                --header "Content-Type: application/json" \
-                --header "Authorization: Bearer ${KC_TOKEN}" \
-                --data "{\"redirectUris\": ${UPDATED_URIS}}"
-            
-            echo "✓ Added ingress redirect URIs (host: ${INGRESS_HOST})"
-
-        else
-            echo "Ingress disabled - skipping ingress configuration"
+            sed -i -e "s/ingress_tls_crt_b64=.*/ingress_tls_crt_b64=$INGRESS_TLS_CRT_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
+            sed -i -e "s/ingress_tls_key_b64=.*/ingress_tls_key_b64=$INGRESS_TLS_KEY_B64/g" workspace/${DEPLOYMENT_ENV}/env/.env
         fi
+
+        # install haproxy kubernetes ingress controller
+        kubectl delete all -l app.kubernetes.io/name=traefik -n kube-system
+        kubectl delete ingressclass traefik
+        helm repo add haproxytech https://haproxytech.github.io/helm-charts
+        helm repo update
+
+        helm install haproxy-kubernetes-ingress haproxytech/kubernetes-ingress \
+            --namespace kube-system \
+            --set controller.kind=DaemonSet \
+            --set controller.service.type=LoadBalancer \
+            --set controller.publishService.enabled=true \
+            --set controller.publishService.pathOverride=kube-system/haproxy-kubernetes-ingress
+
+        # wait for ingress controller to be ready
+        kubectl rollout status daemonset/haproxy-kubernetes-ingress -n kube-system --timeout=300s
+
+
+        # Enalble ingress for geoserver
+        source workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -e "s/namespace: default/namespace: $OC_PROJECT/g" \
+            -e "s/ingressClassName: haproxy/ingressClassName: $INGRESS_CLASS_NAME/g" \
+            -e "s/geofm-geoserver\.local/geofm-geoserver.$INGRESS_HOST/g" \
+            deployment-scripts/template/geoserver-ingress.yaml > workspace/$DEPLOYMENT_ENV/initialisation/geoserver-ingress.yaml
+        
+        kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/geoserver-ingress.yaml -n ${OC_PROJECT}
+        echo "✓ Geoserver ingress deployed"
+
+        # add ingress URIs to keycloak redirect uris
+        # Re-authenticate to Keycloak and get fresh token
+        export KC_TOKEN=$(curl -k --silent --request POST \
+            --url http://localhost:8080/realms/master/protocol/openid-connect/token \
+            --header 'content-type: application/x-www-form-urlencoded' \
+            --data client_id=admin-cli \
+            --data grant_type=password \
+            --data username=admin \
+            --data password=admin | jq -r '.access_token') # pragma: allowlist secret
+
+        # Get client UUID
+        export client_uuid=$(curl -k --silent -X GET \
+            "http://localhost:8080/admin/realms/geostudio/clients?clientId=geostudio-client" \
+            --header "Content-Type: application/json" \
+            --header "Authorization: Bearer ${KC_TOKEN}" | jq -r '.[0].id')
+
+        echo "Keycloak Token: ${KC_TOKEN:0:20}..."
+        echo "Client UUID: $client_uuid"
+
+        INGRESS_URIS=(
+            "https://geofm-ui.${INGRESS_HOST}/*"
+            "https://geofm-gateway.${INGRESS_HOST}/*"
+        )
+        
+        # Get current redirect URIs and add new ones
+        UPDATED_URIS=$(curl -k --silent -X GET "http://localhost:8080/admin/realms/geostudio/clients/${client_uuid}" \
+            --header "Authorization: Bearer ${KC_TOKEN}" | \
+            jq --argjson new "$(printf '%s\n' "${INGRESS_URIS[@]}" | jq -R . | jq -s .)" \
+            '.redirectUris + $new | unique')
+        
+        # Update client
+        curl -k --silent --show-error -L -X PUT "http://localhost:8080/admin/realms/geostudio/clients/${client_uuid}" \
+            --header "Content-Type: application/json" \
+            --header "Authorization: Bearer ${KC_TOKEN}" \
+            --data "{\"redirectUris\": ${UPDATED_URIS}}"
+        
+        echo "✓ Added ingress redirect URIs (host: ${INGRESS_HOST})"
+
     else
-        echo "----------------------------------------------------------------------"
-        echo "Non-interactive mode: Skipping ingress configuration (ingress disabled)"
-        echo "----------------------------------------------------------------------"
+        echo "Ingress disabled - skipping ingress configuration"
     fi
 
 
