@@ -118,6 +118,8 @@ global:
     enabled: PGBOUNCER_ENABLED
     host: <pgbouncer_host>
     port: 6432
+    securityContext:
+      api: {}
 
   cesium:
     token: token
@@ -472,6 +474,8 @@ geospatial-studio-pipelines:
   pvc_access_mode: PVC_ACCESS_MODE
   serviceAccount:
     name: 'geostudio-sa'
+  securityContext:
+    api: {}
   processors:
     - name: inference-planner
       enabled: true
