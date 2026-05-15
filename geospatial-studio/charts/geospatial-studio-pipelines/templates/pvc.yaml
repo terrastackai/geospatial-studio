@@ -61,7 +61,11 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
+      {{- if and $e.persistence $e.persistence.capacity }}
       storage: {{ $e.persistence.capacity }}
+      {{- else }}
+      storage: 1Gi
+      {{- end }}
 --- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
 {{- end }}
 
