@@ -25,6 +25,8 @@ spec:  {{ if hasKey $v "replicas" }}
         app: {{ $.Values.namePrefix }}-{{ $v.name }}
         geostudio: pipelines
     spec:
+      securityContext:
+        {{- toYaml $.Values.securityContext.api | nindent 10 }}
       # securityContext:
       #   fsGroup: 1000880000
       serviceAccountName: {{ $.Values.serviceAccount.name }}
@@ -107,6 +109,26 @@ spec:  {{ if hasKey $v "replicas" }}
           {{- if hasKey $v "resources" }} {{ if hasKey $v.resources "shm" }}
           - name: dshm
             mountPath: /dev/shm {{ end }} {{ end }}
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - timeout 15 pgrep -f "{{ $v.process_exec }}" || exit 1
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 20
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - timeout 15 pgrep -f "{{ $v.process_exec }}" || exit 1
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 15
+          failureThreshold: 3
         {{- if hasKey $v "resources" }}
         resources:
           {{- if hasKey $v.resources "limits" }}

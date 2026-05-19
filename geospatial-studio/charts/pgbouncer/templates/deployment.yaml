@@ -16,10 +16,8 @@ spec:
       labels:
         app: {{ .Values.fullnameOverride }}
     spec:
-      {{- if .Values.podSecurityContext.enabled }}
       securityContext:
-        runAsUser: {{ .Values.podSecurityContext.runAsUser }}
-      {{- end }}
+        {{- toYaml .Values.securityContext.api | nindent 10 }}
       initContainers:
       - name: setup-config
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
@@ -89,7 +87,7 @@ spec:
         readinessProbe:
           tcpSocket:
             port: pgbouncer
-          initialDelaySeconds: 5
+          initialDelaySeconds: 30
           periodSeconds: 5
         volumeMounts:
         - name: pgbouncer-conf
