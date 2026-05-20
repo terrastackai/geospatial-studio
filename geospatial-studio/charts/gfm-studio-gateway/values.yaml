@@ -347,9 +347,9 @@ celery:
     strategy: RollingUpdate
   # Periodic tasks
   beat:
-    enabled: false
+    enabled: true
     componentName: celery-beat
-    command: 'celery -A gfmstudio.celery_worker.celery_app beat --queues=inference_gateway --loglevel=info --schedule /tmp/beat-schedule'
+    command: 'celery -A gfmstudio.celery_worker.celery_app beat --loglevel=info --schedule /tmp/beat-schedule'
     replicaCount: 1
     strategy: RollingUpdate
   # Celery Flower Settings
