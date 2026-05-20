@@ -16,8 +16,8 @@ images:
     name: quay.io/geospatial-studio/geospatial-model-inference-service
     tag: v0.1.0
   tt_hpoTune:
-    name: quay.io/geospatial-studio/gfmstudio-hpo
-    tag: v0.1.0
+    name: quay.io/geospatial-studio/terratorch
+    tag: latest
   dataset_pipeline:
     name: quay.io/geospatial-studio/geostudio-pipelines
     tag: v0.1.0
@@ -290,7 +290,6 @@ route:
 mountLocations:
   files_pvc_name: gfm-ft-files-pvc
   data_pvc_name: gfm-ft-data-pvc
-  models_pvc_name: gfm-ft-models-pvc
   pipelines_pvc_name: inference-shared-pvc
   inference_auxdata_pvc_name: inference-auxdata-pvc
   generic_python_processor_pvc_name: generic-python-processor-pvc
@@ -303,8 +302,6 @@ persistence:
     capacity: 5Gi
   data_pvc_name:
     capacity: 15Gi
-  models_pvc_name:
-    capacity: 5Gi
   pipelines_pvc_name:
     capacity: 5Gi
 

@@ -75,7 +75,6 @@ global:
       inference: BUCKET_INFERENCE
       inference_auxdata: BUCKET_INFERENCE_AUXDATA
       fineTuning: BUCKET_FINE_TUNING
-      fineTuningModels: BUCKET_FINE_TUNING_MODELS
       datasetFactory: BUCKET_DATASET_FACTORY
       amo: BUCKET_AMO_INPUT_BUCKET
       mlflow: BUCKET_GFM_MLFLOW
@@ -167,7 +166,7 @@ gfm-studio-gateway:
       name: quay.io/geospatial-studio/geospatial-model-inference-service
       tag: latest
     tt_hpoTune:
-      name: quay.io/geospatial-studio/gfmstudio-hpo
+      name: quay.io/geospatial-studio/terratorch
       tag: latest
     dataset_pipeline:
       name: quay.io/geospatial-studio/geostudio-pipelines
@@ -220,8 +219,6 @@ gfm-studio-gateway:
       capacity: GFM_FT_FILES_STORAGE
     data_pvc_name:
       capacity: GFM_FT_DATA_STORAGE
-    models_pvc_name:
-      capacity: GFM_FT_MODELS_STORAGE
     pipelines_pvc_name:
       capacity: INFERENCE_SHARED_STORAGE
 
@@ -456,7 +453,6 @@ geospatial-studio-pipelines:
       temporaryUploads: BUCKET_TEMP_UPLOAD
       inference: BUCKET_INFERENCE
       fineTuning: BUCKET_FINE_TUNING
-      fineTuningModels: BUCKET_FINE_TUNING_MODELS
       datasetFactory: BUCKET_DATASET_FACTORY
       amo: BUCKET_AMO_INPUT_BUCKET
       mlflow: BUCKET_GFM_MLFLOW

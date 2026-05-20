@@ -46,7 +46,6 @@ deployment_name = os.getenv("deployment_name")
 
 buckets = [
     "fine-tuning",
-    "fine-tuning-models",
     "inference",
     "dataset-factory",
     "amo-input-bucket",
