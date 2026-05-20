@@ -25,6 +25,8 @@ spec:  {{ if hasKey $v "replicas" }}
         app: {{ $.Values.namePrefix }}-{{ $v.name }}
         geostudio: pipelines
     spec:
+      securityContext:
+        {{- toYaml $.Values.securityContext.api | nindent 10 }}
       # securityContext:
       #   fsGroup: 1000880000
       serviceAccountName: {{ $.Values.serviceAccount.name }}

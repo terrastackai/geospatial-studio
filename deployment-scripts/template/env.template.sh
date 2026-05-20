@@ -26,6 +26,9 @@ export NON_COS_STORAGE_CLASS=
 export PVC_ACCESS_MODE=ReadWriteOnce
 export PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE=
 
+# Terrakit Cache Configuration
+export TERRAKIT_CACHE_ENABLED_VALUE=true
+export TERRAKIT_CACHE_DIR_VALUE=/pipeline/data/terrakit_cache
 # GEOStudio Storage
 export GFM_FT_DATA_STORAGE=15Gi
 export GFM_FT_FILES_STORAGE=5Gi
@@ -161,6 +164,7 @@ export BUCKET_GEOSERVER=${DEPLOYMENT_ENV}-geoserver
 export BUCKET_TEMP_UPLOAD=${DEPLOYMENT_ENV}-temp-upload
 export BUCKET_INFERENCE_AUXDATA=${DEPLOYMENT_ENV}-inference-auxdata
 export BUCKET_GENERIC_PYTHON_PROCESSOR=${DEPLOYMENT_ENV}-generic-python-processor
+export BUCKET_PIPELINE_DATA=${DEPLOYMENT_ENV}-pipeline-data
 
 
 # GPU_CONFIG

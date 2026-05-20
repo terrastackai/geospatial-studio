@@ -117,6 +117,8 @@ global:
     enabled: PGBOUNCER_ENABLED
     host: <pgbouncer_host>
     port: 6432
+    securityContext:
+      api: {}
 
   cesium:
     token: token
@@ -456,11 +458,14 @@ geospatial-studio-pipelines:
       mlflow: BUCKET_GFM_MLFLOW
       geoserver: BUCKET_GEOSERVER
       inference_auxdata: BUCKET_INFERENCE_AUXDATA
+      pipelineData: BUCKET_PIPELINE_DATA
     cos_storage_class: COS_STORAGE_CLASS
   non_cos_storage_class: NON_COS_STORAGE_CLASS
   pvc_access_mode: PVC_ACCESS_MODE
   serviceAccount:
     name: 'geostudio-sa'
+  securityContext:
+    api: {}
   processors:
     - name: inference-planner
       enabled: true
@@ -510,6 +515,16 @@ geospatial-studio-pipelines:
             secretKeyRef:
               name: nasa-earth-data-secret
               key: NASA_EARTH_BEARER_TOKEN
+        - name: TERRAKIT_CACHE_ENABLED
+          value: "TERRAKIT_CACHE_ENABLED_VALUE"
+        - name: TERRAKIT_CACHE_DIR
+          value: "TERRAKIT_CACHE_DIR_VALUE"
+      extra_volumes:
+        - name: pipeline-data-pvc
+          claimName: pipeline-data-pvc
+          bucket_name: BUCKET_PIPELINE_DATA
+          mountPath: /pipeline/data
+          create: true
     - name: push-to-geoserver
       enabled: true
       image:

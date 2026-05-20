@@ -53,7 +53,8 @@ buckets = [
     "geoserver",
     "temp-upload",
     "inference-auxdata",
-    "generic-python-processor"
+    "generic-python-processor",
+    "pipeline-data"
 ]
 
 
