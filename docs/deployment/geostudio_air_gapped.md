@@ -1,19 +1,19 @@
 # Geostudio airgapped
 
-# Part 1 — Deployment-Time Dependencies -- Fiona
-  1. Container Images — Every image pulled at deploy time from external registries, both geostudio quay images and other dependencies-- what you started with yesterday
+# Part 1 — Deployment-Time Dependencies [Coming soon]
+  1. Container Images — Every image pulled at deploy time from external registries, both geostudio quay images and other dependencies
   2. Helm Chart Repositories - external Helm repos fetched during deployment, e.g redis chart
   3. Geoserver deployment, some configurations are downloaded from the internet
 
-# Part 2 — Runtime External Calls -- Beldine
-## Navigation
+# Part 2 — Runtime External Calls
+## Navigation - Base map layers
 1. Inference page
 
-    1.1 UI Basemap Tiles — OpenStreetMap / Mapbox - Base layers from OpenStreetMaps are downloaded from internet - what I started looking into yesterday and today
-
+    1.1 UI Basemap Tiles — OpenStreetMap / Mapbox - Base layers from OpenStreetMaps are downloaded from internet
+    
     1.2 Geocoding - search feature, inference coordinates search
 
-2. Dataset preview page - base map
+2. Dataset preview page
 
 Step 1: Download the Natural Earth GeoTIFF (internet-connected machine)
 ```sh
@@ -103,10 +103,8 @@ Step 8: Patch the UI source
 Refer to: [https://github.com/terrastackai/geospatial-studio-core/pull/65](https://github.com/terrastackai/geospatial-studio-core/pull/65)
 
 
-## End-to-end walkthrough
-### 1. Dataset onboarding - example datasets downloaded from the internet
-
-### 2. Fine-tuning: base models are downloaded from hugging face
+## Fine-tuning and Inference
+### 1. Fine-tuning: base models are downloaded from hugging face
 
 Step 1: Edit deployment values:
 ```yaml
@@ -171,9 +169,76 @@ Step 5: Verify
 kubectl exec -n default model-loader -- find /terratorch/gfm_models -type f -name "*.pt" | sort
 ```
 
+Step 5: Download and Load required images for the fine-tuning job to the cluster
+```sh
+limactl shell studio -- sudo k3s ctr images ls
+
+# busybox
+docker pull busybox:latest
+docker save busybox:latest -o ~/busybox-latest.tar
+limactl shell studio -- sudo k3s ctr images import ~/busybox-latest.tar
+limactl shell studio -- sudo k3s ctr images ls -q | grep busybox
+```
+
+
+```sh
+# terratorch
+
+docker pull quay.io/geospatial-studio/terratorch:latest
+docker save quay.io/geospatial-studio/terratorch:latest \
+  -o ~/terratorch-latest.tar
+# Verify the mount is visible inside the VM
+limactl shell studio ls ~/terratorch-latest.tar
+limactl shell studio -- \
+  sudo k3s ctr images import --all-platforms ~/terratorch-latest.tar
+limactl shell studio -- \
+  sudo k3s ctr images ls | grep terratorch
+
+```
+
+step 7: Update fine-tuning job template
+
+The current template at `k8-tuning-jobs-deployment.tpl.yaml:51` (gateway repo) uses the bare name busybox with no registry prefix and no imagePullPolicy. Two changes needed:
+
+Full ref — k3s stores it as docker.io/library/busybox:latest after import; using the bare name busybox may still trigger a Docker Hub lookup
+imagePullPolicy: IfNotPresent — prevent k3s from attempting a live pull
+Change from:
+
+        - name: copy-config
+          image: busybox
+          command: ['sh', '-c', 'cp /config/config-train.yaml /app/config/']
+
+To:
+
+        - name: copy-config
+          image: docker.io/library/busybox:latest
+          imagePullPolicy: IfNotPresent
+          command: ['sh', '-c', 'cp /config/config-train.yaml /app/config/']
+
+and change the terratorch container imagepullpolicy to (in the same job yaml):
+
+`imagePullPolicy: IfNotPresent`
+
 Step 6: Try out
 
-### 3. Inference: 
+Terramind Tiny notebook: [https://terrastackai.github.io/geospatial-studio-toolkit/examples/e2e-walkthroughs/GeospatialStudio-Walkthrough-Flooding_Terramind_Tiny/](https://terrastackai.github.io/geospatial-studio-toolkit/examples/e2e-walkthroughs/GeospatialStudio-Walkthrough-Flooding_Terramind_Tiny/)
+
+
+Step 7: List of all the base model image provided in the studio:
+
+| Studio Name | Checkpoint file expected at `/terratorch/gfm_models/` | HuggingFace repo |
+|---|---|---|
+| `Prithvi_EO_V1_100M` | `prithvi_eo_v1_100/Prithvi_EO_V1_100M.pt` | [ibm-nasa-geospatial/Prithvi-EO-1.0](https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-1.0) |
+| `Prithvi_EO_V2_300M` | `prithvi_eo_v2_300/Prithvi_EO_V2_300M.pt` | [ibm-nasa-geospatial/Prithvi-EO-2.0-300M](https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-300M) |
+| `Prithvi_EO_V2_600M_TL` | `prithvi_eo_v2_600_tl/Prithvi_EO_V2_600M_TL.pt` | [ibm-nasa-geospatial/Prithvi-EO-2.0-600M-TL](https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-600M-TL) |
+| `terramind_v1_tiny` | `terramind_v1_tiny/terramind_v1_tiny.pt` | [ibm-esa-geospatial/TerraMind-1.0-tiny](https://huggingface.co/ibm-esa-geospatial/TerraMind-1.0-tiny) |
+| `terramind_v1_base` | `terramind_v1_base/TerraMind_v1_base.pt` | [ibm-esa-geospatial/TerraMind-1.0-base](https://huggingface.co/ibm-esa-geospatial/TerraMind-1.0-base) |
+| `terramind_v1_large` | `terramind_v1_large/TerraMind_v1_large.pt` | [ibm-esa-geospatial/TerraMind-1.0-large](https://huggingface.co/ibm-esa-geospatial/TerraMind-1.0-large) |
+| `clay_v1_base` | `clay_v1_base/clay_v1_base` | [made-with-clay/Clay](https://huggingface.co/made-with-clay/Clay) |
+| `timm_resnet18/34/50/101/152` | resolved by timm/HuggingFace at runtime | |
+| `timm_convnext_large/xlarge` | resolved by timm/HuggingFace at runtime | |
+
+### 2. Inference: 
 
 3.1 Satellite Data Acquisition (Terrakit Connectors) - bypass with internal url connector calls?
 
