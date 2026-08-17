@@ -188,6 +188,15 @@ gfm-studio-gateway:
       OBJECT_STORAGE_SIGNATURE_VERSION: s3v4
       PIPELINES_V2_INFERENCE_ROOT_FOLDER: PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE
       ENVIRONMENT: ENVIRONMENT_VALUE
+      # ── HuggingFace / offline model-loading ─────────────────────────────────
+      # HF_HOME / TRANSFORMERS_CACHE: always set to a writable /tmp path so the
+      # non-root appuser can write HF lock files at import time.
+      HF_HOME: HF_HOME_VALUE
+      TRANSFORMERS_CACHE: TRANSFORMERS_CACHE_VALUE
+      # HF_HUB_OFFLINE / TRANSFORMERS_OFFLINE: set to "1" for air-gapped
+      # deployments; leave as "" (default) to use HuggingFace Hub normally.
+      HF_HUB_OFFLINE: HF_HUB_OFFLINE_VALUE
+      TRANSFORMERS_OFFLINE: TRANSFORMERS_OFFLINE_VALUE
       ## Enable or disable GPU node affinity when scheduling fine-tuning jobs.
       ## If set to False, the job can run on any available GPU in the cluster.
       ## Turn this off if all GPUs are acceptable for fine-tuning, or if the

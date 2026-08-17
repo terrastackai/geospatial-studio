@@ -175,6 +175,12 @@ export CONFIGURE_GPU_AFFINITY=false
 export NODE_SELECTOR_KEY=nvidia.com/gpu.product
 export NODE_GPU_SPEC=NVIDIA-A100-SXM4-80GB
 
+# Fine-tuning offline
+export HF_HOME_VALUE=/tmp/huggingface
+export TRANSFORMERS_CACHE_VALUE=/tmp/huggingface
+export HF_HUB_OFFLINE_VALUE=
+export TRANSFORMERS_OFFLINE_VALUE=
+
 # Geoserver config
 export GEOSERVER_CM_PROXYBASEURL=
 export GEOSERVER_CM_WHITELIST=
