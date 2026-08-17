@@ -19,6 +19,7 @@ nav:
         - Kind Cluster: deployment/kind_cluster_deployment.md
         - NVKind Cluster: deployment/nvkind_cluster_deployment.md
     - OpenShift Cluster: deployment/detailed_deployment_cluster.md
+    - Air gapped environment: deployment/geostudio_air_gapped.md
       
   - User Guides:
     - Fine-Tuning:
