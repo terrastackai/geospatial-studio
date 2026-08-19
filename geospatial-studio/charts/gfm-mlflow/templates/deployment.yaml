@@ -38,6 +38,7 @@ spec:
       initContainers:
         - name: mlflow-db-migration
           image: ghcr.io/mlflow/mlflow:latest # Match your main image version
+          imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
           command: ["/bin/sh", "-c"]
           args:
             - mlflow db upgrade $BACKEND_URI || true

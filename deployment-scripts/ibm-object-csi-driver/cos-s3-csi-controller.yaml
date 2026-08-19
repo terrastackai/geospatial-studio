@@ -74,10 +74,14 @@ spec:
             - "--timeout=180s"
             - "--v=5"
             - "--extra-create-metadata=true"
+            # s3fs COS driver is topology-agnostic and reports no CSINode topology
+            # keys; without this, Immediate-binding PVCs fail provisioning with
+            # "no available topology found" (common on single-node clusters).
+            - "--immediate-topology=false"
           env:
             - name: ADDRESS
               value: /csi/csi.sock
-          imagePullPolicy: "Always"
+          imagePullPolicy: "IfNotPresent"
           volumeMounts:
             - mountPath: /csi
               name: socket-dir
@@ -104,7 +108,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-          imagePullPolicy: "Always"
+          imagePullPolicy: "IfNotPresent"
           volumeMounts:
             - mountPath: /csi
               name: socket-dir

@@ -31,7 +31,7 @@ spec:
       containers:
         - name: populate-buckets
           image: registry.access.redhat.com/ubi9/ubi-minimal:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: persistent-storage
               mountPath: /data

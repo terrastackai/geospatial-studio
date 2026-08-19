@@ -35,6 +35,9 @@ if [[ -n "$DO_NOT_SET_SCC" ]] && [[ "$DO_NOT_SET_SCC" == "DO_NOT_SET_SCC" ]]; th
         --set volumePermissions.enabled=false \
         --set shmVolume.enabled=false \
         --set volumePermissions.image.repository="bitnamilegacy/os-shell" \
+        --set image.pullPolicy=IfNotPresent \
+        --set volumePermissions.image.pullPolicy=IfNotPresent \
+        --set global.imagePullPolicy=IfNotPresent \
         --set primary.podSecurityContext.fsGroup=null \
         --set primary.securityContext.enabled=false \
         --set primary.containerSecurityContext.enabled=false \
@@ -58,6 +61,9 @@ else
         --set volumePermissions.enabled=true \
         --set shmVolume.enabled=false \
         --set volumePermissions.image.repository="bitnamilegacy/os-shell" \
+        --set image.pullPolicy=IfNotPresent \
+        --set volumePermissions.image.pullPolicy=IfNotPresent \
+        --set global.imagePullPolicy=IfNotPresent \
         --set primary.resources.requests.cpu=$POSTGRES_CPU_REQUEST \
         --set primary.resources.requests.memory=$POSTGRES_MEMORY_REQUEST \
         --set primary.resources.limits.cpu=$POSTGRES_CPU_LIMIT \

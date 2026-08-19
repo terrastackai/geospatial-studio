@@ -18,6 +18,57 @@ export GEOSERVER_PASSWORD="geoserver"
 
 export KUBECONFIG="$HOME/.lima/studio/copied-from-guest/kubeconfig.yaml"
 
+# Air-gap image prep (must run BEFORE anything deploys):
+#
+# 1. Wait for k3s to finish importing the staged air-gap image archives. On a fresh
+#    VM this takes minutes (16GB+ of tars). Aliasing/deploying before it finishes
+#    misses images still importing — notably the pause sandbox image — which then
+#    can't create pod sandboxes offline and cascades into stuck PVCs / DB failures.
+#    Poll until the image count is stable across two checks.
+# 2. Alias every docker.io/* image to registry-1.docker.io/*. Bitnami charts (and the
+#    pause sandbox) request the registry-1.docker.io form, but the bundle imports as
+#    docker.io; containerd matches by literal ref, so with IfNotPresent the chart's
+#    ref isn't found and the pod tries to pull (fails offline). Idempotent.
+if command -v limactl >/dev/null 2>&1; then
+  echo "Waiting for air-gap image import to settle before deploying..."
+  prev=-1
+  for _ in $(seq 1 90); do
+    cur=$(limactl shell studio sudo k3s ctr -n k8s.io images ls -q 2>/dev/null | grep -vc '@sha256:')
+    if [ "$cur" = "$prev" ] && [ "$cur" -gt 30 ]; then break; fi
+    prev=$cur; sleep 10
+  done
+  echo "Image import settled at $cur images; aliasing docker.io -> registry-1.docker.io"
+  limactl shell studio sudo sh -c '
+  for ref in $(k3s ctr -n k8s.io images ls -q | grep "^docker.io/" | grep -v "@sha256:"); do
+    k3s ctr -n k8s.io images tag "$ref" "registry-1.docker.io/${ref#docker.io/}" >/dev/null 2>&1 || true
+  done'
+
+  # Preflight: verify the pod-sandbox (pause) image the RUNNING k3s expects is
+  # actually in the store. If it's missing, the k3s airgap-images bundle version
+  # does not match the k3s binary, and EVERY pod will fail to create a sandbox
+  # offline (cascading into stuck PVCs and skipped DB creation). Abort loudly now
+  # instead of producing a half-broken cluster.
+  sandbox_ref=$(limactl shell studio sudo sh -c \
+    'grep -hoE "sandbox_image = \"[^\"]+\"" /var/lib/rancher/k3s/agent/etc/containerd/config.toml* 2>/dev/null | head -1' \
+    | sed -E 's/.*"([^"]+)".*/\1/')
+  if [ -n "$sandbox_ref" ]; then
+    sandbox_short="${sandbox_ref##*/}"   # e.g. mirrored-pause:3.6
+    if limactl shell studio sudo k3s ctr -n k8s.io images ls -q 2>/dev/null | grep -qF "$sandbox_short"; then
+      echo "Preflight OK: k3s sandbox image '$sandbox_ref' is present in the store."
+    else
+      echo "" >&2
+      echo "PREFLIGHT FAILED: k3s expects sandbox image '$sandbox_ref' but it is NOT in the image store." >&2
+      echo "  => Your k3s-airgap-images bundle version does not match the k3s binary ($(limactl shell studio k3s --version 2>/dev/null | head -1))." >&2
+      echo "  => Stage the k3s-airgap-images bundle matching your k3s version (must contain $sandbox_short)," >&2
+      echo "     e.g. https://github.com/k3s-io/k3s/releases/download/<VERSION>/k3s-airgap-images-<arch>.tar.zst" >&2
+      echo "     then rebuild the VM. Aborting to avoid a half-broken offline cluster." >&2
+      exit 1
+    fi
+  fi
+else
+  echo "WARN: limactl not found — skipping image-settle/alias/preflight (non-lima env?)"
+fi
+
 # Set environment variables
 export DEPLOYMENT_ENV=lima
 export OC_PROJECT=default
@@ -151,6 +202,13 @@ if [[ "$DEPLOY_MINIO" == "Deploy" ]]; then
     sleep 5
     kubectl port-forward -n ${OC_PROJECT} svc/minio 9001:9001 >> studio-pf.log 2>&1 &
     sleep 5
+
+    # The IBM COS S3 CSI driver's NodeGetInfo hard-requires the standard cloud
+    # topology labels (topology.kubernetes.io/region|zone). Single-node Lima/k3s
+    # nodes don't have them, so the node driver's registrar crashloops and the
+    # driver never registers ("driver name cos.s3.csi.ibm.io not found"). Apply
+    # placeholder labels so the driver registers. Safe/idempotent on every run.
+    kubectl label nodes --all topology.kubernetes.io/region=lima topology.kubernetes.io/zone=lima-a --overwrite
 
     cp -R deployment-scripts/ibm-object-csi-driver workspace/$DEPLOYMENT_ENV/initialisation
     sed -e "s/default/$OC_PROJECT/g" deployment-scripts/template/cos-s3-csi-s3fs-sc.yaml > workspace/$DEPLOYMENT_ENV/initialisation/ibm-object-csi-driver/cos-s3-csi-s3fs-sc.yaml
@@ -551,9 +609,19 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     echo "----------------  Building Helm dependencies  ------------------------"
     echo "----------------------------------------------------------------------"
 
-    # Build Helm dependencies
-    helm dep update ./geospatial-studio/
-    helm dependency build ./geospatial-studio/
+    # Build Helm dependencies.
+    # Air-gapped: all 6 chart dependencies are vendored in geospatial-studio/charts/
+    # (5 local file:// subcharts + redis-<ver>.tgz pulled offline — see AIRGAP-CHANGES.md).
+    # 'helm dep update' forces a network refresh of the remote redis (bitnami) repo and
+    # fails with no internet. Skip the online refresh when the vendored charts are present;
+    # only refresh when they're missing (connected / first-time setup).
+    if ls ./geospatial-studio/charts/*.tgz >/dev/null 2>&1 && ls ./geospatial-studio/charts/redis-*.tgz >/dev/null 2>&1; then
+        echo "Chart dependencies already vendored in ./geospatial-studio/charts/ — skipping online 'helm dep' refresh (air-gapped)"
+    else
+        echo "Vendored charts not found — attempting online 'helm dep' refresh"
+        helm dep update ./geospatial-studio/
+        helm dependency build ./geospatial-studio/
+    fi
 
     echo "----------------------------------------------------------------------"
     echo "--------------------  Deploying the Studio  --------------------------"
