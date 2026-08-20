@@ -160,21 +160,21 @@ gfm-studio-gateway:
     # Can be overridden here if needed
     pullPolicy: ""
   images:
-    cleanup_cronjob:
-      name: docker.io/bitnamilegacy/kubectl
-      tag: latest
-    tt_caikit:
-      name: quay.io/geospatial-studio/geospatial-model-inference-service
-      tag: latest
-    tt_hpoTune:
-      name: quay.io/geospatial-studio/gfmstudio-hpo
-      tag: latest
-    dataset_pipeline:
-      name: quay.io/geospatial-studio/geostudio-pipelines
-      tag: latest
-    amo_pipeline:
-      name: linuxserver/yq
-      tag: latest
+    cleanup_cronjob: docker.io/bitnamilegacy/kubectl:latest
+    tt_caikit: quay.io/geospatial-studio/geospatial-model-inference-service:latest
+    # HPO tuning runtime image.
+    tt_hpoTune: FT_HPO_IMAGE_VALUE
+    # Fine-tuning runtime image (terratorch). Overridable via FTUNING_RUNTIME_IMAGE_VALUE
+    # env var before deploying. Falls back to settings.FTUNING_RUNTIME_IMAGE in the gateway
+    # if not set, then to the per-tune-template or per-request image.
+    ftuning_runtime: FTUNING_RUNTIME_IMAGE_VALUE
+    # Dataset-onboarding pipeline image.
+    dataset_pipeline: DATASET_PIPELINE_IMAGE_VALUE
+    amo_pipeline: linuxserver/yq:latest
+    # initContainer image used by fine-tuning and HPO jobs to copy the training
+    # config into the shared PVC.  Override with a private mirror when Docker
+    # Hub is not reachable (e.g. air-gapped clusters).
+    ftuning_init_container: FTUNING_INIT_CONTAINER_IMAGE_VALUE
   route:
     enabled: ROUTE_ENABLED
   celery:

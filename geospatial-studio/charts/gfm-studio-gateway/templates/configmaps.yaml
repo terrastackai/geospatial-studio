@@ -33,7 +33,7 @@ data:
   OBJECT_STORAGE_ENDPOINT: {{ .Values.global.objectStorage.endpoint }}
   OBJECT_STORAGE_REGION: {{ .Values.global.objectStorage.region }}
   SERVER_TYPE: {{ .Values.serverType.type }}
-  DATASET_PIPELINE_IMAGE: {{ .Values.images.dataset_pipeline.name }}:{{ .Values.images.dataset_pipeline.tag }}
+  DATASET_PIPELINE_IMAGE: {{ .Values.images.dataset_pipeline }}
   {{- if .Values.global.imagePullSecret.b64secret }}
   FT_IMAGE_PULL_SECRETS: {{ .Values.global.imagePullSecret.name }}
   {{- end }}
@@ -44,13 +44,15 @@ data:
   AMO_FILES_BUCKET: {{ .Values.global.objectStorage.buckets.amo }}
   AMO_API_PVC_STORAGE_CLASS: {{ .Values.amo.mountLocations.pvc_storage_class }}
   AMO_API_PVC_STORAGE_CAPACITY: {{ .Values.amo.mountLocations.storage_size }}
-  AMO_API_MODEL_ARTIFACTS_DOCKER_IMAGE_URL: {{ .Values.images.amo_pipeline.name }}:{{ .Values.images.amo_pipeline.tag }}
+  AMO_API_MODEL_ARTIFACTS_DOCKER_IMAGE_URL: {{ .Values.images.amo_pipeline }}
   AMO_INFERENCE_SHARED_PVC: {{ .Values.mountLocations.pipelines_pvc_name }}
   CONFIGURE_INFERENCE_TOLERATION: {{ .Values.amo.configureInferenceToleration }}
   SERVICE_ACCOUNT_NAME: {{ .Values.global.serviceAccount.name }}
-  INFERENCE_SVC_CONTAINER_IMAGE: {{ .Values.images.tt_caikit.name }}:{{ .Values.images.tt_caikit.tag }}
-  INFERENCE_SVC_TERRATORCH_V2_IMAGE: {{ .Values.images.tt_caikit.name }}:{{ .Values.images.tt_caikit.tag }}
-  FT_HPO_IMAGE: {{ .Values.images.tt_hpoTune.name }}:{{ .Values.images.tt_hpoTune.tag }}
+  INFERENCE_SVC_CONTAINER_IMAGE: {{ .Values.images.tt_caikit }}
+  INFERENCE_SVC_TERRATORCH_V2_IMAGE: {{ .Values.images.tt_caikit }}
+  FTUNING_RUNTIME_IMAGE: {{ .Values.images.ftuning_runtime }}
+  FT_HPO_IMAGE: {{ .Values.images.tt_hpoTune }}
+  FTUNING_INIT_CONTAINER_IMAGE: {{ .Values.images.ftuning_init_container }}
 
   {{- /* Extra environment variables to be passed fro the Values.extraEnvironment */ -}}
   {{- range $name, $value := .Values.extraEnvironment.api }}
