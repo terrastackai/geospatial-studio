@@ -79,4 +79,15 @@ do
         -e "s|HF_HUB_OFFLINE_VALUE|${HF_HUB_OFFLINE_VALUE}|" \
         -e "s|TRANSFORMERS_OFFLINE_VALUE|${TRANSFORMERS_OFFLINE_VALUE}|" \
         ${HELM_CHART_NAME}/values.yaml > workspace/$DEPLOYMENT_ENV/values/${HELM_CHART_NAME}/values.yaml
+
+    # When GEOSTUDIO_OFFLINE is not true, remove the HF_* and TRANSFORMERS_*
+    # offline env vars from the generated values so they are not passed to the
+    # gateway at all (online deployments should not set these keys).
+    if [[ "${GEOSTUDIO_OFFLINE:-false}" != "true" ]]; then
+        sed -i -e "/^[[:space:]]*HF_HOME:/d" \
+               -e "/^[[:space:]]*TRANSFORMERS_CACHE:/d" \
+               -e "/^[[:space:]]*HF_HUB_OFFLINE:/d" \
+               -e "/^[[:space:]]*TRANSFORMERS_OFFLINE:/d" \
+               workspace/$DEPLOYMENT_ENV/values/${HELM_CHART_NAME}/values.yaml
+    fi
 done

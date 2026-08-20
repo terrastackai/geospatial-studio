@@ -175,9 +175,10 @@ export CONFIGURE_GPU_AFFINITY=false
 export NODE_SELECTOR_KEY=nvidia.com/gpu.product
 export NODE_GPU_SPEC=NVIDIA-A100-SXM4-80GB
 
-# Fine-tuning offline
-export HF_HOME_VALUE=/terratorch/gfm_models
-export TRANSFORMERS_CACHE_VALUE=/terratorch/gfm_models
+# Offline / air-gapped mode
+export GEOSTUDIO_OFFLINE=false
+export HF_HOME_VALUE=
+export TRANSFORMERS_CACHE_VALUE=
 export HF_HUB_OFFLINE_VALUE=
 export TRANSFORMERS_OFFLINE_VALUE=
 

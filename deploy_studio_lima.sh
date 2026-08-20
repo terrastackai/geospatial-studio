@@ -112,6 +112,7 @@ else
     echo "-----------------------------------------------------------------------------------"
     echo "***********************************************************************************"
     echo "  - RESOURCE_MODE: **$RESOURCE_MODE**"
+    echo "  - GEOSTUDIO_OFFLINE: **$GEOSTUDIO_OFFLINE**"
     echo "***********************************************************************************"
     echo "***********************************************************************************"
 fi
@@ -426,6 +427,47 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     sed -i -e "s/export OAUTH_PROXY_PORT=.*/export OAUTH_PROXY_PORT=4180/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
     sed -i -e "s/export CONTAINER_IMAGE_REPOSITORY=.*/export CONTAINER_IMAGE_REPOSITORY=${IMAGE_REGISTRY}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+    echo "------  Configure Offline / Air-Gapped Mode  -------------------------"
+    echo "**********************************************************************"
+    echo "**********************************************************************"
+    echo "  Set to 'true' for air-gapped deployments where HuggingFace Hub is"
+    echo "  not reachable. When enabled, HF_HOME, TRANSFORMERS_CACHE,"
+    echo "  HF_HUB_OFFLINE and TRANSFORMERS_OFFLINE will be configured."
+    echo "  Default: false (HuggingFace Hub is reachable)"
+    echo "**********************************************************************"
+
+    if [[ "${NON_INTERACTIVE:-false}" != "true" ]]; then
+        geostudio_offline_options="false true"
+        typeset geostudio_offline_selection
+
+        get_menu_selection \
+            "Enable offline / air-gapped mode (GEOSTUDIO_OFFLINE):" \
+            geostudio_offline_selection \
+            "$geostudio_offline_options"
+
+        export GEOSTUDIO_OFFLINE=$geostudio_offline_selection
+    else
+        export GEOSTUDIO_OFFLINE="${GEOSTUDIO_OFFLINE:-false}"
+        echo "Non-interactive mode: GEOSTUDIO_OFFLINE=$GEOSTUDIO_OFFLINE"
+    fi
+
+    echo "GEOSTUDIO_OFFLINE set to: **$GEOSTUDIO_OFFLINE**"
+    sed -i -e "s/export GEOSTUDIO_OFFLINE=.*/export GEOSTUDIO_OFFLINE=${GEOSTUDIO_OFFLINE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+
+    if [[ "$GEOSTUDIO_OFFLINE" == "true" ]]; then
+        sed -i -e "s|export HF_HOME_VALUE=.*|export HF_HOME_VALUE=/terratorch/gfm_models|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s|export TRANSFORMERS_CACHE_VALUE=.*|export TRANSFORMERS_CACHE_VALUE=/terratorch/gfm_models|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s|export HF_HUB_OFFLINE_VALUE=.*|export HF_HUB_OFFLINE_VALUE=1|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s|export TRANSFORMERS_OFFLINE_VALUE=.*|export TRANSFORMERS_OFFLINE_VALUE=1|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    else
+        sed -i -e "s|export HF_HOME_VALUE=.*|export HF_HOME_VALUE=|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s|export TRANSFORMERS_CACHE_VALUE=.*|export TRANSFORMERS_CACHE_VALUE=|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s|export HF_HUB_OFFLINE_VALUE=.*|export HF_HUB_OFFLINE_VALUE=|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s|export TRANSFORMERS_OFFLINE_VALUE=.*|export TRANSFORMERS_OFFLINE_VALUE=|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+    fi
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh
 
