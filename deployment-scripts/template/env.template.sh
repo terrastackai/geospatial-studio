@@ -181,6 +181,9 @@ export HF_HOME_VALUE=
 export TRANSFORMERS_CACHE_VALUE=
 export HF_HUB_OFFLINE_VALUE=
 export TRANSFORMERS_OFFLINE_VALUE=
+# imagePullPolicy for the fine-tuning runtime container.
+# Default: Always (online).  Change to IfNotPresent for air-gapped clusters.
+export FTUNING_IMAGE_PULL_POLICY_VALUE=Always
 
 # Geoserver config
 export GEOSERVER_CM_PROXYBASEURL=
