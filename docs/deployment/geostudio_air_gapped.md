@@ -206,8 +206,8 @@ Step 2: On an internet-connected machine, download all base model weights that y
 ```
 pip install huggingface_hub
 
-huggingface-cli download ibm-esa-geospatial/TerraMind-1.0-tiny \
-  --filename terramind_v1_tiny.pt \
+hf download ibm-esa-geospatial/TerraMind-1.0-tiny \
+  TerraMind_v1_tiny.pt \
   --local-dir ./gfm_models
 ```
 
