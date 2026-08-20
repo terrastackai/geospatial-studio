@@ -5,16 +5,14 @@
   2. Helm Chart Repositories - external Helm repos fetched during deployment, e.g redis chart
   3. Geoserver deployment, some configurations are downloaded from the internet
 
+<br></br>
+
 # Part 2 — Runtime External Calls
 ## Run-time container images
 
-Download and Load required run-time images to the cluster
+**Step 1:** On an internet-connected machine, pull and save all required run-time images into a single tar archive:
 ```sh
-limactl shell studio -- sudo k3s ctr images ls
-```
-
-```sh
-# Pull all required run-time images in one step
+# Pull all required run-time images
 docker pull quay.io/geospatial-studio/terratorch:latest
 docker pull docker.io/library/busybox:latest
 
@@ -23,15 +21,71 @@ docker save \
   quay.io/geospatial-studio/terratorch:latest \
   docker.io/library/busybox:latest \
   -o ~/geostudio-runtime-images.tar
-
-# Import the archive into the Lima VM's k3s image store
-limactl shell studio -- \
-  sudo k3s ctr images import --all-platforms ~/geostudio-runtime-images.tar
-
-# Verify both images are present
-limactl shell studio -- \
-  sudo k3s ctr images ls | grep -E "terratorch|busybox"
 ```
+
+**Step 2:**  Create privileged helper pod
+
+This pod serves double duty: it mounts the models PVC (for copying model weights) **and** the node's containerd socket and root path (for importing container images). Create it before running the image import steps below.
+```
+kubectl apply -n default -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: model-loader
+  labels:
+    app: model-loader
+spec:
+  restartPolicy: Never
+  hostPID: true
+  containers:
+    - name: loader
+      image: python:3.11-slim
+      command: ["sh", "-c", "echo ready && sleep 3600"]
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - name: backbone-models
+          mountPath: /terratorch/gfm_models
+        - name: containerd-sock
+          mountPath: /run/containerd/containerd.sock
+        - name: host-root
+          mountPath: /host
+  volumes:
+    - name: backbone-models
+      persistentVolumeClaim:
+        claimName: gfm-ft-models-pvc
+    - name: containerd-sock
+      hostPath:
+        path: /run/containerd/containerd.sock
+        type: Socket
+    - name: host-root
+      hostPath:
+        path: /tmp
+        type: Directory
+EOF
+
+# Wait for the pod to be ready
+kubectl wait --for=condition=ready pod/model-loader -n default --timeout=60s
+```
+
+**Step 3:** Copy the archive to the cluster node, then import it via the privileged pod that has the containerd socket mounted.
+```sh
+# Copy the tar into the pod's host-path volume
+kubectl cp ~/geostudio-runtime-images.tar \
+  default/model-loader:/host/geostudio-runtime-images.tar
+
+# Import into containerd via ctr inside the privileged pod
+kubectl exec -n default model-loader -- \
+  ctr -a /run/containerd/containerd.sock images import \
+  --all-platforms /host/geostudio-runtime-images.tar
+
+# Verify both images are present in the node's image store
+kubectl exec -n default model-loader -- \
+  ctr -a /run/containerd/containerd.sock images ls \
+  | grep -E "terratorch|busybox"
+```
+
+<br></br>
 
 ## Navigation - Base map layers
 1. Inference page
@@ -129,6 +183,7 @@ open /tmp/basemap-test.png
 Step 8: Patch the UI source
 Refer to: [https://github.com/terrastackai/geospatial-studio-core/pull/65](https://github.com/terrastackai/geospatial-studio-core/pull/65)
 
+<br></br>
 
 ## Fine-tuning and Inference
 
@@ -144,112 +199,63 @@ export HF_HOME_VALUE=/terratorch/gfm_models
 export TRANSFORMERS_CACHE_VALUE=/terratorch/gfm_models
 export HF_HUB_OFFLINE_VALUE=1 # set to 1
 export TRANSFORMERS_OFFLINE_VALUE=1 # set to 1
+FTUNING_IMAGE_PULL_POLICY_VALUE=IfNotPresent # set to IfNotPresent
 ```
 
-Step 2: Download all base model weights that you need and transfer them to air-gapped environment:
+Step 2: On an internet-connected machine, download all base model weights that you need
 ```
 pip install huggingface_hub
 
 huggingface-cli download ibm-esa-geospatial/TerraMind-1.0-tiny \
-  --include "*.pt" \
-  --local-dir ./gfm_models/terramind_v1_tiny
+  --filename terramind_v1_tiny.pt \
+  --local-dir ./gfm_models
 ```
 
-Step 3: Create temporary helper pod to copy downloaded models to mounted pvc
-```
-kubectl apply -n default -f - <<EOF                                                           
-apiVersion: v1
-kind: Pod
-metadata:
-  name: model-loader
-  labels:
-    app: model-loader
-spec:
-  restartPolicy: Never
-  containers:
-    - name: loader
-      image: python:3.11-slim
-      command: ["sh", "-c", "echo ready && sleep 3600"]
-      volumeMounts:
-        - name: backbone-models
-          mountPath: /terratorch/gfm_models
-  volumes:
-    - name: backbone-models
-      persistentVolumeClaim:
-        claimName: gfm-ft-models-pvc
-EOF
-```
+Step 3: Copy all downloaded models to the PVC
 
-Step 4: Create the expected subdirectory structure on the PVC
+Copy backbone models downloaded to the HF_HOME_VALUE you set earlier if different from the default (default directory is /terratorch/gfm_models)
+
+`kubectl cp` places a directory *inside* the destination if it already exists, so copy the contents using the `/.` suffix to merge directly into `/terratorch/gfm_models`:
 ```sh
-kubectl exec -n default model-loader -- sh -c "
-  mkdir -p /terratorch/gfm_models/terramind_v1_tiny &&
-  echo done
-"
+kubectl cp ./gfm_models/. \
+  default/model-loader:/terratorch/gfm_models
 ```
 
-Step 5: Copy models to expected path
-```
-kubectl cp ./gfm_models/terramind_v1_tiny/Terramind_v1_tiny.pt \
-  default/model-loader:/terratorch/gfm_models/terramind_v1_tiny/Terramind_v1_tiny.pt
-```
-
-Step 5: Verify
+Step 4: Verify
 ```
 kubectl exec -n default model-loader -- find /terratorch/gfm_models -type f -name "*.pt" | sort
 ```
 
-Step 8: Delete temporary pod created
-```sh
-kubectl delete pod model-loader -n default
-
-```
-
-step 7: Update fine-tuning job template
-
-The current template at `k8-tuning-jobs-deployment.tpl.yaml:51` (gateway repo) uses the bare name busybox with no registry prefix and no imagePullPolicy. Two changes needed:
-
-Full ref — k3s stores it as docker.io/library/busybox:latest after import; using the bare name busybox may still trigger a Docker Hub lookup
-imagePullPolicy: IfNotPresent — prevent k3s from attempting a live pull
-Change from:
-
-        - name: copy-config
-          image: busybox
-          command: ['sh', '-c', 'cp /config/config-train.yaml /app/config/']
-
-To:
-
-        - name: copy-config
-          image: docker.io/library/busybox:latest
-          imagePullPolicy: IfNotPresent
-          command: ['sh', '-c', 'cp /config/config-train.yaml /app/config/']
-
-and change the terratorch container imagepullpolicy to (in the same job yaml):
-
-`imagePullPolicy: IfNotPresent`
-
-Step 6: Try out
+Step 5: Try out
 
 Terramind Tiny notebook: [https://terrastackai.github.io/geospatial-studio-toolkit/examples/e2e-walkthroughs/GeospatialStudio-Walkthrough-Flooding_Terramind_Tiny/](https://terrastackai.github.io/geospatial-studio-toolkit/examples/e2e-walkthroughs/GeospatialStudio-Walkthrough-Flooding_Terramind_Tiny/)
 
 
-Step 7: List of all the base model image provided in the studio:
+Step 6: List of all the base model image provided in the studio:
 
-| Studio Name | Checkpoint file expected at `/terratorch/gfm_models/` | HuggingFace repo |
-|---|---|---|
-| `Prithvi_EO_V1_100M` | `prithvi_eo_v1_100/Prithvi_EO_V1_100M.pt` | [ibm-nasa-geospatial/Prithvi-EO-1.0](https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-1.0) |
-| `Prithvi_EO_V2_300M` | `prithvi_eo_v2_300/Prithvi_EO_V2_300M.pt` | [ibm-nasa-geospatial/Prithvi-EO-2.0-300M](https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-300M) |
-| `Prithvi_EO_V2_600M_TL` | `prithvi_eo_v2_600_tl/Prithvi_EO_V2_600M_TL.pt` | [ibm-nasa-geospatial/Prithvi-EO-2.0-600M-TL](https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-600M-TL) |
-| `terramind_v1_tiny` | `terramind_v1_tiny/terramind_v1_tiny.pt` | [ibm-esa-geospatial/TerraMind-1.0-tiny](https://huggingface.co/ibm-esa-geospatial/TerraMind-1.0-tiny) |
-| `terramind_v1_base` | `terramind_v1_base/TerraMind_v1_base.pt` | [ibm-esa-geospatial/TerraMind-1.0-base](https://huggingface.co/ibm-esa-geospatial/TerraMind-1.0-base) |
-| `terramind_v1_large` | `terramind_v1_large/TerraMind_v1_large.pt` | [ibm-esa-geospatial/TerraMind-1.0-large](https://huggingface.co/ibm-esa-geospatial/TerraMind-1.0-large) |
-| `clay_v1_base` | `clay_v1_base/clay_v1_base` | [made-with-clay/Clay](https://huggingface.co/made-with-clay/Clay) |
-| `timm_resnet18/34/50/101/152` | resolved by timm/HuggingFace at runtime | |
-| `timm_convnext_large/xlarge` | resolved by timm/HuggingFace at runtime | |
+| Studio Name | HuggingFace repo |
+|---|---|
+| `Prithvi_EO_V1_100M` | [ibm-nasa-geospatial/Prithvi-EO-1.0](https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-1.0) |
+| `Prithvi_EO_V2_300M` | [ibm-nasa-geospatial/Prithvi-EO-2.0-300M](https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-300M) |
+| `Prithvi_EO_V2_600M_TL` | [ibm-nasa-geospatial/Prithvi-EO-2.0-600M-TL](https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-600M-TL) |
+| `terramind_v1_tiny` | [ibm-esa-geospatial/TerraMind-1.0-tiny](https://huggingface.co/ibm-esa-geospatial/TerraMind-1.0-tiny) |
+| `terramind_v1_base` | [ibm-esa-geospatial/TerraMind-1.0-base](https://huggingface.co/ibm-esa-geospatial/TerraMind-1.0-base) |
+| `terramind_v1_large` | [ibm-esa-geospatial/TerraMind-1.0-large](https://huggingface.co/ibm-esa-geospatial/TerraMind-1.0-large) |
+| `clay_v1_base` | [made-with-clay/Clay](https://huggingface.co/made-with-clay/Clay) |
+| `timm_resnet18/34/50/101/152` | |
+| `timm_convnext_large/xlarge` | |
 
 ### 2. Inference: 
 
 3.1 Satellite Data Acquisition (Terrakit Connectors) - bypass with internal url connector calls?
 
 3.2 Foundation Model Downloads — HuggingFace ; The vLLM-based inference service container downloads geospatial foundation models from HuggingFace Hub on first startup
+
+
+### Clean up
+Delete temporary pod created earlier
+```sh
+kubectl delete pod model-loader -n default
+
+```
 
