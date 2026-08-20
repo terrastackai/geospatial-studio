@@ -125,7 +125,7 @@ huggingface-cli download ibm-esa-geospatial/TerraMind-1.0-tiny \
 
 Step 3: Create temporary helper pod to copy downloaded models to mounted pvc
 ```
-kubectl apply -n default -f - <<EOF
+kubectl apply -n default -f - <<EOF                                                           
 apiVersion: v1
 kind: Pod
 metadata:
@@ -136,7 +136,7 @@ spec:
   restartPolicy: Never
   containers:
     - name: loader
-      image: busybox
+      image: python:3.11-slim
       command: ["sh", "-c", "echo ready && sleep 3600"]
       volumeMounts:
         - name: backbone-models
@@ -160,8 +160,8 @@ kubectl exec -n default model-loader -- sh -c "
 
 Step 4: Copy models to expected path
 ```
-kubectl cp ./gfm_models/terramind_v1_tiny/terramind_v1_tiny.pt \
-  default/model-loader:/terratorch/gfm_models/terramind_v1_tiny/terramind_v1_tiny.pt
+kubectl cp ./gfm_models/terramind_v1_tiny/Terramind_v1_tiny.pt \
+  default/model-loader:/terratorch/gfm_models/terramind_v1_tiny/Terramind_v1_tiny.pt
 ```
 
 Step 5: Verify
@@ -172,14 +172,7 @@ kubectl exec -n default model-loader -- find /terratorch/gfm_models -type f -nam
 Step 5: Download and Load required images for the fine-tuning job to the cluster
 ```sh
 limactl shell studio -- sudo k3s ctr images ls
-
-# busybox
-docker pull busybox:latest
-docker save busybox:latest -o ~/busybox-latest.tar
-limactl shell studio -- sudo k3s ctr images import ~/busybox-latest.tar
-limactl shell studio -- sudo k3s ctr images ls -q | grep busybox
 ```
-
 
 ```sh
 # terratorch
