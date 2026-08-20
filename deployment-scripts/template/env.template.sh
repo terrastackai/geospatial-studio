@@ -176,8 +176,8 @@ export NODE_SELECTOR_KEY=nvidia.com/gpu.product
 export NODE_GPU_SPEC=NVIDIA-A100-SXM4-80GB
 
 # Fine-tuning offline
-export HF_HOME_VALUE=/tmp/huggingface
-export TRANSFORMERS_CACHE_VALUE=/tmp/huggingface
+export HF_HOME_VALUE=/terratorch/gfm_models
+export TRANSFORMERS_CACHE_VALUE=/terratorch/gfm_models
 export HF_HUB_OFFLINE_VALUE=
 export TRANSFORMERS_OFFLINE_VALUE=
 
