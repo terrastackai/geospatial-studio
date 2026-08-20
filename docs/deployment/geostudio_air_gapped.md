@@ -6,6 +6,33 @@
   3. Geoserver deployment, some configurations are downloaded from the internet
 
 # Part 2 — Runtime External Calls
+## Run-time container images
+
+Download and Load required run-time images to the cluster
+```sh
+limactl shell studio -- sudo k3s ctr images ls
+```
+
+```sh
+# Pull all required run-time images in one step
+docker pull quay.io/geospatial-studio/terratorch:latest
+docker pull docker.io/library/busybox:latest
+
+# Save all images into a single tar archive
+docker save \
+  quay.io/geospatial-studio/terratorch:latest \
+  docker.io/library/busybox:latest \
+  -o ~/geostudio-runtime-images.tar
+
+# Import the archive into the Lima VM's k3s image store
+limactl shell studio -- \
+  sudo k3s ctr images import --all-platforms ~/geostudio-runtime-images.tar
+
+# Verify both images are present
+limactl shell studio -- \
+  sudo k3s ctr images ls | grep -E "terratorch|busybox"
+```
+
 ## Navigation - Base map layers
 1. Inference page
 
@@ -104,12 +131,17 @@ Refer to: [https://github.com/terrastackai/geospatial-studio-core/pull/65](https
 
 
 ## Fine-tuning and Inference
+
 ### 1. Fine-tuning: base models are downloaded from hugging face
 
 Step 1: Edit deployment values:
+
+When running the automates deployment scripts `deploy_studio_k8s.sh` or `deploy_studio_lima.sh`, select `true` when prompted `Enable offline / air-gapped mode (GEOSTUDIO_OFFLINE):` and these values will be updated for you
+
 ```yaml
-export HF_HOME_VALUE=/tmp/huggingface
-export TRANSFORMERS_CACHE_VALUE=/tmp/huggingface
+export GEOSTUDIO_OFFLINE=true # set to true
+export HF_HOME_VALUE=/terratorch/gfm_models
+export TRANSFORMERS_CACHE_VALUE=/terratorch/gfm_models
 export HF_HUB_OFFLINE_VALUE=1 # set to 1
 export TRANSFORMERS_OFFLINE_VALUE=1 # set to 1
 ```
@@ -146,8 +178,6 @@ spec:
       persistentVolumeClaim:
         claimName: gfm-ft-models-pvc
 EOF
-
-# kubectl delete pod model-loader -n default # Delete helper pod after step 4
 ```
 
 Step 4: Create the expected subdirectory structure on the PVC
@@ -158,7 +188,7 @@ kubectl exec -n default model-loader -- sh -c "
 "
 ```
 
-Step 4: Copy models to expected path
+Step 5: Copy models to expected path
 ```
 kubectl cp ./gfm_models/terramind_v1_tiny/Terramind_v1_tiny.pt \
   default/model-loader:/terratorch/gfm_models/terramind_v1_tiny/Terramind_v1_tiny.pt
@@ -169,23 +199,9 @@ Step 5: Verify
 kubectl exec -n default model-loader -- find /terratorch/gfm_models -type f -name "*.pt" | sort
 ```
 
-Step 5: Download and Load required images for the fine-tuning job to the cluster
+Step 8: Delete temporary pod created
 ```sh
-limactl shell studio -- sudo k3s ctr images ls
-```
-
-```sh
-# terratorch
-
-docker pull quay.io/geospatial-studio/terratorch:latest
-docker save quay.io/geospatial-studio/terratorch:latest \
-  -o ~/terratorch-latest.tar
-# Verify the mount is visible inside the VM
-limactl shell studio ls ~/terratorch-latest.tar
-limactl shell studio -- \
-  sudo k3s ctr images import --all-platforms ~/terratorch-latest.tar
-limactl shell studio -- \
-  sudo k3s ctr images ls | grep terratorch
+kubectl delete pod model-loader -n default
 
 ```
 
