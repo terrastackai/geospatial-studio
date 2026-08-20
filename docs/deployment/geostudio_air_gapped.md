@@ -40,6 +40,7 @@ spec:
   containers:
     - name: loader
       image: python:3.11-slim
+      imagePullPolicy: IfNotPresent
       command: ["sh", "-c", "echo ready && sleep 3600"]
       securityContext:
         privileged: true
