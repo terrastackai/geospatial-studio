@@ -207,9 +207,10 @@ Step 2: On an internet-connected machine, download all base model weights that y
 ```
 pip install huggingface_hub
 
+export HF_HOME=/some/dir
+
 hf download ibm-esa-geospatial/TerraMind-1.0-tiny \
-  TerraMind_v1_tiny.pt \
-  --local-dir ./gfm_models
+    TerraMind_v1_tiny.pt
 ```
 
 Step 3: Copy all downloaded models to the PVC
