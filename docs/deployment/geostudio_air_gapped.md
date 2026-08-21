@@ -8,85 +8,6 @@
 <br></br>
 
 # Part 2 — Runtime External Calls
-## Run-time container images
-
-**Step 1:** On an internet-connected machine, pull and save all required run-time images into a single tar archive:
-```sh
-# Pull all required run-time images
-docker pull quay.io/geospatial-studio/terratorch:latest
-docker pull docker.io/library/busybox:latest
-
-# Save all images into a single tar archive
-docker save \
-  quay.io/geospatial-studio/terratorch:latest \
-  docker.io/library/busybox:latest \
-  -o ~/geostudio-runtime-images.tar
-```
-
-**Step 2:**  Create privileged helper pod
-
-This pod serves double duty: it mounts the models PVC (for copying model weights) **and** the node's containerd socket and root path (for importing container images). Create it before running the image import steps below.
-```
-kubectl apply -n default -f - <<EOF
-apiVersion: v1
-kind: Pod
-metadata:
-  name: model-loader
-  labels:
-    app: model-loader
-spec:
-  restartPolicy: Never
-  hostPID: true
-  containers:
-    - name: loader
-      image: python:3.11-slim
-      imagePullPolicy: IfNotPresent
-      command: ["sh", "-c", "echo ready && sleep 3600"]
-      securityContext:
-        privileged: true
-      volumeMounts:
-        - name: backbone-models
-          mountPath: /terratorch/gfm_models
-        - name: containerd-sock
-          mountPath: /run/containerd/containerd.sock
-        - name: host-root
-          mountPath: /host
-  volumes:
-    - name: backbone-models
-      persistentVolumeClaim:
-        claimName: gfm-ft-models-pvc
-    - name: containerd-sock
-      hostPath:
-        path: /run/containerd/containerd.sock
-        type: Socket
-    - name: host-root
-      hostPath:
-        path: /tmp
-        type: Directory
-EOF
-
-# Wait for the pod to be ready
-kubectl wait --for=condition=ready pod/model-loader -n default --timeout=60s
-```
-
-**Step 3:** Copy the archive to the cluster node, then import it via the privileged pod that has the containerd socket mounted.
-```sh
-# Copy the tar into the pod's host-path volume
-kubectl cp ~/geostudio-runtime-images.tar \
-  default/model-loader:/host/geostudio-runtime-images.tar
-
-# Import into containerd via ctr inside the privileged pod
-kubectl exec -n default model-loader -- \
-  ctr -a /run/containerd/containerd.sock images import \
-  --all-platforms /host/geostudio-runtime-images.tar
-
-# Verify both images are present in the node's image store
-kubectl exec -n default model-loader -- \
-  ctr -a /run/containerd/containerd.sock images ls \
-  | grep -E "terratorch|busybox"
-```
-
-<br></br>
 
 ## Navigation - Base map layers
 1. Inference page
@@ -187,8 +108,87 @@ Refer to: [https://github.com/terrastackai/geospatial-studio-core/pull/65](https
 <br></br>
 
 ## Fine-tuning and Inference
+### Run-time container images
 
-### 1. Fine-tuning: base models are downloaded from hugging face
+**Step 1:** On an internet-connected machine, pull and save all required run-time images into a single tar archive:
+```sh
+# Pull all required run-time images
+docker pull quay.io/geospatial-studio/terratorch:latest
+docker pull docker.io/library/busybox:latest
+
+# Save all images into a single tar archive
+docker save \
+  quay.io/geospatial-studio/terratorch:latest \
+  docker.io/library/busybox:latest \
+  -o ~/geostudio-runtime-images.tar
+```
+
+**Step 2:**  Create privileged helper pod
+
+This pod serves double duty: it mounts the models PVC (for copying model weights) **and** the node's containerd socket and root path (for importing container images). Create it before running the image import steps below.
+```
+kubectl apply -n default -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: model-loader
+  labels:
+    app: model-loader
+spec:
+  restartPolicy: Never
+  hostPID: true
+  containers:
+    - name: loader
+      image: python:3.11-slim
+      imagePullPolicy: IfNotPresent
+      command: ["sh", "-c", "echo ready && sleep 3600"]
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - name: backbone-models
+          mountPath: /terratorch/gfm_models
+        - name: containerd-sock
+          mountPath: /run/containerd/containerd.sock
+        - name: host-root
+          mountPath: /host
+  volumes:
+    - name: backbone-models
+      persistentVolumeClaim:
+        claimName: gfm-ft-models-pvc
+    - name: containerd-sock
+      hostPath:
+        path: /run/containerd/containerd.sock
+        type: Socket
+    - name: host-root
+      hostPath:
+        path: /tmp
+        type: Directory
+EOF
+
+# Wait for the pod to be ready
+kubectl wait --for=condition=ready pod/model-loader -n default --timeout=60s
+```
+
+**Step 3:** Copy the archive to the cluster node, then import it via the privileged pod that has the containerd socket mounted.
+```sh
+# Copy the tar into the pod's host-path volume
+kubectl cp ~/geostudio-runtime-images.tar \
+  default/model-loader:/host/geostudio-runtime-images.tar
+
+# Import into containerd via ctr inside the privileged pod
+kubectl exec -n default model-loader -- \
+  ctr -a /run/containerd/containerd.sock images import \
+  --all-platforms /host/geostudio-runtime-images.tar
+
+# Verify both images are present in the node's image store
+kubectl exec -n default model-loader -- \
+  ctr -a /run/containerd/containerd.sock images ls \
+  | grep -E "terratorch|busybox"
+```
+
+<br></br>
+
+### Fine-tuning: base models are downloaded from hugging face
 
 Step 1: Edit deployment values:
 
@@ -247,7 +247,7 @@ Step 6: List of all the base model image provided in the studio:
 | `timm_resnet18/34/50/101/152` | |
 | `timm_convnext_large/xlarge` | |
 
-### 2. Inference: 
+### Inference: 
 
 3.1 Satellite Data Acquisition (Terrakit Connectors) - bypass with internal url connector calls?
 
