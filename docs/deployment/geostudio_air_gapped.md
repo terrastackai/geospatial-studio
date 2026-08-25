@@ -174,6 +174,7 @@ spec:
   containers:
     - name: loader
       image: docker.io/library/busybox:latest
+      imagePullPolicy: IfNotPresent
       command: ["sh", "-c", "echo ready && sleep 3600"]
       volumeMounts:
         - name: backbone-models
