@@ -103,7 +103,7 @@ open /tmp/basemap-test.png
 ```
 
 Step 8: Patch the UI source
-Refer to: [https://github.com/terrastackai/geospatial-studio-core/pull/65](https://github.com/terrastackai/geospatial-studio-core/pull/65)
+Refer to: [https://github.com/terrastackai/geospatial-studio-ui/tree/test-openstreetmap-alternative](https://github.com/terrastackai/geospatial-studio-ui/tree/test-openstreetmap-alternative)
 
 <br></br>
 
