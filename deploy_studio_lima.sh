@@ -462,13 +462,13 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
         sed -i -e "s|export TRANSFORMERS_CACHE_VALUE=.*|export TRANSFORMERS_CACHE_VALUE=/terratorch/gfm_models|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s|export HF_HUB_OFFLINE_VALUE=.*|export HF_HUB_OFFLINE_VALUE=1|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s|export TRANSFORMERS_OFFLINE_VALUE=.*|export TRANSFORMERS_OFFLINE_VALUE=1|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-        sed -i -e "s|export FTUNING_IMAGE_PULL_POLICY_VALUE=.*|export FTUNING_IMAGE_PULL_POLICY_VALUE=IfNotPresent|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s|export IMAGE_PULL_POLICY_VALUE=.*|export IMAGE_PULL_POLICY_VALUE=IfNotPresent|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     else
         sed -i -e "s|export HF_HOME_VALUE=.*|export HF_HOME_VALUE=|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s|export TRANSFORMERS_CACHE_VALUE=.*|export TRANSFORMERS_CACHE_VALUE=|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s|export HF_HUB_OFFLINE_VALUE=.*|export HF_HUB_OFFLINE_VALUE=|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
         sed -i -e "s|export TRANSFORMERS_OFFLINE_VALUE=.*|export TRANSFORMERS_OFFLINE_VALUE=|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-        sed -i -e "s|export FTUNING_IMAGE_PULL_POLICY_VALUE=.*|export FTUNING_IMAGE_PULL_POLICY_VALUE=Always|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s|export IMAGE_PULL_POLICY_VALUE=.*|export IMAGE_PULL_POLICY_VALUE=Always|g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     fi
 
     source workspace/${DEPLOYMENT_ENV}/env/env.sh

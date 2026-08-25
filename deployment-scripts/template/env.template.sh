@@ -181,9 +181,9 @@ export HF_HOME_VALUE=
 export TRANSFORMERS_CACHE_VALUE=
 export HF_HUB_OFFLINE_VALUE=
 export TRANSFORMERS_OFFLINE_VALUE=
-# imagePullPolicy for the fine-tuning runtime container.
+# imagePullPolicy for all studio job containers (fine-tuning, HPO, dataset onboarding).
 # Default: Always (online).  Change to IfNotPresent for air-gapped clusters.
-export FTUNING_IMAGE_PULL_POLICY_VALUE=Always
+export IMAGE_PULL_POLICY_VALUE=Always
 
 # ── Fine-tuning job images ───────────────────────────────────────────────────
 export FTUNING_RUNTIME_IMAGE_VALUE=quay.io/geospatial-studio/terratorch:latest

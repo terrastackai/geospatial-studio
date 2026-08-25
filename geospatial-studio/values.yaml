@@ -158,7 +158,7 @@ gfm-studio-gateway:
     tag: latest
     # pullPolicy inherited from global.imagePullPolicy
     # Can be overridden here if needed
-    pullPolicy: ""
+    pullPolicy: IMAGE_PULL_POLICY_VALUE
   images:
     cleanup_cronjob: docker.io/bitnamilegacy/kubectl:latest
     tt_caikit: quay.io/geospatial-studio/geospatial-model-inference-service:latest
@@ -194,10 +194,10 @@ gfm-studio-gateway:
       # Set to "1" for air-gapped deployments; leave empty for online mode.
       HF_HUB_OFFLINE: HF_HUB_OFFLINE_VALUE
       TRANSFORMERS_OFFLINE: TRANSFORMERS_OFFLINE_VALUE
-      # ── Fine-tuning image pull policy ────────────────────────────────────────
-      # Controls imagePullPolicy on the fine-tuning runtime container.
-      # Default: Always (online).  Set to IfNotPresent when GEOSTUDIO_OFFLINE=true.
-      FTUNING_IMAGE_PULL_POLICY: FTUNING_IMAGE_PULL_POLICY_VALUE
+      # ── Job image pull policy ────────────────────────────────────────────────
+      # Controls imagePullPolicy on all studio job containers (fine-tuning, HPO,
+      # dataset onboarding). Default: Always. Set to IfNotPresent for air-gapped.
+      IMAGE_PULL_POLICY: IMAGE_PULL_POLICY_VALUE
       ## Enable or disable GPU node affinity when scheduling fine-tuning jobs.
       ## If set to False, the job can run on any available GPU in the cluster.
       ## Turn this off if all GPUs are acceptable for fine-tuning, or if the
