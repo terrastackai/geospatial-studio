@@ -110,80 +110,25 @@ Refer to: [https://github.com/terrastackai/geospatial-studio-core/pull/65](https
 ## Fine-tuning and Inference
 ### Run-time container images
 
-**Step 1:** On an internet-connected machine, pull and save all required run-time images into a single tar archive:
-```sh
-# Pull all required run-time images
-docker pull quay.io/geospatial-studio/terratorch:latest
-docker pull docker.io/library/busybox:latest
+**Step 1:** List of images required:
 
-# Save all images into a single tar archive
-docker save \
-  quay.io/geospatial-studio/terratorch:latest \
-  docker.io/library/busybox:latest \
-  -o ~/geostudio-runtime-images.tar
-```
+The Studio gateway deployment needs the following container images at runtime. You need to make these available to your local image registry before deployment if they're not already present:
 
-**Step 2:**  Create privileged helper pod
+- Dataset onboarding job: `quay.io/geospatial-studio/geostudio-pipelines:latest`
+- Fine-tuning job: `quay.io/geospatial-studio/terratorch:latest`
+- HPO tuning job: `quay.io/geospatial-studio/gfmstudio-hpo:latest`
+- Init container image: `docker.io/library/busybox:latest`
+- Clean-up cron jobs: `docker.io/bitnamilegacy/kubectl:latest`
 
-This pod serves double duty: it mounts the models PVC (for copying model weights) **and** the node's containerd socket and root path (for importing container images). Create it before running the image import steps below.
-```
-kubectl apply -n default -f - <<EOF
-apiVersion: v1
-kind: Pod
-metadata:
-  name: model-loader
-  labels:
-    app: model-loader
-spec:
-  restartPolicy: Never
-  hostPID: true
-  containers:
-    - name: loader
-      image: python:3.11-slim
-      imagePullPolicy: IfNotPresent
-      command: ["sh", "-c", "echo ready && sleep 3600"]
-      securityContext:
-        privileged: true
-      volumeMounts:
-        - name: backbone-models
-          mountPath: /terratorch/gfm_models
-        - name: containerd-sock
-          mountPath: /run/containerd/containerd.sock
-        - name: host-root
-          mountPath: /host
-  volumes:
-    - name: backbone-models
-      persistentVolumeClaim:
-        claimName: gfm-ft-models-pvc
-    - name: containerd-sock
-      hostPath:
-        path: /run/containerd/containerd.sock
-        type: Socket
-    - name: host-root
-      hostPath:
-        path: /tmp
-        type: Directory
-EOF
+**Step 2:** Update deployment values with references to your images
 
-# Wait for the pod to be ready
-kubectl wait --for=condition=ready pod/model-loader -n default --timeout=60s
-```
-
-**Step 3:** Copy the archive to the cluster node, then import it via the privileged pod that has the containerd socket mounted.
-```sh
-# Copy the tar into the pod's host-path volume
-kubectl cp ~/geostudio-runtime-images.tar \
-  default/model-loader:/host/geostudio-runtime-images.tar
-
-# Import into containerd via ctr inside the privileged pod
-kubectl exec -n default model-loader -- \
-  ctr -a /run/containerd/containerd.sock images import \
-  --all-platforms /host/geostudio-runtime-images.tar
-
-# Verify both images are present in the node's image store
-kubectl exec -n default model-loader -- \
-  ctr -a /run/containerd/containerd.sock images ls \
-  | grep -E "terratorch|busybox"
+In your workspace `values-deploy.yaml` file (When prompted using the automated deployment scripts), update references to these runtime images to reference the images in your registry in the following sections:
+```yaml
+gfm-studio-gateway.images.dataset_pipeline
+gfm-studio-gateway.images.ftuning_runtime
+gfm-studio-gateway.images.tt_hpoTune
+gfm-studio-gateway.images.ftuning_init_container
+gfm-studio-gateway.images.cleanup_cronjob
 ```
 
 <br></br>
@@ -203,7 +148,7 @@ export TRANSFORMERS_OFFLINE_VALUE=1 # set to 1
 FTUNING_IMAGE_PULL_POLICY_VALUE=IfNotPresent # set to IfNotPresent
 ```
 
-Step 2: On an internet-connected machine, download all base model weights that you need
+Step 2: On an internet-connected machine, download all base model weights that you need and copy them to the air-gapped environment
 ```
 pip install huggingface_hub
 
@@ -211,29 +156,56 @@ export HF_HOME=/some/dir
 
 hf download ibm-esa-geospatial/TerraMind-1.0-tiny \
     TerraMind_v1_tiny.pt
+
+scp -r $HF_HOME user@<transfer-host-ip>:/some/dir
 ```
 
-Step 3: Copy all downloaded models to the PVC
+Step 3: Create temporary helper pod to copy downloaded models to mounted pvc
+```
+kubectl apply -n default -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  name: model-loader
+  labels:
+    app: model-loader
+spec:
+  restartPolicy: Never
+  containers:
+    - name: loader
+      image: docker.io/library/busybox:latest
+      command: ["sh", "-c", "echo ready && sleep 3600"]
+      volumeMounts:
+        - name: backbone-models
+          mountPath: /terratorch/gfm_models
+  volumes:
+    - name: backbone-models
+      persistentVolumeClaim:
+        claimName: gfm-ft-models-pvc
+EOF
+```
+
+Step 4: Copy all downloaded models to the PVC
 
 Copy backbone models downloaded to the HF_HOME_VALUE you set earlier if different from the default (default directory is /terratorch/gfm_models)
 
 `kubectl cp` places a directory *inside* the destination if it already exists, so copy the contents using the `/.` suffix to merge directly into `/terratorch/gfm_models`:
 ```sh
-kubectl cp ./gfm_models/. \
+kubectl cp /some/dir/. \
   default/model-loader:/terratorch/gfm_models
 ```
 
-Step 4: Verify
+Step 5: Verify
 ```
 kubectl exec -n default model-loader -- find /terratorch/gfm_models -type f -name "*.pt" | sort
 ```
 
-Step 5: Try out
+Step 6: Try out
 
 Terramind Tiny notebook: [https://terrastackai.github.io/geospatial-studio-toolkit/examples/e2e-walkthroughs/GeospatialStudio-Walkthrough-Flooding_Terramind_Tiny/](https://terrastackai.github.io/geospatial-studio-toolkit/examples/e2e-walkthroughs/GeospatialStudio-Walkthrough-Flooding_Terramind_Tiny/)
 
 
-Step 6: List of all the base model image provided in the studio:
+Step 7: List of all the base model image provided in the studio:
 
 | Studio Name | HuggingFace repo |
 |---|---|
