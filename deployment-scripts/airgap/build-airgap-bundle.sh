@@ -17,9 +17,18 @@
 set -euo pipefail
 
 # ---- config -----------------------------------------------------------------
+# TARGET selects the runtime the bundle is built for:
+#   lima (default) — Lima/k3s: includes the k3s system-image bundle (+ pause guard).
+#   kind           — kind (Kubernetes-in-Docker): skips the k3s bundle, and instead
+#                    stages the kindest/node image + a pinned PostgreSQL chart/images.
+#                    Use with ARCH=amd64 for a standard Linux x86_64 target.
+TARGET="${TARGET:-lima}"
 ARCH="${ARCH:-arm64}"
 PLATFORM="linux/${ARCH}"
 K3S_VERSION="${K3S_VERSION:-v1.30.2+k3s1}"
+# PostgreSQL chart version (kind target). Keep in sync with PG_VERSION in
+# deployment-scripts/template/env.template.sh.
+PG_VERSION="${PG_VERSION:-18.2.0}"
 # The pod-sandbox (pause) image the k3s BINARY expects. It MUST match your k3s
 # version's containerd sandbox_image (check with:
 #   grep sandbox_image /var/lib/rancher/k3s/agent/etc/containerd/config.toml ).
@@ -87,12 +96,16 @@ pull_and_save() { # <output.tar> <image...>
 need podman
 need helm
 need curl
+if [ "$TARGET" = "kind" ]; then need docker; need kind; fi
 podman machine start >/dev/null 2>&1 || true
 mkdir -p "$OUTPUT_DIR"
-log "Output dir: $OUTPUT_DIR   (arch=$ARCH, k3s=$K3S_VERSION)"
+log "Output dir: $OUTPUT_DIR   (target=$TARGET, arch=$ARCH)"
 
-# ---- 1. k3s system images ---------------------------------------------------
-log "1/5  k3s system images (k3s-airgap-images-${ARCH}.tar.zst)"
+# ---- 1. k3s system images (lima/k3s only — kind ships k8s in the node image) -
+if [ "$TARGET" = "kind" ]; then
+log "1/5  k3s system images — SKIPPED (target=kind)"
+else
+log "1/5  k3s system images (k3s-airgap-images-${ARCH}.tar.zst, k3s=$K3S_VERSION)"
 curl -fL -o "$OUTPUT_DIR/k3s-airgap-images-${ARCH}.tar.zst" \
   "https://github.com/k3s-io/k3s/releases/download/${K3S_VERSION}/k3s-airgap-images-${ARCH}.tar.zst"
 
@@ -115,6 +128,7 @@ if command -v zstd >/dev/null 2>&1; then
 else
   echo "  WARN: 'zstd' not found — skipping bundle/k3s pause-version match check"
 fi
+fi  # end k3s system-images block (skipped when TARGET=kind)
 
 # ---- 2. CSI sidecars (with k8s.gcr.io retag) --------------------------------
 log "2/5  CSI driver + sidecars (csi-sidecars-${ARCH}.tar)"
@@ -162,10 +176,58 @@ for dep in gfm-mlflow gfm-studio-gateway geofm-ui geospatial-studio-pipelines pg
 done
 [ "$missing" -eq 0 ] && echo "  charts OK (all deps vendored)" || { echo "  ERROR: missing chart deps" >&2; exit 1; }
 
+# ---- 6. kind extras (kind target only) --------------------------------------
+# kind needs (a) the kindest/node image matching the local kind binary, and (b) a
+# pinned PostgreSQL chart + its exact images — the app bundle only carries
+# bitnamilegacy/postgresql:latest, which imagePullPolicy=IfNotPresent will NOT match
+# against the chart's pinned tag. deploy_studio_kind.sh consumes all of these.
+if [ "$TARGET" = "kind" ]; then
+  log "6/6  kind node image + pinned PostgreSQL chart/images"
+
+  # 6a. kindest/node image (exact tag the local kind binary uses)
+  echo "  capturing kindest/node image via a throwaway probe cluster"
+  kind create cluster --name airgap-probe >/dev/null 2>&1 || true
+  NODE_IMG="$(docker inspect airgap-probe-control-plane --format '{{.Config.Image}}' 2>/dev/null || true)"
+  [ -z "$NODE_IMG" ] && NODE_IMG="$(docker images kindest/node --format '{{.Repository}}:{{.Tag}}' | head -1)"
+  [ -n "$NODE_IMG" ] || { echo "  ERROR: could not determine kindest/node image" >&2; exit 1; }
+  echo "  node image: $NODE_IMG -> kind-node-${ARCH}.tar"
+  docker save -o "$OUTPUT_DIR/kind-node-${ARCH}.tar" "$NODE_IMG"
+  echo "$NODE_IMG" > "$OUTPUT_DIR/kind-node-image.txt"
+  kind delete cluster --name airgap-probe >/dev/null 2>&1 || true
+
+  # 6b. pinned PostgreSQL chart + exact images
+  echo "  pulling PostgreSQL chart $PG_VERSION"
+  helm repo add bitnami https://charts.bitnami.com/bitnami >/dev/null 2>&1 || true
+  helm repo update >/dev/null 2>&1 || true
+  helm pull bitnami/postgresql --version "$PG_VERSION" -d "$OUTPUT_DIR"
+  render="$(helm template pg bitnami/postgresql --version "$PG_VERSION" \
+    --set image.repository=bitnamilegacy/postgresql \
+    --set volumePermissions.image.repository=bitnamilegacy/os-shell \
+    --set volumePermissions.enabled=true 2>/dev/null)"
+  PG_IMAGE_TAG="$(grep -oE 'bitnamilegacy/postgresql:[^"[:space:]]+' <<<"$render" | head -1 | cut -d: -f2)"
+  PG_OSSHELL_TAG="$(grep -oE 'bitnamilegacy/os-shell:[^"[:space:]]+' <<<"$render" | head -1 | cut -d: -f2)"
+  [ -n "$PG_IMAGE_TAG" ] || { echo "  ERROR: could not resolve postgresql image tag from chart $PG_VERSION" >&2; exit 1; }
+  [ -n "$PG_OSSHELL_TAG" ] || { echo "  ERROR: could not resolve os-shell image tag from chart $PG_VERSION" >&2; exit 1; }
+  echo "  pinned tags: postgresql:$PG_IMAGE_TAG  os-shell:$PG_OSSHELL_TAG"
+  podman pull --platform "$PLATFORM" "docker.io/bitnamilegacy/postgresql:$PG_IMAGE_TAG"
+  podman pull --platform "$PLATFORM" "docker.io/bitnamilegacy/os-shell:$PG_OSSHELL_TAG"
+  podman save --multi-image-archive -o "$OUTPUT_DIR/postgres-pinned-${ARCH}.tar" \
+    "docker.io/bitnamilegacy/postgresql:$PG_IMAGE_TAG" \
+    "docker.io/bitnamilegacy/os-shell:$PG_OSSHELL_TAG"
+  printf 'PG_IMAGE_TAG=%s\nPG_OSSHELL_TAG=%s\n' "$PG_IMAGE_TAG" "$PG_OSSHELL_TAG" \
+    > "$OUTPUT_DIR/postgres-tags.env"
+fi
+
 # ---- summary ----------------------------------------------------------------
 log "DONE. Bundle contents:"
-ls -lh "$OUTPUT_DIR"/*.tar "$OUTPUT_DIR"/*.tar.zst 2>/dev/null
+ls -lh "$OUTPUT_DIR"/*.tar "$OUTPUT_DIR"/*.tar.zst "$OUTPUT_DIR"/*.tgz 2>/dev/null
 echo
-echo "Next: copy the repo (with geospatial-studio/charts/*.tgz) and the contents of"
-echo "  $OUTPUT_DIR"
-echo "to the air-gapped host's ~/studio-data/airgap-images/, then follow AIRGAP-DEPLOY-RUNBOOK.md Part 3+."
+if [ "$TARGET" = "kind" ]; then
+  echo "Next (kind / air-gapped): copy the repo (with geospatial-studio/charts/*.tgz) and the"
+  echo "contents of $OUTPUT_DIR to the offline host, then run ./deploy_studio_kind.sh."
+  echo "See KIND-AIRGAP-RUNBOOK.md."
+else
+  echo "Next: copy the repo (with geospatial-studio/charts/*.tgz) and the contents of"
+  echo "  $OUTPUT_DIR"
+  echo "to the air-gapped host's ~/studio-data/airgap-images/, then follow AIRGAP-DEPLOY-RUNBOOK.md Part 3+."
+fi
