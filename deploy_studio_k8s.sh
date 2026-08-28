@@ -89,7 +89,7 @@ if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
 
     sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=k8s/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.s
+    sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
     echo "----------------------------------------------------------------------"
     echo "--------------------  Add labels to node  ------------------"
@@ -199,8 +199,17 @@ if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
         sed -i -e "s/export PVC_ACCESS_MODE=.*/export PVC_ACCESS_MODE=${PVC_ACCESS_MODE:-ReadWriteOnce}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     else
         echo "Using local-hostpath storage mode - no storage class configuration needed"
-        sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-        sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        # If running in an airgapped or local override environment, pass custom storage classes.
+        # Otherwise, default to 'manual' for standard local-hostpath setups.
+        if [[ "${AIRGAP:-false}" == "true" ]]; then
+            export COS_STORAGE_CLASS="${AIRGAP_COS_STORAGE_CLASS:-manual}"
+            export NON_COS_STORAGE_CLASS="${AIRGAP_NON_COS_STORAGE_CLASS:-manual}"
+        else
+            export COS_STORAGE_CLASS="manual"
+            export NON_COS_STORAGE_CLASS="manual"
+        fi
+        sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     fi
 else
     echo "***********************************************************************************"
