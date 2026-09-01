@@ -56,9 +56,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ $e.claimName }}
   namespace: {{ $.Values.namespace }}
+  {{- if ne $.Values.objectStorage.cos_storage_class "manual"}}
   annotations:
     cos.csi.driver/secret: "{{ $e.claimName }}-cos-s3fs-secret"
     cos.csi.driver/secret-namespace: {{ $.Values.namespace }}
+  {{- end }}
 spec:
   storageClassName: {{ $.Values.objectStorage.cos_storage_class }}
   accessModes:
@@ -86,7 +88,11 @@ spec:
     - {{ $.Values.pvc_access_mode }}
   resources:
     requests:
+      {{- if and $e.persistence $e.persistence.capacity }}
       storage: {{ $e.persistence.capacity }}
+      {{- else }}
+      storage: 5Gi
+      {{- end }}
   storageClassName: {{ $.Values.non_cos_storage_class }} # kubectl get sc for other COS Storage Class Options.
 --- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
 
@@ -102,7 +108,11 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
+    {{- if and $e.persistence $e.persistence.capacity }}
     storage: {{ $e.persistence.capacity }}
+    {{- else }}
+    storage: 5Gi
+    {{- end }}
   accessModes:
     - ReadWriteMany
   claimRef:
@@ -122,7 +132,11 @@ spec:
     - ReadWriteMany
   resources:
     requests:
+      {{- if and $e.persistence $e.persistence.capacity }}
       storage: {{ $e.persistence.capacity }}
+      {{- else }}
+      storage: 5Gi
+      {{- end }}
 --- {{ end }}{{- end }}{{ end }}{{ end }}{{- end }}
 
 {{- end }}

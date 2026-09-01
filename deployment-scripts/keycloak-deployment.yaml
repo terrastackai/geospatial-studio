@@ -21,6 +21,7 @@ spec:
       containers:
       - name: keycloak
         image: quay.io/keycloak/keycloak:26.4.5
+        imagePullPolicy: IfNotPresent
         args:
         - "start"
         env:

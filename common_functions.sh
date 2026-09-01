@@ -398,10 +398,12 @@ configure_resource_mode() {
             export MINIO_MEMORY_LIMIT="4Gi"
             export MINIO_STORAGE="40Gi"
             # Keycloak
+            # Keycloak 26 runs an in-container JVM auto-build on `start`; 1Gi
+            # OOM-kills it (exit 137) during startup. 2Gi gives the build + heap headroom.
             export KEYCLOAK_CPU_REQUEST="250m"
             export KEYCLOAK_CPU_LIMIT="1000m"
-            export KEYCLOAK_MEMORY_REQUEST="512Mi"
-            export KEYCLOAK_MEMORY_LIMIT="1Gi"
+            export KEYCLOAK_MEMORY_REQUEST="1Gi"
+            export KEYCLOAK_MEMORY_LIMIT="2Gi"
             # GeoServer
             export GEOSERVER_CPU_REQUEST="null"
             export GEOSERVER_CPU_LIMIT="null"

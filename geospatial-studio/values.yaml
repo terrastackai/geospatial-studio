@@ -21,7 +21,8 @@ global:
 
   # Image pull policy for all containers
   # Options: Always, IfNotPresent, Never
-  imagePullPolicy: Always
+  # IfNotPresent for air-gapped installs: use preloaded local images, never hit a registry.
+  imagePullPolicy: IfNotPresent
 
   imagePullSecret:
     name: us-icr-pull-secret

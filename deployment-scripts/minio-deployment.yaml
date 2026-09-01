@@ -51,6 +51,7 @@ spec:
       containers:
       - name: minio
         image: quay.io/minio/minio:latest
+        imagePullPolicy: IfNotPresent
         args:
         - server
         - /data

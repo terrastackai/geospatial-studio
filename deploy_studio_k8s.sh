@@ -89,7 +89,7 @@ if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
 
     sed -i -e "s/export CLUSTER_URL=.*/export CLUSTER_URL=localhost/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     sed -i -e "s/export DEPLOYMENT_ENV=.*/export DEPLOYMENT_ENV=k8s/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-    sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.s
+    sed -i -e "s/export OC_PROJECT=.*/export OC_PROJECT=$OC_PROJECT/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
 
     echo "----------------------------------------------------------------------"
     echo "--------------------  Add labels to node  ------------------"
@@ -97,10 +97,22 @@ if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
 
     # Set the cluster node name where the application will be deployed
     # CLUSTER_NODE_NAME
-    typeset cluster_node_name
-    get_user_input "Provide a name for the cluster node for deployment, e.g. studio-worker, studio-node... Run 'kubectl get nodes' to get the nodes available in the cluster" cluster_node_name
-    echo "CLUSTER_NODE_NAME accepted: **$cluster_node_name**"
-    export CLUSTER_NODE_NAME=$cluster_node_name
+    if [[ "${NON_INTERACTIVE:-false}" == "true" ]]; then
+        # Non-interactive: use CLUSTER_NODE_NAME from the environment, or auto-detect a
+        # worker node (falling back to the first node) so callers like deploy_studio_kind.sh
+        # can drive this end-to-end without prompting.
+        if [[ -z "${CLUSTER_NODE_NAME:-}" ]]; then
+            CLUSTER_NODE_NAME=$(kubectl get nodes -o name 2>/dev/null | grep -m1 worker | sed 's|node/||')
+            [[ -z "$CLUSTER_NODE_NAME" ]] && CLUSTER_NODE_NAME=$(kubectl get nodes -o name 2>/dev/null | head -1 | sed 's|node/||')
+        fi
+        export CLUSTER_NODE_NAME
+        echo "CLUSTER_NODE_NAME (non-interactive): **$CLUSTER_NODE_NAME**"
+    else
+        typeset cluster_node_name
+        get_user_input "Provide a name for the cluster node for deployment, e.g. studio-worker, studio-node... Run 'kubectl get nodes' to get the nodes available in the cluster" cluster_node_name
+        echo "CLUSTER_NODE_NAME accepted: **$cluster_node_name**"
+        export CLUSTER_NODE_NAME=$cluster_node_name
+    fi
 
     kubectl label nodes ${CLUSTER_NODE_NAME} topology.kubernetes.io/region=us-east-1 topology.kubernetes.io/zone=us-east-1a --overwrite
 
@@ -125,15 +137,22 @@ if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
     echo "***********************************************************************************"
 
     storage_mode_options="cloud-object-storage cluster-block-storage local-hostpath"
-    typeset storage_mode
 
-    get_menu_selection \
-    "Select storage mode for your deployment:" \
-    storage_mode \
-    "$storage_mode_options"
+    if [[ "${NON_INTERACTIVE:-false}" == "true" ]]; then
+        # Non-interactive: use STORAGE_MODE from the environment (default local-hostpath,
+        # the dev/testing mode that avoids the COS s3fs/FUSE CSI path).
+        export STORAGE_MODE=${STORAGE_MODE:-local-hostpath}
+        echo "STORAGE_MODE (non-interactive): **$STORAGE_MODE**"
+    else
+        typeset storage_mode
+        get_menu_selection \
+        "Select storage mode for your deployment:" \
+        storage_mode \
+        "$storage_mode_options"
 
-    export STORAGE_MODE=$storage_mode
-    echo "STORAGE_MODE selected: **$STORAGE_MODE**"
+        export STORAGE_MODE=$storage_mode
+        echo "STORAGE_MODE selected: **$STORAGE_MODE**"
+    fi
 
     # Update env.sh with storage mode
     sed -i -e "s/export STORAGE_MODE=.*/export STORAGE_MODE=${STORAGE_MODE}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
@@ -199,8 +218,17 @@ if [[ "${STUDIO_INSTALLATION:-FRESH_INSTALL}" != "UPGRADE" ]]; then
         sed -i -e "s/export PVC_ACCESS_MODE=.*/export PVC_ACCESS_MODE=${PVC_ACCESS_MODE:-ReadWriteOnce}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     else
         echo "Using local-hostpath storage mode - no storage class configuration needed"
-        sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
-        sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=manual/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        # If running in an airgapped or local override environment, pass custom storage classes.
+        # Otherwise, default to 'manual' for standard local-hostpath setups.
+        if [[ "${AIRGAP:-false}" == "true" ]]; then
+            export COS_STORAGE_CLASS="${AIRGAP_COS_STORAGE_CLASS:-manual}"
+            export NON_COS_STORAGE_CLASS="${AIRGAP_NON_COS_STORAGE_CLASS:-manual}"
+        else
+            export COS_STORAGE_CLASS="manual"
+            export NON_COS_STORAGE_CLASS="manual"
+        fi
+        sed -i -e "s/export COS_STORAGE_CLASS=.*/export COS_STORAGE_CLASS=${COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
+        sed -i -e "s/export NON_COS_STORAGE_CLASS=.*/export NON_COS_STORAGE_CLASS=${NON_COS_STORAGE_CLASS}/g" workspace/${DEPLOYMENT_ENV}/env/env.sh
     fi
 else
     echo "***********************************************************************************"
@@ -330,8 +358,14 @@ if [[ "$DEPLOY_POSTGRES" == "Deploy" ]]; then
     echo "----------------------------------------------------------------------"
 
     # Install Postgres
-    helm repo add bitnami  https://charts.bitnami.com/bitnami
-    helm repo update
+    # Air-gapped: skip the online Bitnami repo refresh. install-postgres.sh installs from the
+    # local chart tgz ($PG_CHART) instead of bitnami/postgresql when that env var is set.
+    if [[ "${AIRGAP:-false}" == "true" ]]; then
+        echo "AIRGAP=true — skipping online 'helm repo add/update bitnami'"
+    else
+        helm repo add bitnami  https://charts.bitnami.com/bitnami
+        helm repo update
+    fi
 
     export POSTGRES_PASSWORD=devPostgresql123
 
@@ -656,9 +690,19 @@ if [[ "$DEPLOY_STUDIO" == "Deploy" ]]; then
     echo "----------------  Building Helm dependencies  ------------------------"
     echo "----------------------------------------------------------------------"
 
-    # Build Helm dependencies
-    helm dep update ./geospatial-studio/
-    helm dependency build ./geospatial-studio/
+    # Build Helm dependencies.
+    # Air-gapped: all 6 chart dependencies are vendored in geospatial-studio/charts/
+    # (5 local file:// subcharts + redis-<ver>.tgz pulled offline — see AIRGAP-CHANGES.md).
+    # 'helm dep update' forces a network refresh of the remote redis (bitnami) repo and
+    # fails with no internet. Skip the online refresh when the vendored charts are present;
+    # only refresh when they're missing (connected / first-time setup).
+    if ls ./geospatial-studio/charts/*.tgz >/dev/null 2>&1 && ls ./geospatial-studio/charts/redis-*.tgz >/dev/null 2>&1; then
+        echo "Chart dependencies already vendored in ./geospatial-studio/charts/ — skipping online 'helm dep' refresh (air-gapped)"
+    else
+        echo "Vendored charts not found — attempting online 'helm dep' refresh"
+        helm dep update ./geospatial-studio/
+        helm dependency build ./geospatial-studio/
+    fi
 
     echo "----------------------------------------------------------------------"
     echo "--------------------  Deploying the Studio  --------------------------"

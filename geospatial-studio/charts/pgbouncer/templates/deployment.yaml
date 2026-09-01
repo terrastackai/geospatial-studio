@@ -21,6 +21,9 @@ spec:
       initContainers:
       - name: setup-config
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        {{- if .Values.image.pullPolicy }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- end }}
         command:
         - sh
         - -c

@@ -3,6 +3,16 @@
 
 
 vmType: "vz"
+images:
+  - location: "/<path>/ubuntu-26.04-server-cloudimg-arm64.img"
+    arch: "aarch64"
+# Direct Lima to your local nerdctl archive
+containerd:
+  user: true
+  archives:
+    - location: "/<path>/nerdctl-full-2.3.5-linux-arm64.tar.gz"
+      arch: "aarch64"
+
 rosetta:
   # Enable Rosetta for Linux.
   # Hint: try `softwareupdate --install-rosetta` if Lima gets stuck at `Installing rosetta...`
@@ -17,5 +27,95 @@ mounts:
 - location: "~/studio-data"
   mountPoint: "/data"
   writable: true
-base:
-- template://k3s
+# base template disabled for air-gapped installs: template://k3s pulls the k3s
+# installer and images from the internet. k3s is installed from the local
+# artifacts staged in ~/studio-data (install.sh + k3s binary).
+# base:
+# - template://k3s
+
+# (1) Auto-copy the k3s kubeconfig from the guest to the host on every start,
+#     to the exact path the deploy scripts read
+#     ($HOME/.lima/<vm>/copied-from-guest/kubeconfig.yaml). This removes the
+#     need to copy it by hand after a VM rebuild. The guest kubeconfig points
+#     at https://127.0.0.1:6443, which Lima forwards to the host as-is.
+copyToHost:
+- guest: "/etc/rancher/k3s/k3s.yaml"
+  host: "{{.Dir}}/copied-from-guest/kubeconfig.yaml"
+  deleteOnStop: true
+
+provision:
+# (2) Air-gap image preload. Any image archives dropped in
+#     ~/studio-data/airgap-images (mounted at /data/airgap-images) are staged
+#     into the k3s auto-import dir, so k3s loads them into the k8s.io
+#     containerd namespace on startup — no registry/DNS needed. This is what
+#     the local-path storage helper (busybox) and the app images (minio, etc.)
+#     rely on in an air-gapped VM. If k3s is already running, they are also
+#     imported live, so the step works on both fresh and existing clusters.
+- mode: system
+  script: |
+    #!/bin/sh
+    set -e
+    SRC=/data/airgap-images
+    DEST=/var/lib/rancher/k3s/agent/images
+    mkdir -p "$DEST"
+    staged=0
+    for f in "$SRC"/*.tar "$SRC"/*.tar.gz "$SRC"/*.tar.zst; do
+      [ -f "$f" ] || continue
+      cp -f "$f" "$DEST"/
+      staged=$((staged + 1))
+    done
+    if [ "$staged" -eq 0 ]; then
+      echo "No airgap image archives in $SRC; skipping preload"
+    else
+      echo "Staged $staged image archive(s) into $DEST for k3s auto-import"
+      # If k3s is already up, import now too (fresh boots auto-import on start).
+      if [ -x /usr/local/bin/k3s ] && /usr/local/bin/k3s kubectl version >/dev/null 2>&1; then
+        for f in "$DEST"/*.tar "$DEST"/*.tar.gz; do
+          [ -f "$f" ] && /usr/local/bin/k3s ctr -n k8s.io images import "$f" || true
+        done
+        for f in "$DEST"/*.tar.zst; do
+          [ -f "$f" ] && zstd -dc "$f" | /usr/local/bin/k3s ctr -n k8s.io images import - || true
+        done
+      fi
+    fi
+
+# (3) Install k3s from the local air-gapped artifacts staged in ~/studio-data
+#     (k3s binary + install.sh). Runs AFTER the image preload above so k3s
+#     auto-imports the staged archives on first start. INSTALL_K3S_SKIP_DOWNLOAD
+#     requires the binary to already be at /usr/local/bin/k3s, so we place it
+#     first. Idempotent: skips if k3s is already installed. Installing here (at
+#     boot, before copyToHost runs) is what lets the kubeconfig copy succeed on
+#     a fresh VM instead of leaving the VM DEGRADED.
+- mode: system
+  script: |
+    #!/bin/sh
+    set -e
+    if [ ! -x /usr/local/bin/k3s ]; then
+      if [ ! -f /data/k3s ] || [ ! -f /data/install.sh ]; then
+        echo "ERROR: /data/k3s and /data/install.sh must be staged in ~/studio-data" >&2
+        exit 1
+      fi
+      cp /data/k3s /usr/local/bin/k3s
+      chmod +x /usr/local/bin/k3s
+      INSTALL_K3S_SKIP_DOWNLOAD=true /data/install.sh
+    fi
+    # wait for the API to be ready so copyToHost finds a valid kubeconfig
+    for i in $(seq 1 30); do
+      [ -f /etc/rancher/k3s/k3s.yaml ] && break
+      sleep 2
+    done
+
+# Secondary convenience: also export the kubeconfig to the shared /data mount.
+# copyToHost above is the primary path the deploy scripts use.
+- mode: system
+  script: |
+    #!/bin/sh
+    set -e
+    # wait for k3s to actually produce the config, retry briefly
+    for i in $(seq 1 30); do
+      [ -f /etc/rancher/k3s/k3s.yaml ] && break
+      sleep 2
+    done
+    mkdir -p /data/.kube-export
+    cp /etc/rancher/k3s/k3s.yaml /data/.kube-export/kubeconfig.yaml
+    

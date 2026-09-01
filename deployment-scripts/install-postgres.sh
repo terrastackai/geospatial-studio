@@ -15,6 +15,22 @@ set +a
 
 source workspace/$DEPLOYMENT_ENV/env/env.sh
 
+# Air-gapped override (used by deploy_studio_kind.sh):
+#   PG_CHART       — path to a local postgresql-<ver>.tgz to install from, instead of the
+#                    online 'bitnami/postgresql --version $PG_VERSION' chart reference.
+#   PG_IMAGE_TAG   — pin the postgresql image tag so imagePullPolicy=IfNotPresent matches
+#                    the tag staged in the offline image store (the app bundle only has :latest).
+#   PG_OSSHELL_TAG — same, for the volumePermissions (os-shell) init image.
+# All default to empty, preserving the original online behavior.
+if [[ -n "${PG_CHART:-}" ]]; then
+    PG_CHART_REF=("${PG_CHART}")
+else
+    PG_CHART_REF=("--version" "$PG_VERSION" "bitnami/postgresql")
+fi
+PG_TAG_ARGS=()
+[[ -n "${PG_IMAGE_TAG:-}" ]] && PG_TAG_ARGS+=(--set "image.tag=${PG_IMAGE_TAG}")
+[[ -n "${PG_OSSHELL_TAG:-}" ]] && PG_TAG_ARGS+=(--set "volumePermissions.image.tag=${PG_OSSHELL_TAG}")
+
 if [[ -n "$UPDATE_STORAGE" ]] && [[ -n "$ENABLE_PV" ]] && [[ "$ENABLE_PV" == "ENABLE_PV" ]]; then
     python ./deployment-scripts/update-deployment-template.py --filename deployment-scripts/create_postgres_local_pvc.yaml --storageclass ${NON_COS_STORAGE_CLASS} --storage $POSTGRES_STORAGE > workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml
     kubectl apply -f workspace/$DEPLOYMENT_ENV/initialisation/create_postgres_local_pvc.yaml -n ${OC_PROJECT}
@@ -27,7 +43,7 @@ else
 fi
 
 if [[ -n "$DO_NOT_SET_SCC" ]] && [[ "$DO_NOT_SET_SCC" == "DO_NOT_SET_SCC" ]]; then
-    helm install postgresql --namespace ${OC_PROJECT} --version $PG_VERSION bitnami/postgresql \
+    helm install postgresql --namespace ${OC_PROJECT} "${PG_CHART_REF[@]}" \
         --set postgresql.serviceAccount.name="default" \
         --set image.repository="bitnamilegacy/postgresql" \
         --set primary.persistence.existingClaim="postgresql-pvc" \
@@ -35,13 +51,17 @@ if [[ -n "$DO_NOT_SET_SCC" ]] && [[ "$DO_NOT_SET_SCC" == "DO_NOT_SET_SCC" ]]; th
         --set volumePermissions.enabled=false \
         --set shmVolume.enabled=false \
         --set volumePermissions.image.repository="bitnamilegacy/os-shell" \
+        --set image.pullPolicy=IfNotPresent \
+        --set volumePermissions.image.pullPolicy=IfNotPresent \
+        --set global.imagePullPolicy=IfNotPresent \
         --set primary.podSecurityContext.fsGroup=null \
         --set primary.securityContext.enabled=false \
         --set primary.containerSecurityContext.enabled=false \
         --set primary.resources.requests.cpu=$POSTGRES_CPU_REQUEST \
         --set primary.resources.requests.memory=$POSTGRES_MEMORY_REQUEST \
         --set primary.resources.limits.cpu=$POSTGRES_CPU_LIMIT \
-        --set primary.resources.limits.memory=$POSTGRES_MEMORY_LIMIT
+        --set primary.resources.limits.memory=$POSTGRES_MEMORY_LIMIT \
+        "${PG_TAG_ARGS[@]}"
 else
     if command -v oc &> /dev/null; then
         oc adm policy add-scc-to-user anyuid -n $OC_PROJECT -z default
@@ -50,7 +70,7 @@ else
         echo "If running on OpenShift, please install the OpenShift CLI (oc) and run:"
         echo "  oc adm policy add-scc-to-user anyuid -n $OC_PROJECT -z default"
     fi
-    helm install postgresql --namespace ${OC_PROJECT} --version $PG_VERSION bitnami/postgresql \
+    helm install postgresql --namespace ${OC_PROJECT} "${PG_CHART_REF[@]}" \
         --set postgresql.serviceAccount.name="default" \
         --set image.repository="bitnamilegacy/postgresql" \
         --set primary.persistence.existingClaim="postgresql-pvc" \
@@ -58,9 +78,13 @@ else
         --set volumePermissions.enabled=true \
         --set shmVolume.enabled=false \
         --set volumePermissions.image.repository="bitnamilegacy/os-shell" \
+        --set image.pullPolicy=IfNotPresent \
+        --set volumePermissions.image.pullPolicy=IfNotPresent \
+        --set global.imagePullPolicy=IfNotPresent \
         --set primary.resources.requests.cpu=$POSTGRES_CPU_REQUEST \
         --set primary.resources.requests.memory=$POSTGRES_MEMORY_REQUEST \
         --set primary.resources.limits.cpu=$POSTGRES_CPU_LIMIT \
-        --set primary.resources.limits.memory=$POSTGRES_MEMORY_LIMIT
+        --set primary.resources.limits.memory=$POSTGRES_MEMORY_LIMIT \
+        "${PG_TAG_ARGS[@]}"
 fi
 
