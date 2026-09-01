@@ -57,9 +57,9 @@ metadata:
   name: {{ $e.claimName }}
   namespace: {{ $.Values.namespace }}
   {{- if ne $.Values.objectStorage.cos_storage_class "manual"}}
-    annotations:
-      cos.csi.driver/secret: "{{ $e.claimName }}-cos-s3fs-secret"
-      cos.csi.driver/secret-namespace: {{ $.Values.namespace }}
+  annotations:
+    cos.csi.driver/secret: "{{ $e.claimName }}-cos-s3fs-secret"
+    cos.csi.driver/secret-namespace: {{ $.Values.namespace }}
   {{- end }}
 spec:
   storageClassName: {{ $.Values.objectStorage.cos_storage_class }}
