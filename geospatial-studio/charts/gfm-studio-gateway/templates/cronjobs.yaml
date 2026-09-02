@@ -26,7 +26,7 @@ spec:
           serviceAccountName: {{ .Values.serviceAccount.name }}
           containers:
           - name: cleanup
-            image: {{ .Values.images.cleanup_cronjob.name }}:{{ .Values.images.cleanup_cronjob.tag }}
+            image: {{ .Values.images.cleanup_cronjob }}
             imagePullPolicy: {{ .Values.image.pullPolicy | default .Values.global.imagePullPolicy }}
             command: ["/bin/bash", "/scripts/cleanup_jobs.sh"]  # Path to the script inside the container
             env:

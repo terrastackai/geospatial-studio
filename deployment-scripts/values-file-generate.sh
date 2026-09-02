@@ -74,5 +74,25 @@ do
         -e "s|PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE|${PIPELINES_V2_INFERENCE_ROOT_FOLDER_VALUE}|" \
         -e "s|TERRAKIT_CACHE_ENABLED_VALUE|${TERRAKIT_CACHE_ENABLED_VALUE}|" \
         -e "s|TERRAKIT_CACHE_DIR_VALUE|${TERRAKIT_CACHE_DIR_VALUE}|" \
+        -e "s|HF_HOME_VALUE|${HF_HOME_VALUE}|" \
+        -e "s|TRANSFORMERS_CACHE_VALUE|${TRANSFORMERS_CACHE_VALUE}|" \
+        -e "s|HF_HUB_OFFLINE_VALUE|${HF_HUB_OFFLINE_VALUE}|" \
+        -e "s|TRANSFORMERS_OFFLINE_VALUE|${TRANSFORMERS_OFFLINE_VALUE}|" \
+        -e "s|IMAGE_PULL_POLICY_VALUE|${IMAGE_PULL_POLICY_VALUE}|" \
+        -e "s|FTUNING_RUNTIME_IMAGE_VALUE|${FTUNING_RUNTIME_IMAGE_VALUE}|" \
+        -e "s|FT_HPO_IMAGE_VALUE|${FT_HPO_IMAGE_VALUE}|" \
+        -e "s|FTUNING_INIT_CONTAINER_IMAGE_VALUE|${FTUNING_INIT_CONTAINER_IMAGE_VALUE}|" \
+        -e "s|DATASET_PIPELINE_IMAGE_VALUE|${DATASET_PIPELINE_IMAGE_VALUE}|" \
         ${HELM_CHART_NAME}/values.yaml > workspace/$DEPLOYMENT_ENV/values/${HELM_CHART_NAME}/values.yaml
+
+    # When GEOSTUDIO_OFFLINE is not true, remove the HF_* and TRANSFORMERS_*
+    # offline env vars from the generated values so they are not passed to the
+    # gateway at all (online deployments should not set these keys).
+    if [[ "${GEOSTUDIO_OFFLINE:-false}" != "true" ]]; then
+        sed -i -e "/^[[:space:]]*HF_HOME:/d" \
+               -e "/^[[:space:]]*TRANSFORMERS_CACHE:/d" \
+               -e "/^[[:space:]]*HF_HUB_OFFLINE:/d" \
+               -e "/^[[:space:]]*TRANSFORMERS_OFFLINE:/d" \
+               workspace/$DEPLOYMENT_ENV/values/${HELM_CHART_NAME}/values.yaml
+    fi
 done

@@ -175,6 +175,28 @@ export CONFIGURE_GPU_AFFINITY=false
 export NODE_SELECTOR_KEY=nvidia.com/gpu.product
 export NODE_GPU_SPEC=NVIDIA-A100-SXM4-80GB
 
+# Offline / air-gapped mode
+export GEOSTUDIO_OFFLINE=false
+export HF_HOME_VALUE=
+export TRANSFORMERS_CACHE_VALUE=
+export HF_HUB_OFFLINE_VALUE=
+export TRANSFORMERS_OFFLINE_VALUE=
+# imagePullPolicy for all studio job containers (fine-tuning, HPO, dataset onboarding).
+# Default: Always (online).  Change to IfNotPresent for air-gapped clusters.
+export IMAGE_PULL_POLICY_VALUE=Always
+
+# ── Fine-tuning job images ───────────────────────────────────────────────────
+export FTUNING_RUNTIME_IMAGE_VALUE=quay.io/geospatial-studio/terratorch:latest
+
+# HPO tuning runtime image.
+export FT_HPO_IMAGE_VALUE=quay.io/geospatial-studio/gfmstudio-hpo:latest
+
+# initContainer image
+export FTUNING_INIT_CONTAINER_IMAGE_VALUE=busybox:latest
+
+# Dataset-onboarding pipeline image.
+export DATASET_PIPELINE_IMAGE_VALUE=quay.io/geospatial-studio/geostudio-pipelines:latest
+
 # Geoserver config
 export GEOSERVER_CM_PROXYBASEURL=
 export GEOSERVER_CM_WHITELIST=
