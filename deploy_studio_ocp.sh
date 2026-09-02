@@ -266,12 +266,6 @@ if [[ "$DEPLOY_IBM_STORAGE" == "Deploy" ]]; then
         exit 1
     fi
 
-    echo "Waiting for plugin deployment to be ready..."
-    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY \
-        --for=condition=available deployment/ibmcloud-object-storage-plugin \
-        -n ibm-object-s3fs --timeout=300s
-
-    # Create trusted CA bundle ConfigMap for OpenShift TLS
     if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then
         echo "Creating trusted CA bundle for TLS..."
         kubectl apply -f - <<EOF
@@ -296,6 +290,11 @@ EOF
             --sub-path=service-ca.crt \
             -n ibm-object-s3fs
     fi
+
+    echo "Waiting for plugin deployment to be ready..."
+    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY \
+        --for=condition=available deployment/ibmcloud-object-storage-plugin \
+        -n ibm-object-s3fs --timeout=300s
 
     echo "✅ IBM Object Storage Plugin installed successfully"
     echo "   Storage class 'ibmc-s3fs-cos' is now available"
