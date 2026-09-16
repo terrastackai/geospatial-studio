@@ -44,11 +44,11 @@ Run locally (from the geospatial-studio/ directory after deploying with deploy_s
 """
 
 import argparse
-import concurrent.futures
 import json
 import os
 import subprocess
 import sys
+import threading
 import time
 import urllib3
 from pathlib import Path
@@ -308,24 +308,41 @@ def dump_k8s_diagnostics(job_hint: str = "") -> None:
 
 
 def poll_with_timeout(fn, *, label: str, job_hint: str = "", timeout_s: int) -> dict:
-    """
-    Run *fn* (a zero-argument callable that wraps an SDK poll call) in a
-    background thread.  If it does not complete within *timeout_s* seconds,
-    dump k8s diagnostics and raise a TimeoutError so the caller can handle it.
+    """Run fn in a background daemon thread; raise TimeoutError after timeout_s.
 
-    Returns whatever *fn* returns on success.
+    Uses a daemon thread instead of ThreadPoolExecutor: the SDK's poll loops
+    never return once a backend job is stuck, and ThreadPoolExecutor blocks
+    process exit trying to join that leaked thread (this caused real ~6h CI
+    hangs). A daemon thread is abandoned on timeout and doesn't block exit.
+
+    Returns whatever fn returns on success.
     """
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(fn)
+    result_box: dict = {}
+    error_box: dict = {}
+    done = threading.Event()
+
+    def _runner():
         try:
-            return future.result(timeout=timeout_s)
-        except concurrent.futures.TimeoutError:
-            dump_k8s_diagnostics(job_hint=job_hint)
-            raise TimeoutError(
-                f"{label} did not finish within {timeout_s}s "
-                f"(job_hint={job_hint!r}). "
-                "See k8s diagnostics above for root cause."
-            )
+            result_box["value"] = fn()
+        except Exception as exc:  # noqa: BLE001 - propagate any exception to caller
+            error_box["error"] = exc
+        finally:
+            done.set()
+
+    thread = threading.Thread(target=_runner, name=f"poll-{label}", daemon=True)
+    thread.start()
+    finished = done.wait(timeout=timeout_s)
+
+    if not finished:
+        dump_k8s_diagnostics(job_hint=job_hint)
+        raise TimeoutError(
+            f"{label} did not finish within {timeout_s}s "
+            f"(job_hint={job_hint!r}). See k8s diagnostics above for root cause."
+        )
+
+    if "error" in error_box:
+        raise error_box["error"]
+    return result_box["value"]
 
 
 # ---------------------------------------------------------------------------

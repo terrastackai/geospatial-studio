@@ -15,9 +15,18 @@ on:
       - '.github/workflows/deploy-test-studio-crc.yml'
     types: [opened, synchronize, reopened]
 
+# Cancel superseded runs on new pushes so stuck/slow runs don't pile up.
+concurrency:
+  group: deploy-test-studio-crc-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   wait-for-kind-workflow:
     runs-on: ubuntu-latest
+    # Previously unbounded; would hang for hours if the Kind workflow's
+    # check-run hung too (observed: 2h14m+). Kind is capped at 60 minutes,
+    # so this leaves headroom above that.
+    timeout-minutes: 75
     steps:
       - name: Wait for Kind workflow to complete
         uses: lewagon/wait-on-check-action@v1.3.4
@@ -31,6 +40,7 @@ jobs:
   detect-changes:
     needs: wait-for-kind-workflow
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       should_deploy: ${{ steps.filter.outputs.deploy }}
     steps:
@@ -68,6 +78,9 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.should_deploy == 'true'
     runs-on: ubuntu-latest
+    # Was unbounded and would hang for up to GitHub's 6h default job timeout
+    # when a step got stuck. Successful runs take 45min-1h20min.
+    timeout-minutes: 150
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -670,12 +683,15 @@ jobs:
           sleep 30
           
           # Steps 1-6: Run workshop labs
+          # --lab4-dataset-file: small CI subset instead of the full ~2.9GB
+          # dataset. See scripts/datasets/build_ci_dataset_subset.py.
           echo ""
           echo "--- Steps 1-6: Executing workshop labs (run_labs.py) ---"
           python -u "${GS_DIR}/populate-studio/run_labs.py" \
             --api-key "${STUDIO_API_KEY}" \
             --studio-url "${BASE_STUDIO_UI_URL}" \
-            --skip-lab4-training
+            --skip-lab4-training \
+            --lab4-dataset-file dataset-burn_scars-ci.json
           
           LAB_EXIT=$?
           if [[ $LAB_EXIT -eq 0 ]]; then

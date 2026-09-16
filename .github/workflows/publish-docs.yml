@@ -16,9 +16,14 @@ on:
       - 'workshop/**'
     types: [opened, synchronize, reopened]
 
+concurrency:
+  group: publish-docs-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
