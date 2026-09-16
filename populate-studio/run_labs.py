@@ -257,11 +257,13 @@ K8S_NAMESPACE = os.environ.get("K8S_NAMESPACE", "default")
 
 
 def dump_k8s_diagnostics(job_hint: str = "") -> None:
-    """
-    Run kubectl commands to surface pod/job state when a poll times out.
-    Prints output directly so it appears in CI logs.
-    job_hint: an ID string (inference_id, tune_id, dataset_id) used to
-              narrow the pod search via grep.
+    """Print pod/job diagnostics (describe + logs) when a poll times out.
+
+    job_hint is a dataset/inference/tune ID for the log message only - it
+    never appears in pod names, so it can't be used to filter pods. Instead,
+    pods are prioritized: not-Running first, then components that process
+    onboarding/inference/fine-tuning jobs (terrakit, pipelines, mlflow,
+    etc.), then everything else, capped to avoid flooding the log.
     """
     ns = K8S_NAMESPACE
     warn(f"⏱  Poll timed out – dumping k8s diagnostics (namespace={ns}, hint={job_hint!r})")
@@ -284,25 +286,50 @@ def dump_k8s_diagnostics(job_hint: str = "") -> None:
     top_pods = _run(["kubectl", "top", "pods", "-n", ns])
     print(f"--- kubectl top pods -n {ns} ---\n{top_pods}\n")
 
-    # 3. Find pods related to the job hint (by name substring)
-    hint_pods: list[str] = []
-    if job_hint:
-        for line in pods_out.splitlines():
-            # Include all pods when job_hint is provided
-            pod_name = line.split()[0] if line.split() else ""
-            if pod_name and pod_name != "NAME":  # Skip header line
-                hint_pods.append(pod_name)
+    # 3. Pick which pods to inspect, most relevant first. Previously this
+    # added *every* pod to the list whenever job_hint was set (the hint was
+    # never actually used to filter), so the describe/logs cap below just
+    # took whichever 6 pods happened to sort first - e.g. gateway/mlflow/
+    # redis - and never reached the pod actually processing the job (e.g.
+    # terrakit-data-fetch for a stuck dataset onboard).
+    all_pod_lines = [
+        line for line in pods_out.splitlines()
+        if line.split() and line.split()[0] != "NAME"
+    ]
 
-    # Also grab any pods in non-Running/Completed state
-    for line in pods_out.splitlines():
+    def _pod_status(line: str) -> str:
         cols = line.split()
-        if len(cols) >= 3:
-            pod_name, _ready, pod_status = cols[0], cols[1], cols[2]
-            if pod_status not in ("Running", "Completed", "NAME") and pod_name not in hint_pods:
-                hint_pods.append(pod_name)
+        return cols[2] if len(cols) >= 3 else ""
+
+    # Priority 1: pods not Running/Completed - direct evidence of a problem.
+    not_running = [
+        line.split()[0] for line in all_pod_lines
+        if _pod_status(line) not in ("Running", "Completed")
+    ]
+
+    # Priority 2: pods for components that actually process onboarding/
+    # inference/fine-tuning jobs (dataset onboards, inference runs, tune
+    # jobs all flow through these), even if currently Running - their logs
+    # show whether the job was ever picked up at all.
+    job_processing_keywords = (
+        "terrakit", "pipeline", "inference", "terratorch", "geoserver",
+        "gateway", "mlflow",
+    )
+    processing_pods = [
+        line.split()[0] for line in all_pod_lines
+        if any(kw in line.split()[0] for kw in job_processing_keywords)
+    ]
+
+    # Priority 3: everything else, as filler if there's room left.
+    remaining = [line.split()[0] for line in all_pod_lines]
+
+    hint_pods: list[str] = []
+    for pod_name in not_running + processing_pods + remaining:
+        if pod_name not in hint_pods:
+            hint_pods.append(pod_name)
 
     # 4. Describe + logs for each relevant pod
-    for pod in hint_pods[:6]:  # cap at 6 pods to avoid log flood
+    for pod in hint_pods[:10]:  # cap to avoid log flood
         desc = _run(["kubectl", "describe", "pod", pod, "-n", ns])
         print(f"\n--- kubectl describe pod {pod} -n {ns} ---\n{desc}\n")
         logs = _run(["kubectl", "logs", pod, "-n", ns, "--tail=100", "--all-containers=true"])
