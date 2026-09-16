@@ -1,0 +1,306 @@
+{
+  "source_dataset_url": "https://s3.us-east.cloud-object-storage.appdomain.cloud/geospatial-studio-example-data/burn-scar-training-data.zip",
+  "generated_at_utc": "2026-09-16T10:06:49Z",
+  "methodology": "Stratified sampling on per-scene burn/foreground pixel fraction (quantile bins computed over the full population), with a forced-inclusion rule guaranteeing the 'Ignore' label class is represented if present anywhere in the source dataset. Sampling is deterministic given --seed. See module docstring of build_ci_dataset_subset.py for full details.",
+  "seed": 42,
+  "num_strata": 4,
+  "requested_scenes": 24,
+  "total_scenes_available": 804,
+  "forced_ignore_swap": null,
+  "strata_summary": [
+    {
+      "stratum": 0,
+      "burn_fraction_range": [
+        0.0,
+        0.02386474609375
+      ],
+      "population_size": 202,
+      "sampled": 6
+    },
+    {
+      "stratum": 1,
+      "burn_fraction_range": [
+        0.02386474609375,
+        0.04084521011993774
+      ],
+      "population_size": 201,
+      "sampled": 6
+    },
+    {
+      "stratum": 2,
+      "burn_fraction_range": [
+        0.04084521011993774,
+        0.09783737156292463
+      ],
+      "population_size": 200,
+      "sampled": 6
+    },
+    {
+      "stratum": 3,
+      "burn_fraction_range": [
+        0.09783737156292463,
+        0.9625511169433594
+      ],
+      "population_size": 201,
+      "sampled": 6
+    }
+  ],
+  "selected_scenes": [
+    {
+      "stem": "subsetted_512x512_HLS.S30.T10SFG.2020215.v1.4",
+      "burn_fraction": 0.099423,
+      "has_ignore": true,
+      "class_counts": {
+        "-1": 12,
+        "0": 236070,
+        "1": 26062
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T10TEK.2018340.v1.4",
+      "burn_fraction": 0.06717,
+      "has_ignore": true,
+      "class_counts": {
+        "-1": 63,
+        "0": 244477,
+        "1": 17604
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T10TEK.2019350.v1.4",
+      "burn_fraction": 0.050187,
+      "has_ignore": true,
+      "class_counts": {
+        "-1": 23,
+        "0": 248966,
+        "1": 13155
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T10TFM.2018155.v1.4",
+      "burn_fraction": 0.017664,
+      "has_ignore": true,
+      "class_counts": {
+        "-1": 92,
+        "0": 257423,
+        "1": 4629
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T10TFS.2019213.v1.4",
+      "burn_fraction": 0.1026,
+      "has_ignore": false,
+      "class_counts": {
+        "0": 235248,
+        "1": 26896
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T10TGQ.2020275.v1.4",
+      "burn_fraction": 0.023895,
+      "has_ignore": true,
+      "class_counts": {
+        "-1": 2,
+        "0": 255878,
+        "1": 6264
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T11SKD.2020197.v1.4",
+      "burn_fraction": 0.040741,
+      "has_ignore": false,
+      "class_counts": {
+        "0": 251464,
+        "1": 10680
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T11SLC.2020247.v1.4",
+      "burn_fraction": 0.062303,
+      "has_ignore": true,
+      "class_counts": {
+        "-1": 5,
+        "0": 245807,
+        "1": 16332
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T11SNT.2020221.v1.4",
+      "burn_fraction": 0.533244,
+      "has_ignore": true,
+      "class_counts": {
+        "-1": 48,
+        "0": 122335,
+        "1": 139761
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T11SPD.2020184.v1.4",
+      "burn_fraction": 0.144901,
+      "has_ignore": false,
+      "class_counts": {
+        "0": 224159,
+        "1": 37985
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T11TLH.2019215.v1.4",
+      "burn_fraction": 0.022251,
+      "has_ignore": false,
+      "class_counts": {
+        "0": 256311,
+        "1": 5833
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T11TNE.2019224.v1.4",
+      "burn_fraction": 0.02676,
+      "has_ignore": false,
+      "class_counts": {
+        "0": 255129,
+        "1": 7015
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T12TUM.2018246.v1.4",
+      "burn_fraction": 0.249298,
+      "has_ignore": false,
+      "class_counts": {
+        "0": 196792,
+        "1": 65352
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T13SBS.2020217.v1.4",
+      "burn_fraction": 0.021,
+      "has_ignore": false,
+      "class_counts": {
+        "0": 256639,
+        "1": 5505
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T13SCR.2018214.v1.4",
+      "burn_fraction": 0.083706,
+      "has_ignore": false,
+      "class_counts": {
+        "0": 240201,
+        "1": 21943
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T13SFR.2020251.v1.4",
+      "burn_fraction": 0.02198,
+      "has_ignore": false,
+      "class_counts": {
+        "0": 256382,
+        "1": 5762
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T13SFT.2018136.v1.4",
+      "burn_fraction": 0.427704,
+      "has_ignore": false,
+      "class_counts": {
+        "0": 150024,
+        "1": 112120
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T14SLA.2020223.v1.4",
+      "burn_fraction": 0.052032,
+      "has_ignore": false,
+      "class_counts": {
+        "0": 248504,
+        "1": 13640
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T14SNG.2020118.v1.4",
+      "burn_fraction": 0.097805,
+      "has_ignore": false,
+      "class_counts": {
+        "0": 236505,
+        "1": 25639
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T16RCV.2021167.v1.4",
+      "burn_fraction": 0.040845,
+      "has_ignore": true,
+      "class_counts": {
+        "-1": 8,
+        "0": 251429,
+        "1": 10707
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T16TGQ.2019158.v1.4",
+      "burn_fraction": 0.009697,
+      "has_ignore": false,
+      "class_counts": {
+        "0": 259602,
+        "1": 2542
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T17RMJ.2018064.v1.4",
+      "burn_fraction": 0.029866,
+      "has_ignore": true,
+      "class_counts": {
+        "-1": 9,
+        "0": 254306,
+        "1": 7829
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T17RML.2018064.v1.4",
+      "burn_fraction": 0.024357,
+      "has_ignore": true,
+      "class_counts": {
+        "-1": 81,
+        "0": 255680,
+        "1": 6383
+      }
+    },
+    {
+      "stem": "subsetted_512x512_HLS.S30.T17SNA.2021348.v1.4",
+      "burn_fraction": 0.018947,
+      "has_ignore": true,
+      "class_counts": {
+        "-1": 48,
+        "0": 257130,
+        "1": 4966
+      }
+    }
+  ],
+  "class_distribution_full_dataset": {
+    "-1": {
+      "pixels": 1334912,
+      "fraction": 0.00633368800528607
+    },
+    "0": {
+      "pixels": 186225043,
+      "fraction": 0.8835723411977587
+    },
+    "1": {
+      "pixels": 23203821,
+      "fraction": 0.11009397079695517
+    }
+  },
+  "class_distribution_subset": {
+    "0": {
+      "pixels": 5696461,
+      "fraction": 0.9054280916849772
+    },
+    "1": {
+      "pixels": 594604,
+      "fraction": 0.09450976053873698
+    },
+    "-1": {
+      "pixels": 391,
+      "fraction": 6.21477762858073e-05
+    }
+  },
+  "output_zip": "/tmp/burnscar_build/burn-scar-training-data-ci.zip"
+}

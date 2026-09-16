@@ -19,7 +19,8 @@ Usage:
         --studio-url <UI_ROUTE_URL> \
         [--notebooks-dir <path>] \
         [--skip-lab4-training] \
-        [--skip-lab4-dataset]
+        [--skip-lab4-dataset] \
+        [--lab4-dataset-file <filename>]
 
     --notebooks-dir defaults to populate-studio/payloads/ (sibling of this script).
     JSON config files required: backbone-Prithvi_EO_V2_300M.json, dataset-burn_scars.json,
@@ -28,6 +29,7 @@ Usage:
 Environment variables (alternative to flags):
     STUDIO_API_KEY      - API key for authentication
     BASE_STUDIO_UI_URL  - Studio UI base URL (e.g. https://localhost:4180)
+    LAB4_DATASET_FILE   - dataset descriptor filename for Lab 4 (see --lab4-dataset-file)
 
 Run locally (from the geospatial-studio/ directory after deploying with deploy_studio_k8s.sh):
     source .studio-api-key
@@ -41,14 +43,18 @@ Run locally (from the geospatial-studio/ directory after deploying with deploy_s
         --api-key "${STUDIO_API_KEY}" \
         --studio-url "https://localhost:4180" \
         --skip-lab4-dataset
+
+    Add --lab4-dataset-file dataset-burn_scars-ci.json to onboard the small
+    CI subset (~90MB) instead of the full dataset (~2.9GB) - this is what
+    CI workflows use.
 """
 
 import argparse
-import concurrent.futures
 import json
 import os
 import subprocess
 import sys
+import threading
 import time
 import urllib3
 from pathlib import Path
@@ -251,11 +257,13 @@ K8S_NAMESPACE = os.environ.get("K8S_NAMESPACE", "default")
 
 
 def dump_k8s_diagnostics(job_hint: str = "") -> None:
-    """
-    Run kubectl commands to surface pod/job state when a poll times out.
-    Prints output directly so it appears in CI logs.
-    job_hint: an ID string (inference_id, tune_id, dataset_id) used to
-              narrow the pod search via grep.
+    """Print pod/job diagnostics (describe + logs) when a poll times out.
+
+    job_hint is a dataset/inference/tune ID for the log message only - it
+    never appears in pod names, so it can't be used to filter pods. Instead,
+    pods are prioritized: not-Running first, then components that process
+    onboarding/inference/fine-tuning jobs (terrakit, pipelines, mlflow,
+    etc.), then everything else, capped to avoid flooding the log.
     """
     ns = K8S_NAMESPACE
     warn(f"⏱  Poll timed out – dumping k8s diagnostics (namespace={ns}, hint={job_hint!r})")
@@ -278,25 +286,50 @@ def dump_k8s_diagnostics(job_hint: str = "") -> None:
     top_pods = _run(["kubectl", "top", "pods", "-n", ns])
     print(f"--- kubectl top pods -n {ns} ---\n{top_pods}\n")
 
-    # 3. Find pods related to the job hint (by name substring)
-    hint_pods: list[str] = []
-    if job_hint:
-        for line in pods_out.splitlines():
-            # Include all pods when job_hint is provided
-            pod_name = line.split()[0] if line.split() else ""
-            if pod_name and pod_name != "NAME":  # Skip header line
-                hint_pods.append(pod_name)
+    # 3. Pick which pods to inspect, most relevant first. Previously this
+    # added *every* pod to the list whenever job_hint was set (the hint was
+    # never actually used to filter), so the describe/logs cap below just
+    # took whichever 6 pods happened to sort first - e.g. gateway/mlflow/
+    # redis - and never reached the pod actually processing the job (e.g.
+    # terrakit-data-fetch for a stuck dataset onboard).
+    all_pod_lines = [
+        line for line in pods_out.splitlines()
+        if line.split() and line.split()[0] != "NAME"
+    ]
 
-    # Also grab any pods in non-Running/Completed state
-    for line in pods_out.splitlines():
+    def _pod_status(line: str) -> str:
         cols = line.split()
-        if len(cols) >= 3:
-            pod_name, _ready, pod_status = cols[0], cols[1], cols[2]
-            if pod_status not in ("Running", "Completed", "NAME") and pod_name not in hint_pods:
-                hint_pods.append(pod_name)
+        return cols[2] if len(cols) >= 3 else ""
+
+    # Priority 1: pods not Running/Completed - direct evidence of a problem.
+    not_running = [
+        line.split()[0] for line in all_pod_lines
+        if _pod_status(line) not in ("Running", "Completed")
+    ]
+
+    # Priority 2: pods for components that actually process onboarding/
+    # inference/fine-tuning jobs (dataset onboards, inference runs, tune
+    # jobs all flow through these), even if currently Running - their logs
+    # show whether the job was ever picked up at all.
+    job_processing_keywords = (
+        "terrakit", "pipeline", "inference", "terratorch", "geoserver",
+        "gateway", "mlflow",
+    )
+    processing_pods = [
+        line.split()[0] for line in all_pod_lines
+        if any(kw in line.split()[0] for kw in job_processing_keywords)
+    ]
+
+    # Priority 3: everything else, as filler if there's room left.
+    remaining = [line.split()[0] for line in all_pod_lines]
+
+    hint_pods: list[str] = []
+    for pod_name in not_running + processing_pods + remaining:
+        if pod_name not in hint_pods:
+            hint_pods.append(pod_name)
 
     # 4. Describe + logs for each relevant pod
-    for pod in hint_pods[:6]:  # cap at 6 pods to avoid log flood
+    for pod in hint_pods[:10]:  # cap to avoid log flood
         desc = _run(["kubectl", "describe", "pod", pod, "-n", ns])
         print(f"\n--- kubectl describe pod {pod} -n {ns} ---\n{desc}\n")
         logs = _run(["kubectl", "logs", pod, "-n", ns, "--tail=100", "--all-containers=true"])
@@ -308,24 +341,41 @@ def dump_k8s_diagnostics(job_hint: str = "") -> None:
 
 
 def poll_with_timeout(fn, *, label: str, job_hint: str = "", timeout_s: int) -> dict:
-    """
-    Run *fn* (a zero-argument callable that wraps an SDK poll call) in a
-    background thread.  If it does not complete within *timeout_s* seconds,
-    dump k8s diagnostics and raise a TimeoutError so the caller can handle it.
+    """Run fn in a background daemon thread; raise TimeoutError after timeout_s.
 
-    Returns whatever *fn* returns on success.
+    Uses a daemon thread instead of ThreadPoolExecutor: the SDK's poll loops
+    never return once a backend job is stuck, and ThreadPoolExecutor blocks
+    process exit trying to join that leaked thread (this caused real ~6h CI
+    hangs). A daemon thread is abandoned on timeout and doesn't block exit.
+
+    Returns whatever fn returns on success.
     """
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(fn)
+    result_box: dict = {}
+    error_box: dict = {}
+    done = threading.Event()
+
+    def _runner():
         try:
-            return future.result(timeout=timeout_s)
-        except concurrent.futures.TimeoutError:
-            dump_k8s_diagnostics(job_hint=job_hint)
-            raise TimeoutError(
-                f"{label} did not finish within {timeout_s}s "
-                f"(job_hint={job_hint!r}). "
-                "See k8s diagnostics above for root cause."
-            )
+            result_box["value"] = fn()
+        except Exception as exc:  # noqa: BLE001 - propagate any exception to caller
+            error_box["error"] = exc
+        finally:
+            done.set()
+
+    thread = threading.Thread(target=_runner, name=f"poll-{label}", daemon=True)
+    thread.start()
+    finished = done.wait(timeout=timeout_s)
+
+    if not finished:
+        dump_k8s_diagnostics(job_hint=job_hint)
+        raise TimeoutError(
+            f"{label} did not finish within {timeout_s}s "
+            f"(job_hint={job_hint!r}). See k8s diagnostics above for root cause."
+        )
+
+    if "error" in error_box:
+        raise error_box["error"]
+    return result_box["value"]
 
 
 # ---------------------------------------------------------------------------
@@ -688,6 +738,7 @@ def run_lab4(
     notebooks_dir: str,
     skip_training: bool = False,
     skip_dataset: bool = False,
+    dataset_filename: str = "dataset-burn_scars.json",
 ) -> dict:
     """
     Lab 4: Full end-to-end burn scars workflow.
@@ -697,6 +748,10 @@ def run_lab4(
       4. Submit fine-tuning job (skipped if skip_training=True)
       5. Poll training until finished
       6. Run inference on Park Fire 2024
+
+    dataset_filename: dataset descriptor to onboard, under notebooks_dir/datasets/.
+      Defaults to the full dataset; CI passes dataset-burn_scars-ci.json (see
+      scripts/datasets/build_ci_dataset_subset.py) to keep runtime bounded.
 
     Returns dict with all IDs and statuses.
     """
@@ -748,13 +803,13 @@ def run_lab4(
         warn("Note: fine-tuning step will be skipped too without a dataset_id")
     else:
         step("Loading burn scars dataset configuration...")
-        dataset_path = os.path.join(notebooks_dir, "datasets", "dataset-burn_scars.json")
+        dataset_path = os.path.join(notebooks_dir, "datasets", dataset_filename)
         try:
             with open(dataset_path, "r") as fh:
                 wild_fire_dataset = json.load(fh)
             ok(f"Loaded dataset config from {dataset_path}")
         except FileNotFoundError:
-            fail(f"dataset-burn_scars.json not found at {dataset_path}")
+            fail(f"{dataset_filename} not found at {dataset_path}")
             return results
 
         step("Onboarding burn scars training dataset (may take several minutes)...")
@@ -1082,6 +1137,13 @@ def parse_args() -> argparse.Namespace:
         help="Skip the dataset onboarding step in Lab 4 (also skips fine-tuning; "
              "useful when S3 access or bandwidth is limited)",
     )
+    parser.add_argument(
+        "--lab4-dataset-file",
+        default=os.environ.get("LAB4_DATASET_FILE", "dataset-burn_scars.json"),
+        help="Dataset descriptor to onboard in Lab 4, under "
+             "<notebooks-dir>/datasets/ (or LAB4_DATASET_FILE env var). "
+             "Default: dataset-burn_scars.json (full dataset).",
+    )
     return parser.parse_args()
 
 
@@ -1105,6 +1167,7 @@ def main() -> int:
     step(f"Notebooks   : {notebooks_dir}")
     step(f"Skip Lab4 Training: {args.skip_lab4_training}")
     step(f"Skip Lab4 Dataset:  {args.skip_lab4_dataset}")
+    step(f"Lab4 Dataset File:  {args.lab4_dataset_file}")
 
     # Write summary header
     write_github_summary(
@@ -1172,6 +1235,7 @@ def main() -> int:
             notebooks_dir=notebooks_dir,
             skip_training=args.skip_lab4_training,
             skip_dataset=args.skip_lab4_dataset,
+            dataset_filename=args.lab4_dataset_file,
         )
     except Exception as exc:
         fail(f"Lab 4 encountered an unexpected error: {exc}")
