@@ -19,7 +19,8 @@ Usage:
         --studio-url <UI_ROUTE_URL> \
         [--notebooks-dir <path>] \
         [--skip-lab4-training] \
-        [--skip-lab4-dataset]
+        [--skip-lab4-dataset] \
+        [--lab4-dataset-file <filename>]
 
     --notebooks-dir defaults to populate-studio/payloads/ (sibling of this script).
     JSON config files required: backbone-Prithvi_EO_V2_300M.json, dataset-burn_scars.json,
@@ -28,6 +29,7 @@ Usage:
 Environment variables (alternative to flags):
     STUDIO_API_KEY      - API key for authentication
     BASE_STUDIO_UI_URL  - Studio UI base URL (e.g. https://localhost:4180)
+    LAB4_DATASET_FILE   - dataset descriptor filename for Lab 4 (see --lab4-dataset-file)
 
 Run locally (from the geospatial-studio/ directory after deploying with deploy_studio_k8s.sh):
     source .studio-api-key
@@ -41,6 +43,10 @@ Run locally (from the geospatial-studio/ directory after deploying with deploy_s
         --api-key "${STUDIO_API_KEY}" \
         --studio-url "https://localhost:4180" \
         --skip-lab4-dataset
+
+    Add --lab4-dataset-file dataset-burn_scars-ci.json to onboard the small
+    CI subset (~90MB) instead of the full dataset (~2.9GB) - this is what
+    CI workflows use.
 """
 
 import argparse
@@ -705,6 +711,7 @@ def run_lab4(
     notebooks_dir: str,
     skip_training: bool = False,
     skip_dataset: bool = False,
+    dataset_filename: str = "dataset-burn_scars.json",
 ) -> dict:
     """
     Lab 4: Full end-to-end burn scars workflow.
@@ -714,6 +721,10 @@ def run_lab4(
       4. Submit fine-tuning job (skipped if skip_training=True)
       5. Poll training until finished
       6. Run inference on Park Fire 2024
+
+    dataset_filename: dataset descriptor to onboard, under notebooks_dir/datasets/.
+      Defaults to the full dataset; CI passes dataset-burn_scars-ci.json (see
+      scripts/datasets/build_ci_dataset_subset.py) to keep runtime bounded.
 
     Returns dict with all IDs and statuses.
     """
@@ -765,13 +776,13 @@ def run_lab4(
         warn("Note: fine-tuning step will be skipped too without a dataset_id")
     else:
         step("Loading burn scars dataset configuration...")
-        dataset_path = os.path.join(notebooks_dir, "datasets", "dataset-burn_scars.json")
+        dataset_path = os.path.join(notebooks_dir, "datasets", dataset_filename)
         try:
             with open(dataset_path, "r") as fh:
                 wild_fire_dataset = json.load(fh)
             ok(f"Loaded dataset config from {dataset_path}")
         except FileNotFoundError:
-            fail(f"dataset-burn_scars.json not found at {dataset_path}")
+            fail(f"{dataset_filename} not found at {dataset_path}")
             return results
 
         step("Onboarding burn scars training dataset (may take several minutes)...")
@@ -1099,6 +1110,13 @@ def parse_args() -> argparse.Namespace:
         help="Skip the dataset onboarding step in Lab 4 (also skips fine-tuning; "
              "useful when S3 access or bandwidth is limited)",
     )
+    parser.add_argument(
+        "--lab4-dataset-file",
+        default=os.environ.get("LAB4_DATASET_FILE", "dataset-burn_scars.json"),
+        help="Dataset descriptor to onboard in Lab 4, under "
+             "<notebooks-dir>/datasets/ (or LAB4_DATASET_FILE env var). "
+             "Default: dataset-burn_scars.json (full dataset).",
+    )
     return parser.parse_args()
 
 
@@ -1122,6 +1140,7 @@ def main() -> int:
     step(f"Notebooks   : {notebooks_dir}")
     step(f"Skip Lab4 Training: {args.skip_lab4_training}")
     step(f"Skip Lab4 Dataset:  {args.skip_lab4_dataset}")
+    step(f"Lab4 Dataset File:  {args.lab4_dataset_file}")
 
     # Write summary header
     write_github_summary(
@@ -1189,6 +1208,7 @@ def main() -> int:
             notebooks_dir=notebooks_dir,
             skip_training=args.skip_lab4_training,
             skip_dataset=args.skip_lab4_dataset,
+            dataset_filename=args.lab4_dataset_file,
         )
     except Exception as exc:
         fail(f"Lab 4 encountered an unexpected error: {exc}")

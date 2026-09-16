@@ -29,13 +29,18 @@ jobs:
     timeout-minutes: 75
     steps:
       - name: Wait for Kind workflow to complete
-        uses: lewagon/wait-on-check-action@v1.3.4
+        uses: lewagon/wait-on-check-action@v1.9.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           check-name: 'deploy-and-test'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 30
           allowed-conclusions: success,failure,cancelled,skipped
+          # Kind's "deploy-and-test" check isn't registered until its
+          # detect-changes job finishes (runner queueing can push this past
+          # a minute). Without this, the action treats "not registered yet"
+          # as "never ran" and fails immediately instead of waiting.
+          checks-discovery-timeout: 300
 
   detect-changes:
     needs: wait-for-kind-workflow
