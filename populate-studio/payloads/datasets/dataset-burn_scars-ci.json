@@ -1,0 +1,44 @@
+{
+    "dataset_name": "Wildfire burn scars (CI subset)",
+    "dataset_url": "https://s3.us-south.cloud-object-storage.appdomain.cloud/geospatial-studio-temporary-uploads-fmaas-prod/geospatial-studio-ci-datasets/burn-scar-training-data-ci.zip",
+    "label_suffix": ".mask.tif",
+    "description": "A 24-scene stratified subset of the full 804-scene 'Wildfire burn scars' dataset, built for fast CI testing (not for real training/evaluation - use dataset-burn_scars.json for that). See burn-scar-training-data-ci.manifest.json for sampling details and scripts/datasets/build_ci_dataset_subset.py for the generator.",
+    "purpose": "Segmentation",
+    "data_sources": [
+        {
+            "bands": [
+                {"index": "0", "band_name": "Blue", "scaling_factor": "0.0001", "RGB_band": "B"},
+                {"index": "1", "band_name": "Green", "scaling_factor": "0.0001", "RGB_band": "G"},
+                {"index": "2", "band_name": "Red", "scaling_factor": "0.0001", "RGB_band": "R"},
+                {"index": "3", "band_name": "NIR_Narrow", "scaling_factor": "0.0001"},
+                {"index": "4", "band_name": "SWIR1", "scaling_factor": "0.0001"},
+                {"index": "5", "band_name": "SWIR2", "scaling_factor": "0.0001"}
+            ],
+            "connector": "sentinelhub",
+            "collection": "hls_l30",
+            "file_suffix": "_merged.tif",
+            "modality_tag": "HLS_L30"
+        }
+    ],
+    "label_categories": [
+        {
+            "id": "1",
+            "name": "Fire Scar",
+            "color": "#ab4f4f",
+            "opacity": 1
+        },
+        {
+            "id": "0",
+            "name": "No data",
+            "color": "#000000",
+            "opacity": "0"
+        },
+        {
+            "id": "-1",
+            "name": "Ignore",
+            "color": "#000000",
+            "opacity": "0"
+        }
+    ],
+    "version": "v2"
+}

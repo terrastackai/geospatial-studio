@@ -252,6 +252,25 @@ if [[ "$DEPLOY_IBM_STORAGE" == "Deploy" ]]; then
         echo "Helm plugin 'ibmc' already installed"
     fi
 
+    # Newer ibm-object-storage-plugin charts set
+    # priorityClassName: ibm-app-cluster-critical, which only exists on IBM
+    # Cloud managed clusters. Without it (e.g. CRC, self-managed OCP) the
+    # plugin ReplicaSet fails with "no PriorityClass with name
+    # ibm-app-cluster-critical was found" and the deployment never becomes
+    # available.
+    if ! kubectl get priorityclass ibm-app-cluster-critical >/dev/null 2>&1; then
+        echo "Creating missing PriorityClass ibm-app-cluster-critical..."
+        kubectl apply -f - <<EOF
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: ibm-app-cluster-critical
+value: 900000000
+globalDefault: false
+description: "Priority class for IBM Object Storage Plugin (normally pre-created on IBM Cloud clusters)"
+EOF
+    fi
+
     # Install IBM Object Storage Plugin
     echo "Installing IBM Object Storage Plugin via Helm..."
     # crc runs on a redhat vm
@@ -267,9 +286,21 @@ if [[ "$DEPLOY_IBM_STORAGE" == "Deploy" ]]; then
     fi
 
     echo "Waiting for plugin deployment to be ready..."
-    kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY \
+    if ! kubectl_wait_with_retry $KUBECTL_WAIT_RETRY_ATTEMPTS $KUBECTL_WAIT_RETRY_DELAY \
         --for=condition=available deployment/ibmcloud-object-storage-plugin \
-        -n ibm-object-s3fs --timeout=300s
+        -n ibm-object-s3fs --timeout=300s; then
+        echo "✗ IBM Object Storage Plugin deployment never became available"
+        echo ""
+        echo "--- Plugin pods ---"
+        kubectl get pods -n ibm-object-s3fs -o wide || true
+        echo ""
+        echo "--- Plugin deployment describe ---"
+        kubectl describe deployment/ibmcloud-object-storage-plugin -n ibm-object-s3fs || true
+        echo ""
+        echo "--- Recent events in ibm-object-s3fs ---"
+        kubectl get events -n ibm-object-s3fs --sort-by='.lastTimestamp' | tail -30 || true
+        exit 1
+    fi
 
     # Create trusted CA bundle ConfigMap for OpenShift TLS
     if [[ "$DEPLOYMENT_ENV" == "crc" ]]; then

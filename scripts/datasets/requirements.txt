@@ -1,0 +1,7 @@
+# Dependencies for build_ci_dataset_subset.py.
+# Not needed to run the Studio labs (see requirements.txt at repo root for
+# that) - only for regenerating a CI dataset subset.
+
+remotezip>=0.12.1
+rasterio>=1.3
+numpy>=1.24

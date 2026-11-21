@@ -13,9 +13,15 @@ on:
       - '.github/workflows/deploy-test-studio-kind.yml'
     types: [opened, synchronize, reopened]
 
+# Cancel superseded runs on new pushes so stuck/slow runs don't pile up.
+concurrency:
+  group: deploy-test-studio-kind-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       should_deploy: ${{ steps.filter.outputs.deploy }}
     steps:
@@ -41,7 +47,7 @@ jobs:
           # populate-studio, or this workflow file.
           # Explicitly skip docs-only changes.
           if echo "$CHANGED_FILES" | grep -qE \
-            "^(operators/|deployment-scripts/|populate-studio/|geospatial-studio/|deploy_studio_k8s\.sh|requirements\.txt|\.github/workflows/deploy-test-studio\.yml)"; then
+            "^(operators/|deployment-scripts/|populate-studio/|geospatial-studio/|deploy_studio_k8s\.sh|requirements\.txt|\.github/workflows/deploy-test-studio-kind\.yml)"; then
             echo "deploy=true" >> $GITHUB_OUTPUT
             echo "Deployment-relevant files changed – deployment will proceed"
           else
@@ -53,6 +59,10 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.should_deploy == 'true'
     runs-on: ubuntu-latest
+    # Was unbounded and would hang for up to GitHub's 6h default job timeout
+    # when a step (e.g. dataset onboarding) got stuck. Runs normally finish
+    # in under 45 minutes.
+    timeout-minutes: 60
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -414,12 +424,15 @@ jobs:
           # Steps 1-6: Run all 4 workshop labs via run_labs.py
           # (covers inference examples, templates, tunes, datasets, and backbone)
           # --notebooks-dir defaults to populate-studio/payloads/ inside the repo
+          # --lab4-dataset-file: small CI subset instead of the full ~2.9GB
+          # dataset. See scripts/datasets/build_ci_dataset_subset.py.
           echo ""
           echo "--- Steps 1-6: Executing workshop labs (run_labs.py) ---"
           python -u "${GS_DIR}/populate-studio/run_labs.py" \
             --api-key "${STUDIO_API_KEY}" \
             --studio-url "${BASE_STUDIO_UI_URL}" \
-            --skip-lab4-training
+            --skip-lab4-training \
+            --lab4-dataset-file dataset-burn_scars-ci.json
 
           LAB_EXIT=$?
           if [[ $LAB_EXIT -eq 0 ]]; then

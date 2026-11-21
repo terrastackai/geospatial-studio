@@ -12,6 +12,25 @@ helm repo add ibm-helm https://raw.githubusercontent.com/IBM/charts/master/repo/
 helm repo update
 helm fetch --untar ibm-helm/ibm-object-storage-plugin
 helm plugin install ./ibm-object-storage-plugin/helm-ibmc
+# Newer ibm-object-storage-plugin charts set
+# priorityClassName: ibm-app-cluster-critical, which only exists on IBM
+# Cloud managed clusters. Without it (e.g. CRC, self-managed OCP) the
+# plugin ReplicaSet fails with "no PriorityClass with name
+# ibm-app-cluster-critical was found" and the deployment never becomes
+# available.
+if ! kubectl get priorityclass ibm-app-cluster-critical >/dev/null 2>&1; then
+  echo "Creating missing PriorityClass ibm-app-cluster-critical..."
+  kubectl apply -f - <<EOF
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: ibm-app-cluster-critical
+value: 900000000
+globalDefault: false
+description: "Priority class for IBM Object Storage Plugin (normally pre-created on IBM Cloud clusters)"
+EOF
+fi
+
 helm ibmc install ibm-object-storage-plugin ibm-helm/ibm-object-storage-plugin --set license=true --set workerOS="redhat" --set region="us-east"
 
 kubectl apply -f - <<EOF

@@ -151,6 +151,7 @@ kubectl_wait_with_retry() {
             local namespace=$(echo "$kubectl_args" | grep -oP '(?<=-n |--namespace[= ])\S+' || echo "default")
             local label_selector=$(echo "$kubectl_args" | grep -oP '(?<=-l )\S+' || echo "")
             local pod_name=$(echo "$kubectl_args" | grep -oP 'pod/\S+' | cut -d'/' -f2 || echo "")
+            local deployment_name=$(echo "$kubectl_args" | grep -oP 'deployment/\S+' | cut -d'/' -f2 || echo "")
             
             if [[ -n "$label_selector" ]]; then
                 echo "Pods matching label '$label_selector' in namespace '$namespace':"
@@ -178,6 +179,20 @@ kubectl_wait_with_retry() {
                 echo ""
                 echo "--- Recent events for pod: $pod_name ---"
                 kubectl get events -n "$namespace" --field-selector involvedObject.name="$pod_name" --sort-by='.lastTimestamp' | tail -10 || true
+                echo ""
+            elif [[ -n "$deployment_name" ]]; then
+                echo "Deployment status for '$deployment_name' in namespace '$namespace':"
+                kubectl get deployment "$deployment_name" -n "$namespace" 2>/dev/null || true
+                echo ""
+                echo "--- Describe deployment: $deployment_name ---"
+                kubectl describe deployment "$deployment_name" -n "$namespace" 2>/dev/null || true
+                echo ""
+                echo "--- Pods owned by deployment: $deployment_name ---"
+                kubectl get pods -n "$namespace" -l "app=$deployment_name" 2>/dev/null || true
+                kubectl get pods -n "$namespace" 2>/dev/null | grep "$deployment_name" || true
+                echo ""
+                echo "--- Recent events for deployment: $deployment_name ---"
+                kubectl get events -n "$namespace" --field-selector involvedObject.name="$deployment_name" --sort-by='.lastTimestamp' | tail -10 || true
                 echo ""
             fi
             
