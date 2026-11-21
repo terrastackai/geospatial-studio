@@ -252,6 +252,25 @@ if [[ "$DEPLOY_IBM_STORAGE" == "Deploy" ]]; then
         echo "Helm plugin 'ibmc' already installed"
     fi
 
+    # Newer ibm-object-storage-plugin charts set
+    # priorityClassName: ibm-app-cluster-critical, which only exists on IBM
+    # Cloud managed clusters. Without it (e.g. CRC, self-managed OCP) the
+    # plugin ReplicaSet fails with "no PriorityClass with name
+    # ibm-app-cluster-critical was found" and the deployment never becomes
+    # available.
+    if ! kubectl get priorityclass ibm-app-cluster-critical >/dev/null 2>&1; then
+        echo "Creating missing PriorityClass ibm-app-cluster-critical..."
+        kubectl apply -f - <<EOF
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: ibm-app-cluster-critical
+value: 900000000
+globalDefault: false
+description: "Priority class for IBM Object Storage Plugin (normally pre-created on IBM Cloud clusters)"
+EOF
+    fi
+
     # Install IBM Object Storage Plugin
     echo "Installing IBM Object Storage Plugin via Helm..."
     # crc runs on a redhat vm
